@@ -4,6 +4,7 @@ import {EntityDatabase, EntityDatabaseConfig} from "../storage/entity-database/e
 import { Context, createContext, PropsWithChildren, useCallback, useContext, useEffect, useState } from "react";
 import {LocalDatabaseDto} from "../types/database";
 import { LiveQueryStatus } from "../control-flow";
+import {UserDto} from "@localful/common";
 
 export type LocalfulContext<
 	TableTypes extends TableTypeDefinitions,
@@ -21,10 +22,15 @@ export type LocalfulContext<
 	changeDatabasePassword: LocalfulWeb<TableTypes, TableSchemas>['changeDatabasePassword']
 	unlockDatabase: LocalfulWeb<TableTypes, TableSchemas>['unlockDatabase']
 	lockDatabase: LocalfulWeb<TableTypes, TableSchemas>['lockDatabase']
-	liveQueryDatabase:  LocalfulWeb<TableTypes, TableSchemas>['liveQueryDatabase']
-	liveGetDatabase:  LocalfulWeb<TableTypes, TableSchemas>['liveGetDatabase']
+	liveQueryDatabase: LocalfulWeb<TableTypes, TableSchemas>['liveQueryDatabase']
+	liveGetDatabase: LocalfulWeb<TableTypes, TableSchemas>['liveGetDatabase']
 	// Server
 	serverUrl: string | null
+	isServerUrlLoading: boolean
+	currentUser: UserDto | null
+	isUserLoading: boolean
+	login: LocalfulWeb<TableTypes, TableSchemas>['login'],
+	logout: LocalfulWeb<TableTypes, TableSchemas>['logout']
 }
 
 // eslint-disable-next-line -- can't know the generic type when declaring static variable. The useLocalful hook can then accept the generic.
@@ -119,7 +125,9 @@ export function LocalfulContextProvider<
 			const dtoSubscription = dtoLiveQuery.subscribe((liveQuery) => {
 				if (liveQuery.status === LiveQueryStatus.SUCCESS) {
 					setCurrentDatabaseDto(liveQuery.result)
-				} else if (liveQuery.status === LiveQueryStatus.ERROR) {
+				}
+				else if (liveQuery.status === LiveQueryStatus.ERROR) {
+					console.error(liveQuery.errors)
 					setCurrentDatabaseDto(undefined)
 				}
 			})
@@ -133,13 +141,62 @@ export function LocalfulContextProvider<
 		}
 	}, [currentDatabase])
 
+	const [serverUrl, setServerUrl] = useState<string|null>(null)
+	const [isServerUrlLoading, setIsServerUrlLoading] = useState(true)
+	useEffect(() => {
+		const query = localful.liveGetCurrentServerUrl()
+		const querySubscription = query.subscribe((liveQuery) => {
+			if (liveQuery.status === LiveQueryStatus.SUCCESS) {
+				setServerUrl(liveQuery.result)
+				setIsServerUrlLoading(false)
+			}
+			else if (liveQuery.status === LiveQueryStatus.ERROR) {
+				console.error(liveQuery.errors)
+				setServerUrl(null)
+				setIsServerUrlLoading(false)
+			}
+			else {
+				setIsServerUrlLoading(true)
+			}
+		})
+
+		return () => {
+			querySubscription.unsubscribe()
+		}
+	}, []);
+
+	const [currentUser, setCurrentUser] = useState<UserDto|null>(null)
+	const [isUserLoading, setIsUserLoading] = useState(true)
+	useEffect(() => {
+		const query = localful.liveGetCurrentUser()
+		const querySubscription = query.subscribe((liveQuery) => {
+			if (liveQuery.status === LiveQueryStatus.SUCCESS) {
+				setCurrentUser(liveQuery.result)
+				setIsUserLoading(false)
+			}
+			else if (liveQuery.status === LiveQueryStatus.ERROR) {
+				console.error(liveQuery.errors)
+				setCurrentUser(null)
+				setIsUserLoading(false)
+			}
+			else {
+				setIsUserLoading(true)
+			}
+		})
+
+		return () => {
+			querySubscription.unsubscribe()
+		}
+	}, []);
+
+	const login = useCallback(localful.login.bind(localful), [])
+	const logout = useCallback(localful.logout.bind(localful), [])
+
 	// todo: remove once units tests start to be written
 	useEffect(() => {
 		// @ts-expect-error -- adding custom property, so fine that it doesn't exist on window type.
 		window.lf = localful
 	}, []);
-
-	const [serverUrl, setServerUrl] = useState<string | null>(null)
 
 	return <LocalfulContext.Provider value={{
 		// Entity Database
@@ -156,7 +213,12 @@ export function LocalfulContextProvider<
 		changeDatabasePassword,
 		liveQueryDatabase,
 		liveGetDatabase,
-		// Server
+		// User / Server
 		serverUrl,
+		isServerUrlLoading,
+		currentUser,
+		isUserLoading,
+		login,
+		logout,
 	}}>{props.children}</LocalfulContext.Provider>
 }

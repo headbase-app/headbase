@@ -1,3 +1,4 @@
+import {UserDto} from "@localful/common";
 
 export const EventTypes = {
 	// Data Events
@@ -16,6 +17,9 @@ export const EventTypes = {
 	SYNC_MESSAGE: 'sync-message',
 	// Other Events
 	STORAGE_PERMISSION: 'storage-permission',
+	// User Events
+	USER_LOGIN: 'user-login',
+	USER_LOGOUT: 'user-logout',
 } as const
 
 export interface EventContext {
@@ -96,6 +100,24 @@ export interface StoragePermissionEvent {
 	}
 }
 
+export interface UserLoginEvent {
+	type: typeof EventTypes.USER_LOGIN,
+	detail: {
+		context: EventContext,
+		data: {
+			serverUrl: string
+			user: UserDto
+		}
+	}
+}
+
+export interface UserLogoutEvent {
+	type: typeof EventTypes.USER_LOGOUT,
+	detail: {
+		context: EventContext,
+	}
+}
+
 export type LocalfulEvent =
 	DataEntityChangeEvent |
 	DatabaseOpenEvent | DatabaseCloseEvent | DatabaseChangeEvent |
@@ -109,6 +131,13 @@ export interface EventMap {
 	[EventTypes.DATABASE_LOCK]: DatabaseLockEvent,
 	[EventTypes.DATABASE_CHANGE]: DatabaseChangeEvent,
 	[EventTypes.STORAGE_PERMISSION]: StoragePermissionEvent,
+	[EventTypes.USER_LOGIN]: UserLoginEvent,
+	[EventTypes.USER_LOGOUT]: UserLogoutEvent,
 }
 
 export type EventTypes = keyof EventMap
+
+// todo: simply event declarations and work better with built-in event emitter more.
+export type AnyLocalfulEvent =
+	CustomEvent<UserLoginEvent['detail']> |
+	CustomEvent<UserLogoutEvent['detail']>

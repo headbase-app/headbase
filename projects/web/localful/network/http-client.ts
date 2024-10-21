@@ -8,8 +8,8 @@ import {
 	UpdateUserDto,
 	UserDto,
 } from "@localful/common";
-import {io, Socket} from "socket.io-client";
 import {ErrorTypes, LocalfulError} from "../control-flow";
+import {GeneralStorage} from "@localful-headbase/storage/general-storage";
 
 export interface QueryOptions {
 	url: string,
@@ -22,18 +22,16 @@ export interface QueryOptions {
 
 export interface ServerClientConfig {
 	serverUrl: string;
-	deviceStorage: DeviceStorage,
+	generalStorage: GeneralStorage;
 }
 
-export class ServerClient {
-	private readonly socket: Socket
-	private readonly config: ServerClientConfig;
-	private readonly deviceStorage: DeviceStorage;
+export class ServerHTTPClient {
+	private readonly serverUrl: string;
+	private readonly generalStorage: GeneralStorage;
 
 	constructor(config: ServerClientConfig) {
-		this.config = config;
-		this.deviceStorage = config.deviceStorage;
-		this.socket = io(this.config.serverUrl);
+		this.serverUrl = config.serverUrl;
+		this.generalStorage = config.generalStorage;
 	}
 
 	// Basic Query
@@ -41,7 +39,7 @@ export class ServerClient {
 		const headers: Headers = new Headers({"Content-Type": "application/json"})
 
 		if (!options.noAuthRequired) {
-			const accessToken = await this.deviceStorage.secrets.loadAccessToken();
+			const accessToken = await this.generalStorage.loadAccessToken();
 
 			// This might be the first request of this session, so refresh auth to fetch a new access token and retry the request.
 			if (!accessToken && !options.disableAuthRetry) {
@@ -53,27 +51,28 @@ export class ServerClient {
 
 		const url =
             options.params && Array.from(options.params.keys()).length > 0
-            	? `${this.config.serverUrl}${options.url}?${options.params.toString()}`: `${this.config.serverUrl}${options.url}`
+            	? `${this.serverUrl}${options.url}?${options.params.toString()}`: `${this.serverUrl}${options.url}`
 
-		try {
-			const response = await fetch(
-				url,
-				{
-					method: options.method,
-					body: JSON.stringify(options.data),
-					headers
-				});
-			return await response.json()
-		}
-		catch (e: any) {
-			// If the request failed due to ACCESS_UNAUTHORIZED, the access token may just have expired so refresh auth
-			// and retry the request.
-			if (e.response?.data?.identifier === ErrorIdentifiers.ACCESS_UNAUTHORIZED && !options.disableAuthRetry) {
-				return this.refreshAuthAndRetry<ResponseType>(options)
-			}
 
-			throw new LocalfulError({type: ErrorTypes.NETWORK_ERROR, devMessage: `There was an error with the request '${options.url} [${options.method}]`, originalError: e})
+		const response = await fetch(
+			url,
+			{
+				method: options.method,
+				body: JSON.stringify(options.data),
+				headers
+			});
+		const responseData = await response.json()
+
+		if (response.status === 200 || response.status === 201) {
+			return responseData
 		}
+		// If the request failed due to ACCESS_UNAUTHORIZED, the access token may just have expired so refresh auth
+		// and retry the request.
+		if (responseData?.identifier === ErrorIdentifiers.ACCESS_UNAUTHORIZED && !options.disableAuthRetry) {
+			return this.refreshAuthAndRetry<ResponseType>(options)
+		}
+
+		throw new LocalfulError({type: ErrorTypes.NETWORK_ERROR, devMessage: `There was an error with the request '${options.url} [${options.method}]`, originalError: responseData})
 	}
 
 	private async refreshAuthAndRetry<ResponseType>(options: QueryOptions): Promise<ResponseType> {
@@ -87,13 +86,20 @@ export class ServerClient {
 	}
 
 	public async login(data: LoginRequest) {
-		return this.query<LoginResponse>({
+		const loginResult= await this.query<LoginResponse>({
 			method: 'POST',
 			url: `/v1/auth/login`,
 			data,
 			noAuthRequired: true
 		});
-	}
+
+		if (loginResult.tokens) {
+			await this.generalStorage.saveRefreshToken(loginResult.tokens.refreshToken)
+			await this.generalStorage.saveAccessToken(loginResult.tokens.accessToken)
+		}
+
+		return loginResult;
+ 	}
 
 	public async register(createUserDto: CreateUserDto) {
 		return await this.query<UserDto>({
@@ -105,30 +111,27 @@ export class ServerClient {
 	}
 
 	public async logout() {
-		const refreshToken = await this.deviceStorage.secrets.loadRefreshToken()
+		const refreshToken = await this.generalStorage.loadRefreshToken()
 		if (!refreshToken) {
-			await this.deviceStorage.secrets.deleteAccessToken()
 			throw new LocalfulError({type: ErrorTypes.INVALID_OR_CORRUPTED_DATA, devMessage: "No refreshToken found during logout"})
 		}
 
 		await this.query({
 			method: 'POST',
-			url: `/v1/auth/revoke`,
+			url: `/v1/auth/logout`,
 			noAuthRequired: true,
 			data: {
 				refreshToken,
 			}
 		});
 
-		await this.deviceStorage.general.deleteCurrentUser()
-		await this.deviceStorage.secrets.deleteAccessToken()
-		await this.deviceStorage.secrets.deleteRefreshToken()
+		await this.generalStorage.deleteAccessToken()
+		await this.generalStorage.deleteRefreshToken()
 	}
 
 	public async refresh() {
-		const refreshToken = this.deviceStorage.secrets.loadRefreshToken()
+		const refreshToken = this.generalStorage.loadRefreshToken()
 		if (!refreshToken) {
-			await this.deviceStorage.secrets.deleteAccessToken()
 			throw new LocalfulError({type: ErrorTypes.INVALID_OR_CORRUPTED_DATA, devMessage: "No refreshToken found during auth refresh"})
 		}
 
@@ -143,15 +146,14 @@ export class ServerClient {
 				}
 			});
 
-			await this.deviceStorage.secrets.saveAccessToken(tokens.accessToken)
-			await this.deviceStorage.secrets.saveRefreshToken(tokens.refreshToken)
+			await this.generalStorage.saveAccessToken(tokens.accessToken)
+			await this.generalStorage.saveRefreshToken(tokens.refreshToken)
 		}
 		catch(e: any) {
 			// Delete all user data if the session is no longer valid
 			if (e.response?.data?.identifier === ErrorIdentifiers.ACCESS_UNAUTHORIZED) {
-				await this.deviceStorage.general.deleteCurrentUser()
-				await this.deviceStorage.secrets.deleteAccessToken()
-				await this.deviceStorage.secrets.deleteRefreshToken()
+				await this.generalStorage.deleteRefreshToken()
+				await this.generalStorage.deleteAccessToken()
 			}
 
 			throw e;

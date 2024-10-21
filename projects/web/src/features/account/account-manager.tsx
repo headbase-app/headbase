@@ -3,15 +3,16 @@ import { AttachmentsManagerPage } from "../attachments/manager/attachments-manag
 import { JButton, JButtonGroup } from "@ben-ryder/jigsaw-react";
 import {PerformanceManager} from "../performance/performance-manager";
 import {ImportExportManager} from "../import-export/import-export-manager";
+import {UserManager} from "../user/user-manager";
 
 export type AccountTabs = "account" | "settings" | "attachments" | "performance" | "import-export"
 
 export function AccountManager() {
-	const [currentTab, setCurrentTab] = useState<AccountTabs>("settings")
+	const [currentTab, setCurrentTab] = useState<AccountTabs>("account")
 
 	let content: ReactNode
 	if (currentTab === "account") {
-		content = <p>Account</p>
+		content = <UserManager />
 	}
 	else if (currentTab === "settings") {
 		content = <p>Settings</p>

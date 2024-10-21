@@ -31,7 +31,7 @@
     "@codemirror/view": "^6.23.1",
     "@headlessui/react": "^1.7.19",
     "@hookform/resolvers": "^3.3.4",
-    "@localful/common": "^0.2.0",
+    "@localful/common": "^0.3.0",
     "@uiw/codemirror-extensions-basic-setup": "^4.21.21",
     "@uiw/codemirror-extensions-hyper-link": "^4.21.21",
     "@uiw/codemirror-themes": "^4.21.21",
@@ -47,10 +47,8 @@
     "react-router-dom": "^6.21.3",
     "rxjs": "^7.8.1",
     "sass": "^1.70.0",
-    "socket.io-client": "^4.7.4",
     "uuid": "^9.0.1",
     "validator": "^13.11.0",
-    "vite-tsconfig-paths": "^4.3.1",
     "zod": "^3.22.4"
   },
   "devDependencies": {
@@ -84,6 +82,7 @@
     "typescript-eslint": "^7.14.1",
     "vite": "^5.2.13",
     "vite-plugin-pwa": "^0.17.4",
+    "vite-tsconfig-paths": "^5.0.1",
     "vitest": "^2.0.4"
   }
 }

@@ -1,21 +1,20 @@
-import {ServerInfoDto, UserDto} from "@localful/common";
+import {UserDto} from "@localful/common";
 import * as z from "zod"
 
 export class GeneralStorage {
-	private SERVER_URL_KEY = 'lf_serverUrl';
-	private SERVER_INFO_KEY = 'lf_serverInfo';
+	SERVER_URL_KEY = 'lf_server_url';
+	CURRENT_USER_KEY = 'lf_current_user';
+	HAS_STORAGE_PERMISSIONS_KEY = 'lf_has_storage_permissions';
 
-	private CURRENT_USER_KEY = 'lf_currentUser';
-	private HAS_STORAGE_PERMISSIONS_KEY = 'lf_hasStoragePermissions';
+	ACCESS_TOKEN_KEY = 'lf_access_token';
+	REFRESH_TOKEN_KEY = 'lf_refresh_token';
 
-	private CURRENT_CLOUD_VAULTS = 'lf_app_currentCloudVaults';
-
-	static async _loadLocalStorageData<Schema>(key: string, schema: z.ZodType<Schema>): Promise<Schema|null> {
+	private async _loadLocalStorageData<Schema>(key: string, schema: z.ZodType<Schema>): Promise<Schema|null> {
 		const rawString = localStorage.getItem(key);
 		if (rawString) {
 			try {
 				const rawObject = JSON.parse(rawString);
-				return schema.parse(rawObject)
+				return schema.parse(rawObject.value)
 			}
 			catch (e) {
 				// If the storage value is invalid, automatically clear it up.
@@ -23,89 +22,63 @@ export class GeneralStorage {
 				return null;
 			}
 		}
+
 		return null;
 	}
-	static async _loadLocalStorageFlag(key: string): Promise<boolean> {
-		const value = await GeneralStorage._loadLocalStorageData(key, z.boolean())
-		if (typeof value !== 'boolean') {
-			await GeneralStorage._saveLocalStorageData(key, false)
-			return false
-		}
 
-		return value
+	private async _saveLocalStorageData(key: string, data: any): Promise<void> {
+		// Always wrap value with json object so JSON.parse can be used consistently when loading data.
+		localStorage.setItem(key, JSON.stringify({value: data}));
 	}
-	static async _saveLocalStorageData(key: string, data: any): Promise<void> {
-		localStorage.setItem(key, data);
-	}
-	static async _deleteLocalStorageData(key: string): Promise<void> {
+
+	private async _deleteLocalStorageData(key: string): Promise<void> {
 		localStorage.removeItem(key);
 	}
 
-	async purgeAll() {
-		await this.deleteCurrentUser();
-	}
-
 	async loadServerUrl(): Promise<string|null> {
-		return GeneralStorage._loadLocalStorageData(this.SERVER_URL_KEY, z.string().url())
+		return this._loadLocalStorageData(this.SERVER_URL_KEY, z.string().url())
 	}
 	async saveServerUrl(serverUrl: string): Promise<void> {
-		return GeneralStorage._saveLocalStorageData(this.SERVER_URL_KEY, serverUrl)
+		return this._saveLocalStorageData(this.SERVER_URL_KEY, serverUrl)
 	}
 	async deleteServerUrl(): Promise<void> {
-		return GeneralStorage._deleteLocalStorageData(this.SERVER_URL_KEY)
-	}
-
-	async loadServerInfo(): Promise<ServerInfoDto|null> {
-		return GeneralStorage._loadLocalStorageData(this.SERVER_INFO_KEY, ServerInfoDto)
-	}
-	async saveServerInfo(serverInfo: ServerInfoDto): Promise<void> {
-		return GeneralStorage._saveLocalStorageData(this.SERVER_INFO_KEY, serverInfo)
-	}
-	async deleteServerInfo(): Promise<void> {
-		return GeneralStorage._deleteLocalStorageData(this.SERVER_INFO_KEY)
+		return this._deleteLocalStorageData(this.SERVER_URL_KEY)
 	}
 
 	async loadCurrentUser(): Promise<UserDto|null> {
-		return GeneralStorage._loadLocalStorageData<UserDto>(this.CURRENT_USER_KEY, UserDto)
+		return this._loadLocalStorageData<UserDto>(this.CURRENT_USER_KEY, UserDto)
 	}
 	async saveCurrentUser(user: UserDto) {
-		return GeneralStorage._saveLocalStorageData(this.CURRENT_USER_KEY, user)
+		return this._saveLocalStorageData(this.CURRENT_USER_KEY, user)
 	}
 	async deleteCurrentUser() {
-		return GeneralStorage._deleteLocalStorageData(this.CURRENT_USER_KEY)
+		return this._deleteLocalStorageData(this.CURRENT_USER_KEY)
 	}
 
-	async loadHasOnboarded(): Promise<boolean> {
-		return GeneralStorage._loadLocalStorageFlag(this.HAS_ONBOARDED_KEY)
+	async loadStoragePermissions(): Promise<boolean> {
+		return await this._loadLocalStorageData(this.HAS_STORAGE_PERMISSIONS_KEY, z.boolean()) ?? false
 	}
-	async setHasOnboarded(value: boolean): Promise<void> {
-		return GeneralStorage._saveLocalStorageData(this.HAS_ONBOARDED_KEY, value)
+	async saveStoragePermissions(value: boolean): Promise<void> {
+		return this._saveLocalStorageData(this.HAS_STORAGE_PERMISSIONS_KEY, value)
+	}
+	
+	async loadAccessToken(): Promise<string|null> {
+		return this._loadLocalStorageData<string>(this.ACCESS_TOKEN_KEY, z.string())
+	}
+	async saveAccessToken(token: string) {
+		return this._saveLocalStorageData(this.ACCESS_TOKEN_KEY, token)
+	}
+	async deleteAccessToken() {
+		return this._deleteLocalStorageData(this.ACCESS_TOKEN_KEY)
 	}
 
-	async loadHasStoragePermissions(): Promise<boolean> {
-		return GeneralStorage._loadLocalStorageFlag(this.HAS_STORAGE_PERMISSIONS_KEY)
+	async loadRefreshToken(): Promise<string|null> {
+		return this._loadLocalStorageData<string>(this.REFRESH_TOKEN_KEY, z.string())
 	}
-	async setHasStoragePermissions(value: boolean): Promise<void> {
-		return GeneralStorage._saveLocalStorageData(this.HAS_STORAGE_PERMISSIONS_KEY, value)
+	async saveRefreshToken(token: string) {
+		return this._saveLocalStorageData(this.REFRESH_TOKEN_KEY, token)
 	}
-
-	async loadCurrentCloudVaults(): Promise<string[]> {
-		const vaults = await GeneralStorage._loadLocalStorageData(this.CURRENT_CLOUD_VAULTS, z.array(z.string().uuid()))
-		return vaults ? vaults : []
-	}
-	async addCurrentCloudVault(vaultId: string): Promise<void> {
-		const vaults = await this.loadCurrentCloudVaults()
-		if (!vaults.includes(vaultId)) {
-			vaults.push(vaultId)
-		}
-		return GeneralStorage._saveLocalStorageData(this.CURRENT_CLOUD_VAULTS, vaults)
-	}
-	async removeCurrentCloudVault(vaultId: string): Promise<void> {
-		let vaults = await this.loadCurrentCloudVaults()
-		vaults = vaults.filter(id => id !== vaultId)
-		return GeneralStorage._saveLocalStorageData(this.CURRENT_CLOUD_VAULTS, vaults)
-	}
-	async deleteAllCurrentCloudVaults(): Promise<void> {
-		return GeneralStorage._saveLocalStorageData(this.CURRENT_CLOUD_VAULTS, [])
+	async deleteRefreshToken() {
+		return this._deleteLocalStorageData(this.REFRESH_TOKEN_KEY)
 	}
 }

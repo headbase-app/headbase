@@ -3,6 +3,6 @@
     "lib": ["webworker"]
   },
   "include": [
-    "network-worker.ts"
+    "shared-worker.ts"
   ]
 }
