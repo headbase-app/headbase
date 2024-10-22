@@ -4,18 +4,14 @@ import {useLocalful} from "@localful-headbase/react/use-localful";
 
 
 export function UserManager() {
-	const { isUserLoading, currentUser, isServerUrlLoading, serverUrl, login, logout } = useLocalful()
+	const { isUserLoading, currentUser, login, logout } = useLocalful()
 
-	if (isUserLoading || isServerUrlLoading) {
+	if (isUserLoading) {
 		return (
 			<p>Loading...</p>
 		)
 	}
-
-	console.debug(currentUser)
-	console.debug(serverUrl)
-
-	if (!currentUser || !serverUrl) {
+	if (!currentUser) {
 		return (
 			<LoginForm
 				onSubmit={login}
@@ -26,7 +22,7 @@ export function UserManager() {
 	return (
 		<div>
 			<JProse>
-				<p>Logged in as <b>{currentUser.email} ({currentUser.displayName})</b> to server <b>{serverUrl}</b></p>
+				<p>Logged in as <b>{currentUser.email} ({currentUser.displayName})</b> to server <b>{currentUser.serverUrl}</b></p>
 			</JProse>
 			<JButton
 				// todo: logout isn't clearing local data correctly.

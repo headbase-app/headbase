@@ -12,7 +12,7 @@ import {Logger} from "../src/utils/logger";
 import {ServerHTTPClient} from "./network/http-client";
 import {LoginRequest, UserDto} from "@localful/common";
 import z from "zod";
-import {GeneralStorage} from "./storage/general-storage";
+import {GeneralStorage, LocalUserDto} from "./storage/general-storage";
 
 export const LOCALFUL_VERSION = '1.0'
 export const LOCALFUL_INDEXDB_ENTITY_VERSION = 1
@@ -189,9 +189,10 @@ export class LocalfulWeb<
 
 		const result = await httpClient.login({ email: loginDetails.email, password: loginDetails.password })
 
-		// todo: save 'local user' with serverUrl to prevent issues? this data may as well live together for simplicity.
-		await this.generalStorage.saveServerUrl(loginDetails.serverUrl)
-		await this.generalStorage.saveCurrentUser(result.user)
+		await this.generalStorage.saveCurrentUser({
+			...result.user,
+			serverUrl: loginDetails.serverUrl,
+		})
 
 		this.eventManager.dispatch('user-login', {
 			serverUrl: loginDetails.serverUrl,
@@ -200,33 +201,27 @@ export class LocalfulWeb<
 	}
 
 	async logout() {
-		const serverUrl = await this.generalStorage.loadServerUrl()
-		if (!serverUrl) {
-			throw new Error('No server url provided')
+		const localUser = await this.generalStorage.loadCurrentUser()
+		if (!localUser) {
+			throw new Error('No local user found')
 		}
 
 		const httpClient = new ServerHTTPClient({
-			serverUrl: serverUrl,
+			serverUrl: localUser.serverUrl,
 			generalStorage: this.generalStorage
 		})
 		await httpClient.logout()
 		await this.generalStorage.deleteCurrentUser()
-		await this.generalStorage.deleteServerUrl()
 
 		// todo: allow event to have no data
 		this.eventManager.dispatch('user-logout', {})
 	}
 
-	getCurrentUser(): Promise<UserDto|null> {
+	getCurrentUser(): Promise<LocalUserDto|null> {
 		return this.generalStorage.loadCurrentUser()
 	}
-
-	getCurrentServerUrl(): Promise<string|null> {
-		return this.generalStorage.loadServerUrl()
-	}
-
 	liveGetCurrentUser() {
-		return new Observable<LiveQueryResult<UserDto|null>>((subscriber) => {
+		return new Observable<LiveQueryResult<LocalUserDto|null>>((subscriber) => {
 			subscriber.next(LIVE_QUERY_LOADING_STATE)
 
 			const runQuery = async () => {
@@ -235,41 +230,6 @@ export class LocalfulWeb<
 				try {
 					const user = await this.getCurrentUser()
 					subscriber.next({status: LiveQueryStatus.SUCCESS, result: user})
-				}
-				catch (e) {
-					subscriber.next({status: LiveQueryStatus.ERROR, errors: [e]})
-				}
-			}
-
-			const handleEvent = (e: AnyLocalfulEvent) => {
-				if (e.type === EventTypes.USER_LOGIN || e.type === EventTypes.USER_LOGOUT) {
-					runQuery()
-				}
-			}
-
-			this.eventManager.subscribe(EventTypes.USER_LOGIN, handleEvent)
-			this.eventManager.subscribe(EventTypes.USER_LOGOUT, handleEvent)
-
-			// Run initial query
-			runQuery()
-
-			return () => {
-				this.eventManager.unsubscribe(EventTypes.USER_LOGIN, handleEvent)
-				this.eventManager.unsubscribe(EventTypes.USER_LOGOUT, handleEvent)
-			}
-		})
-	}
-
-	liveGetCurrentServerUrl() {
-		return new Observable<LiveQueryResult<string|null>>((subscriber) => {
-			subscriber.next(LIVE_QUERY_LOADING_STATE)
-
-			const runQuery = async () => {
-				subscriber.next(LIVE_QUERY_LOADING_STATE)
-
-				try {
-					const serverUrl = await this.getCurrentServerUrl()
-					subscriber.next({status: LiveQueryStatus.SUCCESS, result: serverUrl})
 				}
 				catch (e) {
 					subscriber.next({status: LiveQueryStatus.ERROR, errors: [e]})

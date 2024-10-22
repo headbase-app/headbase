@@ -12,42 +12,42 @@ import "./app.scss"
 
 export function App() {
 
-	useEffect(() => {
-		const ws = new WebSocket("ws://localhost:42102/v1/events");
-		console.debug(ws)
-
-		ws.addEventListener('open', (event) => {
-			console.debug(`[WebSocket] received open`)
-			console.debug(event)
-
-			console.debug('[WebSocket] sending subscribe event')
-			ws.send(JSON.stringify({
-				type: 'subscribe',
-				payload: {
-					vaults: ["example"]
-				}
-			}))
-		})
-
-		ws.addEventListener('message', (event) => {
-			console.debug(`[WebSocket] received message`)
-			console.debug(event)
-		})
-
-		ws.addEventListener('error', (event) => {
-			console.debug(`[WebSocket] received error`)
-			console.debug(event)
-		})
-
-		ws.addEventListener('close', (event) => {
-			console.debug(`[WebSocket] received close`)
-			console.debug(event)
-		})
-
-		return () => {
-			ws.close()
-		}
-	}, []);
+	// useEffect(() => {
+	// 	const ws = new WebSocket("ws://localhost:42102/v1/events");
+	// 	console.debug(ws)
+	//
+	// 	ws.addEventListener('open', (event) => {
+	// 		console.debug(`[WebSocket] received open`)
+	// 		console.debug(event)
+	//
+	// 		console.debug('[WebSocket] sending subscribe event')
+	// 		ws.send(JSON.stringify({
+	// 			type: 'subscribe',
+	// 			payload: {
+	// 				vaults: ["example"]
+	// 			}
+	// 		}))
+	// 	})
+	//
+	// 	ws.addEventListener('message', (event) => {
+	// 		console.debug(`[WebSocket] received message`)
+	// 		console.debug(event)
+	// 	})
+	//
+	// 	ws.addEventListener('error', (event) => {
+	// 		console.debug(`[WebSocket] received error`)
+	// 		console.debug(event)
+	// 	})
+	//
+	// 	ws.addEventListener('close', (event) => {
+	// 		console.debug(`[WebSocket] received close`)
+	// 		console.debug(event)
+	// 	})
+	//
+	// 	return () => {
+	// 		ws.close()
+	// 	}
+	// }, []);
 
 	return (
 		<BrowserRouter>

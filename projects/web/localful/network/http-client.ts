@@ -61,13 +61,20 @@ export class ServerHTTPClient {
 				body: JSON.stringify(options.data),
 				headers
 			});
-		const responseData = await response.json()
+		let responseData: unknown
+		if (response.headers.get("content-type")?.includes("application/json")) {
+			responseData = await response.json();
+		}
+		else {
+			responseData = await response.text();
+		}
 
 		if (response.status === 200 || response.status === 201) {
-			return responseData
+			return responseData as ResponseType
 		}
 		// If the request failed due to ACCESS_UNAUTHORIZED, the access token may just have expired so refresh auth
 		// and retry the request.
+		// @ts-expect-error - todo: imporve typing?
 		if (responseData?.identifier === ErrorIdentifiers.ACCESS_UNAUTHORIZED && !options.disableAuthRetry) {
 			return this.refreshAuthAndRetry<ResponseType>(options)
 		}

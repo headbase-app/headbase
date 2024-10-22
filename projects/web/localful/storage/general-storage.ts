@@ -1,6 +1,12 @@
 import {UserDto} from "@localful/common";
 import * as z from "zod"
 
+// todo: define somewhere else
+export const LocalUserDto = UserDto.extend({
+	serverUrl: z.string().url("must be a valid URL")
+})
+export type LocalUserDto = z.infer<typeof LocalUserDto>
+
 export class GeneralStorage {
 	SERVER_URL_KEY = 'lf_server_url';
 	CURRENT_USER_KEY = 'lf_current_user';
@@ -17,8 +23,8 @@ export class GeneralStorage {
 				return schema.parse(rawObject.value)
 			}
 			catch (e) {
-				// If the storage value is invalid, automatically clear it up.
-				localStorage.removeItem(key)
+				console.error(`General storage item ${key} failed validation`)
+				console.error(e)
 				return null;
 			}
 		}
@@ -26,7 +32,7 @@ export class GeneralStorage {
 		return null;
 	}
 
-	private async _saveLocalStorageData(key: string, data: any): Promise<void> {
+	private async _saveLocalStorageData(key: string, data: unknown): Promise<void> {
 		// Always wrap value with json object so JSON.parse can be used consistently when loading data.
 		localStorage.setItem(key, JSON.stringify({value: data}));
 	}
@@ -35,20 +41,10 @@ export class GeneralStorage {
 		localStorage.removeItem(key);
 	}
 
-	async loadServerUrl(): Promise<string|null> {
-		return this._loadLocalStorageData(this.SERVER_URL_KEY, z.string().url())
+	async loadCurrentUser(): Promise<LocalUserDto|null> {
+		return this._loadLocalStorageData<LocalUserDto>(this.CURRENT_USER_KEY, LocalUserDto)
 	}
-	async saveServerUrl(serverUrl: string): Promise<void> {
-		return this._saveLocalStorageData(this.SERVER_URL_KEY, serverUrl)
-	}
-	async deleteServerUrl(): Promise<void> {
-		return this._deleteLocalStorageData(this.SERVER_URL_KEY)
-	}
-
-	async loadCurrentUser(): Promise<UserDto|null> {
-		return this._loadLocalStorageData<UserDto>(this.CURRENT_USER_KEY, UserDto)
-	}
-	async saveCurrentUser(user: UserDto) {
+	async saveCurrentUser(user: LocalUserDto) {
 		return this._saveLocalStorageData(this.CURRENT_USER_KEY, user)
 	}
 	async deleteCurrentUser() {

@@ -5,6 +5,7 @@ import { Context, createContext, PropsWithChildren, useCallback, useContext, use
 import {LocalDatabaseDto} from "../types/database";
 import { LiveQueryStatus } from "../control-flow";
 import {UserDto} from "@localful/common";
+import {LocalUserDto} from "@localful-headbase/storage/general-storage";
 
 export type LocalfulContext<
 	TableTypes extends TableTypeDefinitions,
@@ -25,9 +26,7 @@ export type LocalfulContext<
 	liveQueryDatabase: LocalfulWeb<TableTypes, TableSchemas>['liveQueryDatabase']
 	liveGetDatabase: LocalfulWeb<TableTypes, TableSchemas>['liveGetDatabase']
 	// Server
-	serverUrl: string | null
-	isServerUrlLoading: boolean
-	currentUser: UserDto | null
+	currentUser: LocalUserDto | null
 	isUserLoading: boolean
 	login: LocalfulWeb<TableTypes, TableSchemas>['login'],
 	logout: LocalfulWeb<TableTypes, TableSchemas>['logout']
@@ -141,31 +140,7 @@ export function LocalfulContextProvider<
 		}
 	}, [currentDatabase])
 
-	const [serverUrl, setServerUrl] = useState<string|null>(null)
-	const [isServerUrlLoading, setIsServerUrlLoading] = useState(true)
-	useEffect(() => {
-		const query = localful.liveGetCurrentServerUrl()
-		const querySubscription = query.subscribe((liveQuery) => {
-			if (liveQuery.status === LiveQueryStatus.SUCCESS) {
-				setServerUrl(liveQuery.result)
-				setIsServerUrlLoading(false)
-			}
-			else if (liveQuery.status === LiveQueryStatus.ERROR) {
-				console.error(liveQuery.errors)
-				setServerUrl(null)
-				setIsServerUrlLoading(false)
-			}
-			else {
-				setIsServerUrlLoading(true)
-			}
-		})
-
-		return () => {
-			querySubscription.unsubscribe()
-		}
-	}, []);
-
-	const [currentUser, setCurrentUser] = useState<UserDto|null>(null)
+	const [currentUser, setCurrentUser] = useState<LocalUserDto|null>(null)
 	const [isUserLoading, setIsUserLoading] = useState(true)
 	useEffect(() => {
 		const query = localful.liveGetCurrentUser()
@@ -213,9 +188,7 @@ export function LocalfulContextProvider<
 		changeDatabasePassword,
 		liveQueryDatabase,
 		liveGetDatabase,
-		// User / Server
-		serverUrl,
-		isServerUrlLoading,
+		// User
 		currentUser,
 		isUserLoading,
 		login,
