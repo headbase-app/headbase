@@ -1,10 +1,9 @@
 import {LocalfulWeb} from "../localful-web";
 import {TableSchemaDefinitions, TableTypeDefinitions} from "../storage/types/types";
 import {EntityDatabase, EntityDatabaseConfig} from "../storage/entity-database/entity-database";
-import { Context, createContext, PropsWithChildren, useCallback, useContext, useEffect, useState } from "react";
+import {Context, createContext, PropsWithChildren, useCallback, useContext, useEffect, useRef, useState} from "react";
 import {LocalDatabaseDto} from "../types/database";
 import { LiveQueryStatus } from "../control-flow";
-import {UserDto} from "@localful/common";
 import {LocalUserDto} from "@localful-headbase/storage/general-storage";
 
 export type LocalfulContext<
@@ -59,9 +58,24 @@ export function LocalfulContextProvider<
 	TableTypes extends TableTypeDefinitions,
 	TableSchemas extends TableSchemaDefinitions<TableTypes>
 >(props: LocalfulContextProviderProps<TableTypes>) {
-	const [localful] = useState(() => new LocalfulWeb<TableTypes, TableSchemas>({
-		tableSchemas: props.tableSchemas
-	}))
+	const localfulRef = useRef<LocalfulWeb<TableTypes, TableSchemas>>()
+	if (!localfulRef.current) {
+		localfulRef.current = new LocalfulWeb<TableTypes, TableSchemas>({tableSchemas: props.tableSchemas})
+	}
+
+	useEffect(() => {
+		if (!localfulRef.current) {
+			localfulRef.current = new LocalfulWeb<TableTypes, TableSchemas>({tableSchemas: props.tableSchemas})
+		}
+
+		return () => {
+			localfulRef.current?.close()
+			localfulRef.current = undefined
+		}
+ 	}, []);
+
+	const localful: LocalfulWeb<TableTypes, TableSchemas> = localfulRef.current
+		
 	const [currentDatabase, setCurrentDatabase] = useState<null | EntityDatabase<TableTypes, TableSchemas>>(null)
 
 	const [currentDatabaseDto, setCurrentDatabaseDto] = useState<LocalDatabaseDto | undefined>(undefined)

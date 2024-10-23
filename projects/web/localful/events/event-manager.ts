@@ -23,6 +23,10 @@ export class EventManager {
 		}
 	}
 
+	close() {
+		this.localBroadcastChannel?.close()
+	}
+
 	// todo: fix types
 	dispatch<Event extends keyof EventMap>(type: Event, data: EventMap[Event]['detail']['data'], context?: EventContext) {
 		const eventDetail = {

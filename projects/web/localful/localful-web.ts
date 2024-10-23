@@ -10,7 +10,7 @@ import {LIVE_QUERY_LOADING_STATE, LiveQueryResult, LiveQueryStatus} from "./cont
 import SharedNetworkWorker from "./worker/shared-worker?sharedworker";
 import {Logger} from "../src/utils/logger";
 import {ServerHTTPClient} from "./network/http-client";
-import {LoginRequest, UserDto} from "@localful/common";
+import {LoginRequest} from "@localful/common";
 import z from "zod";
 import {GeneralStorage, LocalUserDto} from "./storage/general-storage";
 
@@ -61,19 +61,23 @@ export class LocalfulWeb<
 		this.generalStorage = new GeneralStorage()
 
 		// Set up a listener to relay all messages from the shared worker to the event manager.
-		this.sharedNetworkWorker.addEventListener('message', (event) => {
-			const message  = event as MessageEvent<LocalfulEvent>
-			Logger.debug('[LocalfulWeb] Received shared worker message', message.data)
-			this.eventManager.dispatch(message.data.type, message.data.detail.data, message.data.detail.context)
-		})
+		this.sharedNetworkWorker.addEventListener('message', this.handleSharedWorkerMessage)
 
 		// Set up a listener to relay all messages from the event manager to the shared worker.
-		this.eventManager.subscribeAll((e: CustomEvent<LocalfulEvent>) => {
-			this.sharedNetworkWorker.port.postMessage({type: e.type , data: e.detail })
-		})
+		this.eventManager.subscribeAll(this.handleEventManagerEvent)
 
 		this.syncMessages = []
 		this.lastKnownSyncStatus = 'disabled'
+	}
+
+	handleSharedWorkerMessage(event: Event) {
+		const message  = event as MessageEvent<LocalfulEvent>
+		Logger.debug('[LocalfulWeb] Received shared worker message', message.data)
+		this.eventManager.dispatch(message.data.type, message.data.detail.data, message.data.detail.context)
+	}
+
+	handleEventManagerEvent(event: CustomEvent<LocalfulEvent>) {
+		this.sharedNetworkWorker.port.postMessage({type: event.type , data: event.detail })
 	}
 
 	async openDatabase(databaseId: string) {
@@ -253,5 +257,13 @@ export class LocalfulWeb<
 				this.eventManager.unsubscribe(EventTypes.USER_LOGOUT, handleEvent)
 			}
 		})
+	}
+
+	close() {
+		this.eventManager.unsubscribeAll(this.handleEventManagerEvent)
+		this.sharedNetworkWorker.removeEventListener('message', this.handleSharedWorkerMessage)
+
+		this.eventManager.close()
+		this.sharedNetworkWorker.port.close()
 	}
 }
