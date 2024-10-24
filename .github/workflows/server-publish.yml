@@ -1,4 +1,4 @@
-name: Create and publish the server Docker image
+name: Create and publish headbase-app/server Docker image
 on:
   push:
     tags:
