@@ -9,8 +9,8 @@ import {ContentDto} from "../../../state/schemas/content/content";
 import {ContentCard} from "../../../patterns/components/content-card/content-card";
 
 import "./view-tab.scss"
-import {useLocalful} from "@headbase-toolkit/react/use-localful";
-import {HeadbaseTableSchemas, HeadbaseTableTypes} from "../../../state/headbase-localful";
+import {useHeadbase} from "@headbase-toolkit/react/use-headbase";
+import {HeadbaseTableSchemas, HeadbaseTableTypes} from "../../../state/headbase";
 import {IndexWhereOption} from "@headbase-toolkit/storage/types/query";
 
 export interface ViewTabProps extends WithTabData {
@@ -18,7 +18,7 @@ export interface ViewTabProps extends WithTabData {
 }
 
 export function ViewTab(props: ViewTabProps) {
-	const {currentDatabase} = useLocalful<HeadbaseTableTypes, HeadbaseTableSchemas>()
+	const {currentDatabase} = useHeadbase<HeadbaseTableTypes, HeadbaseTableSchemas>()
 	const { openTab, setTabName } = useWorkspaceContext()
 	const viewQuery = useObservableQuery(currentDatabase?.liveGet('views', props.viewId))
 

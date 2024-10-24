@@ -1,8 +1,0 @@
-{
-  "compilerOptions": {
-    "lib": ["webworker"]
-  },
-  "include": [
-    "shared-worker.ts"
-  ]
-}

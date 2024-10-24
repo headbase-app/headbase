@@ -7,7 +7,7 @@ export interface ExportEntity<
 	id: string
 	createdAt: string
 	updatedAt: string
-	localfulVersion: string
+	headbaseVersion: string
 	schemaVersion: string
 	data: TableTypes[TableKey]
 }

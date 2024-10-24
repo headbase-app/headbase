@@ -1,7 +1,7 @@
 import {DatabaseBasicDataForm} from "../forms/database-basic-data-form";
 import {useCallback} from "react";
 import {LocalDatabaseFields} from "@headbase-toolkit/types/database";
-import {useLocalful} from "@headbase-toolkit/react/use-localful";
+import {useHeadbase} from "@headbase-toolkit/react/use-headbase";
 import {JArrowButton, JButton} from "@ben-ryder/jigsaw-react";
 import { useObservableQuery } from "@headbase-toolkit/react/use-observable-query";
 import { ErrorCallout } from "../../../patterns/components/error-callout/error-callout";
@@ -23,7 +23,7 @@ export function DatabaseEditScreen(props: DatabaseEditScreenProps) {
 		deleteLocalDatabase,
 		deleteDatabase,
 		liveGetDatabase,
-	} = useLocalful()
+	} = useHeadbase()
 
 	const onSave = useCallback(async (basicInfo: LocalDatabaseFields) => {
 		try {

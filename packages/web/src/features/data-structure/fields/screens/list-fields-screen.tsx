@@ -5,13 +5,13 @@ import { LiveQueryStatus } from "@headbase-toolkit/control-flow";
 import { ErrorCallout } from "../../../../patterns/components/error-callout/error-callout";
 import { FIELD_TYPES } from "../../../../state/schemas/fields/field-types";
 import { useObservableQuery } from "@headbase-toolkit/react/use-observable-query";
-import {HeadbaseTableSchemas, HeadbaseTableTypes} from "../../../../state/headbase-localful";
-import {useLocalful} from "@headbase-toolkit/react/use-localful";
+import {HeadbaseTableSchemas, HeadbaseTableTypes} from "../../../../state/headbase";
+import {useHeadbase} from "@headbase-toolkit/react/use-headbase";
 
 export function ListFieldsScreen(props: GenericManagerScreenProps) {
 	const [errors, setErrors] = useState<unknown[]>([])
 
-	const { currentDatabase } = useLocalful<HeadbaseTableTypes, HeadbaseTableSchemas>()
+	const { currentDatabase } = useHeadbase<HeadbaseTableTypes, HeadbaseTableSchemas>()
 
 	const fields = useObservableQuery(currentDatabase?.liveQuery({table: 'fields'}))
 

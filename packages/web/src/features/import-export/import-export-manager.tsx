@@ -1,10 +1,10 @@
 import {useRef} from "react";
-import {useLocalful} from "@headbase-toolkit/react/use-localful";
+import {useHeadbase} from "@headbase-toolkit/react/use-headbase";
 import {ExportDatabase} from "./export-database";
 import {ImportDatabase} from "./import-database";
 
 export function ImportExportManager() {
-	const { currentDatabase } = useLocalful()
+	const { currentDatabase } = useHeadbase()
 
 	const fileInputRef = useRef<HTMLInputElement>(null)
 

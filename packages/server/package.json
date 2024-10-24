@@ -13,8 +13,8 @@
     "start:prod": "node ./dist/bin/index.js",
     "lint": "eslint \"{src,apps,libs,test}/**/*.ts\" --fix",
     "test": "vitest run",
-    "db:dump": "pg_dump localful > ./backup/localful.sql",
-    "db:restore": "psql localful < ./backup/localful.sql",
+    "db:dump": "pg_dump headbase > ./backup/headbase.sql",
+    "db:restore": "psql headbase < ./backup/headbase.sql",
     "db:init:data": "tsx testing/cli.ts",
     "dev:common-rebuild": "(cd ../common && npm run build) && npm i"
   },

@@ -10,7 +10,7 @@ export const Entity = z.object({
 	id: IdField,
 	createdAt: TimestampField,
 	isDeleted: BooleanField,
-	localfulVersion: z.string(),
+	headbaseVersion: z.string(),
 }).strict()
 export type Entity = z.infer<typeof Entity>
 
@@ -30,7 +30,7 @@ export const EntityVersion = z.object({
 	createdAt: TimestampField,
 	// All actual data is encrypted, so stored data will always be ciphertext string
 	data: z.string(),
-	localfulVersion: z.string(),
+	headbaseVersion: z.string(),
 	schemaVersion: z.string()
 }).strict()
 export type EntityVersion = z.infer<typeof EntityVersion>

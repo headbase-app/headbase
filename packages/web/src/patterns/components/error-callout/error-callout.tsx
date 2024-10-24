@@ -1,6 +1,6 @@
 import { JCallout } from "@ben-ryder/jigsaw-react";
 import React from "react";
-import { ErrorTypes, LocalfulError } from "@headbase-toolkit/control-flow";
+import { ErrorTypes, HeadbaseError } from "@headbase-toolkit/control-flow";
 
 export interface ErrorCalloutProps {
 	errors: unknown[]
@@ -8,7 +8,7 @@ export interface ErrorCalloutProps {
 
 export function ErrorCallout(props: ErrorCalloutProps) {
 	const processedErrors = props.errors.map(error => {
-		if (error instanceof LocalfulError) {
+		if (error instanceof HeadbaseError) {
 			return error.cause
 		}
 

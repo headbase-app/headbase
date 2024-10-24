@@ -1,9 +1,9 @@
 import {useCallback, useEffect, useRef, useState} from "react";
-import {HeadbaseTableSchemas, HeadbaseTableTypes} from "../../../state/headbase-localful";
+import {HeadbaseTableSchemas, HeadbaseTableTypes} from "../../../state/headbase";
 import {ContentTypeData} from "../../../state/schemas/content-types/content-types";
 import {EntityDto} from "@headbase-toolkit/types/data-entities";
 import {ContentData} from "../../../state/schemas/content/content";
-import {useLocalful} from "@headbase-toolkit/react/use-localful";
+import {useHeadbase} from "@headbase-toolkit/react/use-headbase";
 import {FieldStorage, FieldValues} from "../../../state/schemas/fields/fields";
 
 // todo: make type require at least one of these?
@@ -31,7 +31,7 @@ export interface ContentFormDataHandlers {
  * @param options
  */
 export function useContentFormData(options: ContentFormOptions) {
-	const {currentDatabase} = useLocalful<HeadbaseTableTypes, HeadbaseTableSchemas>()
+	const {currentDatabase} = useHeadbase<HeadbaseTableTypes, HeadbaseTableSchemas>()
 
 	const [contentTypeId, setContentTypeId] = useState<string | undefined>(options.contentTypeId)
 	const [contentType, setContentType] = useState<EntityDto<ContentTypeData> | undefined>()

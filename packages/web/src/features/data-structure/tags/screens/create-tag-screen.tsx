@@ -6,11 +6,11 @@ import {
 	GenericManagerScreenProps
 } from "../../../../common/generic-manager/generic-manager";
 import { TagForm } from "../forms/tag-form";
-import {HeadbaseTableSchemas, HeadbaseTableTypes} from "../../../../state/headbase-localful";
-import {useLocalful} from "@headbase-toolkit/react/use-localful";
+import {HeadbaseTableSchemas, HeadbaseTableTypes} from "../../../../state/headbase";
+import {useHeadbase} from "@headbase-toolkit/react/use-headbase";
 
 export function CreateTagScreen(props: GenericManagerScreenProps) {
-	const {currentDatabase} = useLocalful<HeadbaseTableTypes, HeadbaseTableSchemas>()
+	const {currentDatabase} = useHeadbase<HeadbaseTableTypes, HeadbaseTableSchemas>()
 	const [errors, setErrors] = useState<unknown[]>([])
 
 	async function onSave(data: TagData) {

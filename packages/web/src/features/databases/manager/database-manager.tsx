@@ -3,7 +3,7 @@ import {PropsWithChildren} from "../../../utils/children-prop";
 import {JDialog} from "@ben-ryder/jigsaw-react";
 import {DatabaseListScreen} from "../screens/database-list";
 import {DatabaseCreateScreen} from "../screens/database-create";
-import { useLocalful } from "@headbase-toolkit/react/use-localful";
+import { useHeadbase } from "@headbase-toolkit/react/use-headbase";
 import { DatabaseEditScreen } from "../screens/database-edit";
 import {DatabaseUnlockScreen} from "../screens/database-unlock";
 import {_DatabaseDialogContext, DatabaseManagerTabs, useDatabaseManagerDialogContext} from "./database-manager-context";
@@ -39,7 +39,7 @@ export function DatabaseManagerDialog() {
 	const { openTab, setOpenTab, close } = useDatabaseManagerDialogContext()
 	const { closeAllTabs } = useWorkspaceContext()
 
-	const { currentDatabase, openDatabase } = useLocalful()
+	const { currentDatabase, openDatabase } = useHeadbase()
 
 	let dialogContent: ReactNode
 	switch (openTab?.type) {

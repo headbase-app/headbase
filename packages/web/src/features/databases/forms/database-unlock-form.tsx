@@ -3,8 +3,8 @@ import { JButton, JButtonGroup, JErrorText, JForm, JFormContent, JFormRow, JInpu
 import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { useLocalful } from "@headbase-toolkit/react/use-localful";
-import { ErrorTypes, LocalfulError } from "@headbase-toolkit/control-flow";
+import { useHeadbase } from "@headbase-toolkit/react/use-headbase";
+import { ErrorTypes, HeadbaseError } from "@headbase-toolkit/control-flow";
 
 
 const UnlockFormSchema = z.object({
@@ -30,7 +30,7 @@ export function DatabaseUnlockForm(props: DatabaseUnlockFormProps) {
 		}
 	})
 
-	const { openDatabase, unlockDatabase } = useLocalful()
+	const { openDatabase, unlockDatabase } = useHeadbase()
 
 	const onSubmit = useCallback(async (data: UnlockFormSchema) => {
 		try {
@@ -43,7 +43,7 @@ export function DatabaseUnlockForm(props: DatabaseUnlockFormProps) {
 		catch (e) {
 			console.error(e)
 
-			if (e instanceof LocalfulError && e.cause.type === ErrorTypes.INVALID_PASSWORD_OR_KEY) {
+			if (e instanceof HeadbaseError && e.cause.type === ErrorTypes.INVALID_PASSWORD_OR_KEY) {
 				return setError('password', { message: 'The password you entered is incorrect.' })
 			}
 			return setError('root', { message: 'An unexpected error occurred.' })

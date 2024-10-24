@@ -16,7 +16,7 @@ export const DatabaseEntity = DatabaseFields.extend({
 	createdAt: TimestampField,
 	updatedAt: TimestampField,
 	isDeleted: BooleanField,
-	localfulVersion: z.string(),
+	headbaseVersion: z.string(),
 }).strict()
 export type DatabaseEntity = z.infer<typeof DatabaseEntity>
 

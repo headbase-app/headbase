@@ -6,11 +6,11 @@ import {
 	GenericManagerScreenProps
 } from "../../../../../common/generic-manager/generic-manager";
 import {useObservableQuery} from "@headbase-toolkit/react/use-observable-query";
-import {HeadbaseTableSchemas, HeadbaseTableTypes} from "../../../../../state/headbase-localful";
-import {useLocalful} from "@headbase-toolkit/react/use-localful";
+import {HeadbaseTableSchemas, HeadbaseTableTypes} from "../../../../../state/headbase";
+import {useHeadbase} from "@headbase-toolkit/react/use-headbase";
 
 export function ListTagsScreen(props: GenericManagerScreenProps) {
-	const {currentDatabase} = useLocalful<HeadbaseTableTypes, HeadbaseTableSchemas>()
+	const {currentDatabase} = useHeadbase<HeadbaseTableTypes, HeadbaseTableSchemas>()
 	const tags = useObservableQuery(currentDatabase?.liveQuery({table: 'tags'}))
 
 	return (

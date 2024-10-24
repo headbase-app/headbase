@@ -6,13 +6,13 @@ import {
 	JForm, JFormContent, JFormRow, JMultiSelectOptionData, JTextArea, JMultiSelect, JSelect, JProse
 } from "@ben-ryder/jigsaw-react";
 import { useObservableQuery } from "@headbase-toolkit/react/use-observable-query";
-import {HeadbaseTableSchemas, HeadbaseTableTypes} from "../../../state/headbase-localful";
+import {HeadbaseTableSchemas, HeadbaseTableTypes} from "../../../state/headbase";
 import { LiveQueryStatus } from "@headbase-toolkit/control-flow";
 import { WithTabData } from "../../workspace/workspace";
 import {ContentFormData, ContentFormDataHandlers} from "./useContentFormData";
 
 import "./content-form.scss"
-import {useLocalful} from "@headbase-toolkit/react/use-localful";
+import {useHeadbase} from "@headbase-toolkit/react/use-headbase";
 import {FieldDefinition} from "../../../state/schemas/fields/fields";
 import {EntityDto} from "@headbase-toolkit/types/data-entities";
 import {CustomField} from "./field";
@@ -30,7 +30,7 @@ export interface ContentFormFields {
 // todo: handle situation where content form is open and content gets deleted?
 
 export function ContentForm(props: ContentFormProps) {
-	const {currentDatabase} = useLocalful<HeadbaseTableTypes, HeadbaseTableSchemas>()
+	const {currentDatabase} = useHeadbase<HeadbaseTableTypes, HeadbaseTableSchemas>()
 	const [error, setError] = useState<string | null>(null);
 
 	const allTags = useObservableQuery(currentDatabase?.liveQuery({table: 'tags'}))

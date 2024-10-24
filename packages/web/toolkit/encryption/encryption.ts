@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { ErrorTypes, LocalfulError } from "../control-flow";
+import { ErrorTypes, HeadbaseError } from "../control-flow";
 
 // todo: handle errors better, such as re-throwing web crypto errors with extra app specific context?
 
@@ -33,16 +33,16 @@ export type EncryptionMetadata = z.infer<typeof EncryptionMetadata>
  * - https://github.com/AKASHAorg/easy-web-crypto
  * - https://developer.mozilla.org/en-US/docs/Glossary/Base64
  */
-export class LocalfulEncryption {
+export class HeadbaseEncryption {
 
 	static generateUUID(): string {
 		return self.crypto.randomUUID()
 	}
 
 	static async createProtectedEncryptionKey(password: string): Promise<CreatedEncryptionKey> {
-		const encryptionKey = await LocalfulEncryption._createEncryptionKey()
-		const unlockKey = await LocalfulEncryption._deriveUnlockKey(password)
-		const protectedEncryptionKey = await LocalfulEncryption._wrapEncryptionKey(encryptionKey, unlockKey)
+		const encryptionKey = await HeadbaseEncryption._createEncryptionKey()
+		const unlockKey = await HeadbaseEncryption._deriveUnlockKey(password)
+		const protectedEncryptionKey = await HeadbaseEncryption._wrapEncryptionKey(encryptionKey, unlockKey)
 
 		return {
 			encryptionKey,
@@ -56,29 +56,29 @@ export class LocalfulEncryption {
 
 		let unlockKey: UnlockKey
 		try {
-			const rawMetadata = LocalfulEncryption._base64ToBytes(base64Metadata)
+			const rawMetadata = HeadbaseEncryption._base64ToBytes(base64Metadata)
 			const metadata = UnlockKeyMetadata.parse(JSON.parse(new TextDecoder().decode(rawMetadata)))
-			unlockKey = await LocalfulEncryption._deriveUnlockKey(password, metadata.salt)
+			unlockKey = await HeadbaseEncryption._deriveUnlockKey(password, metadata.salt)
 		}
 		catch (e) {
-			throw new LocalfulError({type: ErrorTypes.INVALID_OR_CORRUPTED_DATA, originalError: e})
+			throw new HeadbaseError({type: ErrorTypes.INVALID_OR_CORRUPTED_DATA, originalError: e})
 		}
 
 		let encryptionKey: string
 		try {
-			encryptionKey = await LocalfulEncryption._decryptWithKey(unlockKey.key, based64WrappedKey)
+			encryptionKey = await HeadbaseEncryption._decryptWithKey(unlockKey.key, based64WrappedKey)
 		}
 		catch (e) {
-			throw new LocalfulError({type: ErrorTypes.INVALID_PASSWORD_OR_KEY, originalError: e})
+			throw new HeadbaseError({type: ErrorTypes.INVALID_PASSWORD_OR_KEY, originalError: e})
 		}
 
 		return encryptionKey
 	}
 
 	static async updateProtectedEncryptionKey(protectedEncryptionKey: string, currentPassword: string, newPassword: string): Promise<CreatedEncryptionKey> {
-		const encryptionKey = await LocalfulEncryption.decryptProtectedEncryptionKey(protectedEncryptionKey, currentPassword)
-		const newUnlockKey = await LocalfulEncryption._deriveUnlockKey(newPassword)
-		const newProtectedEncryptionKey = await LocalfulEncryption._wrapEncryptionKey(encryptionKey, newUnlockKey)
+		const encryptionKey = await HeadbaseEncryption.decryptProtectedEncryptionKey(protectedEncryptionKey, currentPassword)
+		const newUnlockKey = await HeadbaseEncryption._deriveUnlockKey(newPassword)
+		const newProtectedEncryptionKey = await HeadbaseEncryption._wrapEncryptionKey(encryptionKey, newUnlockKey)
 
 		// The stored encryption key doesn't change, but a CreatedEncryptionKey is still returned for consistency with the createProtectedEncryptionKey method.
 		return {
@@ -88,8 +88,8 @@ export class LocalfulEncryption {
 	}
 
 	static async encrypt<T>(encryptionKey: string, data: T): Promise<string> {
-		const key = await LocalfulEncryption._getEncryptionCryptoKey(encryptionKey)
-		return LocalfulEncryption._encryptWithKey(key, data)
+		const key = await HeadbaseEncryption._getEncryptionCryptoKey(encryptionKey)
+		return HeadbaseEncryption._encryptWithKey(key, data)
 	}
 
 	static async decrypt<T>(
@@ -97,8 +97,8 @@ export class LocalfulEncryption {
 		ciphertext: string,
 		validationSchema?: z.ZodType<T>,
 	): Promise<T> {
-		const key = await LocalfulEncryption._getEncryptionCryptoKey(encryptionKey)
-		const result = await LocalfulEncryption._decryptWithKey(key, ciphertext)
+		const key = await HeadbaseEncryption._getEncryptionCryptoKey(encryptionKey)
+		const result = await HeadbaseEncryption._decryptWithKey(key, ciphertext)
 
 		if (!validationSchema) {
 			return result as T
@@ -108,7 +108,7 @@ export class LocalfulEncryption {
 
 	static async _createEncryptionKey(): Promise<string> {
 		const keyMaterial = window.crypto.getRandomValues(new Uint8Array(32));
-		const base64Key = LocalfulEncryption._bytesToBase64(keyMaterial)
+		const base64Key = HeadbaseEncryption._bytesToBase64(keyMaterial)
 		return `v1.${base64Key}`
 	}
 
@@ -118,10 +118,10 @@ export class LocalfulEncryption {
 		let keyMaterial
 		try {
 			const [version, base64Key] = encryptionKeyString.split('.')
-			keyMaterial = LocalfulEncryption._base64ToBytes(base64Key)
+			keyMaterial = HeadbaseEncryption._base64ToBytes(base64Key)
 		}
 		catch (e) {
-			throw new LocalfulError({type: ErrorTypes.INVALID_OR_CORRUPTED_DATA, originalError: e})
+			throw new HeadbaseError({type: ErrorTypes.INVALID_OR_CORRUPTED_DATA, originalError: e})
 		}
 
 		return window.crypto.subtle.importKey(
@@ -147,9 +147,9 @@ export class LocalfulEncryption {
 		)
 
 		const salt = derivationSalt
-			? LocalfulEncryption._base64ToBytes(derivationSalt)
+			? HeadbaseEncryption._base64ToBytes(derivationSalt)
 			: window.crypto.getRandomValues(new Uint8Array(16));
-		const encodedSalt = derivationSalt || LocalfulEncryption._bytesToBase64(salt)
+		const encodedSalt = derivationSalt || HeadbaseEncryption._bytesToBase64(salt)
 
 		const derivedKey = await window.crypto.subtle.deriveKey(
 			{
@@ -179,10 +179,10 @@ export class LocalfulEncryption {
 	}
 
 	private static async _wrapEncryptionKey(encryptionKey: string, unlockKey: UnlockKey): Promise<string> {
-		const base64WrappedKey = await LocalfulEncryption._encryptWithKey(unlockKey.key, encryptionKey)
+		const base64WrappedKey = await HeadbaseEncryption._encryptWithKey(unlockKey.key, encryptionKey)
 
 		const encodedMetadata = new TextEncoder().encode(JSON.stringify(unlockKey.metadata))
-		const base64Metadata = LocalfulEncryption._bytesToBase64(encodedMetadata)
+		const base64Metadata = HeadbaseEncryption._bytesToBase64(encodedMetadata)
 
 		return `v1:${base64Metadata}:${base64WrappedKey}`
 	}
@@ -198,16 +198,16 @@ export class LocalfulEncryption {
 			key,
 			new TextEncoder().encode(JSON.stringify(data))
 		)
-		const base64CipherText = LocalfulEncryption._bytesToBase64(new Uint8Array(cipherTextBuffer))
+		const base64CipherText = HeadbaseEncryption._bytesToBase64(new Uint8Array(cipherTextBuffer))
 
-		const base64Iv = LocalfulEncryption._bytesToBase64(iv)
+		const base64Iv = HeadbaseEncryption._bytesToBase64(iv)
 
 		const metadata: EncryptionMetadata = {
 			algo: "AES-GCM",
 			iv: base64Iv,
 		}
 		const encodedMetadata = new TextEncoder().encode(JSON.stringify(metadata))
-		const base64Metadata = LocalfulEncryption._bytesToBase64(encodedMetadata)
+		const base64Metadata = HeadbaseEncryption._bytesToBase64(encodedMetadata)
 
 		return `v1.${base64Metadata}.${base64CipherText}`
 	}
@@ -229,13 +229,13 @@ export class LocalfulEncryption {
 		let cipherText: Uint8Array
 		let iv: Uint8Array
 		try {
-			const decodedMetadata = LocalfulEncryption._base64ToBytes(base64Metadata)
+			const decodedMetadata = HeadbaseEncryption._base64ToBytes(base64Metadata)
 			const metadata = EncryptionMetadata.parse(JSON.parse(new TextDecoder().decode(decodedMetadata)))
-			cipherText = LocalfulEncryption._base64ToBytes(base64CipherText)
-			iv = LocalfulEncryption._base64ToBytes(metadata.iv)
+			cipherText = HeadbaseEncryption._base64ToBytes(base64CipherText)
+			iv = HeadbaseEncryption._base64ToBytes(metadata.iv)
 		}
 		catch (e) {
-			throw new LocalfulError({type: ErrorTypes.INVALID_OR_CORRUPTED_DATA, originalError: e})
+			throw new HeadbaseError({type: ErrorTypes.INVALID_OR_CORRUPTED_DATA, originalError: e})
 		}
 
 		try {
@@ -251,7 +251,7 @@ export class LocalfulEncryption {
 			return JSON.parse(new TextDecoder().decode(decryptedData))
 		}
 		catch (e) {
-			throw new LocalfulError({type: ErrorTypes.INVALID_PASSWORD_OR_KEY, originalError: e})
+			throw new HeadbaseError({type: ErrorTypes.INVALID_PASSWORD_OR_KEY, originalError: e})
 		}
 	}
 

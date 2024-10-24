@@ -8,11 +8,11 @@ import {
 	ContentTypeData
 } from "../../../../state/schemas/content-types/content-types";
 import {ContentTypeForm} from "../forms/content-type-form";
-import {HeadbaseTableSchemas, HeadbaseTableTypes} from "../../../../state/headbase-localful";
-import {useLocalful} from "@headbase-toolkit/react/use-localful";
+import {HeadbaseTableSchemas, HeadbaseTableTypes} from "../../../../state/headbase";
+import {useHeadbase} from "@headbase-toolkit/react/use-headbase";
 
 export function CreateContentTypeScreen(props: GenericManagerScreenProps) {
-	const {currentDatabase} = useLocalful<HeadbaseTableTypes, HeadbaseTableSchemas>()
+	const {currentDatabase} = useHeadbase<HeadbaseTableTypes, HeadbaseTableSchemas>()
 	const [errors, setErrors] = useState<unknown[]>([])
 
 	async function onSave(data: ContentTypeData) {

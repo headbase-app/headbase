@@ -5,8 +5,8 @@ import {GenericManagerContentScreenProps,} from "../../../../common/generic-mana
 import {BasicFieldForm} from "../forms/basic-field-form";
 import {FieldDefinition} from "../../../../state/schemas/fields/fields";
 import {useObservableQuery} from "@headbase-toolkit/react/use-observable-query";
-import {HeadbaseTableSchemas, HeadbaseTableTypes} from "../../../../state/headbase-localful";
-import {useLocalful} from "@headbase-toolkit/react/use-localful";
+import {HeadbaseTableSchemas, HeadbaseTableTypes} from "../../../../state/headbase";
+import {useHeadbase} from "@headbase-toolkit/react/use-headbase";
 import {JArrowButton} from "@ben-ryder/jigsaw-react";
 import {FIELD_TYPES} from "../../../../state/schemas/fields/field-types";
 import {MarkdownFieldForm} from "../forms/markdown-field-form";
@@ -14,7 +14,7 @@ import { ScaleFieldForm } from "../forms/scale-field-form";
 import { OptionsFieldForm } from "../forms/options-field-form";
 
 export function EditFieldScreen(props: GenericManagerContentScreenProps) {
-	const {currentDatabase} = useLocalful<HeadbaseTableTypes, HeadbaseTableSchemas>()
+	const {currentDatabase} = useHeadbase<HeadbaseTableTypes, HeadbaseTableSchemas>()
 	const [errors, setErrors] = useState<unknown[]>([])
 
 	const fieldQuery = useObservableQuery(currentDatabase?.liveGet('fields', props.id))

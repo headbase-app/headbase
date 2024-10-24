@@ -10,8 +10,8 @@ import {SearchDialog, SearchDialogProvider} from "../../features/search/dialog/s
 import {DataStructureDialog, DataStructureDialogProvider} from "../../features/data-structure/data-structure-dialog";
 import { ViewsDialog, ViewsDialogProvider } from "../../features/views/dialog/views-dialog";
 import {ContentListDialog, ContentListDialogProvider} from "../../features/content-list/dialog/content-list-dialog";
-import {LocalfulContextProvider} from "@headbase-toolkit/react/use-localful";
-import {HeadbaseTableSchemas} from "../../state/headbase-localful";
+import {HeadbaseContextProvider} from "@headbase-toolkit/react/use-headbase";
+import {HeadbaseTableSchemas} from "../../state/headbase";
 import {DatabaseManagerDialog, DatabaseManagerDialogProvider} from "../../features/databases/manager/database-manager";
 import {AccountDialog, AccountDialogProvider} from "../../features/account/account-dialog";
 
@@ -19,7 +19,7 @@ export function MainPage() {
 	const [isMenuPanelOpen, setIsMenuPanelOpen] = useState<boolean>(true)
 
 	return (
-		<LocalfulContextProvider tableSchemas={HeadbaseTableSchemas}>
+		<HeadbaseContextProvider tableSchemas={HeadbaseTableSchemas}>
 			<WorkspaceContextProvider>
 				<DatabaseManagerDialogProvider>
 					<NewContentDialogProvider>
@@ -54,6 +54,6 @@ export function MainPage() {
 					</NewContentDialogProvider>
 				</DatabaseManagerDialogProvider>
 			</WorkspaceContextProvider>
-		</LocalfulContextProvider>
+		</HeadbaseContextProvider>
 	);
 }

@@ -4,10 +4,10 @@ import {TableSchemaDefinitions, TableTypeDefinitions} from "./storage/types/type
 import {LocalDatabaseFields} from './types/database'
 import {DatabaseStorage} from "./storage/databases";
 import {KeyStorage} from "./storage/key-storage";
-import {AnyLocalfulEvent, EventTypes, LocalfulEvent} from "./events/events";
+import {AnyHeadbaseEvent, EventTypes, HeadbaseEvent} from "./events/events";
 import {Observable} from "rxjs";
 import {LIVE_QUERY_LOADING_STATE, LiveQueryResult, LiveQueryStatus} from "./control-flow";
-import SharedNetworkWorker from "./worker/shared-worker?sharedworker";
+import SharedNetworkWorker from "./worker/shared.worker?sharedworker";
 import {Logger} from "../src/utils/logger";
 import {ServerHTTPClient} from "./network/http-client";
 import {LoginRequest} from "@headbase-app/common";
@@ -24,7 +24,7 @@ export const LocalLoginRequest = LoginRequest.extend({
 })
 export type LocalLoginRequest = z.infer<typeof LocalLoginRequest>
 
-export interface LocalfulWebConfig<
+export interface HeadbaseWebConfig<
 	TableTypes extends TableTypeDefinitions,
 > {
 	tableSchemas: EntityDatabaseConfig<TableTypes>['tableSchemas']
@@ -32,7 +32,7 @@ export interface LocalfulWebConfig<
 
 export type SyncStatus = 'synced' | 'queued' | 'running' | 'error' | 'disabled'
 
-export class LocalfulWeb<
+export class HeadbaseWeb<
 	TableTypes extends TableTypeDefinitions,
 	TableSchemas extends TableSchemaDefinitions<TableTypes>
 > {
@@ -51,7 +51,7 @@ export class LocalfulWeb<
 	private readonly lastKnownSyncStatus: SyncStatus
 	private readonly syncMessages: string[]
 
-	constructor(config: LocalfulWebConfig<TableTypes>) {
+	constructor(config: HeadbaseWebConfig<TableTypes>) {
 		this.eventManager = new EventManager()
 		this.sharedNetworkWorker = new SharedNetworkWorker()
 		this.sharedNetworkWorker.port.start()
@@ -71,12 +71,12 @@ export class LocalfulWeb<
 	}
 
 	handleSharedWorkerMessage(event: Event) {
-		const message  = event as MessageEvent<LocalfulEvent>
-		Logger.debug('[LocalfulWeb] Received shared worker message', message.data)
+		const message  = event as MessageEvent<HeadbaseEvent>
+		Logger.debug('[HeadbaseWeb] Received shared worker message', message.data)
 		this.eventManager.dispatch(message.data.type, message.data.detail.data, message.data.detail.context)
 	}
 
-	handleEventManagerEvent(event: CustomEvent<LocalfulEvent>) {
+	handleEventManagerEvent(event: CustomEvent<HeadbaseEvent>) {
 		this.sharedNetworkWorker.port.postMessage({type: event.type , data: event.detail })
 	}
 
@@ -240,7 +240,7 @@ export class LocalfulWeb<
 				}
 			}
 
-			const handleEvent = (e: AnyLocalfulEvent) => {
+			const handleEvent = (e: AnyHeadbaseEvent) => {
 				if (e.type === EventTypes.USER_LOGIN || e.type === EventTypes.USER_LOGOUT) {
 					runQuery()
 				}

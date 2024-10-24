@@ -1,6 +1,6 @@
 import {ReportFunction} from "./performance-manager";
-import {LocalfulWeb} from "@headbase-toolkit/localful-web";
-import {HeadbaseTableSchemas, HeadbaseTableTypes} from "../../state/headbase-localful";
+import {HeadbaseWeb} from "@headbase-toolkit/headbase-web";
+import {HeadbaseTableSchemas, HeadbaseTableTypes} from "../../state/headbase";
 import {EntityDatabase} from "@headbase-toolkit/storage/entity-database/entity-database";
 
 const SHORT_STRING = "Chapter - Firstname lastname"
@@ -8,12 +8,12 @@ const TAG_NUMBER = 600
 const TAG_VERSIONS_NUMBER = 20
 
 export async function runTest(report: ReportFunction) {
-	const localful = new LocalfulWeb<HeadbaseTableTypes, HeadbaseTableSchemas>({tableSchemas: HeadbaseTableSchemas})
+	const headbase = new HeadbaseWeb<HeadbaseTableTypes, HeadbaseTableSchemas>({tableSchemas: HeadbaseTableSchemas})
 
 	const password = 'password1234'
-	const databaseId = await localful.createDatabase({name: 'perf test', syncEnabled: 0}, password)
-	await localful.unlockDatabase(databaseId, password)
-	const currentDatabase = await localful.openDatabase(databaseId)
+	const databaseId = await headbase.createDatabase({name: 'perf test', syncEnabled: 0}, password)
+	await headbase.unlockDatabase(databaseId, password)
+	const currentDatabase = await headbase.openDatabase(databaseId)
 	if (!currentDatabase) throw new Error('unexpected error')
 
 	const benchmarkStartTime = performance.now()
@@ -26,7 +26,7 @@ export async function runTest(report: ReportFunction) {
 
 	report({level: "section", text: "Teardown"})
 	await currentDatabase.close()
-	await localful.deleteDatabase(databaseId)
+	await headbase.deleteDatabase(databaseId)
 	report({level: "message", text: "deleted database vault"})
 
 	const benchmarkEndTime = performance.now()

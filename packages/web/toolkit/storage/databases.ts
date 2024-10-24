@@ -3,10 +3,10 @@ import {
 	LIVE_QUERY_LOADING_STATE,
 	LiveQueryResult,
 	LiveQueryStatus,
-	LocalfulError,
+	HeadbaseError,
 	QueryResult
 } from "../control-flow";
-import {LocalfulEncryption} from "../encryption/encryption";
+import {HeadbaseEncryption} from "../encryption/encryption";
 import {Observable} from "rxjs";
 import {
 	DatabaseChangeEvent,
@@ -16,7 +16,7 @@ import {
 } from "../events/events";
 import {IDBPDatabase, openDB} from "idb";
 import {Logger} from "../../src/utils/logger";
-import {LOCALFUL_INDEXDB_DATABASE_VERSION, LOCALFUL_VERSION} from "../localful-web";
+import {LOCALFUL_INDEXDB_DATABASE_VERSION, LOCALFUL_VERSION} from "../headbase-web";
 import {LocalDatabaseDto, LocalDatabaseEntity, LocalDatabaseFields} from "../types/database";
 import {EventManager} from "../events/event-manager";
 import {KeyStorage} from "../storage/key-storage";
@@ -49,7 +49,7 @@ export class DatabaseStorage {
 			return this._database
 		}
 
-		this._database = await openDB('localful', LOCALFUL_INDEXDB_DATABASE_VERSION, {
+		this._database = await openDB('headbase', LOCALFUL_INDEXDB_DATABASE_VERSION, {
 			// todo: handle upgrades to existing database versions
 			upgrade: (db) => {
 				// Create database store
@@ -79,10 +79,10 @@ export class DatabaseStorage {
 
 		let encryptionKey
 		try {
-			encryptionKey = await LocalfulEncryption.decryptProtectedEncryptionKey(database.protectedEncryptionKey, password)
+			encryptionKey = await HeadbaseEncryption.decryptProtectedEncryptionKey(database.protectedEncryptionKey, password)
 		}
 		catch (e) {
-			throw new LocalfulError({type: ErrorTypes.INVALID_PASSWORD_OR_KEY, originalError: e})
+			throw new HeadbaseError({type: ErrorTypes.INVALID_PASSWORD_OR_KEY, originalError: e})
 		}
 
 		await KeyStorage.set(database.id, encryptionKey)
@@ -97,7 +97,7 @@ export class DatabaseStorage {
 	async changeDatabasePassword(databaseId: string, currentPassword: string, newPassword: string) {
 		const currentDatabase = await this.get(databaseId)
 
-		const { protectedEncryptionKey } = await LocalfulEncryption.updateProtectedEncryptionKey(
+		const { protectedEncryptionKey } = await HeadbaseEncryption.updateProtectedEncryptionKey(
 			currentDatabase.protectedEncryptionKey,
 			currentPassword,
 			newPassword
@@ -132,7 +132,7 @@ export class DatabaseStorage {
 		const tx = db.transaction(['databases'], 'readonly')
 		const entity = await tx.objectStore('databases').get(id) as LocalDatabaseEntity|undefined
 		if (!entity || entity.isDeleted === 1) {
-			throw new LocalfulError({type: ErrorTypes.ENTITY_NOT_FOUND, devMessage: `${id} not found`})
+			throw new HeadbaseError({type: ErrorTypes.ENTITY_NOT_FOUND, devMessage: `${id} not found`})
 		}
 		await tx.done
 
@@ -148,10 +148,10 @@ export class DatabaseStorage {
 	async create(data: LocalDatabaseFields, password: string): Promise<string> {
 		const db = await this.getIndexDbDatabase()
 
-		const id = LocalfulEncryption.generateUUID();
+		const id = HeadbaseEncryption.generateUUID();
 		const timestamp = new Date().toISOString();
 
-		const {protectedEncryptionKey, encryptionKey} = await LocalfulEncryption.createProtectedEncryptionKey(password)
+		const {protectedEncryptionKey, encryptionKey} = await HeadbaseEncryption.createProtectedEncryptionKey(password)
 		await KeyStorage.set(id, encryptionKey)
 
 		const tx = db.transaction(['databases'], 'readwrite')
@@ -164,7 +164,7 @@ export class DatabaseStorage {
 			createdAt: timestamp,
 			updatedAt: timestamp,
 			isDeleted: 0,
-			localfulVersion: LOCALFUL_VERSION,
+			headbaseVersion: LOCALFUL_VERSION,
 			syncEnabled: data.syncEnabled,
 			lastSyncedAt: undefined
 		}
@@ -201,7 +201,7 @@ export class DatabaseStorage {
 			createdAt: currentDb.createdAt,
 			updatedAt: timestamp,
 			isDeleted: currentDb.isDeleted,
-			localfulVersion: currentDb.localfulVersion,
+			headbaseVersion: currentDb.headbaseVersion,
 			lastSyncedAt: currentDb.lastSyncedAt,
 			name: dataUpdate.name || currentDb.name,
 			syncEnabled: dataUpdate.syncEnabled !== undefined

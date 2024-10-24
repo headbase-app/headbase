@@ -1,4 +1,4 @@
-import {LocalfulWeb} from "../localful-web";
+import {HeadbaseWeb} from "../headbase-web";
 import {TableSchemaDefinitions, TableTypeDefinitions} from "../storage/types/types";
 import {EntityDatabase, EntityDatabaseConfig} from "../storage/entity-database/entity-database";
 import {Context, createContext, PropsWithChildren, useCallback, useContext, useEffect, useRef, useState} from "react";
@@ -6,7 +6,7 @@ import {LocalDatabaseDto} from "../types/database";
 import { LiveQueryStatus } from "../control-flow";
 import {LocalUserDto} from "@headbase-toolkit/storage/general-storage";
 
-export type LocalfulContext<
+export type HeadbaseContext<
 	TableTypes extends TableTypeDefinitions,
 	TableSchemas extends TableSchemaDefinitions<TableTypes>
 > = {
@@ -14,67 +14,67 @@ export type LocalfulContext<
 	currentDatabase: EntityDatabase<TableTypes, TableSchemas> | null
 	currentDatabaseDto?: LocalDatabaseDto
 	closeCurrentDatabase: () => Promise<void>
-	openDatabase: LocalfulWeb<TableTypes, TableSchemas>['openDatabase']
-	createDatabase: LocalfulWeb<TableTypes, TableSchemas>['createDatabase']
-	updateDatabase: LocalfulWeb<TableTypes, TableSchemas>['updateDatabase']
-	deleteDatabase: LocalfulWeb<TableTypes, TableSchemas>['deleteDatabase']
-	deleteLocalDatabase:  LocalfulWeb<TableTypes, TableSchemas>['deleteLocalDatabase']
-	changeDatabasePassword: LocalfulWeb<TableTypes, TableSchemas>['changeDatabasePassword']
-	unlockDatabase: LocalfulWeb<TableTypes, TableSchemas>['unlockDatabase']
-	lockDatabase: LocalfulWeb<TableTypes, TableSchemas>['lockDatabase']
-	liveQueryDatabase: LocalfulWeb<TableTypes, TableSchemas>['liveQueryDatabase']
-	liveGetDatabase: LocalfulWeb<TableTypes, TableSchemas>['liveGetDatabase']
+	openDatabase: HeadbaseWeb<TableTypes, TableSchemas>['openDatabase']
+	createDatabase: HeadbaseWeb<TableTypes, TableSchemas>['createDatabase']
+	updateDatabase: HeadbaseWeb<TableTypes, TableSchemas>['updateDatabase']
+	deleteDatabase: HeadbaseWeb<TableTypes, TableSchemas>['deleteDatabase']
+	deleteLocalDatabase:  HeadbaseWeb<TableTypes, TableSchemas>['deleteLocalDatabase']
+	changeDatabasePassword: HeadbaseWeb<TableTypes, TableSchemas>['changeDatabasePassword']
+	unlockDatabase: HeadbaseWeb<TableTypes, TableSchemas>['unlockDatabase']
+	lockDatabase: HeadbaseWeb<TableTypes, TableSchemas>['lockDatabase']
+	liveQueryDatabase: HeadbaseWeb<TableTypes, TableSchemas>['liveQueryDatabase']
+	liveGetDatabase: HeadbaseWeb<TableTypes, TableSchemas>['liveGetDatabase']
 	// Server
 	currentUser: LocalUserDto | null
 	isUserLoading: boolean
-	login: LocalfulWeb<TableTypes, TableSchemas>['login'],
-	logout: LocalfulWeb<TableTypes, TableSchemas>['logout']
+	login: HeadbaseWeb<TableTypes, TableSchemas>['login'],
+	logout: HeadbaseWeb<TableTypes, TableSchemas>['logout']
 }
 
-// eslint-disable-next-line -- can't know the generic type when declaring static variable. The useLocalful hook can then accept the generic.
-const LocalfulContext = createContext<LocalfulContext<any, any> | undefined>(undefined)
+// eslint-disable-next-line -- can't know the generic type when declaring static variable. The useHeadbase hook can then accept the generic.
+const HeadbaseContext = createContext<HeadbaseContext<any, any> | undefined>(undefined)
 
-export function useLocalful<
+export function useHeadbase<
 	TableTypes extends TableTypeDefinitions,
 	TableSchemas extends TableSchemaDefinitions<TableTypes>
 >() {
-	const localfulContext = useContext<LocalfulContext<TableTypes, TableSchemas> | undefined>(
-		LocalfulContext as unknown as Context<LocalfulContext<TableTypes, TableSchemas> | undefined>
+	const headbaseContext = useContext<HeadbaseContext<TableTypes, TableSchemas> | undefined>(
+		HeadbaseContext as unknown as Context<HeadbaseContext<TableTypes, TableSchemas> | undefined>
 	)
-	if (!localfulContext) {
-		throw new Error('You attempted to use the Localful context without using a Provider.')
+	if (!headbaseContext) {
+		throw new Error('You attempted to use the Headbase context without using a Provider.')
 	}
 
-	return localfulContext as unknown as LocalfulContext<TableTypes, TableSchemas>
+	return headbaseContext as unknown as HeadbaseContext<TableTypes, TableSchemas>
 }
 
-export interface LocalfulContextProviderProps<
+export interface HeadbaseContextProviderProps<
 	TableTypes extends TableTypeDefinitions,
 > extends PropsWithChildren {
 	tableSchemas: EntityDatabaseConfig<TableTypes>['tableSchemas']
 }
 
-export function LocalfulContextProvider<
+export function HeadbaseContextProvider<
 	TableTypes extends TableTypeDefinitions,
 	TableSchemas extends TableSchemaDefinitions<TableTypes>
->(props: LocalfulContextProviderProps<TableTypes>) {
-	const localfulRef = useRef<LocalfulWeb<TableTypes, TableSchemas>>()
-	if (!localfulRef.current) {
-		localfulRef.current = new LocalfulWeb<TableTypes, TableSchemas>({tableSchemas: props.tableSchemas})
+>(props: HeadbaseContextProviderProps<TableTypes>) {
+	const headbaseRef = useRef<HeadbaseWeb<TableTypes, TableSchemas>>()
+	if (!headbaseRef.current) {
+		headbaseRef.current = new HeadbaseWeb<TableTypes, TableSchemas>({tableSchemas: props.tableSchemas})
 	}
 
 	useEffect(() => {
-		if (!localfulRef.current) {
-			localfulRef.current = new LocalfulWeb<TableTypes, TableSchemas>({tableSchemas: props.tableSchemas})
+		if (!headbaseRef.current) {
+			headbaseRef.current = new HeadbaseWeb<TableTypes, TableSchemas>({tableSchemas: props.tableSchemas})
 		}
 
 		return () => {
-			localfulRef.current?.close()
-			localfulRef.current = undefined
+			headbaseRef.current?.close()
+			headbaseRef.current = undefined
 		}
 	}, []);
 
-	const localful: LocalfulWeb<TableTypes, TableSchemas> = localfulRef.current
+	const headbase: HeadbaseWeb<TableTypes, TableSchemas> = headbaseRef.current
 		
 	const [currentDatabase, setCurrentDatabase] = useState<null | EntityDatabase<TableTypes, TableSchemas>>(null)
 
@@ -96,45 +96,45 @@ export function LocalfulContextProvider<
 	const openDatabase = useCallback(async (databaseId: string): Promise<EntityDatabase<TableTypes, TableSchemas> | null> => {
 		await closeCurrentDatabase()
 
-		const newDatabase = await localful.openDatabase(databaseId)
+		const newDatabase = await headbase.openDatabase(databaseId)
 		setCurrentDatabase(newDatabase)
 
 		return newDatabase
 	}, [closeCurrentDatabase])
 
-	const createDatabase = useCallback(localful.createDatabase.bind(localful), [])
+	const createDatabase = useCallback(headbase.createDatabase.bind(headbase), [])
 
-	const updateDatabase = useCallback(localful.updateDatabase.bind(localful), [])
+	const updateDatabase = useCallback(headbase.updateDatabase.bind(headbase), [])
 
 	const deleteDatabase = useCallback(async (databaseId: string) => {
 		await _ensureDatabaseClosed(databaseId)
-		return localful.deleteDatabase(databaseId)
+		return headbase.deleteDatabase(databaseId)
 	}, [_ensureDatabaseClosed])
 
 	const deleteLocalDatabase = useCallback(async (databaseId: string) => {
 		await _ensureDatabaseClosed(databaseId)
-		return localful.deleteLocalDatabase(databaseId)
+		return headbase.deleteLocalDatabase(databaseId)
 	}, [_ensureDatabaseClosed])
 
-	const unlockDatabase = useCallback(localful.unlockDatabase.bind(localful), [])
+	const unlockDatabase = useCallback(headbase.unlockDatabase.bind(headbase), [])
 
 	const lockDatabase = useCallback(async (databaseId: string) => {
 		if (currentDatabase?.databaseId === databaseId) {
 			await _ensureDatabaseClosed(databaseId)
 		}
-		return localful.lockDatabase(databaseId)
+		return headbase.lockDatabase(databaseId)
 	}, [_ensureDatabaseClosed])
 
-	const changeDatabasePassword = useCallback(localful.changeDatabasePassword.bind(localful), [])
+	const changeDatabasePassword = useCallback(headbase.changeDatabasePassword.bind(headbase), [])
 
-	const liveQueryDatabase = useCallback(localful.liveQueryDatabase.bind(localful), [])
+	const liveQueryDatabase = useCallback(headbase.liveQueryDatabase.bind(headbase), [])
 
-	const liveGetDatabase = useCallback(localful.liveGetDatabase.bind(localful), [])
+	const liveGetDatabase = useCallback(headbase.liveGetDatabase.bind(headbase), [])
 
 	// Automatically update the currentDatabaseDto state when the currentDatabase changes
 	useEffect(() => {
 		if (currentDatabase) {
-			const dtoLiveQuery = localful.liveGetDatabase(currentDatabase.databaseId)
+			const dtoLiveQuery = headbase.liveGetDatabase(currentDatabase.databaseId)
 			const dtoSubscription = dtoLiveQuery.subscribe((liveQuery) => {
 				if (liveQuery.status === LiveQueryStatus.SUCCESS) {
 					setCurrentDatabaseDto(liveQuery.result)
@@ -157,7 +157,7 @@ export function LocalfulContextProvider<
 	const [currentUser, setCurrentUser] = useState<LocalUserDto|null>(null)
 	const [isUserLoading, setIsUserLoading] = useState(true)
 	useEffect(() => {
-		const query = localful.liveGetCurrentUser()
+		const query = headbase.liveGetCurrentUser()
 		const querySubscription = query.subscribe((liveQuery) => {
 			if (liveQuery.status === LiveQueryStatus.SUCCESS) {
 				setCurrentUser(liveQuery.result)
@@ -178,16 +178,16 @@ export function LocalfulContextProvider<
 		}
 	}, []);
 
-	const login = useCallback(localful.login.bind(localful), [])
-	const logout = useCallback(localful.logout.bind(localful), [])
+	const login = useCallback(headbase.login.bind(headbase), [])
+	const logout = useCallback(headbase.logout.bind(headbase), [])
 
 	// todo: remove once units tests start to be written
 	useEffect(() => {
 		// @ts-expect-error -- adding custom property, so fine that it doesn't exist on window type.
-		window.lf = localful
+		window.lf = headbase
 	}, []);
 
-	return <LocalfulContext.Provider value={{
+	return <HeadbaseContext.Provider value={{
 		// Entity Database
 		currentDatabase,
 		currentDatabaseDto,
@@ -207,5 +207,5 @@ export function LocalfulContextProvider<
 		isUserLoading,
 		login,
 		logout,
-	}}>{props.children}</LocalfulContext.Provider>
+	}}>{props.children}</HeadbaseContext.Provider>
 }

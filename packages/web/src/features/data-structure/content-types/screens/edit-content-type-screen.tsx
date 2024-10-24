@@ -9,11 +9,11 @@ import {
 	ContentTypeData
 } from "../../../../state/schemas/content-types/content-types";
 import { useObservableQuery } from "@headbase-toolkit/react/use-observable-query";
-import {HeadbaseTableSchemas, HeadbaseTableTypes} from "../../../../state/headbase-localful";
-import {useLocalful} from "@headbase-toolkit/react/use-localful";
+import {HeadbaseTableSchemas, HeadbaseTableTypes} from "../../../../state/headbase";
+import {useHeadbase} from "@headbase-toolkit/react/use-headbase";
 
 export function EditContentTypeScreen(props: GenericManagerContentScreenProps) {
-	const {currentDatabase} = useLocalful<HeadbaseTableTypes, HeadbaseTableSchemas>()
+	const {currentDatabase} = useHeadbase<HeadbaseTableTypes, HeadbaseTableSchemas>()
 	const [errors, setErrors] = useState<unknown[]>([])
 
 	const contentTypeQuery = useObservableQuery(currentDatabase?.liveGet('content_types', props.id))

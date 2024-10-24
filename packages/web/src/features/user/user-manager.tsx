@@ -1,10 +1,10 @@
 import {LoginForm} from "./login-form";
 import {JButton, JProse} from "@ben-ryder/jigsaw-react";
-import {useLocalful} from "@headbase-toolkit/react/use-localful";
+import {useHeadbase} from "@headbase-toolkit/react/use-headbase";
 
 
 export function UserManager() {
-	const { isUserLoading, currentUser, login, logout } = useLocalful()
+	const { isUserLoading, currentUser, login, logout } = useHeadbase()
 
 	if (isUserLoading) {
 		return (

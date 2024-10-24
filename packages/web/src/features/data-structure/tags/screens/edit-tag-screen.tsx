@@ -6,13 +6,13 @@ import {ErrorTypes, LiveQueryStatus} from "@headbase-toolkit/control-flow";
 import {
 	GenericManagerContentScreenProps,
 } from "../../../../common/generic-manager/generic-manager";
-import {HeadbaseTableSchemas, HeadbaseTableTypes} from "../../../../state/headbase-localful";
+import {HeadbaseTableSchemas, HeadbaseTableTypes} from "../../../../state/headbase";
 import { useObservableQuery } from "@headbase-toolkit/react/use-observable-query";
-import {useLocalful} from "@headbase-toolkit/react/use-localful";
+import {useHeadbase} from "@headbase-toolkit/react/use-headbase";
 
 
 export function EditTagScreen(props: GenericManagerContentScreenProps) {
-	const {currentDatabase} = useLocalful<HeadbaseTableTypes, HeadbaseTableSchemas>()
+	const {currentDatabase} = useHeadbase<HeadbaseTableTypes, HeadbaseTableSchemas>()
 	const [errors, setErrors] = useState<unknown[]>([])
 
 	const tagResult = useObservableQuery(currentDatabase?.liveGet('tags', props.id))

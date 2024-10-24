@@ -4,7 +4,7 @@
     "tags": [
       {
         "id": "390148e2-3f8c-45fd-ad17-bdbb16904601",
-        "localfulVersion": "1.0",
+        "headbaseVersion": "1.0",
         "schemaVersion": "v1",
         "createdAt": "2024-08-01T21:11:50.270Z",
         "updatedAt": "2024-08-01T21:11:50.270Z",
@@ -15,7 +15,7 @@
       },
       {
         "id": "4958e11f-a0dd-499c-8105-4fd2feb458d8",
-        "localfulVersion": "1.0",
+        "headbaseVersion": "1.0",
         "schemaVersion": "v1",
         "createdAt": "2024-08-01T21:12:03.964Z",
         "updatedAt": "2024-08-01T21:12:03.964Z",
@@ -26,7 +26,7 @@
       },
       {
         "id": "f81fc565-e83c-4059-8082-a7603c9da863",
-        "localfulVersion": "1.0",
+        "headbaseVersion": "1.0",
         "schemaVersion": "v1",
         "createdAt": "2024-08-01T21:12:12.440Z",
         "updatedAt": "2024-08-01T21:12:12.440Z",
@@ -39,7 +39,7 @@
     "fields": [
       {
         "id": "72fbb2a9-349d-42f3-823d-55ec8b2d282a",
-        "localfulVersion": "1.0",
+        "headbaseVersion": "1.0",
         "schemaVersion": "v1",
         "createdAt": "2024-08-01T20:00:49.811Z",
         "updatedAt": "2024-08-01T20:00:49.811Z",
@@ -53,7 +53,7 @@
       },
       {
         "id": "9586e841-6871-4eb2-a9c7-e3da7ee061d1",
-        "localfulVersion": "1.0",
+        "headbaseVersion": "1.0",
         "schemaVersion": "v1",
         "createdAt": "2024-08-01T20:11:57.895Z",
         "updatedAt": "2024-08-01T20:11:57.895Z",
@@ -69,7 +69,7 @@
       },
       {
         "id": "f3ebb062-0647-4b55-9d01-55d5afe3de8c",
-        "localfulVersion": "1.0",
+        "headbaseVersion": "1.0",
         "schemaVersion": "v1",
         "createdAt": "2024-08-01T20:33:44.832Z",
         "updatedAt": "2024-08-01T20:36:46.592Z",
@@ -89,7 +89,7 @@
     "content_types": [
       {
         "id": "10c19c89-1ed3-4c93-aab8-f2dc7732372b",
-        "localfulVersion": "1.0",
+        "headbaseVersion": "1.0",
         "schemaVersion": "v1",
         "createdAt": "2024-08-01T21:10:58.908Z",
         "updatedAt": "2024-08-01T21:10:58.908Z",
@@ -108,7 +108,7 @@
     "content": [
       {
         "id": "0e8895d5-2a5d-429f-a407-ee77bd598180",
-        "localfulVersion": "1.0",
+        "headbaseVersion": "1.0",
         "schemaVersion": "v1",
         "createdAt": "2024-08-01T21:12:51.700Z",
         "updatedAt": "2024-08-01T21:12:51.700Z",
@@ -125,7 +125,7 @@
       },
       {
         "id": "40777367-cd10-4844-8e5b-4fc7f1aef72c",
-        "localfulVersion": "1.0",
+        "headbaseVersion": "1.0",
         "schemaVersion": "v1",
         "createdAt": "2024-08-01T21:13:04.641Z",
         "updatedAt": "2024-08-01T21:15:18.988Z",
@@ -143,7 +143,7 @@
     "views": [
       {
         "id": "97321915-5579-4409-8c88-4b20dac12c6e",
-        "localfulVersion": "1.0",
+        "headbaseVersion": "1.0",
         "schemaVersion": "v1",
         "createdAt": "2024-08-01T21:15:05.452Z",
         "updatedAt": "2024-08-01T21:15:05.452Z",

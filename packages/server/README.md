@@ -1,5 +1,5 @@
-# Localful Server
-The Localful server is developed using Express.js and provides an HTTP API and Websocket
+# Headbase Server
+The Headbase server is developed using Express.js and provides an HTTP API and Websocket
 server for syncing content between devices, backing up content to the server and managing user accounts.
 
 ## Before you begin
@@ -12,14 +12,14 @@ server for syncing content between devices, backing up content to the server and
 
 ### 1. Setup database
 
-1.1. This script will create a `localful` user & database, alternatively create your own database and set the env vars accordingly.
+1.1. This script will create a `headbase` user & database, alternatively create your own database and set the env vars accordingly.
 ```shell
 psql postgres < ./scripts/setup.sql
 ```
 
 1.2. Run database migrations to set up the required tables in your database
 ```shell
-psql -d localful < ./migrations/000-v1-schema.sql
+psql -d headbase < ./migrations/000-v1-schema.sql
 ```
 
 1.3. You may have to ensure that you user has permissions to access the new tables

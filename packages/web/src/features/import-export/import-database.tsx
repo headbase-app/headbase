@@ -1,9 +1,9 @@
-import {useLocalful} from "@headbase-toolkit/react/use-localful";
+import {useHeadbase} from "@headbase-toolkit/react/use-headbase";
 import {useRef} from "react";
 import {JButton, JErrorText, JInput} from "@ben-ryder/jigsaw-react";
 import {useForm} from "react-hook-form";
 import {z} from "zod";
-import {LocalfulError} from "@headbase-toolkit/control-flow";
+import {HeadbaseError} from "@headbase-toolkit/control-flow";
 
 const ImportForm = z.object({
 	file: z.string(),
@@ -11,7 +11,7 @@ const ImportForm = z.object({
 type ImportForm = z.infer<typeof ImportForm>
 
 export function ImportDatabase() {
-	const { currentDatabase } = useLocalful()
+	const { currentDatabase } = useHeadbase()
 
 	const fileInputRef = useRef<HTMLInputElement | null>(null)
 	const {
@@ -55,7 +55,7 @@ export function ImportDatabase() {
 			await currentDatabase.import(importData)
 		}
 		catch (e) {
-			if (e instanceof LocalfulError) {
+			if (e instanceof HeadbaseError) {
 				console.error(e.cause)
 			}
 			else {

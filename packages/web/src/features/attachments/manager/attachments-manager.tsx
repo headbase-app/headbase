@@ -30,7 +30,7 @@ export function AttachmentsManagerPage() {
 	//         const fileContent = await file.arrayBuffer()
 	//         const fileText = new TextDecoder().decode(fileContent)
 	//
-	//         const id = await LocalfulEncryption.generateUUID()
+	//         const id = await HeadbaseEncryption.generateUUID()
 	//         const timestamp = new Date().toISOString()
 	//
 	//         const attachmentData: AttachmentData = {
@@ -40,8 +40,8 @@ export function AttachmentsManagerPage() {
 	//           data: fileText
 	//         }
 	//
-	//         const encryptionKey = await localful.getEncryptionKey()
-	//         const encResult = await LocalfulEncryption.encryptData(encryptionKey, attachmentData)
+	//         const encryptionKey = await headbase.getEncryptionKey()
+	//         const encResult = await HeadbaseEncryption.encryptData(encryptionKey, attachmentData)
 	//         if (!encResult.success) {
 	//           console.debug(encResult.errors)
 	//           return
@@ -68,7 +68,7 @@ export function AttachmentsManagerPage() {
 	//   const files: FileRender[] = []
 	//   for (const blobData of blobs) {
 	//     const key = await db.getEncryptionKey()
-	//     const decryptResult = await LocalfulEncryption.decryptAndValidateData(key, AttachmentData, blobData.data)
+	//     const decryptResult = await HeadbaseEncryption.decryptAndValidateData(key, AttachmentData, blobData.data)
 	//     if (decryptResult.success) {
 	//       const rawBlob = new TextEncoder().encode(decryptResult.data.data)
 	//

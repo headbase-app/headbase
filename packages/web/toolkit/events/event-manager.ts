@@ -1,10 +1,10 @@
-import {EventContext, EventMap, EventTypes, LocalfulEvent} from "./events";
-import { LocalfulEncryption } from "../encryption/encryption";
+import {EventContext, EventMap, EventTypes, HeadbaseEvent} from "./events";
+import { HeadbaseEncryption } from "../encryption/encryption";
 import {Logger} from "../../src/utils/logger";
 
 /**
- * Handles events throughout Localful, including communicating with
- * Localful instances in other browser contexts.
+ * Handles events throughout Headbase, including communicating with
+ * Headbase instances in other browser contexts.
  *
  */
 export class EventManager {
@@ -14,10 +14,10 @@ export class EventManager {
 
 	constructor() {
 		this.eventTarget = new EventTarget()
-		this.contextId = LocalfulEncryption.generateUUID()
+		this.contextId = HeadbaseEncryption.generateUUID()
 
-		this.localBroadcastChannel = new BroadcastChannel("localful_events")
-		this.localBroadcastChannel.onmessage = (message: MessageEvent<LocalfulEvent>) => {
+		this.localBroadcastChannel = new BroadcastChannel("headbase_events")
+		this.localBroadcastChannel.onmessage = (message: MessageEvent<HeadbaseEvent>) => {
 			Logger.debug('[EventManager] Received broadcast channel message', message.data)
 			this.dispatch(message.data.type, message.data.detail.data, message.data.detail.context)
 		}
@@ -61,14 +61,14 @@ export class EventManager {
 		this.eventTarget.removeEventListener(type, listener)
 	}
 
-	subscribeAll(listener: (e: CustomEvent<LocalfulEvent>) => void) {
+	subscribeAll(listener: (e: CustomEvent<HeadbaseEvent>) => void) {
 		for (const event of Object.values(EventTypes)) {
 			// @ts-expect-error - We can add a callback for custom events!
 			this.eventTarget.addEventListener(event, listener)
 		}
 	}
 
-	unsubscribeAll(listener: (e: CustomEvent<LocalfulEvent>) => void) {
+	unsubscribeAll(listener: (e: CustomEvent<HeadbaseEvent>) => void) {
 		for (const event of Object.values(EventTypes)) {
 			// @ts-expect-error - We can add a callback for custom events!
 			this.eventTarget.removeEventListener(event, listener)

@@ -1,7 +1,7 @@
 import { LocalEntity } from "../../types/data-entities";
 
 /**
- * The base type definition passed as a generic to Localful.
+ * The base type definition passed as a generic to Headbase.
  * This should be in the format 'key:<type>' where the key matches the key passed in the
  * schema definition.
  */
@@ -17,7 +17,7 @@ export type TableTypeDefinitions = {
 export type TableKeys<TableTypes extends TableTypeDefinitions> = keyof TableTypes & string
 
 /**
- * The runtime schema definition and configuration passed to Localful.
+ * The runtime schema definition and configuration passed to Headbase.
  * The tables in this definition should match the keys of the passed TableTypesDefinition.
  */
 export type TableSchemaDefinitions<TableTypes extends TableTypeDefinitions> = {

@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import {Logger} from "../../src/utils/logger";
 
 /**
- * A helper hook which integrates a Localful observable query into React state,
+ * A helper hook which integrates a Headbase observable query into React state,
  * automatically handling default state.
  *
  * @param observable

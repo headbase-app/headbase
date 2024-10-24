@@ -3,10 +3,10 @@ import {
 	LIVE_QUERY_LOADING_STATE,
 	LiveQueryResult,
 	LiveQueryStatus,
-	LocalfulError,
+	HeadbaseError,
 	QueryResult
 } from "../../control-flow";
-import {LocalfulEncryption} from "../../encryption/encryption";
+import {HeadbaseEncryption} from "../../encryption/encryption";
 import {memoryCache} from "../memory-cache";
 import {Observable} from "rxjs";
 import {DataEntityChangeEvent, EventTypes} from "../../events/events";
@@ -20,7 +20,7 @@ import {
 	TableTypeDefinitions,
 	LocalEntityWithExposedFields,
 } from "../types/types";
-import {LOCALFUL_INDEXDB_ENTITY_VERSION, LOCALFUL_VERSION} from "../../localful-web";
+import {LOCALFUL_INDEXDB_ENTITY_VERSION, LOCALFUL_VERSION} from "../../headbase-web";
 import {IdField, TimestampField} from "../../types/fields";
 import {QueryDefinition, QueryIndex} from "@headbase-toolkit/storage/types/query";
 import {ExportData} from "@headbase-toolkit/storage/types/export";
@@ -121,13 +121,13 @@ export class EntityDatabase<
 	async _createEntityVersionDto<TableKey extends TableKeys<TableTypes>>(tableKey: TableKey, entity: Entity, version: EntityVersion): Promise<EntityDto<TableTypes[TableKey]>> {
 		let data
 		try {
-			data = await LocalfulEncryption.decrypt(
+			data = await HeadbaseEncryption.decrypt(
 				this.encryptionKey,
 				version.data,
 			)
 		}
 		catch (e) {
-			throw new LocalfulError({type: ErrorTypes.INVALID_PASSWORD_OR_KEY, originalError: e})
+			throw new HeadbaseError({type: ErrorTypes.INVALID_PASSWORD_OR_KEY, originalError: e})
 		}
 
 		// todo: add validating schema and version data?
@@ -135,7 +135,7 @@ export class EntityDatabase<
 
 		if (version.schemaVersion !== this.tableSchemas['tables'][tableKey].currentSchema) {
 			if (!this.tableSchemas['tables'][tableKey].migrateSchema) {
-				throw new LocalfulError({
+				throw new HeadbaseError({
 					type: ErrorTypes.INVALID_OR_CORRUPTED_DATA,
 					devMessage: `Schema migration required from ${version.schemaVersion} to ${this.tableSchemas['tables'][tableKey].currentSchema} but no migrateSchema method supplied`
 				})
@@ -152,7 +152,7 @@ export class EntityDatabase<
 			createdAt: entity.createdAt,
 			updatedAt: version.createdAt,
 			data: data,
-			localfulVersion: entity.localfulVersion,
+			headbaseVersion: entity.headbaseVersion,
 			schemaVersion: version.schemaVersion,
 			isDeleted: entity.isDeleted,
 		}
@@ -176,7 +176,7 @@ export class EntityDatabase<
 		const tx = db.transaction([tableKey, this._getVersionTableName(tableKey)], 'readonly')
 		const entity = await tx.objectStore(tableKey).get(id) as LocalEntity|undefined
 		if (!entity) {
-			throw new LocalfulError({type: ErrorTypes.ENTITY_NOT_FOUND, devMessage: `entity ${id} could not be found.`})
+			throw new HeadbaseError({type: ErrorTypes.ENTITY_NOT_FOUND, devMessage: `entity ${id} could not be found.`})
 		}
 
 		let version: EntityVersion|undefined = undefined
@@ -185,7 +185,7 @@ export class EntityDatabase<
 
 			// Don't fall back to loading latest version as this state should never be possible and shouldn't fail silently.
 			if (!version) {
-				throw new LocalfulError({type: ErrorTypes.VERSION_NOT_FOUND, devMessage: `entity ${id} has no currentVersionId set`})
+				throw new HeadbaseError({type: ErrorTypes.VERSION_NOT_FOUND, devMessage: `entity ${id} has no currentVersionId set`})
 			}
 		}
 		else {
@@ -197,7 +197,7 @@ export class EntityDatabase<
 				version = sortedVersions[0]
 			}
 			else {
-				throw new LocalfulError({type: ErrorTypes.VERSION_NOT_FOUND, devMessage: `entity ${id} has no versions`})
+				throw new HeadbaseError({type: ErrorTypes.VERSION_NOT_FOUND, devMessage: `entity ${id} has no versions`})
 			}
 		}
 
@@ -243,7 +243,7 @@ export class EntityDatabase<
 	 * @param data
 	 */
 	async create<TableKey extends TableKeys<TableTypes>>(tableKey: TableKey, data: TableTypes[TableKey]): Promise<string> {
-		const entityId = LocalfulEncryption.generateUUID();
+		const entityId = HeadbaseEncryption.generateUUID();
 		const timestamp = new Date().toISOString();
 
 		await this._create(tableKey, {
@@ -251,7 +251,7 @@ export class EntityDatabase<
 			isDeleted: 0,
 			createdAt: timestamp,
 			updatedAt: timestamp,
-			localfulVersion: LOCALFUL_VERSION,
+			headbaseVersion: LOCALFUL_VERSION,
 			schemaVersion: this.tableSchemas['tables'][tableKey].currentSchema,
 			data,
 		})
@@ -273,8 +273,8 @@ export class EntityDatabase<
 
 		const db = await this.getIndexDbDatabase()
 
-		const versionId = LocalfulEncryption.generateUUID();
-		const encResult = await LocalfulEncryption.encrypt(this.encryptionKey, entityCreateDto.data)
+		const versionId = HeadbaseEncryption.generateUUID();
+		const encResult = await HeadbaseEncryption.encrypt(this.encryptionKey, entityCreateDto.data)
 
 		const tx = db.transaction([tableKey, this._getVersionTableName(tableKey)], 'readwrite')
 
@@ -283,7 +283,7 @@ export class EntityDatabase<
 			id: versionId,
 			data: encResult,
 			createdAt: entityCreateDto.createdAt,
-			localfulVersion: entityCreateDto.localfulVersion,
+			headbaseVersion: entityCreateDto.headbaseVersion,
 			schemaVersion: entityCreateDto.schemaVersion
 		}
 		await tx.objectStore(this._getVersionTableName(tableKey)).add(version)
@@ -292,7 +292,7 @@ export class EntityDatabase<
 			id: entityCreateDto.id,
 			isDeleted: 0,
 			createdAt: entityCreateDto.updatedAt,
-			localfulVersion: entityCreateDto.localfulVersion,
+			headbaseVersion: entityCreateDto.headbaseVersion,
 			currentVersionId: versionId
 		}
 
@@ -339,9 +339,9 @@ export class EntityDatabase<
 
 		// todo: updated data should be validated here using schema validator before saving
 
-		const encResult = await LocalfulEncryption.encrypt(this.encryptionKey, updatedData)
+		const encResult = await HeadbaseEncryption.encrypt(this.encryptionKey, updatedData)
 
-		const versionId = LocalfulEncryption.generateUUID();
+		const versionId = HeadbaseEncryption.generateUUID();
 		const timestamp = new Date().toISOString();
 
 		const db = await this.getIndexDbDatabase()
@@ -351,7 +351,7 @@ export class EntityDatabase<
 			entityId: entityId,
 			id: versionId,
 			createdAt: timestamp,
-			localfulVersion: LOCALFUL_VERSION,
+			headbaseVersion: LOCALFUL_VERSION,
 			data: encResult,
 			schemaVersion: this.tableSchemas['tables'][tableKey].currentSchema
 		}
@@ -361,7 +361,7 @@ export class EntityDatabase<
 			id: oldEntity.id,
 			createdAt: oldEntity.createdAt,
 			isDeleted: oldEntity.isDeleted,
-			localfulVersion: oldEntity.localfulVersion,
+			headbaseVersion: oldEntity.headbaseVersion,
 			currentVersionId: versionId
 		}
 
@@ -405,7 +405,7 @@ export class EntityDatabase<
 		const updatedEntity: LocalEntity = {
 			id: currentEntity.id,
 			createdAt: currentEntity.createdAt,
-			localfulVersion: currentEntity.localfulVersion,
+			headbaseVersion: currentEntity.headbaseVersion,
 			currentVersionId: currentEntity.versionId,
 			isDeleted: 1
 		}
@@ -525,7 +525,7 @@ export class EntityDatabase<
 
 					// Don't fall back to loading latest version as this state should never be possible and shouldn't fail silently.
 					if (!version) {
-						errors.push(new LocalfulError({type: ErrorTypes.VERSION_NOT_FOUND, devMessage: `entity ${entity.id} has no currentVersionId set`}))
+						errors.push(new HeadbaseError({type: ErrorTypes.VERSION_NOT_FOUND, devMessage: `entity ${entity.id} has no currentVersionId set`}))
 						break
 					}
 				}
@@ -538,7 +538,7 @@ export class EntityDatabase<
 						version = sortedVersions[0]
 					}
 					else {
-						errors.push(new LocalfulError({type: ErrorTypes.VERSION_NOT_FOUND, devMessage: `entity ${entity.id} has no versions`}))
+						errors.push(new HeadbaseError({type: ErrorTypes.VERSION_NOT_FOUND, devMessage: `entity ${entity.id} has no versions`}))
 						break
 					}
 				}
@@ -617,7 +617,7 @@ export class EntityDatabase<
 			return a.createdAt < b.createdAt ? 1 : 0
 		})
 		if (!sortedVersions[0]) {
-			throw new LocalfulError({type: ErrorTypes.VERSION_NOT_FOUND, devMessage: `entity ${entityId} has no versions`})
+			throw new HeadbaseError({type: ErrorTypes.VERSION_NOT_FOUND, devMessage: `entity ${entityId} has no versions`})
 		}
 
 		const tx = db.transaction(this._getVersionTableName(tableKey), 'readwrite')
@@ -667,7 +667,7 @@ export class EntityDatabase<
 		const entity = await db.get(tableKey, entityId)
 
 		if (!entity || entity.isDeleted === 1) {
-			throw new LocalfulError({type: ErrorTypes.ENTITY_NOT_FOUND, devMessage: `entity ${entityId} could not be found`})
+			throw new HeadbaseError({type: ErrorTypes.ENTITY_NOT_FOUND, devMessage: `entity ${entityId} could not be found`})
 		}
 
 		return entity
@@ -788,7 +788,7 @@ export class EntityDatabase<
 			const exportEntities = allDataQuery.result.map(dto => {
 				return {
 					id: dto.id,
-					localfulVersion: dto.localfulVersion,
+					headbaseVersion: dto.headbaseVersion,
 					schemaVersion: dto.schemaVersion,
 					createdAt: dto.createdAt,
 					updatedAt: dto.updatedAt,
@@ -805,22 +805,22 @@ export class EntityDatabase<
 
 	async import(importData: ExportData<TableTypes>): Promise<void> {
 		if (importData.exportVersion !== 'v1') {
-			throw new LocalfulError({type: ErrorTypes.INVALID_OR_CORRUPTED_DATA, devMessage: "Unrecognized or missing export version"})
+			throw new HeadbaseError({type: ErrorTypes.INVALID_OR_CORRUPTED_DATA, devMessage: "Unrecognized or missing export version"})
 		}
 
 		if (!importData.data) {
-			throw new LocalfulError({type: ErrorTypes.INVALID_OR_CORRUPTED_DATA, devMessage: "Unrecognized or missing export data"})
+			throw new HeadbaseError({type: ErrorTypes.INVALID_OR_CORRUPTED_DATA, devMessage: "Unrecognized or missing export data"})
 		}
 
 		const validTableKeys = Object.keys(this.tableSchemas.tables)
 		const importTableKeys = Object.keys(importData.data)
 		for (const importTableKey of importTableKeys) {
 			if (!validTableKeys.includes(importTableKey)) {
-				throw new LocalfulError({type: ErrorTypes.INVALID_OR_CORRUPTED_DATA, devMessage: `Unrecognized table ${importTableKey} in import data`})
+				throw new HeadbaseError({type: ErrorTypes.INVALID_OR_CORRUPTED_DATA, devMessage: `Unrecognized table ${importTableKey} in import data`})
 			}
 
 			if (!Array.isArray(importData.data[importTableKey])) {
-				throw new LocalfulError({type: ErrorTypes.INVALID_OR_CORRUPTED_DATA, devMessage: `Invalid table ${importTableKey} in import data`})
+				throw new HeadbaseError({type: ErrorTypes.INVALID_OR_CORRUPTED_DATA, devMessage: `Invalid table ${importTableKey} in import data`})
 			}
 		}
 
@@ -836,16 +836,16 @@ export class EntityDatabase<
 					updatedAt = TimestampField.parse(entityToImport.updatedAt)
 				}
 				catch (e) {
-					throw new LocalfulError({type: ErrorTypes.INVALID_OR_CORRUPTED_DATA, devMessage: `Invalid entity data for ${importTableKey} entity ${entityToImport.id}`, originalError: e})
+					throw new HeadbaseError({type: ErrorTypes.INVALID_OR_CORRUPTED_DATA, devMessage: `Invalid entity data for ${importTableKey} entity ${entityToImport.id}`, originalError: e})
 				}
 
-				if (entityToImport.localfulVersion !== LOCALFUL_VERSION) {
-					throw new LocalfulError({type: ErrorTypes.INVALID_OR_CORRUPTED_DATA, devMessage: `Unrecognised Localful version ${entityToImport.localfulVersion} for ${importTableKey} entity ${entityToImport.id}`})
+				if (entityToImport.headbaseVersion !== LOCALFUL_VERSION) {
+					throw new HeadbaseError({type: ErrorTypes.INVALID_OR_CORRUPTED_DATA, devMessage: `Unrecognised Headbase version ${entityToImport.headbaseVersion} for ${importTableKey} entity ${entityToImport.id}`})
 				}
 
 				const validSchemaKeys = Object.keys(this.tableSchemas.tables[importTableKey].schemas)
 				if (!validSchemaKeys.includes(entityToImport.schemaVersion)) {
-					throw new LocalfulError({type: ErrorTypes.INVALID_OR_CORRUPTED_DATA, devMessage: `Unrecognised schema version ${entityToImport.schemaVersion} for ${importTableKey} entity ${entityToImport.id}`})
+					throw new HeadbaseError({type: ErrorTypes.INVALID_OR_CORRUPTED_DATA, devMessage: `Unrecognised schema version ${entityToImport.schemaVersion} for ${importTableKey} entity ${entityToImport.id}`})
 				}
 
 				let dataIsValid = false
@@ -853,16 +853,16 @@ export class EntityDatabase<
 					dataIsValid = await this.tableSchemas.tables[importTableKey].schemas[entityToImport.schemaVersion].validator(entityToImport.data)
 				}
 				catch (e) {
-					throw new LocalfulError({type: ErrorTypes.INVALID_OR_CORRUPTED_DATA, devMessage: `Validator function failed unexpectedly for ${importTableKey} entity ${entityToImport.id}`, originalError: e})
+					throw new HeadbaseError({type: ErrorTypes.INVALID_OR_CORRUPTED_DATA, devMessage: `Validator function failed unexpectedly for ${importTableKey} entity ${entityToImport.id}`, originalError: e})
 				}
 				if (!dataIsValid) {
-					throw new LocalfulError({type: ErrorTypes.INVALID_OR_CORRUPTED_DATA, devMessage: `Data for ${importTableKey} entity ${entityToImport.id} failed validation`})
+					throw new HeadbaseError({type: ErrorTypes.INVALID_OR_CORRUPTED_DATA, devMessage: `Data for ${importTableKey} entity ${entityToImport.id} failed validation`})
 				}
 
 				let dataToImport = entityToImport.data
 				if (entityToImport.schemaVersion !== this.tableSchemas.tables[importTableKey].currentSchema) {
 					if (!this.tableSchemas.tables[importTableKey].migrateSchema) {
-						throw new LocalfulError({
+						throw new HeadbaseError({
 							type: ErrorTypes.SYSTEM_ERROR,
 							devMessage: `${importTableKey} entity ${entityToImport.id} required schema migration from ${entityToImport.schemaVersion} to ${this.tableSchemas.tables[importTableKey].currentSchema} but no migration method was provided`,
 						})
@@ -872,7 +872,7 @@ export class EntityDatabase<
 						dataToImport = this.tableSchemas.tables[importTableKey].migrateSchema(this, entityToImport.schemaVersion, this.tableSchemas.tables[importTableKey].currentSchema, entityToImport.data)
 					}
 					catch (e) {
-						throw new LocalfulError({
+						throw new HeadbaseError({
 							type: ErrorTypes.SYSTEM_ERROR,
 							devMessage: `Error occurred during schema migration for ${importTableKey} entity ${entityToImport.id}. Attempted migration was ${entityToImport.schemaVersion} to ${this.tableSchemas.tables[importTableKey].currentSchema}.`,
 						})
@@ -885,12 +885,12 @@ export class EntityDatabase<
 					existingItem = await this.get(importTableKey, entityToImport.id)
 				}
 				catch (e) {
-					if (e instanceof LocalfulError && e.cause.type !== ErrorTypes.ENTITY_NOT_FOUND) {
-						throw new LocalfulError({type: ErrorTypes.SYSTEM_ERROR, originalError: e, devMessage: `Error occurred while attempting to check if ${importTableKey} entity ${entityToImport.id} exists. `})
+					if (e instanceof HeadbaseError && e.cause.type !== ErrorTypes.ENTITY_NOT_FOUND) {
+						throw new HeadbaseError({type: ErrorTypes.SYSTEM_ERROR, originalError: e, devMessage: `Error occurred while attempting to check if ${importTableKey} entity ${entityToImport.id} exists. `})
 					}
 				}
 				if (existingItem) {
-					throw new LocalfulError({type: ErrorTypes.INVALID_OR_CORRUPTED_DATA, devMessage: `Attempted to import ${importTableKey} entity ${entityToImport.id} which already exists`})
+					throw new HeadbaseError({type: ErrorTypes.INVALID_OR_CORRUPTED_DATA, devMessage: `Attempted to import ${importTableKey} entity ${entityToImport.id} which already exists`})
 				}
 
 				try {
@@ -899,7 +899,7 @@ export class EntityDatabase<
 						createdAt,
 						updatedAt,
 						isDeleted: 0,
-						localfulVersion: entityToImport.localfulVersion,
+						headbaseVersion: entityToImport.headbaseVersion,
 						// Schema will have always migrated to current schema at this point,
 						schemaVersion: this.tableSchemas.tables[importTableKey].currentSchema,
 						data: dataToImport
@@ -907,7 +907,7 @@ export class EntityDatabase<
 					console.debug(`Created ${importTableKey} entity ${entityToImport.id}`)
 				}
 				catch (e) {
-					throw new LocalfulError({
+					throw new HeadbaseError({
 						type: ErrorTypes.SYSTEM_ERROR,
 						devMessage: `Error occurred while attempting to create ${importTableKey} entity ${entityToImport.id}.`,
 						originalError: e,

@@ -8,7 +8,7 @@ import {
 	UpdateUserDto,
 	UserDto,
 } from "@headbase-app/common";
-import {ErrorTypes, LocalfulError} from "../control-flow";
+import {ErrorTypes, HeadbaseError} from "../control-flow";
 import {GeneralStorage} from "@headbase-toolkit/storage/general-storage";
 
 export interface QueryOptions {
@@ -79,7 +79,7 @@ export class ServerHTTPClient {
 			return this.refreshAuthAndRetry<ResponseType>(options)
 		}
 
-		throw new LocalfulError({type: ErrorTypes.NETWORK_ERROR, devMessage: `There was an error with the request '${options.url} [${options.method}]`, originalError: responseData})
+		throw new HeadbaseError({type: ErrorTypes.NETWORK_ERROR, devMessage: `There was an error with the request '${options.url} [${options.method}]`, originalError: responseData})
 	}
 
 	private async refreshAuthAndRetry<ResponseType>(options: QueryOptions): Promise<ResponseType> {
@@ -120,7 +120,7 @@ export class ServerHTTPClient {
 	public async logout() {
 		const refreshToken = await this.generalStorage.loadRefreshToken()
 		if (!refreshToken) {
-			throw new LocalfulError({type: ErrorTypes.INVALID_OR_CORRUPTED_DATA, devMessage: "No refreshToken found during logout"})
+			throw new HeadbaseError({type: ErrorTypes.INVALID_OR_CORRUPTED_DATA, devMessage: "No refreshToken found during logout"})
 		}
 
 		await this.query({
@@ -139,7 +139,7 @@ export class ServerHTTPClient {
 	public async refresh() {
 		const refreshToken = this.generalStorage.loadRefreshToken()
 		if (!refreshToken) {
-			throw new LocalfulError({type: ErrorTypes.INVALID_OR_CORRUPTED_DATA, devMessage: "No refreshToken found during auth refresh"})
+			throw new HeadbaseError({type: ErrorTypes.INVALID_OR_CORRUPTED_DATA, devMessage: "No refreshToken found during auth refresh"})
 		}
 
 		let tokens: TokenPair;

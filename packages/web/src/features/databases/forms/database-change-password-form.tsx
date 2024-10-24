@@ -8,7 +8,7 @@ import {
 import {Controller, useForm} from "react-hook-form";
 import {zodResolver} from "@hookform/resolvers/zod";
 import {z} from "zod";
-import {useLocalful} from "@headbase-toolkit/react/use-localful";
+import {useHeadbase} from "@headbase-toolkit/react/use-headbase";
 
 
 const ChangePasswordFormSchema = z.object({
@@ -42,7 +42,7 @@ export function DatabaseChangePasswordForm(props: DatabaseChangePasswordFormProp
 		}
 	})
 
-	const { changeDatabasePassword } = useLocalful()
+	const { changeDatabasePassword } = useHeadbase()
 
 	const onSubmit = useCallback(async (data: ChangePasswordFormSchema) => {
 		try {

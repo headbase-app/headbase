@@ -1,7 +1,7 @@
 import {useEffect, useRef, useState} from "react";
 import {ViewDto} from "../../../state/schemas/views/views";
-import {useLocalful} from "@headbase-toolkit/react/use-localful";
-import {HeadbaseTableSchemas, HeadbaseTableTypes} from "../../../state/headbase-localful";
+import {useHeadbase} from "@headbase-toolkit/react/use-headbase";
+import {HeadbaseTableSchemas, HeadbaseTableTypes} from "../../../state/headbase";
 import { LiveQueryStatus } from "@headbase-toolkit/control-flow";
 
 export interface ViewFormOptions {
@@ -33,7 +33,7 @@ export interface ViewFormDataHandlers {
  * @param options
  */
 export function useViewFormData(options: ViewFormOptions) {
-	const {currentDatabase} = useLocalful<HeadbaseTableTypes, HeadbaseTableSchemas>()
+	const {currentDatabase} = useHeadbase<HeadbaseTableTypes, HeadbaseTableSchemas>()
 
 	const latestView = useRef<ViewDto | undefined>()
 	const [view, setView] = useState<ViewDto | undefined>()

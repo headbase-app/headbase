@@ -6,8 +6,8 @@ import {
 } from "../../../../common/generic-manager/generic-manager";
 import { FieldDefinition } from "../../../../state/schemas/fields/fields";
 import {BasicFieldForm} from "../forms/basic-field-form";
-import {HeadbaseTableSchemas, HeadbaseTableTypes} from "../../../../state/headbase-localful";
-import {useLocalful} from "@headbase-toolkit/react/use-localful";
+import {HeadbaseTableSchemas, HeadbaseTableTypes} from "../../../../state/headbase";
+import {useHeadbase} from "@headbase-toolkit/react/use-headbase";
 import { JArrowButton, JButton } from "@ben-ryder/jigsaw-react";
 import {FIELD_TYPES, FieldTypes} from "../../../../state/schemas/fields/field-types";
 import {MarkdownFieldForm} from "../forms/markdown-field-form";
@@ -16,7 +16,7 @@ import { OptionsFieldForm } from "../forms/options-field-form";
 
 export function CreateFieldScreen(props: GenericManagerScreenProps) {
 	const [errors, setErrors] = useState<unknown[]>([])
-	const { currentDatabase } = useLocalful<HeadbaseTableTypes, HeadbaseTableSchemas>()
+	const { currentDatabase } = useHeadbase<HeadbaseTableTypes, HeadbaseTableSchemas>()
 
 	const [fieldType, setFieldType] = useState<FieldTypes|null>(null);
 

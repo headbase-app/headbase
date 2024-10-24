@@ -22,7 +22,7 @@ import {useSearchDialog} from "../../../features/search/dialog/search-dialog";
 import {useDataStructureDialog} from "../../../features/data-structure/data-structure-dialog";
 import { useViewsDialog } from "../../../features/views/dialog/views-dialog";
 import {useContentListDialog} from "../../../features/content-list/dialog/content-list-dialog";
-import {useLocalful} from "@headbase-toolkit/react/use-localful";
+import {useHeadbase} from "@headbase-toolkit/react/use-headbase";
 import {useDatabaseManagerDialogContext} from "../../../features/databases/manager/database-manager-context";
 import classNames from "classnames";
 import {useAccountDialog} from "../../../features/account/account-dialog";
@@ -42,7 +42,7 @@ export function MenuPanel(props: WithMenuPanelProps) {
 	const {setIsOpen: setContentListDialogOpen } = useContentListDialog()
 	const {setIsOpen: setAccountDialogOpen } = useAccountDialog()
 
-	const { currentDatabase, currentDatabaseDto } = useLocalful()
+	const { currentDatabase, currentDatabaseDto } = useHeadbase()
 
 	return (
 		// todo: review accessibility of showing/hiding menu

@@ -10,16 +10,16 @@ export enum ErrorTypes {
 	NETWORK_ERROR = 'network-error',
 }
 
-export interface LocalfulErrorCause {
+export interface HeadbaseErrorCause {
 	type: ErrorTypes,
 	originalError?: unknown,
 	devMessage?: string
 }
 
-export class LocalfulError extends Error {
-	cause: LocalfulErrorCause
+export class HeadbaseError extends Error {
+	cause: HeadbaseErrorCause
 
-	constructor(cause: LocalfulErrorCause) {
+	constructor(cause: HeadbaseErrorCause) {
 		super();
 		this.cause = cause
 	}

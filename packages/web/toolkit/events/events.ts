@@ -118,7 +118,7 @@ export interface UserLogoutEvent {
 	}
 }
 
-export type LocalfulEvent =
+export type HeadbaseEvent =
 	DataEntityChangeEvent |
 	DatabaseOpenEvent | DatabaseCloseEvent | DatabaseChangeEvent |
 	DatabaseUnlockEvent | DatabaseLockEvent
@@ -138,6 +138,6 @@ export interface EventMap {
 export type EventTypes = keyof EventMap
 
 // todo: simply event declarations and work better with built-in event emitter more.
-export type AnyLocalfulEvent =
+export type AnyHeadbaseEvent =
 	CustomEvent<UserLoginEvent['detail']> |
 	CustomEvent<UserLogoutEvent['detail']>

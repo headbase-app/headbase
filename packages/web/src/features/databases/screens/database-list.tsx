@@ -1,5 +1,5 @@
 import {JButton, JCallout} from "@ben-ryder/jigsaw-react";
-import {useLocalful} from "@headbase-toolkit/react/use-localful";
+import {useHeadbase} from "@headbase-toolkit/react/use-headbase";
 import {useObservableQuery} from "@headbase-toolkit/react/use-observable-query";
 import {ErrorCallout} from "../../../patterns/components/error-callout/error-callout";
 import {useCallback} from "react";
@@ -11,7 +11,7 @@ import { LiveQueryStatus } from "@headbase-toolkit/control-flow";
 
 export function DatabaseListScreen() {
 	const { setOpenTab, close } = useDatabaseManagerDialogContext()
-	const { openDatabase, liveQueryDatabase, lockDatabase } = useLocalful()
+	const { openDatabase, liveQueryDatabase, lockDatabase } = useHeadbase()
 	const databaseQuery = useObservableQuery(liveQueryDatabase())
 
 	const { tabs } = useWorkspaceContext()

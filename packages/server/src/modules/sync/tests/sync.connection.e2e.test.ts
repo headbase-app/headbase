@@ -33,7 +33,7 @@ describe("Sync Module - Connection Tests",() => {
 
     test("When a connection attempt is made with an invalid ticket, it should be denied", async () => {
       await testSocket(server)
-          .ws("/v1/sync", ["localful.ticket.n38397v43uo543tbnf943vy"])
+          .ws("/v1/sync", ["headbase.ticket.n38397v43uo543tbnf943vy"])
           .expectConnectionError()
     })
 
@@ -49,7 +49,7 @@ describe("Sync Module - Connection Tests",() => {
         ticket: expect.any(String),
       }))
 
-      const protocol = `localful.ticket.${body.ticket}`
+      const protocol = `headbase.ticket.${body.ticket}`
       await testSocket(server)
           .ws("/v1/sync", [protocol])
           .set("Origin", "http://localhost:42101") // todo: flaky on hardcoded values
@@ -70,7 +70,7 @@ describe("Sync Module - Connection Tests",() => {
         ticket: expect.any(String),
       }))
 
-      const protocol = `localful.ticket.${body.ticket}`
+      const protocol = `headbase.ticket.${body.ticket}`
       await testSocket(server)
           .ws("/v1/sync", [protocol])
           .set("Origin", "http://localhost:42101") // todo: flaky on hardcoded values

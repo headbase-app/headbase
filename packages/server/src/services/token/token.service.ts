@@ -95,8 +95,8 @@ export class TokenService {
    */
   private async _getTokenPair(userDto: UserDto, sessionId: string, counterId: number): Promise<TokenPair> {
     const basicPayload = {
-      iss: this.envService.vars.auth.issuer || "localful",
-      aud: this.envService.vars.auth.audience || "localful",
+      iss: this.envService.vars.auth.issuer || "headbase",
+      aud: this.envService.vars.auth.audience || "headbase",
       sub: userDto.id,
       sid: sessionId,
       cid: counterId,
@@ -248,8 +248,8 @@ export class TokenService {
    */
   async getActionToken(options: ActionTokenOptions) {
     const basicPayload = {
-      iss: this.envService.vars.auth.issuer || "localful",
-      aud: this.envService.vars.auth.audience || "localful",
+      iss: this.envService.vars.auth.issuer || "headbase",
+      aud: this.envService.vars.auth.audience || "headbase",
       sub: options.userId,
     };
 

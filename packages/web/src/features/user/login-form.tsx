@@ -11,7 +11,7 @@ import {
 
 import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import {LocalLoginRequest} from "@headbase-toolkit/localful-web";
+import {LocalLoginRequest} from "@headbase-toolkit/headbase-web";
 import {ErrorIdentifiers} from "@headbase-app/common";
 
 export default {
@@ -90,7 +90,7 @@ export function LoginForm(props: LoginFormProps) {
 									error={errors.serverUrl?.message as string}
 									tooltip={{
 										content: (
-											<p>The URL of a self-hosted <a href="https://github.com/localful/localful" target="_blank" rel="noreferrer">Localful server.</a></p>
+											<p>The URL of a self-hosted <a href="https://github.com/headbase/headbase" target="_blank" rel="noreferrer">Headbase server.</a></p>
 										)
 									}}
 								/>

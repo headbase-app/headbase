@@ -2,7 +2,7 @@ import {DatabaseBasicDataForm} from "../forms/database-basic-data-form";
 import {useCallback, useState} from "react";
 import {LocalDatabaseFields} from "@headbase-toolkit/types/database";
 import {DatabasePasswordForm} from "../forms/database-password-form";
-import {useLocalful} from "@headbase-toolkit/react/use-localful";
+import {useHeadbase} from "@headbase-toolkit/react/use-headbase";
 import {useDatabaseManagerDialogContext} from "../manager/database-manager-context";
 
 export type DatabaseCreateSteps = 'basic-info' | 'encryption'
@@ -13,7 +13,7 @@ export function DatabaseCreateScreen() {
 	const [currentStep, setCurrentStep] = useState<DatabaseCreateSteps>('basic-info')
 	const [basicInfo, setBasicInfo] = useState<LocalDatabaseFields | undefined>(undefined)
 
-	const { createDatabase } = useLocalful()
+	const { createDatabase } = useHeadbase()
 
 	const onBasicInfoNext = useCallback((basicInfo: LocalDatabaseFields) => {
 		setBasicInfo(basicInfo)

@@ -70,12 +70,12 @@ export class SyncWebsocketController {
 
         // Validate that the request has a valid ticket
         const websocketProtocol = req.headers["sec-websocket-protocol"]
-        if (typeof websocketProtocol !== "string" || !websocketProtocol.startsWith("localful.ticket.")) {
+        if (typeof websocketProtocol !== "string" || !websocketProtocol.startsWith("headbase.ticket.")) {
             // todo: send error response of some kind?
             socket.destroy()
             return;
         }
-        const connectionTicket = websocketProtocol.replace("localful.ticket.", "");
+        const connectionTicket = websocketProtocol.replace("headbase.ticket.", "");
 
         let initialConnection: InitialConnection
         try {

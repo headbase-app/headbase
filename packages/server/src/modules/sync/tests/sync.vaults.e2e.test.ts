@@ -34,7 +34,7 @@ describe("Sync Module - Vault Events",() => {
           .set("Authorization", `Bearer ${accessToken}`)
           .send()
 
-      const protocol = `localful.ticket.${body.ticket}`
+      const protocol = `headbase.ticket.${body.ticket}`
 
       await testSocket(server)
           .ws("/v1/sync", [protocol])
@@ -69,7 +69,7 @@ describe("Sync Module - Vault Events",() => {
           .set("Authorization", `Bearer ${accessToken}`)
           .send()
 
-      const protocol = `localful.ticket.${body.ticket}`
+      const protocol = `headbase.ticket.${body.ticket}`
       await testSocket(server)
           .ws("/v1/sync", [protocol])
           .set("Origin", "http://localhost:42101") // todo: flaky on hardcoded values
