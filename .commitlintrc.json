@@ -5,15 +5,15 @@
   "rules": {
     "type-enum": [2, "always", [
       "release",
-      "docs",
-      "wip",
-      "tests",
       "revert",
-      "chore",
-      "fix",
+      "docs",
+      "tests",
       "feat",
+      "fix",
+      "tools",
+      "wip",
       "refactor",
-      "maint"
+      "style"
     ]]
   }
 }

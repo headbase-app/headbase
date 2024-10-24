@@ -9,7 +9,7 @@ Dont trust this app with any critical data and expect bugs, missing docs, incomp
 ---
 
 # Headbase
-A local-first web app for creating customizable content databases, suitable for note-taking, task-management, personal knowledge bases and more.
+The customizable database for your brain. Note-taking, task-management, personal knowledge bases and more.
 
 ## About
 The way each person wants to organise their content (such as notes, tasks etc) is unique, personal and often use-case specific.  

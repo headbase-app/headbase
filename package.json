@@ -1,29 +1,38 @@
 {
-  "name": "@ben-ryder/headbase",
+  "name": "@headbase-app/headbase",
   "version": "0.1.0",
+  "description": "The customizable database for your brain. Note-taking, task-management, personal knowledge bases and more.",
   "private": true,
-  "description": "A local-first web app for notes, tasks, journaling, habit tracking and reminders.",
   "main": "index.js",
   "directories": {
     "doc": "docs"
   },
   "scripts": {
-    "prepare": "husky install"
+    "prepare": "husky install",
+    "build": "npm run build --workspace=@headbase-app/common --workspace=@headbase-app/server",
+    "test": "npm run test --workspace=@headbase-app/server",
+    "common:build": "npm run build --workspace=@headbase-app/common",
+    "server:build": "npm run build --workspace=@headbase-app/server",
+    "server:test": "npm run test --workspace=@headbase-app/server",
+    "server:start:prod": "npm run start:prod --workspace=@headbase-app/server"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/ben-ryder/headbase.git"
+    "url": "git+https://github.com/headbase-app/headbase.git"
   },
-  "author": "Ben-Ryder",
+  "author": "ben-ryder",
   "license": "AGPL-3.0-only",
   "bugs": {
-    "url": "https://github.com/Ben-Ryder/headbase/issues"
+    "url": "https://github.com/headbase-app/headbase/issues"
   },
-  "homepage": "https://github.com/Ben-Ryder/headbase#readme",
+  "homepage": "https://github.com/headbase-app/headbase#readme",
   "devDependencies": {
-    "@commitlint/cli": "^16.2.1",
-    "@commitlint/config-conventional": "^16.2.1",
-    "husky": "^7.0.4"
+    "@commitlint/cli": "^18.4.2",
+    "@commitlint/config-conventional": "^18.4.2",
+    "husky": "^8.0.3"
   },
-  "dependencies": {}
+  "dependencies": {},
+  "engines": {
+    "node": "20"
+  }
 }
