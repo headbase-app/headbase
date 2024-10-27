@@ -7,7 +7,7 @@ export const LocalUserDto = UserDto.extend({
 })
 export type LocalUserDto = z.infer<typeof LocalUserDto>
 
-export class GeneralStorage {
+export class GeneralStorageService {
 	SERVER_URL_KEY = 'lf_server_url';
 	CURRENT_USER_KEY = 'lf_current_user';
 	HAS_STORAGE_PERMISSIONS_KEY = 'lf_has_storage_permissions';

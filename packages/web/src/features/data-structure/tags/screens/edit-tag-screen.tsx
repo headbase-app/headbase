@@ -7,21 +7,21 @@ import {
 	GenericManagerContentScreenProps,
 } from "../../../../common/generic-manager/generic-manager";
 import {HeadbaseTableSchemas, HeadbaseTableTypes} from "../../../../state/headbase";
-import { useObservableQuery } from "@headbase-toolkit/react/use-observable-query";
 import {useHeadbase} from "@headbase-toolkit/react/use-headbase";
+import {useContent} from "@headbase-toolkit/react/use-content";
 
 
 export function EditTagScreen(props: GenericManagerContentScreenProps) {
-	const {currentDatabase} = useHeadbase<HeadbaseTableTypes, HeadbaseTableSchemas>()
+	const {currentDatabaseId, headbase} = useHeadbase<HeadbaseTableTypes, HeadbaseTableSchemas>()
 	const [errors, setErrors] = useState<unknown[]>([])
 
-	const tagResult = useObservableQuery(currentDatabase?.liveGet('tags', props.id))
+	const tagResult = useContent(currentDatabaseId, 'tag', props.id)
 
 	async function onSave(updatedData: Partial<TagData>) {
-		if (!currentDatabase) return setErrors([{type: ErrorTypes.NO_CURRENT_DATABASE}])
+		if (!currentDatabaseId || !headbase) return setErrors([{type: ErrorTypes.NO_CURRENT_DATABASE}])
 
 		try {
-			await currentDatabase.update('tags', props.id, updatedData)
+			await headbase.tx.update(currentDatabaseId, 'tags', props.id, updatedData)
 			props.navigate({screen: "list"})
 		}
 		catch (e) {
@@ -30,10 +30,10 @@ export function EditTagScreen(props: GenericManagerContentScreenProps) {
 	}
 
 	async function onDelete() {
-		if (!currentDatabase) return setErrors([{type: ErrorTypes.NO_CURRENT_DATABASE}])
+		if (!currentDatabaseId || !headbase) return setErrors([{type: ErrorTypes.NO_CURRENT_DATABASE}])
 
 		try {
-			await currentDatabase.delete('tags', props.id)
+			await headbase.tx.delete(currentDatabaseId, 'tags', props.id)
 			props.navigate({screen: "list"})
 		}
 		catch (e) {

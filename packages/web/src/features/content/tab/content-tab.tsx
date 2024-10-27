@@ -10,7 +10,7 @@ import {useHeadbase} from "@headbase-toolkit/react/use-headbase";
 export interface ContentTabProps extends WithTabData, ContentFormOptions {}
 
 export function ContentTab(props: ContentTabProps) {
-	const {currentDatabase} = useHeadbase<HeadbaseTableTypes, HeadbaseTableSchemas>()
+	const {headbase, currentDatabaseId} = useHeadbase<HeadbaseTableTypes, HeadbaseTableSchemas>()
 	const { replaceTab, setTabName, setTabIsUnsaved, closeTab } = useWorkspaceContext()
 
 	const {
@@ -28,7 +28,7 @@ export function ContentTab(props: ContentTabProps) {
 
 	const onSave = useCallback(async () => {
 		// todo: does this need feedback of some kind?
-		if (!currentDatabase) return
+		if (!currentDatabaseId || !headbase) return
 
 		if (!contentTypeId) {
 			// this should never really happen, but protect against it just in case.
@@ -38,7 +38,7 @@ export function ContentTab(props: ContentTabProps) {
 
 		if (props.contentId) {
 			try {
-				await currentDatabase.update('content', props.contentId, {
+				await headbase.tx.update(currentDatabaseId, 'content', props.contentId, {
 					type: contentTypeId,
 					name: name,
 					tags:  tags,
@@ -53,7 +53,7 @@ export function ContentTab(props: ContentTabProps) {
 		}
 		else {
 			try {
-				const newContentId = await currentDatabase.create('content', {
+				const newContentId = await headbase.tx.create(currentDatabaseId, 'content', {
 					type: contentTypeId,
 					name: name,
 					tags:  tags,
@@ -66,7 +66,7 @@ export function ContentTab(props: ContentTabProps) {
 				console.error(e)
 			}
 		}
-	}, [contentTypeId, replaceTab, setTabIsUnsaved, fieldStorage])
+	}, [headbase, contentTypeId, replaceTab, setTabIsUnsaved, fieldStorage])
 
 	// contentId and contentTypeId are dependencies to ensure the tab name updates
 	// when a "new content" tab is replaced with a "content" tab.
@@ -76,7 +76,7 @@ export function ContentTab(props: ContentTabProps) {
 
 	const onDelete = useCallback(async () => {
 		// todo: does this need feedback of some kind?
-		if (!currentDatabase) return
+		if (!currentDatabaseId || !headbase) return
 
 		if (!props.contentId) {
 			// this should never really happen, but protect against it just in case.
@@ -85,13 +85,13 @@ export function ContentTab(props: ContentTabProps) {
 		}
 
 		try {
-			await currentDatabase.delete('content', props.contentId)
+			await headbase.tx.delete(currentDatabaseId, 'content', props.contentId)
 			closeTab(props.tabIndex)
 		}
 		catch (e) {
 			console.error(e)
 		}
-	}, [props.contentId])
+	}, [props.contentId, headbase, currentDatabaseId])
 
 	const onNameChange = useCallback((name: string) => {
 		setTabIsUnsaved(props.tabIndex, true)

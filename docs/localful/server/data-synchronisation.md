@@ -47,8 +47,8 @@ The current state can then be derived like so:
 
 A vault can be transitioned between each state:
 - Sync can be enabled for a local vault by setting "syncEnabled"
-- A vault can be made local only by deleting the server vault AND unsetting "syncEnabled" (the vault will be deleted from all other devices)
-- A server vault can be added to a device for syncing by crating the vault locally with "syncEnabled" set
+- A vault can be made local only by deleting the server vault AND unsetting "syncEnabled" ON ALL DEVICES
+- A server vault can be added to a device for syncing by creating the vault locally with "syncEnabled" set
 - A vault can be removed from the local device (but keeping it on server) by just deleting the local vault
 
 

@@ -5,7 +5,6 @@ import {
 	JButtonGroup, JButton,
 	JForm, JFormContent, JFormRow, JMultiSelectOptionData, JTextArea, JMultiSelect, JSelect
 } from "@ben-ryder/jigsaw-react";
-import { useObservableQuery } from "@headbase-toolkit/react/use-observable-query";
 import { LiveQueryStatus } from "@headbase-toolkit/control-flow";
 import { WithTabData } from "../../workspace/workspace";
 import { ViewFormData, ViewFormDataHandlers } from "./useViewFormData";
@@ -13,6 +12,7 @@ import { ViewFormData, ViewFormDataHandlers } from "./useViewFormData";
 import "./view-form.scss"
 import {useHeadbase} from "@headbase-toolkit/react/use-headbase";
 import {HeadbaseTableSchemas, HeadbaseTableTypes} from "../../../state/headbase";
+import {useContentQuery} from "@headbase-toolkit/react/use-content-query";
 
 export interface ViewFormProps extends WithTabData, ViewFormData, ViewFormDataHandlers {
 	onSave: () => void;
@@ -22,10 +22,10 @@ export interface ViewFormProps extends WithTabData, ViewFormData, ViewFormDataHa
 // todo: handle situation where content form is open and content gets deleted?
 
 export function ViewForm(props: ViewFormProps) {
-	const {currentDatabase} = useHeadbase<HeadbaseTableTypes, HeadbaseTableSchemas>()
+	const {currentDatabaseId} = useHeadbase<HeadbaseTableTypes, HeadbaseTableSchemas>()
 	const [error, setError] = useState<string | null>(null);
 
-	const allTags = useObservableQuery(currentDatabase?.liveQuery({table: 'tags'}))
+	const allTags = useContentQuery(currentDatabaseId, {table: 'tags'})
 	const tagOptions: JMultiSelectOptionData[] = allTags.status === LiveQueryStatus.SUCCESS
 		? allTags.result.map(tag => ({
 			text: tag.data.name,
@@ -34,7 +34,7 @@ export function ViewForm(props: ViewFormProps) {
 		}))
 		: []
 
-	const allContentTypes = useObservableQuery(currentDatabase?.liveQuery({table: 'content_types'}))
+	const allContentTypes = useContentQuery(currentDatabaseId, {table: 'content_types'})
 	const contentTypeOptions: JMultiSelectOptionData[] = allContentTypes.status === LiveQueryStatus.SUCCESS
 		? allContentTypes.result.map(contentType => ({
 			text: contentType.data.name,

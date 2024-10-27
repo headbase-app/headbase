@@ -4,7 +4,7 @@ interface CacheStore {
 	[key: string]: unknown
 }
 
-export class MemoryCache {
+export class MemoryCacheService {
 	private cacheStore: CacheStore
 
 	constructor() {
@@ -54,4 +54,4 @@ export class MemoryCache {
 	}
 }
 
-export const memoryCache = new MemoryCache()
+export const memoryCache = new MemoryCacheService()

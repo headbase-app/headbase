@@ -1,19 +1,19 @@
-import {useObservableQuery} from "@headbase-toolkit/react/use-observable-query";
 import {HeadbaseTableSchemas, HeadbaseTableTypes} from "../../state/headbase";
 import {ErrorCallout} from "../../patterns/components/error-callout/error-callout";
 import {useWorkspaceContext} from "../workspace/workspace-context";
 import {ContentCard} from "../../patterns/components/content-card/content-card";
 import {useHeadbase} from "@headbase-toolkit/react/use-headbase";
+import {useContentQuery} from "@headbase-toolkit/react/use-content-query";
 
 export interface SearchProps {
 	onOpen?: () => void
 }
 
-export function ContentList(props: SearchProps) {
-	const {currentDatabase} = useHeadbase<HeadbaseTableTypes, HeadbaseTableSchemas>()
-	const { openTab } = useWorkspaceContext()
 
-	const contentQuery = useObservableQuery(currentDatabase?.liveQuery({
+export function ContentList(props: SearchProps) {
+	const {currentDatabaseId} = useHeadbase<HeadbaseTableTypes, HeadbaseTableSchemas>()
+	const { openTab } = useWorkspaceContext()
+	const queryResult = useContentQuery(currentDatabaseId, {
 		table: 'content',
 		// index: {
 		//     field: 'type',
@@ -29,21 +29,21 @@ export function ContentList(props: SearchProps) {
 		sort: (dtos) => {
 			return dtos
 		}
-	}))
+	})
 
-	if (contentQuery.status === 'loading') {
+	if (queryResult.status === 'loading') {
 		return <p>Loading...</p>
 	}
-	if (contentQuery.status === 'error') {
-		return <ErrorCallout errors={contentQuery.errors} />
+	if (queryResult.status === 'error') {
+		return <ErrorCallout errors={queryResult.errors} />
 	}
 
 	return (
 		<div>
-			{contentQuery.result.length > 0
+			{queryResult.result.length > 0
 				? (
 					<ul>
-						{contentQuery.result.map(content => (
+						{queryResult.result.map(content => (
 							<ContentCard
 								key={content.id}
 								id={content.id}

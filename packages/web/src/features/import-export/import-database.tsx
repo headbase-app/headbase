@@ -11,7 +11,7 @@ const ImportForm = z.object({
 type ImportForm = z.infer<typeof ImportForm>
 
 export function ImportDatabase() {
-	const { currentDatabase } = useHeadbase()
+	const { currentDatabaseId, headbase } = useHeadbase()
 
 	const fileInputRef = useRef<HTMLInputElement | null>(null)
 	const {
@@ -27,7 +27,7 @@ export function ImportDatabase() {
 	const {ref: reactHookFormFileInputRef, ...fileInputProps} = register('file')
 
 	async function onImport() {
-		if (!currentDatabase) {
+		if (!currentDatabaseId || !headbase) {
 			return setError('root', { message: 'No current database active, so unable to import.' })
 		}
 
@@ -52,7 +52,7 @@ export function ImportDatabase() {
 		}
 
 		try {
-			await currentDatabase.import(importData)
+			await headbase.tx.import(currentDatabaseId, importData)
 		}
 		catch (e) {
 			if (e instanceof HeadbaseError) {

@@ -10,17 +10,18 @@ import {HeadbaseTableSchemas, HeadbaseTableTypes} from "../../../../state/headba
 import {useHeadbase} from "@headbase-toolkit/react/use-headbase";
 
 export function CreateTagScreen(props: GenericManagerScreenProps) {
-	const {currentDatabase} = useHeadbase<HeadbaseTableTypes, HeadbaseTableSchemas>()
+	const {currentDatabaseId, headbase} = useHeadbase<HeadbaseTableTypes, HeadbaseTableSchemas>()
 	const [errors, setErrors] = useState<unknown[]>([])
 
 	async function onSave(data: TagData) {
-		if (!currentDatabase) return setErrors([{type: ErrorTypes.NO_CURRENT_DATABASE}])
+		if (!currentDatabaseId || !headbase) return setErrors([{type: ErrorTypes.NO_CURRENT_DATABASE}])
 
 		try {
-			await currentDatabase.create('tags', data)
+			await headbase.tx.create(currentDatabaseId, 'tags', data)
 			props.navigate({screen: "list"})
 		}
 		catch (e) {
+			console.debug(e)
 			setErrors([e])
 		}
 	}

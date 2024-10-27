@@ -26,6 +26,9 @@ import {useHeadbase} from "@headbase-toolkit/react/use-headbase";
 import {useDatabaseManagerDialogContext} from "../../../features/databases/manager/database-manager-context";
 import classNames from "classnames";
 import {useAccountDialog} from "../../../features/account/account-dialog";
+import {useDatabase} from "@headbase-toolkit/react/use-database";
+import {LiveQueryStatus} from "@headbase-toolkit/control-flow";
+import {useEffect} from "react";
 
 export interface WithMenuPanelProps {
 	isMenuPanelOpen: boolean
@@ -42,7 +45,28 @@ export function MenuPanel(props: WithMenuPanelProps) {
 	const {setIsOpen: setContentListDialogOpen } = useContentListDialog()
 	const {setIsOpen: setAccountDialogOpen } = useAccountDialog()
 
-	const { currentDatabase, currentDatabaseDto } = useHeadbase()
+	const { currentDatabaseId, headbase } = useHeadbase()
+	const currentDatabase = useDatabase(currentDatabaseId)
+
+	// todo: put this logic somewhere else?
+	// Ensure the current user is still authenticated
+	useEffect(() => {
+		async function refreshCurrentUser() {
+			if (!headbase) return
+
+			const currentUser = await headbase.server.getCurrentUser()
+			if (currentUser) {
+				try {
+					await headbase.server.refresh()
+				}
+				catch (e) {
+					// todo: improve error handling. Show toast of some kind?
+					alert('Your server session has expired, you need to log in again')
+				}
+			}
+		}
+		refreshCurrentUser()
+	}, [headbase]);
 
 	return (
 		// todo: review accessibility of showing/hiding menu
@@ -61,12 +85,12 @@ export function MenuPanel(props: WithMenuPanelProps) {
 						<button
 							className="menu-panel__database-edit"
 							onClick={() => {
-								if (currentDatabase) {
-									setDatabaseManagerDialogTab({type: 'edit', databaseId: currentDatabase.databaseId})
+								if (currentDatabase.status === LiveQueryStatus.SUCCESS) {
+									setDatabaseManagerDialogTab({type: 'edit', databaseId: currentDatabase.result.id})
 								}
 							}}
 						>
-							<span className="menu-panel__database-name" tabIndex={-1}>{currentDatabaseDto && currentDatabaseDto.name}</span>
+							<span className="menu-panel__database-name" tabIndex={-1}>{currentDatabase.status === LiveQueryStatus.SUCCESS && currentDatabase.result.name}</span>
 							{currentDatabase && <JIcon size='sm'><EditIcon/></JIcon>}
 						</button>
 					</JTooltip>

@@ -2,23 +2,21 @@ import {useCallback} from "react";
 import {useDatabaseManagerDialogContext} from "../manager/database-manager-context";
 import {DatabaseChangePasswordForm} from "../forms/database-change-password-form";
 import {JArrowButton} from "@ben-ryder/jigsaw-react";
-import {useObservableQuery} from "@headbase-toolkit/react/use-observable-query";
-import {useHeadbase} from "@headbase-toolkit/react/use-headbase";
 import { LiveQueryStatus } from "@headbase-toolkit/control-flow";
+import {useDatabase} from "@headbase-toolkit/react/use-database";
 
 export interface DatabaseChangePasswordScreenProps {
 	databaseId: string
 }
 
 export function DatabaseChangePasswordScreen(props: DatabaseChangePasswordScreenProps) {
-	const { liveGetDatabase } = useHeadbase()
 	const { setOpenTab } = useDatabaseManagerDialogContext()
 
 	const onSuccess = useCallback(async () => {
 		setOpenTab()
 	}, [])
 
-	const databaseQuery = useObservableQuery(liveGetDatabase(props.databaseId))
+	const databaseQuery = useDatabase(props.databaseId)
 
 	return (
 		<>

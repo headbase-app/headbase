@@ -3,6 +3,8 @@ import { GenericManagerScreens } from "../../../common/generic-manager/generic-m
 import {CreateContentTypeScreen} from "./screens/create-content-type-screen";
 import {EditContentTypeScreen} from "./screens/edit-content-type-screen";
 import {ListContentTypesScreen} from "./screens/list-content-types-screen";
+
+
 export function ContentTypesManager() {
 	const [currentScreen, navigate] = useState<GenericManagerScreens>({screen: "list"})
 

@@ -5,14 +5,18 @@ import {
 	JButtonGroup, JButton,
 	JForm, JFormContent, JFormRow, JSelect
 } from "@ben-ryder/jigsaw-react";
-import {LocalDatabaseFields} from "@headbase-toolkit/types/database";
 import {Controller, useForm} from "react-hook-form";
 import {zodResolver} from "@hookform/resolvers/zod";
+import {z} from "zod";
+import {CreateDatabaseDto} from "@headbase-toolkit/types/database";
+
+export const DatabaseBasicFields = CreateDatabaseDto.omit({password: true})
+export type DatabaseBasicFields = z.infer<typeof DatabaseBasicFields>
 
 export interface DatabaseBasicDataFormProps {
-	initialData?: LocalDatabaseFields
+	initialData?: DatabaseBasicFields
 	saveText?: string
-	onSave: (fields: LocalDatabaseFields) => void;
+	onSave: (fields: DatabaseBasicFields) => void;
 	extraButtons?: ReactNode;
 }
 
@@ -21,15 +25,15 @@ export function DatabaseBasicDataForm(props: DatabaseBasicDataFormProps) {
 		handleSubmit,
 		control,
 		formState: {errors}
-	} = useForm<LocalDatabaseFields>({
-		resolver: zodResolver(LocalDatabaseFields),
+	} = useForm<DatabaseBasicFields>({
+		resolver: zodResolver(DatabaseBasicFields),
 		defaultValues: {
 			name: props.initialData?.name || '',
 			syncEnabled: props.initialData?.syncEnabled === undefined ? 1 : props.initialData.syncEnabled,
 		}
 	})
 
-	const onSubmit = useCallback((data: LocalDatabaseFields) => {
+	const onSubmit = useCallback((data: DatabaseBasicFields) => {
 		props.onSave(data)
 	}, [])
 

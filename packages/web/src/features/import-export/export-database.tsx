@@ -3,12 +3,16 @@ import {JButton, JErrorText, JProse} from "@ben-ryder/jigsaw-react";
 import {useForm} from "react-hook-form";
 import {z} from "zod";
 import {useEffect, useRef, useState} from "react";
+import {useDatabase} from "@headbase-toolkit/react/use-database";
+import {LiveQueryStatus} from "@headbase-toolkit/control-flow";
 
 const ExportForm = z.object({})
 type ExportForm = z.infer<typeof ExportForm>
 
+// todo: update to allow exporting any unlocked database>
 export function ExportDatabase() {
-	const { currentDatabase, currentDatabaseDto } = useHeadbase()
+	const { headbase, currentDatabaseId } = useHeadbase()
+	const databaseQuery = useDatabase(currentDatabaseId)
 
 	const { handleSubmit, setError, formState: {errors, isSubmitting} } = useForm<ExportForm>({})
 
@@ -16,14 +20,14 @@ export function ExportDatabase() {
 	const downloadRef = useRef<HTMLAnchorElement>(null)
 
 	async function onExport() {
-		if (!currentDatabase || !currentDatabaseDto) {
+		if (!currentDatabaseId || !(databaseQuery.status === LiveQueryStatus.SUCCESS) || !headbase) {
 			return setError('root', { message: 'No current database active, so unable to export.' })
 		}
 
 		try {
-			const exportData = await currentDatabase.export()
+			const exportData = await headbase.tx.export(currentDatabaseId)
 			const fileContent = JSON.stringify(exportData)
-			const downloadFile = new File([fileContent], `${currentDatabaseDto.name} - export.json`, {type: 'application/json'})
+			const downloadFile = new File([fileContent], `${databaseQuery.result.name} - export.json`, {type: 'application/json'})
 			const downloadURL = URL.createObjectURL(downloadFile)
 			setDownloadUrl(downloadURL)
 		}

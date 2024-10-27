@@ -16,15 +16,15 @@ import { OptionsFieldForm } from "../forms/options-field-form";
 
 export function CreateFieldScreen(props: GenericManagerScreenProps) {
 	const [errors, setErrors] = useState<unknown[]>([])
-	const { currentDatabase } = useHeadbase<HeadbaseTableTypes, HeadbaseTableSchemas>()
+	const { currentDatabaseId, headbase } = useHeadbase<HeadbaseTableTypes, HeadbaseTableSchemas>()
 
 	const [fieldType, setFieldType] = useState<FieldTypes|null>(null);
 
 	async function onSave(data: FieldDefinition) {
-		if (!currentDatabase) return setErrors([{type: ErrorTypes.NO_CURRENT_DATABASE}])
+		if (!currentDatabaseId || !headbase) return setErrors([{type: ErrorTypes.NO_CURRENT_DATABASE}])
 
 		try {
-			await currentDatabase.create('fields', data)
+			await headbase.tx.create(currentDatabaseId, 'fields', data)
 			props.navigate({screen: "list"})
 		}
 		catch (e) {

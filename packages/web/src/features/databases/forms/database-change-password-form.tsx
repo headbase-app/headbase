@@ -42,18 +42,18 @@ export function DatabaseChangePasswordForm(props: DatabaseChangePasswordFormProp
 		}
 	})
 
-	const { changeDatabasePassword } = useHeadbase()
+	const { headbase } = useHeadbase()
 
 	const onSubmit = useCallback(async (data: ChangePasswordFormSchema) => {
 		try {
-			await changeDatabasePassword(props.databaseId, data.currentPassword, data.newPassword)
+			await headbase.databases.changePassword(props.databaseId, data.currentPassword, data.newPassword)
 			props.onSuccess()
 		}
 		catch (e) {
 			console.error(e)
 			setError('currentPassword', { message: 'The current password is incorrect.' })
 		}
-	}, [])
+	}, [headbase])
 
 	return (
 		<JForm className="database-form" onSubmit={handleSubmit(onSubmit)} noValidate>

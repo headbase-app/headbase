@@ -1,36 +1,42 @@
 import {z} from "zod"
-import {IdField, BooleanField, TimestampField} from "./fields";
+import {BooleanField, TimestampField} from "./fields";
+import {VaultDto} from "@headbase-app/common";
 
-export const DatabaseFields = z.object({
-	name: z
-		.string()
-		.min(1, "name length must be between 1 and 50 chars")
-		.max(50, "name length must be between 1 and 50 chars"),
-}).strict()
-export type DatabaseFields = z.infer<typeof DatabaseFields>
-
-export const DatabaseEntity = DatabaseFields.extend({
-	id: IdField,
-	protectedEncryptionKey: z.string(),
-	protectedData: z.string().optional(),
-	createdAt: TimestampField,
-	updatedAt: TimestampField,
-	isDeleted: BooleanField,
-	headbaseVersion: z.string(),
-}).strict()
-export type DatabaseEntity = z.infer<typeof DatabaseEntity>
-
-export const LocalDatabaseFields = DatabaseFields.extend({
-	syncEnabled: BooleanField,
-}).strict()
-export type LocalDatabaseFields = z.infer<typeof LocalDatabaseFields>
-
-export const LocalDatabaseEntity = DatabaseEntity.merge(LocalDatabaseFields).extend({
-	lastSyncedAt: TimestampField.optional(),
-}).strict()
+export const LocalDatabaseEntity = VaultDto
+	.omit({
+		ownerId: true,
+		// todo: remove once removed from common types
+		deletedAt: true
+	})
+	.extend({
+		syncEnabled: BooleanField,
+		lastSyncedAt: TimestampField.optional(),
+		// Not used right now, but will help allow for migrations in future if required.
+		headbaseVersion: z.string(),
+	}).strict()
 export type LocalDatabaseEntity = z.infer<typeof LocalDatabaseEntity>
 
-export const LocalDatabaseDto = LocalDatabaseEntity.extend({
-	isUnlocked: z.boolean(),
-}).strict()
+// isUnlocked is determined based on a key existing in app storage and isn't stored as an attribute of the database itself.
+export const LocalDatabaseDto = LocalDatabaseEntity
+	.extend({
+		isUnlocked: z.boolean(),
+	}).strict()
 export type LocalDatabaseDto = z.infer<typeof LocalDatabaseDto>
+
+export const CreateDatabaseDto = LocalDatabaseDto
+	.pick({
+		name: true,
+		syncEnabled: true
+	})
+	.extend({
+		password: z.string().min(8, "password must be at least 8 characters")
+	})
+export type CreateDatabaseDto = z.infer<typeof CreateDatabaseDto>
+
+export const UpdateDatabaseDto = LocalDatabaseDto
+	.pick({
+		name: true,
+		syncEnabled: true
+	})
+	.partial()
+export type UpdateDatabaseDto = z.infer<typeof UpdateDatabaseDto>

@@ -1,5 +1,4 @@
 import {WithTabData} from "../../workspace/workspace";
-import {useObservableQuery} from "@headbase-toolkit/react/use-observable-query";
 import {LiveQueryStatus} from "@headbase-toolkit/control-flow";
 import {ErrorCallout} from "../../../patterns/components/error-callout/error-callout";
 import {useWorkspaceContext} from "../../workspace/workspace-context";
@@ -11,16 +10,17 @@ import {ContentCard} from "../../../patterns/components/content-card/content-car
 import "./view-tab.scss"
 import {useHeadbase} from "@headbase-toolkit/react/use-headbase";
 import {HeadbaseTableSchemas, HeadbaseTableTypes} from "../../../state/headbase";
-import {IndexWhereOption} from "@headbase-toolkit/storage/types/query";
+import {IndexWhereOption} from "@headbase-toolkit/types/query";
+import {useContent} from "@headbase-toolkit/react/use-content";
 
 export interface ViewTabProps extends WithTabData {
 	viewId: string
 }
 
 export function ViewTab(props: ViewTabProps) {
-	const {currentDatabase} = useHeadbase<HeadbaseTableTypes, HeadbaseTableSchemas>()
+	const {currentDatabaseId, headbase} = useHeadbase<HeadbaseTableTypes, HeadbaseTableSchemas>()
 	const { openTab, setTabName } = useWorkspaceContext()
-	const viewQuery = useObservableQuery(currentDatabase?.liveGet('views', props.viewId))
+	const viewQuery = useContent(currentDatabaseId, 'views', props.viewId)
 
 	useEffect(() => {
 		if (viewQuery.status === 'success') {
@@ -37,7 +37,7 @@ export function ViewTab(props: ViewTabProps) {
 		if (viewQuery.status === 'loading' || viewQuery.status === 'error') {
 			setResults([])
 		}
-		else if (currentDatabase) {
+		else if (currentDatabaseId) {
 			const queryIndex: IndexWhereOption<HeadbaseTableTypes, HeadbaseTableSchemas, 'content'>|undefined = viewQuery.result.data.queryContentTypes.length > 0 ?
 				{
 					field: 'type',
@@ -45,7 +45,7 @@ export function ViewTab(props: ViewTabProps) {
 					value: viewQuery.result.data.queryContentTypes
 				} : undefined
 
-			const resultsQuery = currentDatabase?.liveQuery({
+			const resultsQuery = headbase.tx.liveQuery(currentDatabaseId, {
 				table: 'content',
 				index: queryIndex,
 				whereCursor: (entity, version) => {
@@ -77,7 +77,7 @@ export function ViewTab(props: ViewTabProps) {
 				resultQuerySubscription.unsubscribe()
 			}
 		}
-	}, [viewQuery.status, currentDatabase])
+	}, [viewQuery.status, currentDatabaseId, headbase])
 
 	if (viewQuery.status === LiveQueryStatus.LOADING) {
 		return (

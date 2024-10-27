@@ -1,33 +1,27 @@
-import {DatabaseBasicDataForm} from "../forms/database-basic-data-form";
+import {DatabaseBasicDataForm, DatabaseBasicFields} from "../forms/database-basic-data-form";
 import {useCallback} from "react";
-import {LocalDatabaseFields} from "@headbase-toolkit/types/database";
 import {useHeadbase} from "@headbase-toolkit/react/use-headbase";
 import {JArrowButton, JButton} from "@ben-ryder/jigsaw-react";
-import { useObservableQuery } from "@headbase-toolkit/react/use-observable-query";
 import { ErrorCallout } from "../../../patterns/components/error-callout/error-callout";
 import {useDatabaseManagerDialogContext} from "../manager/database-manager-context";
 import { LiveQueryStatus } from "@headbase-toolkit/control-flow";
+import {useDatabase} from "@headbase-toolkit/react/use-database";
 
 export interface DatabaseEditScreenProps {
 	databaseId: string
 }
 
+
 export function DatabaseEditScreen(props: DatabaseEditScreenProps) {
 	const { setOpenTab } = useDatabaseManagerDialogContext()
 
-	const {
-		currentDatabase,
-		currentDatabaseDto,
-		lockDatabase,
-		updateDatabase,
-		deleteLocalDatabase,
-		deleteDatabase,
-		liveGetDatabase,
-	} = useHeadbase()
+	const {headbase} = useHeadbase()
 
-	const onSave = useCallback(async (basicInfo: LocalDatabaseFields) => {
+	const onSave = useCallback(async (basicInfo: DatabaseBasicFields) => {
+		if (!headbase) throw new Error("Headbase not found")
+
 		try {
-			await updateDatabase(
+			await headbase.databases.update(
 				props.databaseId,
 				{
 					name: basicInfo.name,
@@ -40,39 +34,33 @@ export function DatabaseEditScreen(props: DatabaseEditScreenProps) {
 			console.error(e)
 		}
 
-	}, [updateDatabase])
+	}, [headbase])
 
 	const onDelete = useCallback(async () => {
-		try {
-			await deleteDatabase(props.databaseId)
-			setOpenTab()
-		}
-		catch (e) {
-			console.error(e)
-		}
-	}, [currentDatabase])
+		if (!headbase) throw new Error("Headbase not found")
 
-	const onLocalDelete = useCallback(async () => {
 		try {
-			await deleteLocalDatabase(props.databaseId)
+			await headbase.databases.delete(props.databaseId)
 			setOpenTab()
 		}
 		catch (e) {
 			console.error(e)
 		}
-	}, [currentDatabase])
+	}, [headbase])
 
 	const onLock = useCallback(async () => {
+		if (!headbase) throw new Error("Headbase not found")
+
 		try {
-			await lockDatabase(props.databaseId)
+			await headbase.databases.lock(props.databaseId)
 			setOpenTab()
 		}
 		catch (e) {
 			console.error(e)
 		}
-	}, [])
+	}, [headbase])
 
-	const databaseQuery = useObservableQuery(liveGetDatabase(props.databaseId))
+	const databaseQuery = useDatabase(props.databaseId)
 
 	if (databaseQuery.status === LiveQueryStatus.LOADING) {
 		return (
@@ -99,7 +87,7 @@ export function DatabaseEditScreen(props: DatabaseEditScreenProps) {
 					setOpenTab({type: 'change-password', databaseId: props.databaseId})
 				}}
 			>Change password</JButton>
-			{currentDatabaseDto?.isUnlocked && (
+			{databaseQuery.result?.isUnlocked && (
 				<JButton
 					variant='secondary'
 					onClick={async () => {
@@ -112,17 +100,10 @@ export function DatabaseEditScreen(props: DatabaseEditScreenProps) {
 				onSave={onSave}
 				initialData={{
 					name: databaseQuery.result.name,
-					syncEnabled: databaseQuery.result.syncEnabled
+					syncEnabled: databaseQuery.result.syncEnabled,
 				}}
 				extraButtons={
 					<>
-						<JButton
-							type="button"
-							variant="secondary"
-							onClick={() => {
-								onLocalDelete()
-							}}
-						>Delete Locally</JButton>
 						<JButton
 							type="button"
 							variant="destructive"

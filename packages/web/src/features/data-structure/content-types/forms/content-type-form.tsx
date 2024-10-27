@@ -20,12 +20,13 @@ import {ColourVariants} from "../../../../state/schemas/common/fields";
 import { LiveQueryStatus } from "@headbase-toolkit/control-flow";
 import { FIELD_TYPES } from "../../../../state/schemas/fields/field-types";
 import { ErrorCallout } from "../../../../patterns/components/error-callout/error-callout";
-import { useObservableQuery } from "@headbase-toolkit/react/use-observable-query";
 import {HeadbaseTableSchemas, HeadbaseTableTypes} from "../../../../state/headbase";
 import {useHeadbase} from "@headbase-toolkit/react/use-headbase";
+import {useContentQuery} from "@headbase-toolkit/react/use-content-query";
+
 
 export function ContentTypeForm(props: GenericFormProps<ContentTypeData>) {
-	const {currentDatabase} = useHeadbase<HeadbaseTableTypes, HeadbaseTableSchemas>()
+	const {currentDatabaseId, headbase} = useHeadbase<HeadbaseTableTypes, HeadbaseTableSchemas>()
 	const [errors, setErrors] = useState<unknown[]>([]);
 
 	const [name, setName] = useState<string>(props.data.name);
@@ -33,7 +34,8 @@ export function ContentTypeForm(props: GenericFormProps<ContentTypeData>) {
 	const [icon, setIcon] = useState<string>(props.data.icon || '');
 
 	const [contentTemplateTags, setContentTemplateTags] = useState<JMultiSelectOptionData[]>([]);
-	const allTags = useObservableQuery(currentDatabase?.liveQuery({table: 'tags'}))
+
+	const allTags = useContentQuery(currentDatabaseId, {table: 'tags'})
 	const tagOptions: JMultiSelectOptionData[] = allTags.status === LiveQueryStatus.SUCCESS
 		? allTags.result.map(tag => ({
 			text: tag.data.name,
@@ -44,11 +46,11 @@ export function ContentTypeForm(props: GenericFormProps<ContentTypeData>) {
 
 	useEffect(() => {
 		async function loadSelectedTags() {
-			if (!currentDatabase) return
+			if (!currentDatabaseId || !headbase) return
 
 			if (props.data.contentTemplateTags && props.data.contentTemplateTags.length > 0) {
 				try {
-					const selectedTags = await currentDatabase.getMany('tags', props.data.contentTemplateTags)
+					const selectedTags = await headbase.tx.getMany(currentDatabaseId, 'tags', props.data.contentTemplateTags)
 					setContentTemplateTags(selectedTags.result.map(tag => ({
 						text: tag.data.name,
 						value: tag.id,
@@ -67,7 +69,7 @@ export function ContentTypeForm(props: GenericFormProps<ContentTypeData>) {
 			}
 		}
 		loadSelectedTags()
-	}, [currentDatabase])
+	}, [currentDatabaseId, headbase])
 
 	const [colour, setColour] = useState<ColourVariants | ''>(props.data.colourVariant || '');
 	const colourVariantOptions: JOptionData[] = useMemo(() => {
@@ -84,7 +86,7 @@ export function ContentTypeForm(props: GenericFormProps<ContentTypeData>) {
 	const [contentTemplateName, setContentTemplateName] = useState<string>(props.data.contentTemplateName || '');
 
 	const [fieldOptions, setFieldOptions] = useState<JMultiSelectOptionData[]>([]);
-	const allFields = useObservableQuery(currentDatabase?.liveQuery({table: 'fields'}))
+	const allFields = useContentQuery(currentDatabaseId, {table: 'fields'})
 	useEffect(() => {
 		if (allFields.status === LiveQueryStatus.SUCCESS) {
 			const fieldOptionMappings: JMultiSelectOptionData[] = allFields.status === LiveQueryStatus.SUCCESS
@@ -100,11 +102,11 @@ export function ContentTypeForm(props: GenericFormProps<ContentTypeData>) {
 	const [selectedFields, setSelectedFields] = useState<JMultiSelectOptionData[]>([]);
 	useEffect(() => {
 		async function loadSelectedFields() {
-			if (!currentDatabase) return
+			if (!currentDatabaseId) return
 
 			if (props.data.fields && props.data.fields.length > 0) {
 				try {
-					const selectedFields = await currentDatabase.getMany('fields', props.data.fields)
+					const selectedFields = await headbase.tx.getMany(currentDatabaseId, 'fields', props.data.fields)
 					setSelectedFields(selectedFields.result.map(field => ({
 						text: `${field.data.label} (${FIELD_TYPES[field.data.type].label})`,
 						value: field.id,
@@ -121,7 +123,7 @@ export function ContentTypeForm(props: GenericFormProps<ContentTypeData>) {
 			}
 		}
 		loadSelectedFields()
-	}, [currentDatabase])
+	}, [currentDatabaseId, headbase])
 
 
 	function onSave(e: FormEvent) {

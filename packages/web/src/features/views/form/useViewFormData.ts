@@ -33,7 +33,8 @@ export interface ViewFormDataHandlers {
  * @param options
  */
 export function useViewFormData(options: ViewFormOptions) {
-	const {currentDatabase} = useHeadbase<HeadbaseTableTypes, HeadbaseTableSchemas>()
+	const { headbase } = useHeadbase()
+	const {currentDatabaseId} = useHeadbase<HeadbaseTableTypes, HeadbaseTableSchemas>()
 
 	const latestView = useRef<ViewDto | undefined>()
 	const [view, setView] = useState<ViewDto | undefined>()
@@ -58,10 +59,10 @@ export function useViewFormData(options: ViewFormOptions) {
 
 	// Load content
 	useEffect(() => {
-		if (!currentDatabase) return
+		if (!headbase || !currentDatabaseId) throw new Error("Headbase or currentDatabaseId not set")
 
 		if (options.viewId) {
-			const viewQuery = currentDatabase?.liveGet('views', options.viewId)
+			const viewQuery = headbase.tx.liveGet(currentDatabaseId, 'views', options.viewId)
 			const subscription = viewQuery.subscribe((liveQuery) => {
 				if (liveQuery.status === LiveQueryStatus.SUCCESS) {
 
@@ -103,7 +104,7 @@ export function useViewFormData(options: ViewFormOptions) {
 				subscription.unsubscribe()
 			}
 		}
-	}, [options.viewId, currentDatabase])
+	}, [options.viewId, currentDatabaseId, headbase])
 
 	useEffect(() => {
 		latestName.current = name

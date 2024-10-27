@@ -1,9 +1,9 @@
-import {DatabaseBasicDataForm} from "../forms/database-basic-data-form";
+import {DatabaseBasicDataForm, DatabaseBasicFields} from "../forms/database-basic-data-form";
 import {useCallback, useState} from "react";
-import {LocalDatabaseFields} from "@headbase-toolkit/types/database";
 import {DatabasePasswordForm} from "../forms/database-password-form";
 import {useHeadbase} from "@headbase-toolkit/react/use-headbase";
 import {useDatabaseManagerDialogContext} from "../manager/database-manager-context";
+import {CreateDatabaseDto} from "@headbase-toolkit/types/database";
 
 export type DatabaseCreateSteps = 'basic-info' | 'encryption'
 
@@ -11,11 +11,11 @@ export function DatabaseCreateScreen() {
 	const { setOpenTab } = useDatabaseManagerDialogContext()
 
 	const [currentStep, setCurrentStep] = useState<DatabaseCreateSteps>('basic-info')
-	const [basicInfo, setBasicInfo] = useState<LocalDatabaseFields | undefined>(undefined)
+	const [basicInfo, setBasicInfo] = useState<DatabaseBasicFields | undefined>(undefined)
 
-	const { createDatabase } = useHeadbase()
+	const { headbase } = useHeadbase()
 
-	const onBasicInfoNext = useCallback((basicInfo: LocalDatabaseFields) => {
+	const onBasicInfoNext = useCallback((basicInfo: DatabaseBasicFields) => {
 		setBasicInfo(basicInfo)
 		setCurrentStep('encryption')
 	}, [])
@@ -25,16 +25,17 @@ export function DatabaseCreateScreen() {
 	}, [])
 
 	const onSave = useCallback(async (password: string) => {
-		if (!basicInfo) {
-			console.error('No basic info set')
+		if (!basicInfo || !headbase) {
+			console.error('No basic info set or headbase not defined')
 			return
 		}
 
 		try {
-			await createDatabase({
+			await headbase.databases.create({
 				name: basicInfo.name,
-				syncEnabled: basicInfo.syncEnabled
-			}, password)
+				syncEnabled: basicInfo.syncEnabled,
+				password: password,
+			})
 
 			setOpenTab({type: 'list'})
 		}
@@ -42,7 +43,7 @@ export function DatabaseCreateScreen() {
 			console.error(e)
 		}
 
-	}, [createDatabase, basicInfo])
+	}, [headbase, basicInfo])
 
 	return (
 		<div>

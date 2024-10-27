@@ -3,9 +3,9 @@ import {
 	JInput,
 	JErrorText,
 	JButtonGroup, JButton,
-	JForm, JFormContent, JFormRow, JMultiSelectOptionData, JTextArea, JMultiSelect, JSelect, JProse
+	JForm, JFormContent, JFormRow, JMultiSelectOptionData, JMultiSelect, JSelect, JProse
 } from "@ben-ryder/jigsaw-react";
-import { useObservableQuery } from "@headbase-toolkit/react/use-observable-query";
+import { useContentQuery } from "@headbase-toolkit/react/use-content-query";
 import {HeadbaseTableSchemas, HeadbaseTableTypes} from "../../../state/headbase";
 import { LiveQueryStatus } from "@headbase-toolkit/control-flow";
 import { WithTabData } from "../../workspace/workspace";
@@ -30,12 +30,12 @@ export interface ContentFormFields {
 // todo: handle situation where content form is open and content gets deleted?
 
 export function ContentForm(props: ContentFormProps) {
-	const {currentDatabase} = useHeadbase<HeadbaseTableTypes, HeadbaseTableSchemas>()
+	const {headbase, currentDatabaseId} = useHeadbase<HeadbaseTableTypes, HeadbaseTableSchemas>()
 	const [error, setError] = useState<string | null>(null);
 
-	const allTags = useObservableQuery(currentDatabase?.liveQuery({table: 'tags'}))
-	const tagOptions: JMultiSelectOptionData[] = allTags.status === LiveQueryStatus.SUCCESS
-		? allTags.result.map(tag => ({
+	const tagQuery = useContentQuery(currentDatabaseId, {table: 'tags'})
+	const tagOptions: JMultiSelectOptionData[] = tagQuery.status === LiveQueryStatus.SUCCESS
+		? tagQuery.result.map(tag => ({
 			text: tag.data.name,
 			value: tag.id,
 			variant: tag.data.colourVariant
@@ -44,9 +44,9 @@ export function ContentForm(props: ContentFormProps) {
 
 	const [contentTypeFields, setContentTypeFields] = useState<ContentFormFields>({})
 	useEffect(() => {
-		if (!props.fields || !currentDatabase) return
+		if (!headbase || !currentDatabaseId || !props.fields) return
 
-		const contentQuery = currentDatabase.liveGetMany('fields', props.fields)
+		const contentQuery = headbase.tx.liveGetMany(currentDatabaseId, 'fields', props.fields)
 		const subscription = contentQuery.subscribe((liveQuery) => {
 			if (liveQuery.status === 'success') {
 				const fields: ContentFormFields = {}
@@ -63,7 +63,7 @@ export function ContentForm(props: ContentFormProps) {
 		return () => {
 			subscription.unsubscribe()
 		}
-	}, [props.fields]);
+	}, [props.fields, headbase, currentDatabaseId]);
 
 	function onSave(e: FormEvent) {
 		e.preventDefault()

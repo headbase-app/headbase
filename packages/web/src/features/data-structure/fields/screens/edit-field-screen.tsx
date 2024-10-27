@@ -4,7 +4,6 @@ import {ErrorTypes} from "@headbase-toolkit/control-flow";
 import {GenericManagerContentScreenProps,} from "../../../../common/generic-manager/generic-manager";
 import {BasicFieldForm} from "../forms/basic-field-form";
 import {FieldDefinition} from "../../../../state/schemas/fields/fields";
-import {useObservableQuery} from "@headbase-toolkit/react/use-observable-query";
 import {HeadbaseTableSchemas, HeadbaseTableTypes} from "../../../../state/headbase";
 import {useHeadbase} from "@headbase-toolkit/react/use-headbase";
 import {JArrowButton} from "@ben-ryder/jigsaw-react";
@@ -12,18 +11,20 @@ import {FIELD_TYPES} from "../../../../state/schemas/fields/field-types";
 import {MarkdownFieldForm} from "../forms/markdown-field-form";
 import { ScaleFieldForm } from "../forms/scale-field-form";
 import { OptionsFieldForm } from "../forms/options-field-form";
+import {useContent} from "@headbase-toolkit/react/use-content";
+
 
 export function EditFieldScreen(props: GenericManagerContentScreenProps) {
-	const {currentDatabase} = useHeadbase<HeadbaseTableTypes, HeadbaseTableSchemas>()
+	const {currentDatabaseId, headbase} = useHeadbase<HeadbaseTableTypes, HeadbaseTableSchemas>()
 	const [errors, setErrors] = useState<unknown[]>([])
 
-	const fieldQuery = useObservableQuery(currentDatabase?.liveGet('fields', props.id))
+	const fieldQuery = useContent(currentDatabaseId, "fields", props.id)
 
 	async function onSave(updatedData: Partial<FieldDefinition>) {
-		if (!currentDatabase) return setErrors([{type: ErrorTypes.NO_CURRENT_DATABASE}])
+		if (!currentDatabaseId || !headbase) return setErrors([{type: ErrorTypes.NO_CURRENT_DATABASE}])
 
 		try {
-			await currentDatabase.update('fields', props.id, updatedData)
+			await headbase.tx.update(currentDatabaseId, 'fields', props.id, updatedData)
 			props.navigate({screen: "list"})
 		}
 		catch (e) {
@@ -32,10 +33,10 @@ export function EditFieldScreen(props: GenericManagerContentScreenProps) {
 	}
 
 	async function onDelete() {
-		if (!currentDatabase) return setErrors([{type: ErrorTypes.NO_CURRENT_DATABASE}])
+		if (!currentDatabaseId || !headbase) return setErrors([{type: ErrorTypes.NO_CURRENT_DATABASE}])
 
 		try {
-			await currentDatabase.delete('fields', props.id)
+			await headbase.tx.delete(currentDatabaseId, 'fields', props.id)
 			props.navigate({screen: "list"})
 		}
 		catch (e) {

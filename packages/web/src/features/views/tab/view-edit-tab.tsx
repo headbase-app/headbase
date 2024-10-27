@@ -10,7 +10,7 @@ import {useHeadbase} from "@headbase-toolkit/react/use-headbase";
 export interface ViewEditTabProps extends WithTabData, ViewFormOptions {}
 
 export function ViewEditTab(props: ViewEditTabProps) {
-	const {currentDatabase} = useHeadbase<HeadbaseTableTypes, HeadbaseTableSchemas>()
+	const {currentDatabaseId, headbase} = useHeadbase<HeadbaseTableTypes, HeadbaseTableSchemas>()
 	const { replaceTab, setTabName, setTabIsUnsaved, closeTab, openTab } = useWorkspaceContext()
 
 	const {
@@ -29,12 +29,11 @@ export function ViewEditTab(props: ViewEditTabProps) {
 	} = useViewFormData({viewId: props.viewId})
 
 	const onSave = useCallback(async () => {
-		// todo: does this need feedback of some kind?
-		if (!currentDatabase) return
+		if (!headbase || !currentDatabaseId) throw new Error("Headbase or currentDatabaseId not set")
 
 		if (props.viewId) {
 			try {
-				await currentDatabase.update('views', props.viewId, {
+				await headbase.tx.update(currentDatabaseId, 'views', props.viewId, {
 					name: name,
 					description: description !== '' ? description : undefined,
 					tags:  tags,
@@ -50,7 +49,7 @@ export function ViewEditTab(props: ViewEditTabProps) {
 		}
 		else {
 			try {
-				const newViewId = await currentDatabase.create('views', {
+				const newViewId = await headbase.tx.create(currentDatabaseId, 'views', {
 					name: name,
 					description: description !== '' ? description : undefined,
 					tags:  tags,
@@ -73,8 +72,7 @@ export function ViewEditTab(props: ViewEditTabProps) {
 	}, [name, props.viewId]);
 
 	const onDelete = useCallback(async () => {
-		// todo: does this need feedback of some kind?
-		if (!currentDatabase) return
+		if (!headbase || !currentDatabaseId) throw new Error("Headbase or currentDatabaseId not set")
 
 		if (!props.viewId) {
 			// this should never really happen, but protect against it just in case.
@@ -83,13 +81,13 @@ export function ViewEditTab(props: ViewEditTabProps) {
 		}
 
 		try {
-			await currentDatabase.delete('views', props.viewId)
+			await headbase.tx.delete(currentDatabaseId, 'views', props.viewId)
 			closeTab(props.tabIndex)
 		}
 		catch (e) {
 			console.error(e)
 		}
-	}, [props.viewId])
+	}, [props.viewId, headbase, currentDatabaseId])
 
 	const onNameChange = useCallback((name: string) => {
 		setTabIsUnsaved(props.tabIndex, true)

@@ -30,14 +30,14 @@ export function DatabaseUnlockForm(props: DatabaseUnlockFormProps) {
 		}
 	})
 
-	const { openDatabase, unlockDatabase } = useHeadbase()
+	const { headbase, setCurrentDatabaseId } = useHeadbase()
 
 	const onSubmit = useCallback(async (data: UnlockFormSchema) => {
 		try {
-			await unlockDatabase(props.databaseId, data.password)
+			await headbase.databases.unlock(props.databaseId, data.password)
 
-			// todo: could unlock and open be the same operations. there is a disconnect at the moment?
-			await openDatabase(props.databaseId)
+			// todo: may not work as doesn't clean up open hooks etc?
+			setCurrentDatabaseId(props.databaseId)
 			props.onSuccess()
 		}
 		catch (e) {
@@ -48,7 +48,7 @@ export function DatabaseUnlockForm(props: DatabaseUnlockFormProps) {
 			}
 			return setError('root', { message: 'An unexpected error occurred.' })
 		}
-	}, [unlockDatabase])
+	}, [headbase])
 
 	return (
 		<JForm className="database-form" onSubmit={handleSubmit(onSubmit)} noValidate>

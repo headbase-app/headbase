@@ -5,13 +5,13 @@ import { ErrorCallout } from "../../../../../patterns/components/error-callout/e
 import {
 	GenericManagerScreenProps
 } from "../../../../../common/generic-manager/generic-manager";
-import {useObservableQuery} from "@headbase-toolkit/react/use-observable-query";
 import {HeadbaseTableSchemas, HeadbaseTableTypes} from "../../../../../state/headbase";
 import {useHeadbase} from "@headbase-toolkit/react/use-headbase";
+import {useContentQuery} from "@headbase-toolkit/react/use-content-query";
 
 export function ListTagsScreen(props: GenericManagerScreenProps) {
-	const {currentDatabase} = useHeadbase<HeadbaseTableTypes, HeadbaseTableSchemas>()
-	const tags = useObservableQuery(currentDatabase?.liveQuery({table: 'tags'}))
+	const {currentDatabaseId} = useHeadbase<HeadbaseTableTypes, HeadbaseTableSchemas>()
+	const tags = useContentQuery(currentDatabaseId, {table: "tags"})
 
 	return (
 		<>

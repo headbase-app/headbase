@@ -1,6 +1,6 @@
 import {z} from "zod";
 import { JColourVariantsList } from "@ben-ryder/jigsaw-react";
-import {IdField} from "@headbase-toolkit/types/fields";
+import {createIdField} from "@headbase-app/common"
 
 export const NameField = z.string()
 	.min(1, "name length must be between 1 and 50 chars")
@@ -12,7 +12,7 @@ export const DescriptionField = z.string()
 	.optional()
 export type DescriptionField = z.infer<typeof DescriptionField>
 
-export const EntityReferenceListField = z.array(IdField)
+export const EntityReferenceListField = z.array(createIdField())
 export type EntityReferenceListField = z.infer<typeof EntityReferenceListField>
 
 // These are directly mapped from Jigsaw colour variants right now.

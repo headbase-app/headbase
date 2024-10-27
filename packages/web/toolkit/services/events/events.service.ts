@@ -1,20 +1,23 @@
 import {EventContext, EventMap, EventTypes, HeadbaseEvent} from "./events";
-import { HeadbaseEncryption } from "../encryption/encryption";
-import {Logger} from "../../src/utils/logger";
+import { EncryptionService } from "../../services/encryption/encryption";
+
+// todo: this is using logger from web project but this the toolkit
+import {Logger} from "../../../src/utils/logger";
+
 
 /**
  * Handles events throughout Headbase, including communicating with
  * Headbase instances in other browser contexts.
  *
  */
-export class EventManager {
+export class EventsService {
 	eventTarget: EventTarget
 	localBroadcastChannel: BroadcastChannel | undefined
 	contextId: string
 
 	constructor() {
 		this.eventTarget = new EventTarget()
-		this.contextId = HeadbaseEncryption.generateUUID()
+		this.contextId = EncryptionService.generateUUID()
 
 		this.localBroadcastChannel = new BroadcastChannel("headbase_events")
 		this.localBroadcastChannel.onmessage = (message: MessageEvent<HeadbaseEvent>) => {
@@ -25,6 +28,7 @@ export class EventManager {
 
 	close() {
 		this.localBroadcastChannel?.close()
+		this.localBroadcastChannel = undefined
 	}
 
 	// @ts-expect-error todo: fix event types

@@ -11,8 +11,8 @@ import {
 
 import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import {LocalLoginRequest} from "@headbase-toolkit/headbase-web";
 import {ErrorIdentifiers} from "@headbase-app/common";
+import {LocalLoginRequest} from "@headbase-toolkit/apis/server";
 
 export default {
 	title: "Layouts/Form",
@@ -41,7 +41,7 @@ export function LoginForm(props: LoginFormProps) {
 		defaultValues: {
 			email: "",
 			password: "",
-			serverUrl: ""
+			serverUrl: "https://server.headbase.app"
 		},
 	});
 	const onSubmit = async (data: LocalLoginRequest) => {
@@ -51,6 +51,7 @@ export function LoginForm(props: LoginFormProps) {
 			await props.onSubmit(data)
 		}
 		catch (e) {
+			console.debug(e)
 			// @ts-expect-error -- todo: improve error handling setup here
 			if (e?.cause?.originalError?.identifier === ErrorIdentifiers.AUTH_CREDENTIALS_INVALID) {
 				setError('root', {message: "Your email/password combination was incorrect."})

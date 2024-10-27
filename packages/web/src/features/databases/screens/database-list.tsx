@@ -1,18 +1,18 @@
 import {JButton, JCallout} from "@ben-ryder/jigsaw-react";
 import {useHeadbase} from "@headbase-toolkit/react/use-headbase";
-import {useObservableQuery} from "@headbase-toolkit/react/use-observable-query";
 import {ErrorCallout} from "../../../patterns/components/error-callout/error-callout";
 import {useCallback} from "react";
 import {LocalDatabaseDto} from "@headbase-toolkit/types/database";
 import {useWorkspaceContext} from "../../workspace/workspace-context";
 import {useDatabaseManagerDialogContext} from "../manager/database-manager-context";
 import { LiveQueryStatus } from "@headbase-toolkit/control-flow";
+import {useDatabases} from "@headbase-toolkit/react/use-databases";
 
 
 export function DatabaseListScreen() {
 	const { setOpenTab, close } = useDatabaseManagerDialogContext()
-	const { openDatabase, liveQueryDatabase, lockDatabase } = useHeadbase()
-	const databaseQuery = useObservableQuery(liveQueryDatabase())
+	const { headbase, setCurrentDatabaseId } = useHeadbase()
+	const databasesQuery = useDatabases()
 
 	const { tabs } = useWorkspaceContext()
 	const workspaceHasUnsavedChanges = tabs.filter(tab => tab.isUnsaved).length > 0
@@ -24,30 +24,30 @@ export function DatabaseListScreen() {
 		}
 
 		try {
-			await openDatabase(database.id)
+			setCurrentDatabaseId(database.id)
 			close()
 		}
 		catch (e) {
 			console.error(e)
 		}
-	}, [])
+	}, [headbase])
 
 	let content;
-	if (databaseQuery.status === LiveQueryStatus.LOADING) {
+	if (databasesQuery.status === LiveQueryStatus.LOADING) {
 		content = <p>Loading...</p>
 	}
-	else if (databaseQuery.status === LiveQueryStatus.ERROR) {
-		content = <ErrorCallout errors={databaseQuery.errors} />
+	else if (databasesQuery.status === LiveQueryStatus.ERROR) {
+		content = <ErrorCallout errors={databasesQuery.errors} />
 	}
 	else {
 		content = (
 			<>
-				{databaseQuery.errors && <ErrorCallout errors={databaseQuery.errors} />}
+				{databasesQuery.errors && <ErrorCallout errors={databasesQuery.errors} />}
 				<div>
-					{databaseQuery.result.length === 0 && (
+					{databasesQuery.result.length === 0 && (
 						<p>No Databases Found</p>
 					)}
-					{databaseQuery.result.map(database => (
+					{databasesQuery.result.map(database => (
 						<div key={database.id}>
 							<h2>{database.name}</h2>
 							<JButton
@@ -60,7 +60,8 @@ export function DatabaseListScreen() {
 								<JButton
 									variant='tertiary'
 									onClick={async () => {
-										await lockDatabase(database.id)
+										if (!headbase) throw new Error("Headbase not found")
+										await headbase.databases.lock(database.id)
 									}}
 								>Lock</JButton>
 							)}

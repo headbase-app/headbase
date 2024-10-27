@@ -47,6 +47,6 @@ export type LiveQueryResult<Data = null> = {
 	errors: unknown[]
 }
 
-export const LIVE_QUERY_LOADING_STATE= {
+export const LIVE_QUERY_LOADING_STATE = {
 	status: LiveQueryStatus.LOADING,
 } as const

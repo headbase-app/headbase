@@ -1,17 +1,14 @@
 import { GenericManagerScreenProps } from "../../../../common/generic-manager/generic-manager";
 import { AdminList, AdminListItemProps } from "../../../../patterns/layout/admin-list/admin-list";
-import React, { useState } from "react";
 import { LiveQueryStatus } from "@headbase-toolkit/control-flow";
-import { ErrorCallout } from "../../../../patterns/components/error-callout/error-callout";
-import { useObservableQuery } from "@headbase-toolkit/react/use-observable-query";
 import {HeadbaseTableSchemas, HeadbaseTableTypes} from "../../../../state/headbase";
 import {useHeadbase} from "@headbase-toolkit/react/use-headbase";
+import {useContentQuery} from "@headbase-toolkit/react/use-content-query";
+
 
 export function ListContentTypesScreen(props: GenericManagerScreenProps) {
-	const {currentDatabase} = useHeadbase<HeadbaseTableTypes, HeadbaseTableSchemas>()
-	const [errors, setErrors] = useState<unknown[]>([])
-
-	const contentTypes = useObservableQuery(currentDatabase?.liveQuery({table: 'content_types'}))
+	const {currentDatabaseId} = useHeadbase<HeadbaseTableTypes, HeadbaseTableSchemas>()
+	const contentTypes = useContentQuery(currentDatabaseId, {table: 'content_types'})
 
 	const listItems: AdminListItemProps[] = contentTypes.status === LiveQueryStatus.SUCCESS
 		? contentTypes.result.map(contentType => ({
@@ -24,7 +21,6 @@ export function ListContentTypesScreen(props: GenericManagerScreenProps) {
 
 	return (
 		<>
-			{errors.length > 0 && <ErrorCallout errors={errors} />}
 			<AdminList
 				title="Content Types"
 				description="Content types ."

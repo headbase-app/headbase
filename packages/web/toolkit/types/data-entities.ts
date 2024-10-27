@@ -1,5 +1,5 @@
 import {z} from "zod"
-import {IdField, BooleanField, TimestampField} from "@headbase-toolkit/types/fields";
+import {IdField, BooleanField, TimestampField} from "./fields";
 
 /**
  * An entity is the base of all storable data.

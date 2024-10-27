@@ -1,20 +1,20 @@
-import {useObservableQuery} from "@headbase-toolkit/react/use-observable-query";
 import {HeadbaseTableSchemas, HeadbaseTableTypes} from "../../state/headbase";
 import {ErrorCallout} from "../../patterns/components/error-callout/error-callout";
 import {useWorkspaceContext} from "../workspace/workspace-context";
 import {ContentCard} from "../../patterns/components/content-card/content-card";
 import {useHeadbase} from "@headbase-toolkit/react/use-headbase";
 import { LiveQueryStatus } from "@headbase-toolkit/control-flow";
+import {useContentQuery} from "@headbase-toolkit/react/use-content-query";
 
 export interface ViewListProps {
 	onOpen?: () => void
 }
 
 export function ViewList(props: ViewListProps) {
-	const {currentDatabase} = useHeadbase<HeadbaseTableTypes, HeadbaseTableSchemas>()
+	const {currentDatabaseId} = useHeadbase<HeadbaseTableTypes, HeadbaseTableSchemas>()
 	const { openTab } = useWorkspaceContext()
 
-	const contentQuery = useObservableQuery(currentDatabase?.liveQuery({
+	const contentQuery = useContentQuery(currentDatabaseId, {
 		table: 'views',
 		whereCursor: (localEntity, version) => {
 			return true
@@ -25,7 +25,7 @@ export function ViewList(props: ViewListProps) {
 		sort: (dtos) => {
 			return dtos
 		}
-	}))
+	})
 
 	if (contentQuery.status === LiveQueryStatus.LOADING) {
 		return <p>Loading...</p>

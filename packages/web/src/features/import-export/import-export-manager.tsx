@@ -4,12 +4,12 @@ import {ExportDatabase} from "./export-database";
 import {ImportDatabase} from "./import-database";
 
 export function ImportExportManager() {
-	const { currentDatabase } = useHeadbase()
+	const { currentDatabaseId } = useHeadbase()
 
 	const fileInputRef = useRef<HTMLInputElement>(null)
 
 	async function onImport() {
-		if (!currentDatabase) {
+		if (!currentDatabaseId) {
 			return
 		}
 

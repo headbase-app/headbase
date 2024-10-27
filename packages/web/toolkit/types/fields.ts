@@ -1,5 +1,7 @@
 import {z} from "zod"
 
+// todo: move to common package?
+
 export const IdField = z.string().uuid()
 export type IdField = z.infer<typeof IdField>
 

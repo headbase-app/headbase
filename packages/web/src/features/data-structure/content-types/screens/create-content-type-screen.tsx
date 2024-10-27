@@ -12,14 +12,14 @@ import {HeadbaseTableSchemas, HeadbaseTableTypes} from "../../../../state/headba
 import {useHeadbase} from "@headbase-toolkit/react/use-headbase";
 
 export function CreateContentTypeScreen(props: GenericManagerScreenProps) {
-	const {currentDatabase} = useHeadbase<HeadbaseTableTypes, HeadbaseTableSchemas>()
+	const {headbase, currentDatabaseId} = useHeadbase<HeadbaseTableTypes, HeadbaseTableSchemas>()
 	const [errors, setErrors] = useState<unknown[]>([])
 
 	async function onSave(data: ContentTypeData) {
-		if (!currentDatabase) return setErrors([{type: ErrorTypes.NO_CURRENT_DATABASE}])
+		if (!currentDatabaseId || !headbase) return setErrors([{type: ErrorTypes.NO_CURRENT_DATABASE}])
 
 		try {
-			await currentDatabase.create('content_types', data)
+			await headbase.tx.create(currentDatabaseId, 'content_types', data)
 			props.navigate({screen: "list"})
 		}
 		catch (e) {

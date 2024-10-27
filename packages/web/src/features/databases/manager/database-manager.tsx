@@ -39,7 +39,7 @@ export function DatabaseManagerDialog() {
 	const { openTab, setOpenTab, close } = useDatabaseManagerDialogContext()
 	const { closeAllTabs } = useWorkspaceContext()
 
-	const { currentDatabase, openDatabase } = useHeadbase()
+	const { currentDatabaseId, setCurrentDatabaseId, headbase } = useHeadbase()
 
 	let dialogContent: ReactNode
 	switch (openTab?.type) {
@@ -72,8 +72,10 @@ export function DatabaseManagerDialog() {
 	const isFirstOpen = useRef(true)
 	useEffect(() => {
 		async function handleDatabaseChange() {
-			if (currentDatabase) {
-				localStorage.setItem('lf_lastOpenedDb', currentDatabase.databaseId)
+			if (!headbase) return
+
+			if (currentDatabaseId) {
+				localStorage.setItem('lf_lastOpenedDb', currentDatabaseId)
 				// todo: should this be managed in workspace not here?
 				closeAllTabs()
 				close()
@@ -83,16 +85,23 @@ export function DatabaseManagerDialog() {
 
 				const lastOpenedDatabaseId = localStorage.getItem('lf_lastOpenedDb')
 				if (lastOpenedDatabaseId) {
-					const openDb = await openDatabase(lastOpenedDatabaseId)
-					if (openDb) {
-						return
+					try {
+						// ensure the database exists and is unlocked before opening
+						const database = await headbase.databases.get(lastOpenedDatabaseId)
+						if (database.isUnlocked) {
+							setCurrentDatabaseId(lastOpenedDatabaseId)
+						}
+					}
+					catch (e) {
+						console.error('Error attempting to open last opened database')
+						console.error(e)
 					}
 				}
 				setOpenTab({type: 'list'})
 			}
 		}
 		handleDatabaseChange()
-	}, [currentDatabase])
+	}, [headbase, currentDatabaseId])
 
 	return (
 		<JDialog
@@ -106,7 +115,7 @@ export function DatabaseManagerDialog() {
 				}
 			}}
 			role={openTab ? 'dialog' : 'alertdialog'}
-			disableOutsideClose={!currentDatabase}
+			disableOutsideClose={!currentDatabaseId}
 			title="Database Manager"
 			description="Manage your current database"
 			content={dialogContent}

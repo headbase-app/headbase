@@ -31,7 +31,7 @@ export interface ContentFormDataHandlers {
  * @param options
  */
 export function useContentFormData(options: ContentFormOptions) {
-	const {currentDatabase} = useHeadbase<HeadbaseTableTypes, HeadbaseTableSchemas>()
+	const {headbase, currentDatabaseId} = useHeadbase<HeadbaseTableTypes, HeadbaseTableSchemas>()
 
 	const [contentTypeId, setContentTypeId] = useState<string | undefined>(options.contentTypeId)
 	const [contentType, setContentType] = useState<EntityDto<ContentTypeData> | undefined>()
@@ -53,11 +53,11 @@ export function useContentFormData(options: ContentFormOptions) {
 
 	// Load content type
 	useEffect(() => {
-		if (!currentDatabase) return
+		if (!headbase || !currentDatabaseId) return
 
 		const queryContentTypeId = options.contentTypeId || contentTypeId
 		if (queryContentTypeId) {
-			const contentTypeQuery = currentDatabase?.liveGet('content_types', queryContentTypeId)
+			const contentTypeQuery = headbase.tx.liveGet(currentDatabaseId, 'content_types', queryContentTypeId)
 			const subscription = contentTypeQuery.subscribe((liveQuery) => {
 				if (liveQuery.status === 'success') {
 					setContentType(liveQuery.result)
@@ -72,14 +72,14 @@ export function useContentFormData(options: ContentFormOptions) {
 				subscription.unsubscribe()
 			}
 		}
-	}, [options.contentTypeId, contentTypeId, currentDatabase])
+	}, [options.contentTypeId, contentTypeId, currentDatabaseId])
 
 	// Load content
 	useEffect(() => {
-		if (!currentDatabase) return
+		if (!headbase || !currentDatabaseId) return
 
 		if (options.contentId) {
-			const contentQuery = currentDatabase?.liveGet('content', options.contentId)
+			const contentQuery = headbase.tx.liveGet(currentDatabaseId, 'content', options.contentId)
 			const subscription = contentQuery.subscribe((liveQuery) => {
 				if (liveQuery.status === 'success') {
 					/**
@@ -111,7 +111,7 @@ export function useContentFormData(options: ContentFormOptions) {
 				subscription.unsubscribe()
 			}
 		}
-	}, [options.contentId, currentDatabase])
+	}, [options.contentId, currentDatabaseId])
 
 	useEffect(() => {
 		latestName.current = name

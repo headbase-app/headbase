@@ -8,21 +8,22 @@ import {ContentTypeForm} from "../forms/content-type-form";
 import {
 	ContentTypeData
 } from "../../../../state/schemas/content-types/content-types";
-import { useObservableQuery } from "@headbase-toolkit/react/use-observable-query";
 import {HeadbaseTableSchemas, HeadbaseTableTypes} from "../../../../state/headbase";
 import {useHeadbase} from "@headbase-toolkit/react/use-headbase";
+import {useContent} from "@headbase-toolkit/react/use-content";
+
 
 export function EditContentTypeScreen(props: GenericManagerContentScreenProps) {
-	const {currentDatabase} = useHeadbase<HeadbaseTableTypes, HeadbaseTableSchemas>()
+	const {currentDatabaseId, headbase} = useHeadbase<HeadbaseTableTypes, HeadbaseTableSchemas>()
 	const [errors, setErrors] = useState<unknown[]>([])
 
-	const contentTypeQuery = useObservableQuery(currentDatabase?.liveGet('content_types', props.id))
+	const contentTypeQuery = useContent(currentDatabaseId, 'content_types', props.id)
 
 	async function onSave(updatedData: Partial<ContentTypeData>) {
-		if (!currentDatabase) return setErrors([{type: ErrorTypes.NO_CURRENT_DATABASE}])
+		if (!currentDatabaseId || !headbase) return setErrors([{type: ErrorTypes.NO_CURRENT_DATABASE}])
 
 		try {
-			await currentDatabase.update("content_types", props.id, updatedData)
+			await headbase.tx.update(currentDatabaseId, "content_types", props.id, updatedData)
 			props.navigate({screen: "list"})
 		}
 		catch (e) {
@@ -31,10 +32,10 @@ export function EditContentTypeScreen(props: GenericManagerContentScreenProps) {
 	}
 
 	async function onDelete() {
-		if (!currentDatabase) return setErrors([{type: ErrorTypes.NO_CURRENT_DATABASE}])
+		if (!currentDatabaseId || !headbase) return setErrors([{type: ErrorTypes.NO_CURRENT_DATABASE}])
 
 		try {
-			await currentDatabase.delete("content_types", props.id)
+			await headbase.tx.delete(currentDatabaseId, "content_types", props.id)
 			props.navigate({screen: "list"})
 		}
 		catch (e) {

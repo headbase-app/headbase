@@ -1,4 +1,4 @@
-import {EntityDto, EntityVersion} from "../../types/data-entities";
+import {EntityDto, EntityVersion} from "./data-entities";
 import {IDBPIndex} from "idb";
 import {
 	TableKeys,
