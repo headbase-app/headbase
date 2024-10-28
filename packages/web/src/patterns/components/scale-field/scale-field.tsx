@@ -1,5 +1,5 @@
 import {JOptionData, JSelect} from "@ben-ryder/jigsaw-react";
-import {FieldScale} from "../../../state/schemas/fields/fields";
+import {FieldScale} from "@headbase-toolkit/schemas/fields/fields";
 
 export interface ScaleFieldProps {
 	field: FieldScale

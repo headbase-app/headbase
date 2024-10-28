@@ -1,11 +1,11 @@
 import {z} from "zod"
 import {NameField, EntityReferenceListField, IsFavouriteField} from "../common/fields";
 import { FieldStorage } from "../fields/fields";
-import {EntityDto} from "@headbase-toolkit/types/data-entities";
-import {IdField} from "@headbase-toolkit/types/fields";
+import {EntityDto} from "../entities";
+import {createIdField} from "@headbase-app/common";
 
 export const ContentData = z.object({
-	type: IdField,
+	type: createIdField('type'),
 	name: NameField,
 	tags: EntityReferenceListField,
 	isFavourite: IsFavouriteField,

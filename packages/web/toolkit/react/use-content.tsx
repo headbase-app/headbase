@@ -2,8 +2,8 @@ import { LIVE_QUERY_LOADING_STATE, LiveQueryResult, LiveQueryStatus } from "../c
 import { useEffect, useState } from "react";
 import {Logger} from "../../src/utils/logger";
 import {useHeadbase} from "./use-headbase";
-import {TableKeys, TableTypeDefinitions} from "../types/types";
-import {EntityDto} from "../types/data-entities";
+import {TableKeys, TableTypeDefinitions} from "@headbase-toolkit/schemas/tables";
+import {EntityDto} from "@headbase-toolkit/schemas/entities";
 
 
 export function useContent<

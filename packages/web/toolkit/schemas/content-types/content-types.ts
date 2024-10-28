@@ -1,7 +1,7 @@
 import {z} from "zod"
 import {ColourVariants, DescriptionField, NameField} from "../common/fields";
-import {EntityDto} from "@headbase-toolkit/types/data-entities";
-import {IdField} from "@headbase-toolkit/types/fields";
+import {EntityDto} from "../entities";
+import {createIdField} from "@headbase-app/common";
 
 export const ContentTypeData = z.object({
 	name: NameField,
@@ -9,8 +9,8 @@ export const ContentTypeData = z.object({
 	icon: z.string().optional(),
 	colourVariant: ColourVariants.optional(),
 	contentTemplateName: NameField.optional(),
-	contentTemplateTags: z.array(IdField).optional(),
-	fields: z.array(IdField)
+	contentTemplateTags: z.array(createIdField()).optional(),
+	fields: z.array(createIdField())
 }).strict()
 export type ContentTypeData = z.infer<typeof ContentTypeData>
 

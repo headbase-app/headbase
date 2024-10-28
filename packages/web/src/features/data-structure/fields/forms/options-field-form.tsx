@@ -2,11 +2,9 @@ import {
 	JInput, JButtonGroup, JButton, JForm, JFormContent, JFormRow, JErrorText, JTextArea, JProse
 } from "@ben-ryder/jigsaw-react";
 import {GenericFormProps} from "../../../../common/generic-form/generic-form";
-import {
-	FieldOptions,
-} from "../../../../state/schemas/fields/fields";
 import {Controller, useForm} from "react-hook-form";
 import {zodResolver} from "@hookform/resolvers/zod";
+import {FieldOptions} from "@headbase-toolkit/schemas/fields/fields";
 
 export interface OptionsFieldFormProps extends Omit<GenericFormProps<FieldOptions>, 'title'> {}
 

@@ -1,6 +1,6 @@
 import "./content-card.scss";
 import {JPill} from "@ben-ryder/jigsaw-react";
-import {TagDto} from "../../../state/schemas/tags/tags";
+import {TagDto} from "@headbase-toolkit/schemas/tags/tags";
 
 export interface ContentCardProps {
 	id: string;

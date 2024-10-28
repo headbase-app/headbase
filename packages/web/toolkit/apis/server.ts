@@ -8,11 +8,14 @@ import {
 	UserDto, LoginRequest,
 } from "@headbase-app/common";
 import {ErrorTypes, HeadbaseError, LIVE_QUERY_LOADING_STATE, LiveQueryResult, LiveQueryStatus} from "../control-flow";
-import {GeneralStorageService, LocalUserDto} from "../services/general-storage.service";
+import {GeneralStorageService} from "../services/general-storage.service";
 import {z} from "zod";
 import {EventsService} from "../services/events/events.service";
 import {Observable} from "rxjs";
 import {AnyHeadbaseEvent, EventTypes} from "../services/events/events";
+import {LocalUserDto} from "../schemas/user";
+
+export type SyncStatus = 'synced' | 'queued' | 'running' | 'error' | 'disabled'
 
 export interface QueryOptions {
 	serverUrl: string,
@@ -98,7 +101,7 @@ export class ServerAPI {
 			return this.refreshAuthAndRetry<ResponseType>(options)
 		}
 
-		throw new HeadbaseError({type: ErrorTypes.NETWORK_ERROR, devMessage: `There was an error with the request '${options.url} [${options.method}]`, originalError: responseData})
+		throw new HeadbaseError({type: ErrorTypes.NETWORK_ERROR, devMessage: `There was an error with the request '${options.path} [${options.method}]`, originalError: responseData})
 	}
 
 	private async refreshAuthAndRetry<ResponseType>(options: QueryOptions): Promise<ResponseType> {

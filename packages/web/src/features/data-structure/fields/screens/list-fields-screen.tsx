@@ -1,15 +1,15 @@
 import { GenericManagerScreenProps } from "../../../../common/generic-manager/generic-manager";
 import { AdminList, AdminListItemProps } from "../../../../patterns/layout/admin-list/admin-list";
 import { LiveQueryStatus } from "@headbase-toolkit/control-flow";
-import { FIELD_TYPES } from "../../../../state/schemas/fields/field-types";
-import {HeadbaseTableSchemas, HeadbaseTableTypes} from "../../../../state/headbase";
 import {useHeadbase} from "@headbase-toolkit/react/use-headbase";
 import {useContentQuery} from "@headbase-toolkit/react/use-content-query";
+import {TableSchema, TableTypes} from "@headbase-toolkit/schemas/schema";
+import {FIELD_TYPES} from "@headbase-toolkit/schemas/fields/field-types";
 
 
 export function ListFieldsScreen(props: GenericManagerScreenProps) {
 
-	const { currentDatabaseId } = useHeadbase<HeadbaseTableTypes, HeadbaseTableSchemas>()
+	const { currentDatabaseId } = useHeadbase<TableTypes, TableSchema>()
 
 	const fields = useContentQuery(currentDatabaseId, {table: 'fields'})
 

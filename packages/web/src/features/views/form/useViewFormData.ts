@@ -1,8 +1,8 @@
 import {useEffect, useRef, useState} from "react";
-import {ViewDto} from "../../../state/schemas/views/views";
 import {useHeadbase} from "@headbase-toolkit/react/use-headbase";
-import {HeadbaseTableSchemas, HeadbaseTableTypes} from "../../../state/headbase";
 import { LiveQueryStatus } from "@headbase-toolkit/control-flow";
+import {ViewDto} from "@headbase-toolkit/schemas/views/views";
+import {TableSchema, TableTypes} from "@headbase-toolkit/schemas/schema";
 
 export interface ViewFormOptions {
 	viewId?: string
@@ -34,7 +34,7 @@ export interface ViewFormDataHandlers {
  */
 export function useViewFormData(options: ViewFormOptions) {
 	const { headbase } = useHeadbase()
-	const {currentDatabaseId} = useHeadbase<HeadbaseTableTypes, HeadbaseTableSchemas>()
+	const {currentDatabaseId} = useHeadbase<TableTypes, TableSchema>()
 
 	const latestView = useRef<ViewDto | undefined>()
 	const [view, setView] = useState<ViewDto | undefined>()

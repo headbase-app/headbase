@@ -1,4 +1,4 @@
-import {TableTypeDefinitions, TableKeys} from "./types";
+import {TableTypeDefinitions, TableKeys} from "./tables";
 
 export interface ExportEntity<
 	TableTypes extends TableTypeDefinitions,

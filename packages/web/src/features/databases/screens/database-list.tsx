@@ -2,12 +2,11 @@ import {JButton, JCallout} from "@ben-ryder/jigsaw-react";
 import {useHeadbase} from "@headbase-toolkit/react/use-headbase";
 import {ErrorCallout} from "../../../patterns/components/error-callout/error-callout";
 import {useCallback} from "react";
-import {LocalDatabaseDto} from "@headbase-toolkit/types/database";
 import {useWorkspaceContext} from "../../workspace/workspace-context";
 import {useDatabaseManagerDialogContext} from "../manager/database-manager-context";
 import { LiveQueryStatus } from "@headbase-toolkit/control-flow";
 import {useDatabases} from "@headbase-toolkit/react/use-databases";
-
+import {LocalDatabaseDto} from "@headbase-toolkit/schemas/database";
 
 export function DatabaseListScreen() {
 	const { setOpenTab, close } = useDatabaseManagerDialogContext()

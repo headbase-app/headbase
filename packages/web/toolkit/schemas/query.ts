@@ -1,10 +1,10 @@
-import {EntityDto, EntityVersion} from "./data-entities";
+import {EntityDto, EntityVersion} from "./entities";
 import {IDBPIndex} from "idb";
 import {
 	TableKeys,
 	TableSchemaDefinitions, TableTypeExposedFields, TableTypeDefinitions,
 	LocalEntityWithExposedFields,
-} from "./types";
+} from "./tables";
 
 export type EqualFilter = {
 	operation: 'equal',

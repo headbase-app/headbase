@@ -45,6 +45,8 @@ export function DatabaseChangePasswordForm(props: DatabaseChangePasswordFormProp
 	const { headbase } = useHeadbase()
 
 	const onSubmit = useCallback(async (data: ChangePasswordFormSchema) => {
+		if (!headbase) return setError('root', { message: 'Headbase instance does not exist' })
+
 		try {
 			await headbase.databases.changePassword(props.databaseId, data.currentPassword, data.newPassword)
 			props.onSuccess()

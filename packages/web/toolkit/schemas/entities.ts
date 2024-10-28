@@ -1,5 +1,6 @@
 import {z} from "zod"
-import {IdField, BooleanField, TimestampField} from "./fields";
+import {BooleanField, TimestampField} from "./common/fields";
+import {createIdField} from "@headbase-app/common";
 
 /**
  * An entity is the base of all storable data.
@@ -7,7 +8,7 @@ import {IdField, BooleanField, TimestampField} from "./fields";
  * which means top-level entities only need to store basic id and timestamp data.
  */
 export const Entity = z.object({
-	id: IdField,
+	id: createIdField(),
 	createdAt: TimestampField,
 	isDeleted: BooleanField,
 	headbaseVersion: z.string(),
@@ -25,8 +26,8 @@ export type LocalEntity = z.infer<typeof LocalEntity>
  * The 'createdAt' field of a version can then be used to identify the latest version.
  */
 export const EntityVersion = z.object({
-	entityId: IdField,
-	id: IdField,
+	entityId: createIdField('entityId'),
+	id: createIdField(),
 	createdAt: TimestampField,
 	// All actual data is encrypted, so stored data will always be ciphertext string
 	data: z.string(),
@@ -41,7 +42,7 @@ export type EntityVersion = z.infer<typeof EntityVersion>
  * these return types.
  */
 export const EntityDtoBase = Entity.extend({
-	versionId: IdField,
+	versionId: createIdField('versionId'),
 	// This will be the schema version of the version data.
 	schemaVersion: z.string(),
 	// This will be the version createdAt field, which conceptually is the updated timestamp.

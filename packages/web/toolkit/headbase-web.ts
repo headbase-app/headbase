@@ -2,7 +2,7 @@ import {Observable} from "rxjs";
 
 import {TransactionsAPIConfig, TransactionsAPI} from "./apis/transactions/transactions";
 import { EventsService } from "./services/events/events.service";
-import {TableSchemaDefinitions, TableTypeDefinitions} from "./types/types";
+import {TableSchemaDefinitions, TableTypeDefinitions} from "./schemas/tables";
 import {DatabasesAPI} from "./apis/databases";
 import {EventTypes, HeadbaseEvent} from "./services/events/events";
 import {LIVE_QUERY_LOADING_STATE, LiveQueryResult, LiveQueryStatus} from "./control-flow";
@@ -21,8 +21,6 @@ export interface HeadbaseWebConfig<
 > {
 	tableSchemas: TransactionsAPIConfig<TableTypes>['tableSchemas']
 }
-
-export type SyncStatus = 'synced' | 'queued' | 'running' | 'error' | 'disabled'
 
 export class HeadbaseWeb<
 	TableTypes extends TableTypeDefinitions,

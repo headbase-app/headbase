@@ -4,15 +4,13 @@ import {ErrorTypes} from "@headbase-toolkit/control-flow";
 import {
 	GenericManagerScreenProps
 } from "../../../../common/generic-manager/generic-manager";
-import {
-	ContentTypeData
-} from "../../../../state/schemas/content-types/content-types";
 import {ContentTypeForm} from "../forms/content-type-form";
-import {HeadbaseTableSchemas, HeadbaseTableTypes} from "../../../../state/headbase";
 import {useHeadbase} from "@headbase-toolkit/react/use-headbase";
+import {TableSchema, TableTypes} from "@headbase-toolkit/schemas/schema";
+import {ContentTypeData} from "@headbase-toolkit/schemas/content-types/content-types";
 
 export function CreateContentTypeScreen(props: GenericManagerScreenProps) {
-	const {headbase, currentDatabaseId} = useHeadbase<HeadbaseTableTypes, HeadbaseTableSchemas>()
+	const {headbase, currentDatabaseId} = useHeadbase<TableTypes, TableSchema>()
 	const [errors, setErrors] = useState<unknown[]>([])
 
 	async function onSave(data: ContentTypeData) {

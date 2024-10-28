@@ -1,13 +1,13 @@
 import { GenericManagerScreenProps } from "../../../../common/generic-manager/generic-manager";
 import { AdminList, AdminListItemProps } from "../../../../patterns/layout/admin-list/admin-list";
 import { LiveQueryStatus } from "@headbase-toolkit/control-flow";
-import {HeadbaseTableSchemas, HeadbaseTableTypes} from "../../../../state/headbase";
 import {useHeadbase} from "@headbase-toolkit/react/use-headbase";
 import {useContentQuery} from "@headbase-toolkit/react/use-content-query";
+import {TableSchema, TableTypes} from "@headbase-toolkit/schemas/schema";
 
 
 export function ListContentTypesScreen(props: GenericManagerScreenProps) {
-	const {currentDatabaseId} = useHeadbase<HeadbaseTableTypes, HeadbaseTableSchemas>()
+	const {currentDatabaseId} = useHeadbase<TableTypes, TableSchema>()
 	const contentTypes = useContentQuery(currentDatabaseId, {table: 'content_types'})
 
 	const listItems: AdminListItemProps[] = contentTypes.status === LiveQueryStatus.SUCCESS

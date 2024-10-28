@@ -10,16 +10,16 @@ import {SearchDialog, SearchDialogProvider} from "../../features/search/dialog/s
 import {DataStructureDialog, DataStructureDialogProvider} from "../../features/data-structure/data-structure-dialog";
 import { ViewsDialog, ViewsDialogProvider } from "../../features/views/dialog/views-dialog";
 import {ContentListDialog, ContentListDialogProvider} from "../../features/content-list/dialog/content-list-dialog";
-import {HeadbaseTableSchemas} from "../../state/headbase";
 import {DatabaseManagerDialog, DatabaseManagerDialogProvider} from "../../features/databases/manager/database-manager";
 import {AccountDialog, AccountDialogProvider} from "../../features/account/account-dialog";
 import {HeadbaseContextProvider} from "@headbase-toolkit/react/use-headbase";
+import {TableSchema} from "@headbase-toolkit/schemas/schema";
 
 export function MainPage() {
 	const [isMenuPanelOpen, setIsMenuPanelOpen] = useState<boolean>(true)
 
 	return (
-		<HeadbaseContextProvider tableSchemas={HeadbaseTableSchemas}>
+		<HeadbaseContextProvider tableSchemas={TableSchema}>
 			<WorkspaceContextProvider>
 				<DatabaseManagerDialogProvider>
 					<NewContentDialogProvider>

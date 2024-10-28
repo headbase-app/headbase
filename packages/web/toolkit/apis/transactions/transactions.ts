@@ -11,21 +11,22 @@ import {memoryCache} from "../../services/memory-cache.service";
 import {Observable} from "rxjs";
 import {DataEntityChangeEvent, EventTypes} from "../../services/events/events";
 import {IDBPDatabase, openDB} from "idb";
-import {Entity, EntityCreateDto, EntityDto, EntityUpdate, EntityVersion, LocalEntity} from "../../types/data-entities";
+import {Entity, EntityCreateDto, EntityDto, EntityUpdate, EntityVersion, LocalEntity} from "../../schemas/entities";
 import {EventsService} from "../../services/events/events.service";
 import {Logger} from "../../../src/utils/logger";
 import {
-	TableKeys,
-	TableSchemaDefinitions,
-	TableTypeDefinitions,
 	LocalEntityWithExposedFields,
-} from "../../types/types";
+	TableKeys, TableSchemaDefinitions,
+	TableTypeDefinitions,
+} from "../../schemas/tables";
 import {HEADBASE_INDEXDB_ENTITY_VERSION, HEADBASE_VERSION} from "../../headbase-web";
-import {IdField, TimestampField} from "../../types/fields";
-import {QueryDefinition, QueryIndex} from "../../types/query";
-import {ExportData} from "../../types/export";
+import {TimestampField} from "../../schemas/common/fields";
+import {QueryDefinition, QueryIndex} from "../../schemas/query";
+import {ExportData} from "../../schemas/export";
 import {KeyStorageService} from "../../services/key-storage.service";
 import {DatabasesAPI} from "../databases";
+import {createIdField} from "@headbase-app/common";
+import {TableSchema} from "@headbase-toolkit/schemas/schema";
 
 
 export interface TransactionsAPIConfig<
@@ -49,7 +50,7 @@ export class TransactionsAPI<
 	TableSchemas extends TableSchemaDefinitions<TableTypes>
 > {
 	readonly #tableSchemas: TableSchemaDefinitions<TableTypes>
-	#connectionStore: ConnectionStore
+	readonly #connectionStore: ConnectionStore
 	readonly #eventsService: EventsService
 	readonly #databases: DatabasesAPI
 
@@ -136,6 +137,7 @@ export class TransactionsAPI<
 	 */
 	async _createEntityVersionDto<TableKey extends TableKeys<TableTypes>>(databaseId: string, tableKey: TableKey, entity: Entity, version: EntityVersion): Promise<EntityDto<TableTypes[TableKey]>> {
 		const encryptionKey = await KeyStorageService.get(databaseId)
+		if (!encryptionKey) throw new Error(`encryptionKey not found for database ${databaseId}`)
 
 		let data
 		try {
@@ -283,6 +285,7 @@ export class TransactionsAPI<
 	/**
 	 * The base method for creating new entities which is shared by both .create and .import.
 	 *
+	 * @param databaseId
 	 * @param tableKey
 	 * @param entityCreateDto
 	 */
@@ -298,6 +301,7 @@ export class TransactionsAPI<
 		const versionId = EncryptionService.generateUUID();
 
 		const encryptionKey = await KeyStorageService.get(databaseId)
+		if (!encryptionKey) throw new Error(`encryptionKey not found for database ${databaseId}`)
 		const encResult = await EncryptionService.encrypt(encryptionKey, entityCreateDto.data)
 
 		const tx = db.transaction([tableKey, this._getVersionTableName(tableKey)], 'readwrite')
@@ -364,6 +368,8 @@ export class TransactionsAPI<
 		// todo: updated data should be validated here using schema validator before saving
 
 		const encryptionKey = await KeyStorageService.get(databaseId)
+		if (!encryptionKey) throw new Error(`encryptionKey not found for database ${databaseId}`)
+
 		const encResult = await EncryptionService.encrypt(encryptionKey, updatedData)
 
 		const versionId = EncryptionService.generateUUID();
@@ -542,7 +548,7 @@ export class TransactionsAPI<
 		// Iterate over all indexes and all items in the index cursor, also running the user-supplied whereCursor function.
 		for (const queryIndex of indexes) {
 			for await (const entityCursor of queryIndex.index.iterate(queryIndex.query, queryIndex.direction)) {
-				const entity = entityCursor.value as LocalEntityWithExposedFields<TableTypes, TableSchemas, TableKey>
+				const entity = entityCursor.value as LocalEntityWithExposedFields<TableTypes, TableSchema, TableKey>
 				let version: EntityVersion|undefined = undefined
 				if (entity.currentVersionId) {
 					version = await tx.objectStore(this._getVersionTableName(query.table)).get(entity.currentVersionId) as EntityVersion|undefined
@@ -770,7 +776,7 @@ export class TransactionsAPI<
 		})
 	}
 
-	liveQuery<TableKey extends TableKeys<TableTypes>>(databaseId: string, query: QueryDefinition<TableTypes, TableSchemas, TableKey>) {
+	liveQuery<TableKey extends TableKeys<TableTypes>>(databaseId: string, query: QueryDefinition<TableTypes, TableSchema, TableKey>) {
 		return new Observable<LiveQueryResult<EntityDto<TableTypes[TableKey]>[]>>((subscriber) => {
 			subscriber.next(LIVE_QUERY_LOADING_STATE)
 
@@ -859,7 +865,7 @@ export class TransactionsAPI<
 				let createdAt
 				let updatedAt
 				try {
-					id = IdField.parse(entityToImport.id)
+					id = createIdField().parse(entityToImport.id)
 					createdAt = TimestampField.parse(entityToImport.createdAt)
 					updatedAt = TimestampField.parse(entityToImport.updatedAt)
 				}

@@ -5,16 +5,14 @@ import {
 	GenericManagerContentScreenProps,
 } from "../../../../common/generic-manager/generic-manager";
 import {ContentTypeForm} from "../forms/content-type-form";
-import {
-	ContentTypeData
-} from "../../../../state/schemas/content-types/content-types";
-import {HeadbaseTableSchemas, HeadbaseTableTypes} from "../../../../state/headbase";
 import {useHeadbase} from "@headbase-toolkit/react/use-headbase";
 import {useContent} from "@headbase-toolkit/react/use-content";
+import {TableSchema, TableTypes} from "@headbase-toolkit/schemas/schema";
+import {ContentTypeData} from "@headbase-toolkit/schemas/content-types/content-types";
 
 
 export function EditContentTypeScreen(props: GenericManagerContentScreenProps) {
-	const {currentDatabaseId, headbase} = useHeadbase<HeadbaseTableTypes, HeadbaseTableSchemas>()
+	const {currentDatabaseId, headbase} = useHeadbase<TableTypes, TableSchema>()
 	const [errors, setErrors] = useState<unknown[]>([])
 
 	const contentTypeQuery = useContent(currentDatabaseId, 'content_types', props.id)

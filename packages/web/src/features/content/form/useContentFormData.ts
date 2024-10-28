@@ -1,10 +1,10 @@
 import {useCallback, useEffect, useRef, useState} from "react";
-import {HeadbaseTableSchemas, HeadbaseTableTypes} from "../../../state/headbase";
-import {ContentTypeData} from "../../../state/schemas/content-types/content-types";
-import {EntityDto} from "@headbase-toolkit/types/data-entities";
-import {ContentData} from "../../../state/schemas/content/content";
 import {useHeadbase} from "@headbase-toolkit/react/use-headbase";
-import {FieldStorage, FieldValues} from "../../../state/schemas/fields/fields";
+import {TableSchema, TableTypes} from "@headbase-toolkit/schemas/schema";
+import {FieldStorage, FieldValues} from "@headbase-toolkit/schemas/fields/fields";
+import {EntityDto} from "@headbase-toolkit/schemas/entities";
+import {ContentTypeData} from "@headbase-toolkit/schemas/content-types/content-types";
+import {ContentData} from "@headbase-toolkit/schemas/content/content";
 
 // todo: make type require at least one of these?
 export interface ContentFormOptions {
@@ -31,7 +31,7 @@ export interface ContentFormDataHandlers {
  * @param options
  */
 export function useContentFormData(options: ContentFormOptions) {
-	const {headbase, currentDatabaseId} = useHeadbase<HeadbaseTableTypes, HeadbaseTableSchemas>()
+	const {headbase, currentDatabaseId} = useHeadbase<TableTypes, TableSchema>()
 
 	const [contentTypeId, setContentTypeId] = useState<string | undefined>(options.contentTypeId)
 	const [contentType, setContentType] = useState<EntityDto<ContentTypeData> | undefined>()

@@ -3,6 +3,7 @@ import {JButton} from "@ben-ryder/jigsaw-react";
 import {ReactNode, useMemo, useState} from "react";
 
 import "./performance.scss"
+import {useHeadbase} from "@headbase-toolkit/react/use-headbase";
 
 export interface ReportItem {
 	level: "section" | "task" | "message",
@@ -12,6 +13,9 @@ export interface ReportItem {
 export type ReportFunction = (reportItem: ReportItem) => void
 
 export function PerformanceManager() {
+	const { headbase } = useHeadbase()
+	if (!headbase) return
+
 	const [logs, setLogs] = useState<ReportItem[]>([])
 	const [isRunning, setIsRunning] = useState<boolean>(false)
 
@@ -23,10 +27,10 @@ export function PerformanceManager() {
 		return async () => {
 			setIsRunning(true)
 			setLogs([])
-			await runTest(report)
+			await runTest(headbase, report)
 			setIsRunning(false)
 		}
-	}, [])
+	}, [headbase])
 
 	const logDisplay: ReactNode[] = []
 	for (const logItem of logs) {

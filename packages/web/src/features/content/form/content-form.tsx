@@ -6,16 +6,16 @@ import {
 	JForm, JFormContent, JFormRow, JMultiSelectOptionData, JMultiSelect, JSelect, JProse
 } from "@ben-ryder/jigsaw-react";
 import { useContentQuery } from "@headbase-toolkit/react/use-content-query";
-import {HeadbaseTableSchemas, HeadbaseTableTypes} from "../../../state/headbase";
 import { LiveQueryStatus } from "@headbase-toolkit/control-flow";
 import { WithTabData } from "../../workspace/workspace";
 import {ContentFormData, ContentFormDataHandlers} from "./useContentFormData";
 
 import "./content-form.scss"
 import {useHeadbase} from "@headbase-toolkit/react/use-headbase";
-import {FieldDefinition} from "../../../state/schemas/fields/fields";
-import {EntityDto} from "@headbase-toolkit/types/data-entities";
 import {CustomField} from "./field";
+import {TableSchema, TableTypes} from "@headbase-toolkit/schemas/schema";
+import {FieldDefinition} from "@headbase-toolkit/schemas/fields/fields";
+import {EntityDto} from "@headbase-toolkit/schemas/entities";
 
 export interface ContentFormProps extends WithTabData, ContentFormData, ContentFormDataHandlers {
 	fields?: string[]
@@ -30,7 +30,7 @@ export interface ContentFormFields {
 // todo: handle situation where content form is open and content gets deleted?
 
 export function ContentForm(props: ContentFormProps) {
-	const {headbase, currentDatabaseId} = useHeadbase<HeadbaseTableTypes, HeadbaseTableSchemas>()
+	const {headbase, currentDatabaseId} = useHeadbase<TableTypes, TableSchema>()
 	const [error, setError] = useState<string | null>(null);
 
 	const tagQuery = useContentQuery(currentDatabaseId, {table: 'tags'})

@@ -3,19 +3,19 @@ import {ErrorCallout} from "../../../../patterns/components/error-callout/error-
 import {ErrorTypes} from "@headbase-toolkit/control-flow";
 import {GenericManagerContentScreenProps,} from "../../../../common/generic-manager/generic-manager";
 import {BasicFieldForm} from "../forms/basic-field-form";
-import {FieldDefinition} from "../../../../state/schemas/fields/fields";
-import {HeadbaseTableSchemas, HeadbaseTableTypes} from "../../../../state/headbase";
 import {useHeadbase} from "@headbase-toolkit/react/use-headbase";
 import {JArrowButton} from "@ben-ryder/jigsaw-react";
-import {FIELD_TYPES} from "../../../../state/schemas/fields/field-types";
 import {MarkdownFieldForm} from "../forms/markdown-field-form";
 import { ScaleFieldForm } from "../forms/scale-field-form";
 import { OptionsFieldForm } from "../forms/options-field-form";
 import {useContent} from "@headbase-toolkit/react/use-content";
+import {TableSchema, TableTypes} from "@headbase-toolkit/schemas/schema";
+import {FieldDefinition} from "@headbase-toolkit/schemas/fields/fields";
+import {FIELD_TYPES} from "@headbase-toolkit/schemas/fields/field-types";
 
 
 export function EditFieldScreen(props: GenericManagerContentScreenProps) {
-	const {currentDatabaseId, headbase} = useHeadbase<HeadbaseTableTypes, HeadbaseTableSchemas>()
+	const {currentDatabaseId, headbase} = useHeadbase<TableTypes, TableSchema>()
 	const [errors, setErrors] = useState<unknown[]>([])
 
 	const fieldQuery = useContent(currentDatabaseId, "fields", props.id)

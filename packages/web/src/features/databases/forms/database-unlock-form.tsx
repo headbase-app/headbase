@@ -33,6 +33,8 @@ export function DatabaseUnlockForm(props: DatabaseUnlockFormProps) {
 	const { headbase, setCurrentDatabaseId } = useHeadbase()
 
 	const onSubmit = useCallback(async (data: UnlockFormSchema) => {
+		if (!headbase) return setError('root', { message: 'Headbase instance does not exist' })
+
 		try {
 			await headbase.databases.unlock(props.databaseId, data.password)
 

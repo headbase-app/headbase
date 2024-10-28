@@ -1,7 +1,7 @@
 import {HeadbaseWeb} from "../headbase-web";
-import {TableSchemaDefinitions, TableTypeDefinitions} from "../types/types";
-import {Context, createContext, PropsWithChildren, useContext, useEffect, useRef, useState} from "react";
+import {Context, createContext, PropsWithChildren, useContext, useEffect, useState} from "react";
 import {TransactionsAPIConfig} from "../apis/transactions/transactions";
+import {TableSchemaDefinitions, TableTypeDefinitions} from "@headbase-toolkit/schemas/tables";
 
 export type HeadbaseContext<
 	TableTypes extends TableTypeDefinitions,

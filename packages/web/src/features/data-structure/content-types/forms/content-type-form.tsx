@@ -13,20 +13,18 @@ import {
 	JOptionData, JColourVariants, JSelect, JMultiSelect
 } from "@ben-ryder/jigsaw-react";
 import {GenericFormProps} from "../../../../common/generic-form/generic-form";
-import {
-	ContentTypeData
-} from "../../../../state/schemas/content-types/content-types";
-import {ColourVariants} from "../../../../state/schemas/common/fields";
 import { LiveQueryStatus } from "@headbase-toolkit/control-flow";
-import { FIELD_TYPES } from "../../../../state/schemas/fields/field-types";
 import { ErrorCallout } from "../../../../patterns/components/error-callout/error-callout";
-import {HeadbaseTableSchemas, HeadbaseTableTypes} from "../../../../state/headbase";
 import {useHeadbase} from "@headbase-toolkit/react/use-headbase";
 import {useContentQuery} from "@headbase-toolkit/react/use-content-query";
+import {ContentTypeData} from "@headbase-toolkit/schemas/content-types/content-types";
+import {TableSchema, TableTypes} from "@headbase-toolkit/schemas/schema";
+import {ColourVariants} from "@headbase-toolkit/schemas/common/fields";
+import {FIELD_TYPES} from "@headbase-toolkit/schemas/fields/field-types";
 
 
 export function ContentTypeForm(props: GenericFormProps<ContentTypeData>) {
-	const {currentDatabaseId, headbase} = useHeadbase<HeadbaseTableTypes, HeadbaseTableSchemas>()
+	const {currentDatabaseId, headbase} = useHeadbase<TableTypes, TableSchema>()
 	const [errors, setErrors] = useState<unknown[]>([]);
 
 	const [name, setName] = useState<string>(props.data.name);
@@ -102,7 +100,7 @@ export function ContentTypeForm(props: GenericFormProps<ContentTypeData>) {
 	const [selectedFields, setSelectedFields] = useState<JMultiSelectOptionData[]>([]);
 	useEffect(() => {
 		async function loadSelectedFields() {
-			if (!currentDatabaseId) return
+			if (!currentDatabaseId || !headbase) return
 
 			if (props.data.fields && props.data.fields.length > 0) {
 				try {

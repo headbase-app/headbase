@@ -5,12 +5,12 @@ import { ErrorCallout } from "../../../../../patterns/components/error-callout/e
 import {
 	GenericManagerScreenProps
 } from "../../../../../common/generic-manager/generic-manager";
-import {HeadbaseTableSchemas, HeadbaseTableTypes} from "../../../../../state/headbase";
 import {useHeadbase} from "@headbase-toolkit/react/use-headbase";
 import {useContentQuery} from "@headbase-toolkit/react/use-content-query";
+import {TableSchema, TableTypes} from "@headbase-toolkit/schemas/schema";
 
 export function ListTagsScreen(props: GenericManagerScreenProps) {
-	const {currentDatabaseId} = useHeadbase<HeadbaseTableTypes, HeadbaseTableSchemas>()
+	const {currentDatabaseId} = useHeadbase<TableTypes, TableSchema>()
 	const tags = useContentQuery(currentDatabaseId, {table: "tags"})
 
 	return (

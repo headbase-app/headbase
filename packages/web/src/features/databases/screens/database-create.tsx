@@ -3,7 +3,6 @@ import {useCallback, useState} from "react";
 import {DatabasePasswordForm} from "../forms/database-password-form";
 import {useHeadbase} from "@headbase-toolkit/react/use-headbase";
 import {useDatabaseManagerDialogContext} from "../manager/database-manager-context";
-import {CreateDatabaseDto} from "@headbase-toolkit/types/database";
 
 export type DatabaseCreateSteps = 'basic-info' | 'encryption'
 

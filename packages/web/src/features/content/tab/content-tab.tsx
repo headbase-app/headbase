@@ -1,16 +1,16 @@
 import {ContentForm} from "../form/content-form";
 
 import { WithTabData } from "../../workspace/workspace";
-import {HeadbaseTableSchemas, HeadbaseTableTypes} from "../../../state/headbase";
 import {useWorkspaceContext} from "../../workspace/workspace-context";
 import {useCallback, useEffect} from "react";
 import {ContentFormOptions, useContentFormData} from "../form/useContentFormData";
 import {useHeadbase} from "@headbase-toolkit/react/use-headbase";
+import {TableSchema, TableTypes} from "@headbase-toolkit/schemas/schema";
 
 export interface ContentTabProps extends WithTabData, ContentFormOptions {}
 
 export function ContentTab(props: ContentTabProps) {
-	const {headbase, currentDatabaseId} = useHeadbase<HeadbaseTableTypes, HeadbaseTableSchemas>()
+	const {headbase, currentDatabaseId} = useHeadbase<TableTypes, TableSchema>()
 	const { replaceTab, setTabName, setTabIsUnsaved, closeTab } = useWorkspaceContext()
 
 	const {

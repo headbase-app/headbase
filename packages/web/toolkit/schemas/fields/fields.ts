@@ -1,7 +1,7 @@
 import {z} from "zod";
 import isISO8601Date from 'validator/lib/isISO8601';
 import { FIELD_TYPES } from "./field-types";
-import {IdField} from "@headbase-toolkit/types/fields";
+import {createIdField} from "@headbase-app/common";
 
 /**
  * Base field definition inherited by all fields.
@@ -199,7 +199,7 @@ export const FieldValues = z.union([
 export type FieldValues = z.infer<typeof FieldValues>
 
 export const FieldStorage = z.record(
-	IdField,
+	createIdField(),
 	FieldValues
 )
 export type FieldStorage = z.infer<typeof FieldStorage>

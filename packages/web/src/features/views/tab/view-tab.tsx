@@ -4,21 +4,21 @@ import {ErrorCallout} from "../../../patterns/components/error-callout/error-cal
 import {useWorkspaceContext} from "../../workspace/workspace-context";
 import {JButton} from "@ben-ryder/jigsaw-react";
 import {useEffect, useState} from "react";
-import {ContentDto} from "../../../state/schemas/content/content";
 import {ContentCard} from "../../../patterns/components/content-card/content-card";
 
 import "./view-tab.scss"
 import {useHeadbase} from "@headbase-toolkit/react/use-headbase";
-import {HeadbaseTableSchemas, HeadbaseTableTypes} from "../../../state/headbase";
-import {IndexWhereOption} from "@headbase-toolkit/types/query";
 import {useContent} from "@headbase-toolkit/react/use-content";
+import {TableSchema, TableTypes} from "@headbase-toolkit/schemas/schema";
+import {ContentDto} from "@headbase-toolkit/schemas/content/content";
+import {IndexWhereOption} from "@headbase-toolkit/schemas/query";
 
 export interface ViewTabProps extends WithTabData {
 	viewId: string
 }
 
 export function ViewTab(props: ViewTabProps) {
-	const {currentDatabaseId, headbase} = useHeadbase<HeadbaseTableTypes, HeadbaseTableSchemas>()
+	const {currentDatabaseId, headbase} = useHeadbase<TableTypes, TableSchema>()
 	const { openTab, setTabName } = useWorkspaceContext()
 	const viewQuery = useContent(currentDatabaseId, 'views', props.viewId)
 
@@ -34,11 +34,13 @@ export function ViewTab(props: ViewTabProps) {
 	 * A hook to set and load the content based on the viewQuery result
 	 */
 	useEffect(() => {
+		if (!headbase || !currentDatabaseId) return 
+
 		if (viewQuery.status === 'loading' || viewQuery.status === 'error') {
 			setResults([])
 		}
 		else if (currentDatabaseId) {
-			const queryIndex: IndexWhereOption<HeadbaseTableTypes, HeadbaseTableSchemas, 'content'>|undefined = viewQuery.result.data.queryContentTypes.length > 0 ?
+			const queryIndex: IndexWhereOption<TableTypes, TableSchema, 'content'>|undefined = viewQuery.result.data.queryContentTypes.length > 0 ?
 				{
 					field: 'type',
 					operation: 'includes',

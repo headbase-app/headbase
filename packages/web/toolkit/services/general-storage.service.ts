@@ -1,11 +1,6 @@
-import {UserDto} from "@headbase-app/common";
 import * as z from "zod"
+import {LocalUserDto} from "../schemas/user";
 
-// todo: define somewhere else
-export const LocalUserDto = UserDto.extend({
-	serverUrl: z.string().url("must be a valid URL")
-})
-export type LocalUserDto = z.infer<typeof LocalUserDto>
 
 export class GeneralStorageService {
 	SERVER_URL_KEY = 'lf_server_url';

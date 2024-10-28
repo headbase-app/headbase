@@ -1,8 +1,8 @@
 import {useEffect, useState} from "react";
 import {LIVE_QUERY_LOADING_STATE, LiveQueryResult, LiveQueryStatus} from "../control-flow";
-import {LocalDatabaseDto} from "../types/database";
 import {useHeadbase} from "./use-headbase";
 import {Logger} from "../../src/utils/logger";
+import {LocalDatabaseDto} from "@headbase-toolkit/schemas/database";
 
 export function useDatabases() {
 	const { headbase } = useHeadbase()

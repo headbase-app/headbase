@@ -1,5 +1,5 @@
 import {z} from "zod"
-import {BooleanField, TimestampField} from "./fields";
+import {BooleanField, TimestampField} from "./common/fields";
 import {VaultDto} from "@headbase-app/common";
 
 export const LocalDatabaseEntity = VaultDto

@@ -1,8 +1,8 @@
-import {FieldDefinition} from "../../../state/schemas/fields/fields";
 import {JInput, JLabel, JSelect, JTextArea} from "@ben-ryder/jigsaw-react";
 import {ChangeEvent, useCallback} from "react";
 import {MarkdownEditor} from "../../../patterns/components/markdown-editor/markdown-editor";
 import {ScaleField} from "../../../patterns/components/scale-field/scale-field";
+import {FieldDefinition} from "@headbase-toolkit/schemas/fields/fields";
 
 export interface FieldProps {
 	field: FieldDefinition

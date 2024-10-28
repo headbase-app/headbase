@@ -1,16 +1,16 @@
 import { WithTabData } from "../../workspace/workspace";
-import {HeadbaseTableSchemas, HeadbaseTableTypes} from "../../../state/headbase";
 import {useWorkspaceContext} from "../../workspace/workspace-context";
 import {useCallback, useEffect} from "react";
 import {useViewFormData, ViewFormOptions} from "../form/useViewFormData";
 import {ViewForm} from "../form/view-form";
 import {JButton} from "@ben-ryder/jigsaw-react";
 import {useHeadbase} from "@headbase-toolkit/react/use-headbase";
+import {TableSchema, TableTypes} from "@headbase-toolkit/schemas/schema";
 
 export interface ViewEditTabProps extends WithTabData, ViewFormOptions {}
 
 export function ViewEditTab(props: ViewEditTabProps) {
-	const {currentDatabaseId, headbase} = useHeadbase<HeadbaseTableTypes, HeadbaseTableSchemas>()
+	const {currentDatabaseId, headbase} = useHeadbase<TableTypes, TableSchema>()
 	const { replaceTab, setTabName, setTabIsUnsaved, closeTab, openTab } = useWorkspaceContext()
 
 	const {

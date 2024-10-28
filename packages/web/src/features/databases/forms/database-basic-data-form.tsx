@@ -8,7 +8,7 @@ import {
 import {Controller, useForm} from "react-hook-form";
 import {zodResolver} from "@hookform/resolvers/zod";
 import {z} from "zod";
-import {CreateDatabaseDto} from "@headbase-toolkit/types/database";
+import {CreateDatabaseDto} from "@headbase-toolkit/schemas/database";
 
 export const DatabaseBasicFields = CreateDatabaseDto.omit({password: true})
 export type DatabaseBasicFields = z.infer<typeof DatabaseBasicFields>

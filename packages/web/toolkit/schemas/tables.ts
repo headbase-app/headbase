@@ -1,4 +1,4 @@
-import { LocalEntity } from "./data-entities";
+import {LocalEntity} from "@headbase-toolkit/schemas/entities";
 
 /**
  * The base type definition passed as a generic to Headbase.

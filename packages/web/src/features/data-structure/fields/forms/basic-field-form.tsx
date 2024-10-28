@@ -8,7 +8,7 @@ import {
 	FieldNumber,
 	FieldShortText, FieldTimestamp,
 	FieldURL
-} from "../../../../state/schemas/fields/fields";
+} from "@headbase-toolkit/schemas/fields/fields";
 import {Controller, useForm} from "react-hook-form";
 import {zodResolver} from "@hookform/resolvers/zod";
 import {z} from "zod";

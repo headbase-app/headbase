@@ -2,7 +2,7 @@ import {useEffect, useState} from "react";
 import {LIVE_QUERY_LOADING_STATE, LiveQueryResult, LiveQueryStatus} from "../control-flow";
 import {useHeadbase} from "./use-headbase";
 import {Logger} from "../../src/utils/logger";
-import {LocalUserDto} from "../services/general-storage.service";
+import {LocalUserDto} from "@headbase-toolkit/schemas/user";
 
 
 export function useCurrentUser() {

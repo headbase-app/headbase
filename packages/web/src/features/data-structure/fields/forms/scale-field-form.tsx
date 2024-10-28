@@ -2,9 +2,9 @@ import {
 	JInput, JButtonGroup, JButton, JForm, JFormContent, JFormRow, JErrorText, JTextArea, JProse
 } from "@ben-ryder/jigsaw-react";
 import {GenericFormProps} from "../../../../common/generic-form/generic-form";
-import { FieldScale } from "../../../../state/schemas/fields/fields";
 import {Controller, useForm} from "react-hook-form";
 import {zodResolver} from "@hookform/resolvers/zod";
+import {FieldScale} from "@headbase-toolkit/schemas/fields/fields";
 
 export interface ScaleFieldFormProps extends Omit<GenericFormProps<FieldScale>, 'title'> {}
 

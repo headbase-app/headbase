@@ -16,10 +16,15 @@ import {
 import {IDBPDatabase, openDB} from "idb";
 import {Logger} from "../../src/utils/logger";
 import {HEADBASE_INDEXDB_DATABASE_VERSION, HEADBASE_VERSION} from "../headbase-web";
-import {CreateDatabaseDto, LocalDatabaseDto, LocalDatabaseEntity, UpdateDatabaseDto} from "../types/database";
 import {EventsService} from "../services/events/events.service";
 import {KeyStorageService} from "../services/key-storage.service";
 import {EncryptionService} from "../services/encryption/encryption"
+import {
+	CreateDatabaseDto,
+	LocalDatabaseDto,
+	LocalDatabaseEntity,
+	UpdateDatabaseDto
+} from "../schemas/database";
 
 export interface DatabaseAPIDependencies {
 	eventService: EventsService

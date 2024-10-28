@@ -8,9 +8,9 @@ import {
 	JOptionData, JColourVariants, JButtonGroup, JButton, JArrowButton, JForm, JFormContent, JFormRow
 } from "@ben-ryder/jigsaw-react";
 import "./tag-form.scss";
-import { TagData } from "../../../../state/schemas/tags/tags";
-import { ColourVariants } from "../../../../state/schemas/common/fields";
 import {GenericFormProps} from "../../../../common/generic-form/generic-form";
+import {TagData} from "@headbase-toolkit/schemas/tags/tags";
+import {ColourVariants} from "@headbase-toolkit/schemas/common/fields";
 
 
 export function TagForm(props: GenericFormProps<TagData>) {

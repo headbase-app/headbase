@@ -1,10 +1,19 @@
-import {TagData} from "./schemas/tags/tags";
-import {FieldDefinition} from "./schemas/fields/fields";
-import {ContentTypeData} from "./schemas/content-types/content-types";
-import {ContentData} from "./schemas/content/content";
-import {ViewData} from "./schemas/views/views";
+import {TagData} from "./tags/tags";
+import {FieldDefinition} from "./fields/fields";
+import {ContentTypeData} from "./content-types/content-types";
+import {ContentData} from "./content/content";
+import {ViewData} from "./views/views";
+import {TableSchemaDefinitions} from "@headbase-toolkit/schemas/tables";
 
-export const HeadbaseTableSchemas = {
+export type TableTypes = {
+	tags: TagData
+	fields: FieldDefinition
+	content_types: ContentTypeData,
+	content: ContentData,
+	views: ViewData,
+}
+
+export const TableSchema = {
 	version: 1.1,
 	tables: {
 		tags: {
@@ -56,13 +65,5 @@ export const HeadbaseTableSchemas = {
 			useMemoryCache: false,
 		}
 	},
-} as const
-export type HeadbaseTableSchemas = typeof HeadbaseTableSchemas
-
-export type HeadbaseTableTypes = {
-	tags: TagData
-	fields: FieldDefinition
-	content_types: ContentTypeData,
-	content: ContentData,
-	views: ViewData,
-}
+} as const satisfies TableSchemaDefinitions<TableTypes>
+export type TableSchema = typeof TableSchema
