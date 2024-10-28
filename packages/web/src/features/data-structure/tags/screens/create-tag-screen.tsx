@@ -6,7 +6,7 @@ import {
 } from "../../../../common/generic-manager/generic-manager";
 import { TagForm } from "../forms/tag-form";
 import {useHeadbase} from "@headbase-toolkit/react/use-headbase";
-import {TagData} from "@headbase-toolkit/schemas/tags/tags";
+import {TagData} from "@headbase-toolkit/schemas/entities/tags";
 import {TableSchema, TableTypes} from "@headbase-toolkit/schemas/schema";
 
 export function CreateTagScreen(props: GenericManagerScreenProps) {

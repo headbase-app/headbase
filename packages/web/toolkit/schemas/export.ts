@@ -1,20 +1,20 @@
-import {TableTypeDefinitions, TableKeys} from "./tables";
+import {TableKeys} from "./schema";
+import {TableSchema} from "@headbase-toolkit/schemas/schema";
 
 export interface ExportEntity<
-	TableTypes extends TableTypeDefinitions,
-	TableKey extends TableKeys<TableTypes>
+	TableKey extends TableKeys
 > {
 	id: string
 	createdAt: string
 	updatedAt: string
 	headbaseVersion: string
 	schemaVersion: string
-	data: TableTypes[TableKey]
+	data: TableSchema['tables'][TableKey]
 }
 
-export type ExportData<TableTypes extends TableTypeDefinitions> = {
+export type ExportData = {
 	exportVersion: "v1";
 	data: {
-		[TableKey in TableKeys<TableTypes>]?: ExportEntity<TableTypes, TableKey>[];
+		[TableKey in TableKeys]?: ExportEntity<TableKey>[];
 	}
 };

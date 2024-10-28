@@ -14,8 +14,8 @@ import "./content-form.scss"
 import {useHeadbase} from "@headbase-toolkit/react/use-headbase";
 import {CustomField} from "./field";
 import {TableSchema, TableTypes} from "@headbase-toolkit/schemas/schema";
-import {FieldDefinition} from "@headbase-toolkit/schemas/fields/fields";
-import {EntityDto} from "@headbase-toolkit/schemas/entities";
+import {FieldDefinition} from "@headbase-toolkit/schemas/entities/fields/fields";
+import {EntityDto} from "@headbase-toolkit/schemas/common/entities";
 
 export interface ContentFormProps extends WithTabData, ContentFormData, ContentFormDataHandlers {
 	fields?: string[]

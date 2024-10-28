@@ -4,7 +4,7 @@ import {
 import {GenericFormProps} from "../../../../common/generic-form/generic-form";
 import {Controller, useForm} from "react-hook-form";
 import {zodResolver} from "@hookform/resolvers/zod";
-import {FieldScale} from "@headbase-toolkit/schemas/fields/fields";
+import {FieldScale} from "@headbase-toolkit/schemas/entities/fields/fields";
 
 export interface ScaleFieldFormProps extends Omit<GenericFormProps<FieldScale>, 'title'> {}
 

@@ -9,7 +9,7 @@ import {
 } from "@ben-ryder/jigsaw-react";
 import "./tag-form.scss";
 import {GenericFormProps} from "../../../../common/generic-form/generic-form";
-import {TagData} from "@headbase-toolkit/schemas/tags/tags";
+import {TagData} from "@headbase-toolkit/schemas/entities/tags";
 import {ColourVariants} from "@headbase-toolkit/schemas/common/fields";
 
 

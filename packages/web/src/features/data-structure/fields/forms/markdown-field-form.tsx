@@ -2,7 +2,7 @@ import {
 	JInput, JButtonGroup, JButton, JForm, JFormContent, JFormRow, JErrorText, JTextArea
 } from "@ben-ryder/jigsaw-react";
 import {GenericFormProps} from "../../../../common/generic-form/generic-form";
-import {FieldMarkdown} from "@headbase-toolkit/schemas/fields/fields";
+import {FieldMarkdown} from "@headbase-toolkit/schemas/entities/fields/fields";
 import {Controller, useForm} from "react-hook-form";
 import {zodResolver} from "@hookform/resolvers/zod";
 

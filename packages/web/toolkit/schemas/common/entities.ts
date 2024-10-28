@@ -1,5 +1,5 @@
 import {z} from "zod"
-import {BooleanField, TimestampField} from "./common/fields";
+import {BooleanField, TimestampField} from "./fields";
 import {createIdField} from "@headbase-app/common";
 
 /**

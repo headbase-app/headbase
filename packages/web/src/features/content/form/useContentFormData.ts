@@ -1,10 +1,10 @@
 import {useCallback, useEffect, useRef, useState} from "react";
 import {useHeadbase} from "@headbase-toolkit/react/use-headbase";
 import {TableSchema, TableTypes} from "@headbase-toolkit/schemas/schema";
-import {FieldStorage, FieldValues} from "@headbase-toolkit/schemas/fields/fields";
-import {EntityDto} from "@headbase-toolkit/schemas/entities";
-import {ContentTypeData} from "@headbase-toolkit/schemas/content-types/content-types";
-import {ContentData} from "@headbase-toolkit/schemas/content/content";
+import {FieldStorage, FieldValues} from "@headbase-toolkit/schemas/entities/fields/fields";
+import {EntityDto} from "@headbase-toolkit/schemas/common/entities";
+import {ContentTypeData} from "@headbase-toolkit/schemas/entities/content-types";
+import {ContentData} from "@headbase-toolkit/schemas/entities/content";
 
 // todo: make type require at least one of these?
 export interface ContentFormOptions {

@@ -10,7 +10,7 @@ import "./view-tab.scss"
 import {useHeadbase} from "@headbase-toolkit/react/use-headbase";
 import {useContent} from "@headbase-toolkit/react/use-content";
 import {TableSchema, TableTypes} from "@headbase-toolkit/schemas/schema";
-import {ContentDto} from "@headbase-toolkit/schemas/content/content";
+import {ContentDto} from "@headbase-toolkit/schemas/entities/content";
 import {IndexWhereOption} from "@headbase-toolkit/schemas/query";
 
 export interface ViewTabProps extends WithTabData {

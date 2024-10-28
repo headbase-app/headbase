@@ -10,8 +10,8 @@ import { ScaleFieldForm } from "../forms/scale-field-form";
 import { OptionsFieldForm } from "../forms/options-field-form";
 import {useContent} from "@headbase-toolkit/react/use-content";
 import {TableSchema, TableTypes} from "@headbase-toolkit/schemas/schema";
-import {FieldDefinition} from "@headbase-toolkit/schemas/fields/fields";
-import {FIELD_TYPES} from "@headbase-toolkit/schemas/fields/field-types";
+import {FieldDefinition} from "@headbase-toolkit/schemas/entities/fields/fields";
+import {FIELD_TYPES} from "@headbase-toolkit/schemas/entities/fields/field-types";
 
 
 export function EditFieldScreen(props: GenericManagerContentScreenProps) {

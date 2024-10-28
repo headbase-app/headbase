@@ -4,7 +4,7 @@ import { LiveQueryStatus } from "@headbase-toolkit/control-flow";
 import {useHeadbase} from "@headbase-toolkit/react/use-headbase";
 import {useContentQuery} from "@headbase-toolkit/react/use-content-query";
 import {TableSchema, TableTypes} from "@headbase-toolkit/schemas/schema";
-import {FIELD_TYPES} from "@headbase-toolkit/schemas/fields/field-types";
+import {FIELD_TYPES} from "@headbase-toolkit/schemas/entities/fields/field-types";
 
 
 export function ListFieldsScreen(props: GenericManagerScreenProps) {

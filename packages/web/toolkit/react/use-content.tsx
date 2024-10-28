@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import {Logger} from "../../src/utils/logger";
 import {useHeadbase} from "./use-headbase";
 import {TableKeys, TableTypeDefinitions} from "@headbase-toolkit/schemas/tables";
-import {EntityDto} from "@headbase-toolkit/schemas/entities";
+import {EntityDto} from "@headbase-toolkit/schemas/common/entities";
 
 
 export function useContent<

@@ -1,8 +1,7 @@
 import {Observable} from "rxjs";
 
-import {TransactionsAPIConfig, TransactionsAPI} from "./apis/transactions/transactions";
+import {TransactionsAPI} from "./apis/transactions/transactions";
 import { EventsService } from "./services/events/events.service";
-import {TableSchemaDefinitions, TableTypeDefinitions} from "./schemas/tables";
 import {DatabasesAPI} from "./apis/databases";
 import {EventTypes, HeadbaseEvent} from "./services/events/events";
 import {LIVE_QUERY_LOADING_STATE, LiveQueryResult, LiveQueryStatus} from "./control-flow";
@@ -15,40 +14,25 @@ export const HEADBASE_VERSION = '1.0'
 export const HEADBASE_INDEXDB_ENTITY_VERSION = 1
 export const HEADBASE_INDEXDB_DATABASE_VERSION = 1
 
-
-export interface HeadbaseWebConfig<
-	TableTypes extends TableTypeDefinitions,
-> {
-	tableSchemas: TransactionsAPIConfig<TableTypes>['tableSchemas']
-}
-
-export class HeadbaseWeb<
-	TableTypes extends TableTypeDefinitions,
-	TableSchemas extends TableSchemaDefinitions<TableTypes>
-> {
-	readonly #tableSchemas: TableSchemaDefinitions<TableTypes>
+export class HeadbaseWeb {
 	readonly #eventsService: EventsService
 	readonly #generalStorage: GeneralStorageService
 	readonly #sharedWorker: SharedWorker
 
 	readonly databases: DatabasesAPI
-	readonly tx: TransactionsAPI<TableTypes, TableSchemas>
+	readonly tx: TransactionsAPI
 	readonly server: ServerAPI
 
 	// todo: update on events firing etc
 	#logMessages: string[]
 
-	constructor(config: HeadbaseWebConfig<TableTypes>) {
-		this.#tableSchemas = config.tableSchemas
+	constructor() {
 		this.#eventsService = new EventsService()
 		this.#sharedWorker = new SharedWorkerService()
 		this.#generalStorage = new GeneralStorageService()
 
 		this.databases = new DatabasesAPI({eventService: this.#eventsService})
-		this.tx = new TransactionsAPI<TableTypes, TableSchemas>(
-			{
-				tableSchemas: this.#tableSchemas
-			},
+		this.tx = new TransactionsAPI(
 			{
 				eventsService: this.#eventsService,
 				databases: this.databases,

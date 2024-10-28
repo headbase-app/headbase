@@ -1,69 +1,73 @@
-import {TagData} from "./tags/tags";
-import {FieldDefinition} from "./fields/fields";
-import {ContentTypeData} from "./content-types/content-types";
-import {ContentData} from "./content/content";
-import {ViewData} from "./views/views";
-import {TableSchemaDefinitions} from "@headbase-toolkit/schemas/tables";
+import {TagData} from "./entities/tags";
+import {FieldDefinition} from "./entities/fields/fields";
+import {ContentTypeData} from "./entities/content-types";
+import {ContentData} from "./entities/content";
+import {ViewData} from "./entities/views";
 
-export type TableTypes = {
-	tags: TagData
-	fields: FieldDefinition
-	content_types: ContentTypeData,
-	content: ContentData,
-	views: ViewData,
-}
-
-export const TableSchema = {
+export const DATABASE_SCHEMA = {
 	version: 1.1,
 	tables: {
 		tags: {
 			currentSchema: 'v1',
 			schemas: {
 				v1: {
-					validator: async (d: unknown) => TagData.safeParse(d).success
+					validator: (d: unknown) => TagData.parse(d),
+					exposedFields: null,
 				}
 			},
+			migrateSchema: null,
 			useMemoryCache: true,
 		},
 		fields: {
 			currentSchema: 'v1',
 			schemas: {
 				v1: {
-					validator: async (d: unknown) => FieldDefinition.safeParse(d).success
+					validator: (d: unknown) => FieldDefinition.parse(d),
+					exposedFields: null
 				}
 			},
+			migrateSchema: null,
 			useMemoryCache: true,
 		},
 		content_types: {
 			currentSchema: 'v1',
 			schemas: {
 				v1: {
-					validator: async (d: unknown) => ContentTypeData.safeParse(d).success,
+					validator: (d: unknown) => ContentTypeData.parse(d),
 					exposedFields: {fields: 'plain', contentTemplateTags: 'plain'}
 				}
 			},
+			migrateSchema: null,
 			useMemoryCache: true,
 		},
 		content: {
 			currentSchema: 'v1',
 			schemas: {
 				v1: {
-					validator: async (d: unknown) => ContentData.safeParse(d).success,
+					validator: (d: unknown) => ContentData.parse(d),
 					exposedFields: {type: 'indexed', tags: 'plain', isFavourite: 'plain'}
 				},
 			},
+			migrateSchema: null,
 			useMemoryCache: false,
 		},
 		views: {
 			currentSchema: 'v1',
 			schemas: {
 				v1: {
-					validator: async (d: unknown) => ViewData.safeParse(d).success,
+					validator: (d: unknown) => ViewData.parse(d),
 					exposedFields: {isFavourite: 'plain', tags: 'plain', queryTags: 'plain', queryContentTypes: 'plain'}
 				},
 			},
+			migrateSchema: null,
 			useMemoryCache: false,
 		}
 	},
-} as const satisfies TableSchemaDefinitions<TableTypes>
-export type TableSchema = typeof TableSchema
+} as const
+export type DatabaseSchema = typeof DATABASE_SCHEMA
+
+export type DatabaseTables = keyof DatabaseSchema['tables']
+
+export type TableType<TableKey extends DatabaseTables> = ReturnType<DatabaseSchema['tables'][TableKey]['schemas'][DatabaseSchema['tables'][TableKey]['currentSchema']]['validator']>
+
+export type LocalEntityWithExposedFields<TableKey extends TableKeys> = DatabaseSchema['tables'][TableKey]

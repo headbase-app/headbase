@@ -1,6 +1,6 @@
 import {z} from "zod"
 import {ColourVariants, NameField} from "../common/fields";
-import {EntityDto} from "../entities";
+import {EntityDto} from "../common/entities";
 
 export const TagData = z.object({
 	name: NameField,

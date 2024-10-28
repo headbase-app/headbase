@@ -1,9 +1,9 @@
 import {
 	ErrorTypes,
+	HeadbaseError,
 	LIVE_QUERY_LOADING_STATE,
 	LiveQueryResult,
 	LiveQueryStatus,
-	HeadbaseError,
 	QueryResult
 } from "../../control-flow";
 import {EncryptionService} from "../../services/encryption/encryption";
@@ -11,14 +11,16 @@ import {memoryCache} from "../../services/memory-cache.service";
 import {Observable} from "rxjs";
 import {DataEntityChangeEvent, EventTypes} from "../../services/events/events";
 import {IDBPDatabase, openDB} from "idb";
-import {Entity, EntityCreateDto, EntityDto, EntityUpdate, EntityVersion, LocalEntity} from "../../schemas/entities";
+import {
+	Entity,
+	EntityCreateDto,
+	EntityDto,
+	EntityUpdate,
+	EntityVersion,
+	LocalEntity
+} from "../../schemas/common/entities";
 import {EventsService} from "../../services/events/events.service";
 import {Logger} from "../../../src/utils/logger";
-import {
-	LocalEntityWithExposedFields,
-	TableKeys, TableSchemaDefinitions,
-	TableTypeDefinitions,
-} from "../../schemas/tables";
 import {HEADBASE_INDEXDB_ENTITY_VERSION, HEADBASE_VERSION} from "../../headbase-web";
 import {TimestampField} from "../../schemas/common/fields";
 import {QueryDefinition, QueryIndex} from "../../schemas/query";
@@ -26,14 +28,7 @@ import {ExportData} from "../../schemas/export";
 import {KeyStorageService} from "../../services/key-storage.service";
 import {DatabasesAPI} from "../databases";
 import {createIdField} from "@headbase-app/common";
-import {TableSchema} from "@headbase-toolkit/schemas/schema";
-
-
-export interface TransactionsAPIConfig<
-	TableTypes extends TableTypeDefinitions
-> {
-	tableSchemas: TableSchemaDefinitions<TableTypes>,
-}
+import {TABLE_SCHEMA, TableKeys, TableSchema} from "@headbase-toolkit/schemas/schema";
 
 export interface TransactionsAPIDependencies {
 	eventsService: EventsService
@@ -44,22 +39,15 @@ export interface ConnectionStore {
 	[databaseId: string]: IDBPDatabase
 }
 
-
-export class TransactionsAPI<
-	TableTypes extends TableTypeDefinitions,
-	TableSchemas extends TableSchemaDefinitions<TableTypes>
-> {
-	readonly #tableSchemas: TableSchemaDefinitions<TableTypes>
+export class TransactionsAPI {
 	readonly #connectionStore: ConnectionStore
 	readonly #eventsService: EventsService
 	readonly #databases: DatabasesAPI
 
 	constructor(
-		config: TransactionsAPIConfig<TableTypes>,
 		deps: TransactionsAPIDependencies
 	) {
 		this.#connectionStore = {}
-		this.#tableSchemas = config.tableSchemas
 		this.#eventsService = deps.eventsService
 		this.#databases = deps.databases
 	}
@@ -75,7 +63,7 @@ export class TransactionsAPI<
 		this.#connectionStore[databaseId] = await openDB(databaseId, HEADBASE_INDEXDB_ENTITY_VERSION, {
 			// todo: handle upgrades to existing database versions
 			upgrade: (db) => {
-				for (const [tableKey, schemaDefinition] of Object.entries(this.#tableSchemas.tables)) {
+				for (const [tableKey, schemaDefinition] of Object.entries(TABLE_SCHEMA.tables)) {
 					// Create entity store
 					const entityStore = db.createObjectStore(tableKey, {
 						keyPath: 'id',
@@ -135,7 +123,7 @@ export class TransactionsAPI<
 	 * @param entity
 	 * @param version
 	 */
-	async _createEntityVersionDto<TableKey extends TableKeys<TableTypes>>(databaseId: string, tableKey: TableKey, entity: Entity, version: EntityVersion): Promise<EntityDto<TableTypes[TableKey]>> {
+	async _createEntityVersionDto<TableKey extends TableKeys>(databaseId: string, tableKey: TableKey, entity: Entity, version: EntityVersion): Promise<EntityDto<TableSchema['tables'][TableKey]>> {
 		const encryptionKey = await KeyStorageService.get(databaseId)
 		if (!encryptionKey) throw new Error(`encryptionKey not found for database ${databaseId}`)
 
@@ -153,16 +141,16 @@ export class TransactionsAPI<
 		// todo: add validating schema and version data?
 		// this would ensure data is valid, but may cause serious performance issue if loading lots of data
 
-		if (version.schemaVersion !== this.#tableSchemas['tables'][tableKey].currentSchema) {
-			if (!this.#tableSchemas['tables'][tableKey].migrateSchema) {
+		if (version.schemaVersion !== TABLE_SCHEMA['tables'][tableKey].currentSchema) {
+			if (!TABLE_SCHEMA['tables'][tableKey].migrateSchema) {
 				throw new HeadbaseError({
 					type: ErrorTypes.INVALID_OR_CORRUPTED_DATA,
-					devMessage: `Schema migration required from ${version.schemaVersion} to ${this.#tableSchemas['tables'][tableKey].currentSchema} but no migrateSchema method supplied`
+					devMessage: `Schema migration required from ${version.schemaVersion} to ${TABLE_SCHEMA['tables'][tableKey].currentSchema} but no migrateSchema method supplied`
 				})
 			}
 
 			// @ts-expect-error - the existence of migrateSchema is checked above, and passing this is fine.
-			data = await this.#tableSchemas[tableKey].migrateSchema(version.schemaVersion, this.#tableSchemas[tableKey].currentSchema, decryptedData.data)
+			data = await TABLE_SCHEMA[tableKey].migrateSchema(version.schemaVersion, TABLE_SCHEMA[tableKey].currentSchema, decryptedData.data)
 			await this.update(databaseId, tableKey, entity.id, data)
 		}
 
@@ -185,9 +173,9 @@ export class TransactionsAPI<
 	 * @param tableKey
 	 * @param id
 	 */
-	async get<TableKey extends TableKeys<TableTypes>>(databaseId: string, tableKey: TableKey, id: string): Promise<EntityDto<TableTypes[TableKey]>> {
-		if (this.#tableSchemas['tables'][tableKey].useMemoryCache) {
-			const cachedResponse = await memoryCache.get<TableTypes[TableKey]>(`${tableKey}-get-${id}`)
+	async get<TableKey extends TableKeys>(databaseId: string, tableKey: TableKey, id: string): Promise<EntityDto<TableSchema['tables'][TableKey]>> {
+		if (TABLE_SCHEMA['tables'][tableKey].useMemoryCache) {
+			const cachedResponse = await memoryCache.get<EntityDto<TableSchema['tables'][TableKey]>>(`${tableKey}-get-${id}`)
 			if (cachedResponse) {
 				return cachedResponse
 			}
@@ -226,7 +214,7 @@ export class TransactionsAPI<
 
 		const dto = await this._createEntityVersionDto<TableKey>(databaseId, tableKey, entity, version)
 
-		if (this.#tableSchemas['tables'][tableKey].useMemoryCache) {
+		if (TABLE_SCHEMA['tables'][tableKey].useMemoryCache) {
 			await memoryCache.add(`${tableKey}-get-${id}`, dto)
 		}
 
@@ -240,8 +228,8 @@ export class TransactionsAPI<
 	 * @param tableKey
 	 * @param ids
 	 */
-	async getMany<TableKey extends TableKeys<TableTypes>>(databaseId: string, tableKey: TableKey, ids: string[]): Promise<QueryResult<EntityDto<TableTypes[TableKey]>[]>> {
-		const dtos: EntityDto<TableTypes[TableKey]>[] = []
+	async getMany<TableKey extends TableKeys>(databaseId: string, tableKey: TableKey, ids: string[]): Promise<QueryResult<EntityDto<TableSchema['tables'][TableKey]>[]>> {
+		const dtos: EntityDto<TableSchema['tables'][TableKey]>[] = []
 		const errors: unknown[] = []
 
 		for (const id of ids) {
@@ -265,7 +253,7 @@ export class TransactionsAPI<
 	 * @param tableKey
 	 * @param data
 	 */
-	async create<TableKey extends TableKeys<TableTypes>>(databaseId: string, tableKey: TableKey, data: TableTypes[TableKey]): Promise<string> {
+	async create<TableKey extends TableKeys>(databaseId: string, tableKey: TableKey, data: TableSchema['tables'][TableKey]): Promise<string> {
 		const entityId = EncryptionService.generateUUID();
 		const timestamp = new Date().toISOString();
 
@@ -275,7 +263,7 @@ export class TransactionsAPI<
 			createdAt: timestamp,
 			updatedAt: timestamp,
 			headbaseVersion: HEADBASE_VERSION,
-			schemaVersion: this.#tableSchemas['tables'][tableKey].currentSchema,
+			schemaVersion: TABLE_SCHEMA['tables'][tableKey].currentSchema,
 			data,
 		})
 
@@ -289,10 +277,10 @@ export class TransactionsAPI<
 	 * @param tableKey
 	 * @param entityCreateDto
 	 */
-	private async _create<TableKey extends TableKeys<TableTypes>>(
+	private async _create<TableKey extends TableKeys>(
 		databaseId: string,
 		tableKey: TableKey,
-		entityCreateDto: EntityCreateDto<TableTypes[TableKey]>
+		entityCreateDto: EntityCreateDto<TableSchema['tables'][TableKey]>
 	): Promise<void> {
 		// todo: data should be validated here using schema validator before saving
 
@@ -325,9 +313,10 @@ export class TransactionsAPI<
 		}
 
 		// Process exposed fields, and add these to the entity before saving.
-		const exposedFields = this.#tableSchemas['tables'][tableKey].schemas[this.#tableSchemas['tables'][tableKey].currentSchema].exposedFields
+		const exposedFields = TABLE_SCHEMA['tables'][tableKey].schemas[TABLE_SCHEMA['tables'][tableKey].currentSchema].exposedFields
 		if (exposedFields) {
 			for (const field of Object.keys(exposedFields)) {
+				// @ts-expect-error -- todo: types - improve exposed fields type checking?
 				entity[field] = entityCreateDto.data[field]
 			}
 		}
@@ -351,10 +340,10 @@ export class TransactionsAPI<
 	 * @param dataUpdate
 	 * @param preventEventDispatch - UUseful in situations like data migrations, where an update is done while fetching data so an event shouldn't be triggered.
 	 */
-	async update<TableKey extends TableKeys<TableTypes>>(databaseId: string, tableKey: TableKey, entityId: string, dataUpdate: EntityUpdate<TableTypes[TableKey]>, preventEventDispatch?: boolean): Promise<string> {
+	async update<TableKey extends TableKeys>(databaseId: string, tableKey: TableKey, entityId: string, dataUpdate: EntityUpdate<TableSchema['tables'][TableKey]>, preventEventDispatch?: boolean): Promise<string> {
 		const oldEntity = await this.get(databaseId, tableKey, entityId)
 
-		if (this.#tableSchemas['tables'][tableKey].useMemoryCache) {
+		if (TABLE_SCHEMA['tables'][tableKey].useMemoryCache) {
 			await memoryCache.delete(`${tableKey}-get-${entityId}`)
 			await memoryCache.delete(`${tableKey}-getAll`)
 		}
@@ -384,7 +373,7 @@ export class TransactionsAPI<
 			createdAt: timestamp,
 			headbaseVersion: HEADBASE_VERSION,
 			data: encResult,
-			schemaVersion: this.#tableSchemas['tables'][tableKey].currentSchema
+			schemaVersion: TABLE_SCHEMA['tables'][tableKey].currentSchema
 		}
 		await tx.objectStore(this._getVersionTableName(tableKey)).add(newVersion)
 
@@ -397,9 +386,10 @@ export class TransactionsAPI<
 		}
 
 		// Process exposed fields, adding them to the updated entity before saving.
-		const exposedFields = this.#tableSchemas['tables'][tableKey].schemas[this.#tableSchemas['tables'][tableKey].currentSchema].exposedFields
+		const exposedFields = TABLE_SCHEMA['tables'][tableKey].schemas[TABLE_SCHEMA['tables'][tableKey].currentSchema].exposedFields
 		if (exposedFields) {
 			for (const field of Object.keys(exposedFields)) {
+				// @ts-expect-error -- todo: types - improve exposed fields type checking?
 				updatedEntity[field] = updatedData[field]
 			}
 		}
@@ -419,12 +409,12 @@ export class TransactionsAPI<
 	 * Delete the given entity, setting the 'isDeleted' flag ont eh entity and
 	 * deleting all versions.
 	 */
-	async delete<TableKey extends TableKeys<TableTypes>>(databaseId: string, tableKey: TableKey, entityId: string): Promise<void> {
+	async delete<TableKey extends TableKeys>(databaseId: string, tableKey: TableKey, entityId: string): Promise<void> {
 		const currentEntity = await this.get(databaseId, tableKey, entityId)
 
 		const db = await this.getIndexDbDatabase(databaseId)
 
-		if (this.#tableSchemas['tables'][tableKey].useMemoryCache) {
+		if (TABLE_SCHEMA['tables'][tableKey].useMemoryCache) {
 			await memoryCache.delete(`${tableKey}-get-${entityId}`)
 			await memoryCache.delete(`${tableKey}-getAll`)
 		}
@@ -458,7 +448,7 @@ export class TransactionsAPI<
 	/**
 	 * Query for content.
 	 */
-	async query<TableKey extends TableKeys<TableTypes>>(databaseId: string, query: QueryDefinition<TableTypes, TableSchemas, TableKey>): Promise<QueryResult<EntityDto<TableTypes[TableKey]>[]>> {
+	async query<TableKey extends TableKeys>(databaseId: string, query: QueryDefinition<TableKey>): Promise<QueryResult<EntityDto<TableSchema['tables'][TableKey]>[]>> {
 		// todo: add query memory cache?
 
 		const db = await this.getIndexDbDatabase(databaseId)
@@ -468,10 +458,12 @@ export class TransactionsAPI<
 		// In the case of an "includes" operation on the index, there will be one index for each value.
 		const indexes: QueryIndex[] = []
 		if (query.index) {
-			const exposedFields = this.#tableSchemas['tables'][query.table].schemas[this.#tableSchemas['tables'][query.table].currentSchema].exposedFields
+			const exposedFields = TABLE_SCHEMA['tables'][query.table].schemas[TABLE_SCHEMA['tables'][query.table].currentSchema].exposedFields
+			// @ts-expect-error -- todo: types - improve exposed fields type checking?
 			if (!exposedFields || !exposedFields[query.index.field]) {
 				throw new Error("Attempted to use an exposed field that does not exist.")
 			}
+			// @ts-expect-error -- todo: types - improve exposed fields type checking?
 			else if (exposedFields[query.index.field] !== 'indexed') {
 				throw new Error("Attempted to use an exposed fields that isn't of type 'indexed'.")
 			}
@@ -548,7 +540,7 @@ export class TransactionsAPI<
 		// Iterate over all indexes and all items in the index cursor, also running the user-supplied whereCursor function.
 		for (const queryIndex of indexes) {
 			for await (const entityCursor of queryIndex.index.iterate(queryIndex.query, queryIndex.direction)) {
-				const entity = entityCursor.value as LocalEntityWithExposedFields<TableTypes, TableSchema, TableKey>
+				const entity = entityCursor.value as LocalEntityWithExposedFields<TableKey>
 				let version: EntityVersion|undefined = undefined
 				if (entity.currentVersionId) {
 					version = await tx.objectStore(this._getVersionTableName(query.table)).get(entity.currentVersionId) as EntityVersion|undefined
@@ -585,7 +577,7 @@ export class TransactionsAPI<
 
 		await tx.done
 
-		const dataFilterResults: EntityDto<TableTypes[TableKey]>[] = []
+		const dataFilterResults: EntityDto<TableSchema['tables'][TableKey]>[] = []
 		for (const result of cursorResults) {
 			const dto = await this._createEntityVersionDto<TableKey>(
 				databaseId,
@@ -631,7 +623,7 @@ export class TransactionsAPI<
 	 * @param tableKey
 	 * @param entityId
 	 */
-	async getAllVersions<TableKey extends TableKeys<TableTypes>>(databaseId: string, tableKey: TableKey, entityId: string): Promise<EntityVersion[]> {
+	async getAllVersions<TableKey extends TableKeys>(databaseId: string, tableKey: TableKey, entityId: string): Promise<EntityVersion[]> {
 		const db = await this.getIndexDbDatabase(databaseId)
 
 		return await db.getAllFromIndex(this._getVersionTableName(tableKey), 'entityId', entityId)
@@ -640,7 +632,7 @@ export class TransactionsAPI<
 	/**
 	 * Delete all versions except the most recent.
 	 */
-	async deleteOldVersions<TableKey extends TableKeys<TableTypes>>(databaseId: string, tableKey: TableKey, entityId: string): Promise<void> {
+	async deleteOldVersions<TableKey extends TableKeys>(databaseId: string, tableKey: TableKey, entityId: string): Promise<void> {
 		const db = await this.getIndexDbDatabase(databaseId)
 
 		const versions = await this.getAllVersions(databaseId, tableKey, entityId)
@@ -672,7 +664,7 @@ export class TransactionsAPI<
 	 * @param tableKey
 	 * @param versionId
 	 */
-	async deleteVersion<TableKey extends TableKeys<TableTypes>>(databaseId: string, tableKey: TableKey, versionId: string): Promise<void> {
+	async deleteVersion<TableKey extends TableKeys>(databaseId: string, tableKey: TableKey, versionId: string): Promise<void> {
 		const db = await this.getIndexDbDatabase(databaseId)
 		await db.delete(this._getVersionTableName(tableKey), versionId)
 	}
@@ -684,7 +676,7 @@ export class TransactionsAPI<
 	 * @param tableKey
 	 * @param versionId
 	 */
-	async getVersion<TableKey extends TableKeys<TableTypes>>(databaseId: string, tableKey: TableKey, versionId: string): Promise<EntityVersion> {
+	async getVersion<TableKey extends TableKeys>(databaseId: string, tableKey: TableKey, versionId: string): Promise<EntityVersion> {
 		const db = await this.getIndexDbDatabase(databaseId)
 		return await db.get(this._getVersionTableName(tableKey), versionId)
 	}
@@ -696,7 +688,7 @@ export class TransactionsAPI<
 	 * @param tableKey
 	 * @param entityId
 	 */
-	async _getEntity<TableKey extends TableKeys<TableTypes>>(databaseId: string, tableKey: TableKey, entityId: string): Promise<LocalEntity> {
+	async _getEntity<TableKey extends TableKeys>(databaseId: string, tableKey: TableKey, entityId: string): Promise<LocalEntity> {
 		const db = await this.getIndexDbDatabase(databaseId)
 
 		const entity = await db.get(tableKey, entityId)
@@ -708,8 +700,8 @@ export class TransactionsAPI<
 		return entity
 	}
 
-	liveGet<TableKey extends TableKeys<TableTypes>>(databaseId: string, tableKey: TableKey, id: string) {
-		return new Observable<LiveQueryResult<EntityDto<TableTypes[TableKey]>>>((subscriber) => {
+	liveGet<TableKey extends TableKeys>(databaseId: string, tableKey: TableKey, id: string) {
+		return new Observable<LiveQueryResult<EntityDto<TableSchema['tables'][TableKey]>>>((subscriber) => {
 			subscriber.next(LIVE_QUERY_LOADING_STATE)
 
 			const runQuery = async () => {
@@ -743,8 +735,8 @@ export class TransactionsAPI<
 		})
 	}
 	
-	liveGetMany<TableKey extends TableKeys<TableTypes>>(databaseId: string, tableKey: TableKey, ids: string[]) {
-		return new Observable<LiveQueryResult<EntityDto<TableTypes[TableKey]>[]>>((subscriber) => {
+	liveGetMany<TableKey extends TableKeys>(databaseId: string, tableKey: TableKey, ids: string[]) {
+		return new Observable<LiveQueryResult<EntityDto<TableSchema['tables'][TableKey]>[]>>((subscriber) => {
 			subscriber.next(LIVE_QUERY_LOADING_STATE)
 
 			const runQuery = async () => {
@@ -776,8 +768,8 @@ export class TransactionsAPI<
 		})
 	}
 
-	liveQuery<TableKey extends TableKeys<TableTypes>>(databaseId: string, query: QueryDefinition<TableTypes, TableSchema, TableKey>) {
-		return new Observable<LiveQueryResult<EntityDto<TableTypes[TableKey]>[]>>((subscriber) => {
+	liveQuery<TableKey extends TableKeys>(databaseId: string, query: QueryDefinition<TableKey>) {
+		return new Observable<LiveQueryResult<EntityDto<TableSchema['tables'][TableKey]>[]>>((subscriber) => {
 			subscriber.next(LIVE_QUERY_LOADING_STATE)
 
 			const runQuery = async () => {
@@ -809,10 +801,10 @@ export class TransactionsAPI<
 		})
 	}
 
-	async export(databaseId: string): Promise<ExportData<TableTypes>> {
-		const entityKeys = Object.keys(this.#tableSchemas.tables)
+	async export(databaseId: string): Promise<ExportData> {
+		const entityKeys = Object.keys(TABLE_SCHEMA.tables)
 
-		const exportData: ExportData<TableTypes> = {
+		const exportData: ExportData = {
 			exportVersion: 'v1',
 			data: {}
 		}
@@ -820,7 +812,7 @@ export class TransactionsAPI<
 		for (const entityKey of entityKeys) {
 			const allDataQuery = await this.query(databaseId, {table: entityKey})
 
-			const exportEntities = allDataQuery.result.map(dto => {
+			exportData.data[entityKey] = allDataQuery.result.map(dto => {
 				return {
 					id: dto.id,
 					headbaseVersion: dto.headbaseVersion,
@@ -830,15 +822,12 @@ export class TransactionsAPI<
 					data: dto.data,
 				}
 			})
-
-			// @ts-expect-error -- just disable Typescript here, don't have the will power to get it to work :D
-			exportData.data[entityKey] = exportEntities
 		}
 
 		return exportData
 	}
 
-	async import(databaseId: string, importData: ExportData<TableTypes>): Promise<void> {
+	async import(databaseId: string, importData: ExportData): Promise<void> {
 		if (importData.exportVersion !== 'v1') {
 			throw new HeadbaseError({type: ErrorTypes.INVALID_OR_CORRUPTED_DATA, devMessage: "Unrecognized or missing export version"})
 		}
@@ -847,7 +836,7 @@ export class TransactionsAPI<
 			throw new HeadbaseError({type: ErrorTypes.INVALID_OR_CORRUPTED_DATA, devMessage: "Unrecognized or missing export data"})
 		}
 
-		const validTableKeys = Object.keys(this.#tableSchemas.tables)
+		const validTableKeys = Object.keys(TABLE_SCHEMA.tables)
 		const importTableKeys = Object.keys(importData.data)
 		for (const importTableKey of importTableKeys) {
 			if (!validTableKeys.includes(importTableKey)) {
@@ -877,14 +866,14 @@ export class TransactionsAPI<
 					throw new HeadbaseError({type: ErrorTypes.INVALID_OR_CORRUPTED_DATA, devMessage: `Unrecognised Headbase version ${entityToImport.headbaseVersion} for ${importTableKey} entity ${entityToImport.id}`})
 				}
 
-				const validSchemaKeys = Object.keys(this.#tableSchemas.tables[importTableKey].schemas)
+				const validSchemaKeys = Object.keys(TABLE_SCHEMA.tables[importTableKey].schemas)
 				if (!validSchemaKeys.includes(entityToImport.schemaVersion)) {
 					throw new HeadbaseError({type: ErrorTypes.INVALID_OR_CORRUPTED_DATA, devMessage: `Unrecognised schema version ${entityToImport.schemaVersion} for ${importTableKey} entity ${entityToImport.id}`})
 				}
 
 				let dataIsValid = false
 				try {
-					dataIsValid = await this.#tableSchemas.tables[importTableKey].schemas[entityToImport.schemaVersion].validator(entityToImport.data)
+					dataIsValid = await TABLE_SCHEMA.tables[importTableKey].schemas[entityToImport.schemaVersion].validator(entityToImport.data)
 				}
 				catch (e) {
 					throw new HeadbaseError({type: ErrorTypes.INVALID_OR_CORRUPTED_DATA, devMessage: `Validator function failed unexpectedly for ${importTableKey} entity ${entityToImport.id}`, originalError: e})
@@ -894,21 +883,21 @@ export class TransactionsAPI<
 				}
 
 				let dataToImport = entityToImport.data
-				if (entityToImport.schemaVersion !== this.#tableSchemas.tables[importTableKey].currentSchema) {
-					if (!this.#tableSchemas.tables[importTableKey].migrateSchema) {
+				if (entityToImport.schemaVersion !== TABLE_SCHEMA.tables[importTableKey].currentSchema) {
+					if (!TABLE_SCHEMA.tables[importTableKey].migrateSchema) {
 						throw new HeadbaseError({
 							type: ErrorTypes.SYSTEM_ERROR,
-							devMessage: `${importTableKey} entity ${entityToImport.id} required schema migration from ${entityToImport.schemaVersion} to ${this.#tableSchemas.tables[importTableKey].currentSchema} but no migration method was provided`,
+							devMessage: `${importTableKey} entity ${entityToImport.id} required schema migration from ${entityToImport.schemaVersion} to ${TABLE_SCHEMA.tables[importTableKey].currentSchema} but no migration method was provided`,
 						})
 					}
 					try {
 						// @ts-expect-error -- we have checked that migrateSchema exists above
-						dataToImport = this.#tableSchemas.tables[importTableKey].migrateSchema(this, entityToImport.schemaVersion, this.#tableSchemas.tables[importTableKey].currentSchema, entityToImport.data)
+						dataToImport = TABLE_SCHEMA.tables[importTableKey].migrateSchema(this, entityToImport.schemaVersion, TABLE_SCHEMA.tables[importTableKey].currentSchema, entityToImport.data)
 					}
 					catch (e) {
 						throw new HeadbaseError({
 							type: ErrorTypes.SYSTEM_ERROR,
-							devMessage: `Error occurred during schema migration for ${importTableKey} entity ${entityToImport.id}. Attempted migration was ${entityToImport.schemaVersion} to ${this.#tableSchemas.tables[importTableKey].currentSchema}.`,
+							devMessage: `Error occurred during schema migration for ${importTableKey} entity ${entityToImport.id}. Attempted migration was ${entityToImport.schemaVersion} to ${TABLE_SCHEMA.tables[importTableKey].currentSchema}.`,
 						})
 					}
 				}
@@ -935,7 +924,7 @@ export class TransactionsAPI<
 						isDeleted: 0,
 						headbaseVersion: entityToImport.headbaseVersion,
 						// Schema will have always migrated to current schema at this point,
-						schemaVersion: this.#tableSchemas.tables[importTableKey].currentSchema,
+						schemaVersion: TABLE_SCHEMA.tables[importTableKey].currentSchema,
 						data: dataToImport
 					})
 					console.debug(`Created ${importTableKey} entity ${entityToImport.id}`)

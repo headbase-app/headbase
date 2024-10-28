@@ -1,10 +1,11 @@
-import {EntityDto, EntityVersion} from "./entities";
+import {EntityDto, EntityVersion} from "./common/entities";
 import {IDBPIndex} from "idb";
 import {
 	TableKeys,
-	TableSchemaDefinitions, TableTypeExposedFields, TableTypeDefinitions,
+	ExposedFields,
 	LocalEntityWithExposedFields,
-} from "./tables";
+} from "./schema";
+import {TableSchema} from "@headbase-toolkit/schemas/schema";
 
 export type EqualFilter = {
 	operation: 'equal',
@@ -27,37 +28,30 @@ export type IncludesFilter = {
 export type IndexFilters = EqualFilter | RangeFilter | IncludesFilter
 
 export type IndexWhereOption<
-	TableTypes extends TableTypeDefinitions,
-	TableSchemas extends TableSchemaDefinitions<TableTypes>,
-	TableKey extends TableKeys<TableTypes>
+	TableKey extends TableKeys
 > = {
-	field: TableTypeExposedFields<TableTypes, TableSchemas, TableKey>
+	field: ExposedFields<TableKey>
 } & IndexFilters
 
 export type WhereCursor<
-	TableTypes extends TableTypeDefinitions,
-	TableSchemas extends TableSchemaDefinitions<TableTypes>,
-	TableKey extends TableKeys<TableTypes>
+	TableKey extends TableKeys
 > = (
-	entity: LocalEntityWithExposedFields<TableTypes, TableSchemas, TableKey>,
+	entity: LocalEntityWithExposedFields<TableKey>,
 	version: EntityVersion,
 ) => boolean
 
 export type WhereData<
-	TableTypes extends TableTypeDefinitions,
-	TableKey extends TableKeys<TableTypes>
-> = (entityDto: EntityDto<TableTypes[TableKey]>) => boolean
+	TableKey extends TableKeys
+> = (entityDto: EntityDto<TableSchema['tables'][TableKey]>) => boolean
 
 export interface QueryDefinition<
-	TableTypes extends TableTypeDefinitions,
-	TableSchemas extends TableSchemaDefinitions<TableTypes>,
-	TableKey extends TableKeys<TableTypes>
+	TableKey extends TableKeys
 > {
 	table: TableKey
-	index?: IndexWhereOption<TableTypes, TableSchemas, TableKey>
-	whereCursor?: WhereCursor<TableTypes, TableSchemas, TableKey>
-	whereData?: WhereData<TableTypes, TableKey>
-	sort?: (entityDto: EntityDto<TableTypes[TableKey]>[]) => EntityDto<TableTypes[TableKey]>[],
+	index?: IndexWhereOption<TableKey>
+	whereCursor?: WhereCursor<TableKey>
+	whereData?: WhereData<TableKey>
+	sort?: (entityDto: EntityDto<TableSchema['tables'][TableKey]>[]) => EntityDto<TableSchema['tables'][TableKey]>[],
 }
 
 export interface QueryIndex {

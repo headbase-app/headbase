@@ -1,6 +1,6 @@
 import {z} from "zod"
 import {ColourVariants, DescriptionField, NameField} from "../common/fields";
-import {EntityDto} from "../entities";
+import {EntityDto} from "../common/entities";
 import {createIdField} from "@headbase-app/common";
 
 export const ContentTypeData = z.object({

@@ -1,7 +1,7 @@
 import {useEffect, useRef, useState} from "react";
 import {useHeadbase} from "@headbase-toolkit/react/use-headbase";
 import { LiveQueryStatus } from "@headbase-toolkit/control-flow";
-import {ViewDto} from "@headbase-toolkit/schemas/views/views";
+import {ViewDto} from "@headbase-toolkit/schemas/entities/views";
 import {TableSchema, TableTypes} from "@headbase-toolkit/schemas/schema";
 
 export interface ViewFormOptions {

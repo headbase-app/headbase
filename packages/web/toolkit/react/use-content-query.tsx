@@ -4,7 +4,7 @@ import {Logger} from "../../src/utils/logger";
 import {useHeadbase} from "./use-headbase";
 import {TableKeys, TableSchemaDefinitions, TableTypeDefinitions} from "@headbase-toolkit/schemas/tables";
 import {QueryDefinition} from "@headbase-toolkit/schemas/query";
-import {EntityDto} from "@headbase-toolkit/schemas/entities";
+import {EntityDto} from "@headbase-toolkit/schemas/common/entities";
 
 
 export function useContentQuery<

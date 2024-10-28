@@ -7,7 +7,7 @@ import {
 import {ContentTypeForm} from "../forms/content-type-form";
 import {useHeadbase} from "@headbase-toolkit/react/use-headbase";
 import {TableSchema, TableTypes} from "@headbase-toolkit/schemas/schema";
-import {ContentTypeData} from "@headbase-toolkit/schemas/content-types/content-types";
+import {ContentTypeData} from "@headbase-toolkit/schemas/entities/content-types";
 
 export function CreateContentTypeScreen(props: GenericManagerScreenProps) {
 	const {headbase, currentDatabaseId} = useHeadbase<TableTypes, TableSchema>()

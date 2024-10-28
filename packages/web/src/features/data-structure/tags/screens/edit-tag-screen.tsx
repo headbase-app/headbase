@@ -7,7 +7,7 @@ import {
 } from "../../../../common/generic-manager/generic-manager";
 import {useHeadbase} from "@headbase-toolkit/react/use-headbase";
 import {useContent} from "@headbase-toolkit/react/use-content";
-import {TagData} from "@headbase-toolkit/schemas/tags/tags";
+import {TagData} from "@headbase-toolkit/schemas/entities/tags";
 import {TableSchema, TableTypes} from "@headbase-toolkit/schemas/schema";
 
 

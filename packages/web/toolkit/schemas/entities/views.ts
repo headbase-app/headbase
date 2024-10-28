@@ -1,6 +1,6 @@
 import {z} from "zod";
 import {DescriptionField, NameField, EntityReferenceListField, IsFavouriteField} from "../common/fields";
-import {EntityDto} from "../entities";
+import {EntityDto} from "../common/entities";
 
 export const ORDER_BY_FIELDS = ["createdAt", "updatedAt", "name"] as const
 export const OrderByFields = z.enum(ORDER_BY_FIELDS);
