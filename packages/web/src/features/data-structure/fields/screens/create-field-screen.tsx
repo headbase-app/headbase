@@ -10,13 +10,12 @@ import { JArrowButton, JButton } from "@ben-ryder/jigsaw-react";
 import {MarkdownFieldForm} from "../forms/markdown-field-form";
 import { ScaleFieldForm } from "../forms/scale-field-form";
 import { OptionsFieldForm } from "../forms/options-field-form";
-import {TableSchema, TableTypes} from "@headbase-toolkit/schemas/schema";
 import {FIELD_TYPES, FieldTypes} from "@headbase-toolkit/schemas/entities/fields/field-types";
 import {FieldDefinition} from "@headbase-toolkit/schemas/entities/fields/fields";
 
 export function CreateFieldScreen(props: GenericManagerScreenProps) {
 	const [errors, setErrors] = useState<unknown[]>([])
-	const { currentDatabaseId, headbase } = useHeadbase<TableTypes, TableSchema>()
+	const { currentDatabaseId, headbase } = useHeadbase()
 
 	const [fieldType, setFieldType] = useState<FieldTypes|null>(null);
 

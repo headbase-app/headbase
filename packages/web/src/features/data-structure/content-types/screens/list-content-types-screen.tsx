@@ -3,11 +3,10 @@ import { AdminList, AdminListItemProps } from "../../../../patterns/layout/admin
 import { LiveQueryStatus } from "@headbase-toolkit/control-flow";
 import {useHeadbase} from "@headbase-toolkit/react/use-headbase";
 import {useContentQuery} from "@headbase-toolkit/react/use-content-query";
-import {TableSchema, TableTypes} from "@headbase-toolkit/schemas/schema";
 
 
 export function ListContentTypesScreen(props: GenericManagerScreenProps) {
-	const {currentDatabaseId} = useHeadbase<TableTypes, TableSchema>()
+	const {currentDatabaseId} = useHeadbase()
 	const contentTypes = useContentQuery(currentDatabaseId, {table: 'content_types'})
 
 	const listItems: AdminListItemProps[] = contentTypes.status === LiveQueryStatus.SUCCESS

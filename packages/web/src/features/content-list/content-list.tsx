@@ -3,7 +3,6 @@ import {useWorkspaceContext} from "../workspace/workspace-context";
 import {ContentCard} from "../../patterns/components/content-card/content-card";
 import {useHeadbase} from "@headbase-toolkit/react/use-headbase";
 import {useContentQuery} from "@headbase-toolkit/react/use-content-query";
-import {TableSchema, TableTypes} from "@headbase-toolkit/schemas/schema";
 
 export interface SearchProps {
 	onOpen?: () => void
@@ -11,7 +10,7 @@ export interface SearchProps {
 
 
 export function ContentList(props: SearchProps) {
-	const {currentDatabaseId} = useHeadbase<TableTypes, TableSchema>()
+	const {currentDatabaseId} = useHeadbase()
 	const { openTab } = useWorkspaceContext()
 	const queryResult = useContentQuery(currentDatabaseId, {
 		table: 'content',

@@ -1,6 +1,6 @@
 import {useCallback, useEffect, useRef, useState} from "react";
 import {useHeadbase} from "@headbase-toolkit/react/use-headbase";
-import {TableSchema, TableTypes} from "@headbase-toolkit/schemas/schema";
+import {TableTypes} from "@headbase-toolkit/schemas/schema";
 import {FieldStorage, FieldValues} from "@headbase-toolkit/schemas/entities/fields/fields";
 import {EntityDto} from "@headbase-toolkit/schemas/common/entities";
 import {ContentTypeData} from "@headbase-toolkit/schemas/entities/content-types";
@@ -31,7 +31,7 @@ export interface ContentFormDataHandlers {
  * @param options
  */
 export function useContentFormData(options: ContentFormOptions) {
-	const {headbase, currentDatabaseId} = useHeadbase<TableTypes, TableSchema>()
+	const {headbase, currentDatabaseId} = useHeadbase()
 
 	const [contentTypeId, setContentTypeId] = useState<string | undefined>(options.contentTypeId)
 	const [contentType, setContentType] = useState<EntityDto<ContentTypeData> | undefined>()

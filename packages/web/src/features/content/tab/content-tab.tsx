@@ -5,12 +5,11 @@ import {useWorkspaceContext} from "../../workspace/workspace-context";
 import {useCallback, useEffect} from "react";
 import {ContentFormOptions, useContentFormData} from "../form/useContentFormData";
 import {useHeadbase} from "@headbase-toolkit/react/use-headbase";
-import {TableSchema, TableTypes} from "@headbase-toolkit/schemas/schema";
 
 export interface ContentTabProps extends WithTabData, ContentFormOptions {}
 
 export function ContentTab(props: ContentTabProps) {
-	const {headbase, currentDatabaseId} = useHeadbase<TableTypes, TableSchema>()
+	const {headbase, currentDatabaseId} = useHeadbase()
 	const { replaceTab, setTabName, setTabIsUnsaved, closeTab } = useWorkspaceContext()
 
 	const {

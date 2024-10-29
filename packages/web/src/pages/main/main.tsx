@@ -13,13 +13,13 @@ import {ContentListDialog, ContentListDialogProvider} from "../../features/conte
 import {DatabaseManagerDialog, DatabaseManagerDialogProvider} from "../../features/databases/manager/database-manager";
 import {AccountDialog, AccountDialogProvider} from "../../features/account/account-dialog";
 import {HeadbaseContextProvider} from "@headbase-toolkit/react/use-headbase";
-import {TableSchema} from "@headbase-toolkit/schemas/schema";
+
 
 export function MainPage() {
 	const [isMenuPanelOpen, setIsMenuPanelOpen] = useState<boolean>(true)
 
 	return (
-		<HeadbaseContextProvider tableSchemas={TableSchema}>
+		<HeadbaseContextProvider>
 			<WorkspaceContextProvider>
 				<DatabaseManagerDialogProvider>
 					<NewContentDialogProvider>

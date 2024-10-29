@@ -6,7 +6,7 @@ const SHORT_STRING = "Chapter - Firstname lastname"
 const TAG_NUMBER = 600
 const TAG_VERSIONS_NUMBER = 20
 
-export async function runTest(headbase: HeadbaseWeb<any, any>, report: ReportFunction) {
+export async function runTest(headbase: HeadbaseWeb, report: ReportFunction) {
 
 	const password = 'password1234'
 	const databaseId = await headbase.databases.create({name: 'perf test', syncEnabled: 0, password})
@@ -30,7 +30,7 @@ export async function runTest(headbase: HeadbaseWeb<any, any>, report: ReportFun
 	report({level: "message", text: `Full benchmark ran in ${benchmarkEndTime - benchmarkStartTime}ms`})
 }
 
-export async function createTestData(currentDatabaseId: string, headbase: HeadbaseWeb<any, any>, report: ReportFunction) {
+export async function createTestData(currentDatabaseId: string, headbase: HeadbaseWeb, report: ReportFunction) {
 	report({level: "section", text: "Tags"})
 	report({level: "task", text: "Creating Tags"})
 	const tagCreationStart = performance.now()
@@ -44,7 +44,7 @@ export async function createTestData(currentDatabaseId: string, headbase: Headba
 	report({level: "message", text: `created ${TAG_NUMBER} tags, with ${TAG_VERSIONS_NUMBER} versions each in ${tagCreationEnd - tagCreationStart}ms`})
 }
 
-export async function queryTestData(currentDatabaseId: string, headbase: HeadbaseWeb<any, any>, report: ReportFunction) {
+export async function queryTestData(currentDatabaseId: string, headbase: HeadbaseWeb, report: ReportFunction) {
 	report({level: "task", text: "Fetching Tags"})
 	const getTagsStart = performance.now()
 	const tagsQuery = await headbase.tx.query(currentDatabaseId, {table: 'tags'})

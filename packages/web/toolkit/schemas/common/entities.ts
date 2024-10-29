@@ -32,7 +32,6 @@ export const EntityVersion = z.object({
 	// All actual data is encrypted, so stored data will always be ciphertext string
 	data: z.string(),
 	headbaseVersion: z.string(),
-	schemaVersion: z.string()
 }).strict()
 export type EntityVersion = z.infer<typeof EntityVersion>
 
@@ -43,8 +42,6 @@ export type EntityVersion = z.infer<typeof EntityVersion>
  */
 export const EntityDtoBase = Entity.extend({
 	versionId: createIdField('versionId'),
-	// This will be the schema version of the version data.
-	schemaVersion: z.string(),
 	// This will be the version createdAt field, which conceptually is the updated timestamp.
 	updatedAt: TimestampField
 })
@@ -64,8 +61,6 @@ export type EntityUpdate<T> = Partial<T>
  * shared by both .create and .import
  */
 export interface EntityCreateDto<DataSchema> extends Entity {
-	schemaVersion: string
 	updatedAt: TimestampField
 	data: DataSchema
 }
-

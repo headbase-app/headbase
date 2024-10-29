@@ -6,11 +6,10 @@ import {
 } from "../../../../common/generic-manager/generic-manager";
 import {ContentTypeForm} from "../forms/content-type-form";
 import {useHeadbase} from "@headbase-toolkit/react/use-headbase";
-import {TableSchema, TableTypes} from "@headbase-toolkit/schemas/schema";
 import {ContentTypeData} from "@headbase-toolkit/schemas/entities/content-types";
 
 export function CreateContentTypeScreen(props: GenericManagerScreenProps) {
-	const {headbase, currentDatabaseId} = useHeadbase<TableTypes, TableSchema>()
+	const {headbase, currentDatabaseId} = useHeadbase()
 	const [errors, setErrors] = useState<unknown[]>([])
 
 	async function onSave(data: ContentTypeData) {

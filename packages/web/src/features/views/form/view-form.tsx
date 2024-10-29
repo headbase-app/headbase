@@ -12,7 +12,6 @@ import { ViewFormData, ViewFormDataHandlers } from "./useViewFormData";
 import "./view-form.scss"
 import {useHeadbase} from "@headbase-toolkit/react/use-headbase";
 import {useContentQuery} from "@headbase-toolkit/react/use-content-query";
-import {TableSchema, TableTypes} from "@headbase-toolkit/schemas/schema";
 
 export interface ViewFormProps extends WithTabData, ViewFormData, ViewFormDataHandlers {
 	onSave: () => void;
@@ -22,7 +21,7 @@ export interface ViewFormProps extends WithTabData, ViewFormData, ViewFormDataHa
 // todo: handle situation where content form is open and content gets deleted?
 
 export function ViewForm(props: ViewFormProps) {
-	const {currentDatabaseId} = useHeadbase<TableTypes, TableSchema>()
+	const {currentDatabaseId} = useHeadbase()
 	const [error, setError] = useState<string | null>(null);
 
 	const allTags = useContentQuery(currentDatabaseId, {table: 'tags'})

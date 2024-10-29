@@ -13,7 +13,6 @@ import {ContentFormData, ContentFormDataHandlers} from "./useContentFormData";
 import "./content-form.scss"
 import {useHeadbase} from "@headbase-toolkit/react/use-headbase";
 import {CustomField} from "./field";
-import {TableSchema, TableTypes} from "@headbase-toolkit/schemas/schema";
 import {FieldDefinition} from "@headbase-toolkit/schemas/entities/fields/fields";
 import {EntityDto} from "@headbase-toolkit/schemas/common/entities";
 
@@ -30,7 +29,7 @@ export interface ContentFormFields {
 // todo: handle situation where content form is open and content gets deleted?
 
 export function ContentForm(props: ContentFormProps) {
-	const {headbase, currentDatabaseId} = useHeadbase<TableTypes, TableSchema>()
+	const {headbase, currentDatabaseId} = useHeadbase()
 	const [error, setError] = useState<string | null>(null);
 
 	const tagQuery = useContentQuery(currentDatabaseId, {table: 'tags'})

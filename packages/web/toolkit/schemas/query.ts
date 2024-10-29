@@ -2,10 +2,8 @@ import {EntityDto, EntityVersion} from "./common/entities";
 import {IDBPIndex} from "idb";
 import {
 	TableKeys,
-	ExposedFields,
-	LocalEntityWithExposedFields,
+	LocalEntityWithExposedFields, ExposedFields, TableTypes,
 } from "./schema";
-import {TableSchema} from "@headbase-toolkit/schemas/schema";
 
 export type EqualFilter = {
 	operation: 'equal',
@@ -42,7 +40,7 @@ export type WhereCursor<
 
 export type WhereData<
 	TableKey extends TableKeys
-> = (entityDto: EntityDto<TableSchema['tables'][TableKey]>) => boolean
+> = (entityDto: EntityDto<TableTypes[TableKey]>) => boolean
 
 export interface QueryDefinition<
 	TableKey extends TableKeys
@@ -51,7 +49,7 @@ export interface QueryDefinition<
 	index?: IndexWhereOption<TableKey>
 	whereCursor?: WhereCursor<TableKey>
 	whereData?: WhereData<TableKey>
-	sort?: (entityDto: EntityDto<TableSchema['tables'][TableKey]>[]) => EntityDto<TableSchema['tables'][TableKey]>[],
+	sort?: (entityDto: EntityDto<TableTypes[TableKey]>[]) => EntityDto<TableTypes[TableKey]>[],
 }
 
 export interface QueryIndex {

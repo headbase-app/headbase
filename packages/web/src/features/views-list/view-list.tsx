@@ -4,14 +4,13 @@ import {ContentCard} from "../../patterns/components/content-card/content-card";
 import {useHeadbase} from "@headbase-toolkit/react/use-headbase";
 import { LiveQueryStatus } from "@headbase-toolkit/control-flow";
 import {useContentQuery} from "@headbase-toolkit/react/use-content-query";
-import {TableSchema, TableTypes} from "@headbase-toolkit/schemas/schema";
 
 export interface ViewListProps {
 	onOpen?: () => void
 }
 
 export function ViewList(props: ViewListProps) {
-	const {currentDatabaseId} = useHeadbase<TableTypes, TableSchema>()
+	const {currentDatabaseId} = useHeadbase()
 	const { openTab } = useWorkspaceContext()
 
 	const contentQuery = useContentQuery(currentDatabaseId, {

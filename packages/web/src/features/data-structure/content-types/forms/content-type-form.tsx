@@ -18,13 +18,12 @@ import { ErrorCallout } from "../../../../patterns/components/error-callout/erro
 import {useHeadbase} from "@headbase-toolkit/react/use-headbase";
 import {useContentQuery} from "@headbase-toolkit/react/use-content-query";
 import {ContentTypeData} from "@headbase-toolkit/schemas/entities/content-types";
-import {TableSchema, TableTypes} from "@headbase-toolkit/schemas/schema";
 import {ColourVariants} from "@headbase-toolkit/schemas/common/fields";
 import {FIELD_TYPES} from "@headbase-toolkit/schemas/entities/fields/field-types";
 
 
 export function ContentTypeForm(props: GenericFormProps<ContentTypeData>) {
-	const {currentDatabaseId, headbase} = useHeadbase<TableTypes, TableSchema>()
+	const {currentDatabaseId, headbase} = useHeadbase()
 	const [errors, setErrors] = useState<unknown[]>([]);
 
 	const [name, setName] = useState<string>(props.data.name);

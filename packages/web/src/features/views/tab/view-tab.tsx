@@ -9,7 +9,6 @@ import {ContentCard} from "../../../patterns/components/content-card/content-car
 import "./view-tab.scss"
 import {useHeadbase} from "@headbase-toolkit/react/use-headbase";
 import {useContent} from "@headbase-toolkit/react/use-content";
-import {TableSchema, TableTypes} from "@headbase-toolkit/schemas/schema";
 import {ContentDto} from "@headbase-toolkit/schemas/entities/content";
 import {IndexWhereOption} from "@headbase-toolkit/schemas/query";
 
@@ -18,7 +17,7 @@ export interface ViewTabProps extends WithTabData {
 }
 
 export function ViewTab(props: ViewTabProps) {
-	const {currentDatabaseId, headbase} = useHeadbase<TableTypes, TableSchema>()
+	const {currentDatabaseId, headbase} = useHeadbase()
 	const { openTab, setTabName } = useWorkspaceContext()
 	const viewQuery = useContent(currentDatabaseId, 'views', props.viewId)
 
@@ -40,7 +39,7 @@ export function ViewTab(props: ViewTabProps) {
 			setResults([])
 		}
 		else if (currentDatabaseId) {
-			const queryIndex: IndexWhereOption<TableTypes, TableSchema, 'content'>|undefined = viewQuery.result.data.queryContentTypes.length > 0 ?
+			const queryIndex: IndexWhereOption<'content'>|undefined = viewQuery.result.data.queryContentTypes.length > 0 ?
 				{
 					field: 'type',
 					operation: 'includes',

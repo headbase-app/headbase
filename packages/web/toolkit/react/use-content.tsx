@@ -2,13 +2,12 @@ import { LIVE_QUERY_LOADING_STATE, LiveQueryResult, LiveQueryStatus } from "../c
 import { useEffect, useState } from "react";
 import {Logger} from "../../src/utils/logger";
 import {useHeadbase} from "./use-headbase";
-import {TableKeys, TableTypeDefinitions} from "@headbase-toolkit/schemas/tables";
 import {EntityDto} from "@headbase-toolkit/schemas/common/entities";
+import {TableKeys, TableTypes} from "@headbase-toolkit/schemas/schema";
 
 
 export function useContent<
-	TableTypes extends TableTypeDefinitions,
-	TableKey extends TableKeys<TableTypes>
+	TableKey extends TableKeys
 >(databaseId: string|null, tableKey: TableKey, id: string) {
 	const { headbase } = useHeadbase()
 	const [result, setResult] = useState<LiveQueryResult<EntityDto<TableTypes[TableKey]>>>(LIVE_QUERY_LOADING_STATE)

@@ -7,10 +7,9 @@ import {
 import { TagForm } from "../forms/tag-form";
 import {useHeadbase} from "@headbase-toolkit/react/use-headbase";
 import {TagData} from "@headbase-toolkit/schemas/entities/tags";
-import {TableSchema, TableTypes} from "@headbase-toolkit/schemas/schema";
 
 export function CreateTagScreen(props: GenericManagerScreenProps) {
-	const {currentDatabaseId, headbase} = useHeadbase<TableTypes, TableSchema>()
+	const {currentDatabaseId, headbase} = useHeadbase()
 	const [errors, setErrors] = useState<unknown[]>([])
 
 	async function onSave(data: TagData) {

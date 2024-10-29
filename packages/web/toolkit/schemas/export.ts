@@ -1,5 +1,4 @@
-import {TableKeys} from "./schema";
-import {TableSchema} from "@headbase-toolkit/schemas/schema";
+import {TableKeys, TableTypes} from "./schema";
 
 export interface ExportEntity<
 	TableKey extends TableKeys
@@ -9,7 +8,7 @@ export interface ExportEntity<
 	updatedAt: string
 	headbaseVersion: string
 	schemaVersion: string
-	data: TableSchema['tables'][TableKey]
+	data: TableTypes[TableKey]
 }
 
 export type ExportData = {

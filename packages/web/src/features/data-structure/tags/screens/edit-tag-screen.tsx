@@ -8,14 +8,13 @@ import {
 import {useHeadbase} from "@headbase-toolkit/react/use-headbase";
 import {useContent} from "@headbase-toolkit/react/use-content";
 import {TagData} from "@headbase-toolkit/schemas/entities/tags";
-import {TableSchema, TableTypes} from "@headbase-toolkit/schemas/schema";
 
 
 export function EditTagScreen(props: GenericManagerContentScreenProps) {
-	const {currentDatabaseId, headbase} = useHeadbase<TableTypes, TableSchema>()
+	const {currentDatabaseId, headbase} = useHeadbase()
 	const [errors, setErrors] = useState<unknown[]>([])
 
-	const tagResult = useContent(currentDatabaseId, 'tag', props.id)
+	const tagResult = useContent(currentDatabaseId, 'tags', props.id)
 
 	async function onSave(updatedData: Partial<TagData>) {
 		if (!currentDatabaseId || !headbase) return setErrors([{type: ErrorTypes.NO_CURRENT_DATABASE}])
