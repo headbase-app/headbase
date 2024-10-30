@@ -1,25 +1,5 @@
 import { sqlite3Worker1Promiser } from '@sqlite.org/sqlite-wasm';
 
-/**
- * Links:
- * https://sqlite.org/wasm/doc/trunk/api-worker1.md#promiser.v2
- * https://sqlite.org/wasm/doc/trunk/api-oo1.md#db-exec
- * https://sqlite.org/lang.html
- * https://developer.chrome.com/blog/sqlite-wasm-in-the-browser-backed-by-the-origin-private-file-system/
- * https://github.com/sqlite/sqlite-wasm/issues/53
- * https://developer.mozilla.org/en-US/docs/Web/API/File_System_API/Origin_private_file_system
- *
- * todo:
- * - look at dev tools for debugging databases (at schema and data level)
- *  - add export functionality for user to download sqlite file from opfs. Likely via loading file and creating file blob to download
- *  - how to manage schemas? Could define or copy externally from JS to allow integrations with IDE, debugging tools and native sqlite tooling outside web browser?
- * - look at how to manage db init, resuming from previous db, handling migrations etc
- * - look at how to detect and handle OPFS and/or WASM not being available in users browser
- * - test performance with lots of rows and large data fields.
- * - look at ability to handle multiple databases, and how cross tab and cross window can work together
- * - look at accessing sqlite from within custom shared worker, which would be required for reading & writing during network sync
- */
-
 const initializeSQLite = async () => {
   try {
     const promiser = await new Promise((resolve) => {
