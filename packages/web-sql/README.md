@@ -9,6 +9,7 @@ Links:
 - https://developer.mozilla.org/en-US/docs/Web/API/File_System_API/Origin_private_file_system
 - https://github.com/rhashimoto/wa-sqlite/discussions/81
 - https://www.notion.so/blog/how-we-sped-up-notion-in-the-browser-with-wasm-sqlite
+- https://github.com/DallasHoff/sqlocal
 
 
 todo:
