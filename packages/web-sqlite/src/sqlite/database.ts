@@ -8,6 +8,7 @@ import DatabaseSharedWorker from "./shared.worker.ts?sharedworker"
 import migration1 from "./migrations/00-setup.sql?raw"
 import {CreateTagDto, TagDto, tags, tagsVersions} from "./schema/tags";
 
+const HEADBASE_VERSION = '1.0'
 const SCHEMA = {tags, tagsVersions}
 
 export type LiveQuery<DataPromise> = {
@@ -20,8 +21,6 @@ export type LiveQuery<DataPromise> = {
 	error: Error
 }
 
-
-const HEADBASE_VERSION = '1.0'
 
 export class Database {
 	readonly #contextId: string;
@@ -54,12 +53,14 @@ export class Database {
 		this.#sharedWorker = new DatabaseSharedWorker()
 
 		this.#broadcastChannel.addEventListener('message', this.#handleBroadcastEvent.bind(this))
-		this.#sharedWorker.port.start()
-		this.#sharedWorker.dispatchEvent(new CustomEvent('connect', {detail: {contextId: this.#contextId, databaseId: this.#databaseId}}))
+		this.#sharedWorker.port.postMessage({type: 'database-init', detail: {contextId: this.#contextId, databaseId: this.#databaseId}})
 
-		this.#sharedWorker.addEventListener('message', (e) => {
-			console.debug('from shared worker: ', e)
-		})
+		this.#sharedWorker.port.onmessage = async (message: MessageEvent) => {
+			console.debug('[shared-worker-client] received message from shared worker: ', message.data)
+			if (message.data.type === 'worker-tag-create') {
+				await this.createTag(message.data.detail.createTagDto)
+			}
+		}
 
 		navigator.locks.request(`headbase-${this.#databaseId}`, {signal: this.#databaseLockAbort.signal}, this.#setupDatabaseLock.bind(this))
 
@@ -77,7 +78,7 @@ export class Database {
 	async #setupDatabaseLock(lock: Lock | null) {
 		console.debug(`[database] acquired lock on '${lock?.name || this.#databaseId}' using context '${this.#contextId}'`);
 
-		this.#sharedWorker.dispatchEvent(new CustomEvent('database-lock', {detail: {databaseId: this.#databaseId, contextId: this.#contextId}}))
+		this.#sharedWorker.port.postMessage({type: 'database-lock', detail: {databaseId: this.#databaseId, contextId: this.#contextId}})
 
 		// Indefinitely maintain this lock by returning a promise.
 		// When the tab or database class is closed, the lock will be released and then another context can claim the lock if required.
@@ -90,9 +91,9 @@ export class Database {
 	}
 
 	async #handleBroadcastEvent(event: MessageEvent) {
-		console.debug(`[database] received broadcast message:`, event.data)
+		console.debug(`[broadcast] received broadcast message:`, event.data)
 		// Relay events to local event target so everywhere only has to subscribe to the single event source.
-		this.#events.dispatchEvent(new CustomEvent(event.data))
+		this.#events.dispatchEvent(new CustomEvent(event.data.type, event.data.detail))
 	}
 
 	async getTags(): Promise<TagDto[]> {
@@ -166,7 +167,12 @@ export class Database {
 		})
 
 		this.#events.dispatchEvent(new CustomEvent('tags-update'))
-		this.#broadcastChannel.postMessage('tags-update')
+		this.#broadcastChannel.postMessage({type: 'tags-update'})
+		this.#sharedWorker.port.postMessage({type: 'tags-update'})
+	}
+
+	requestWorkerCreateTag(createTagDto: CreateTagDto) {
+		this.#sharedWorker.port.postMessage({type: 'worker-tag-create', detail: {databaseId: this.#databaseId, createTagDto}})
 	}
 
 	async close() {

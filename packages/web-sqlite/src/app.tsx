@@ -13,11 +13,12 @@ export default function App() {
   useEffect(() => {
     if (!currentDatabaseId) return
 
-    console.debug('[react] creating instance')
+    console.debug('[react] creating database instance')
     const instance = new Database(currentDatabaseId);
     setDb(instance)
 
     return () => {
+      console.debug('[react] closing database instance')
       instance.close()
       setDb(null)
     }
@@ -56,16 +57,28 @@ export default function App() {
     })
   }
 
+  async function addItemViaWorker() {
+    if (!db || !currentDatabaseId) return
+
+    db.requestWorkerCreateTag({
+      name: 'example 1 - FROM WORKER',
+      createdBy: 'testing 1',
+      colour: 'blue'
+    })
+  }
+
   return (
     <>
       <label htmlFor='database-id'>Database ID</label>
       <input value={databaseIdInput || ''} onChange={(e) => setDatabaseIdInput(e.target.value)}/>
       <button onClick={() => {
         setCurrentDatabaseId(databaseIdInput)
-      }}>set database</button>
+      }}>set database
+      </button>
 
       <p>testing</p>
       <button onClick={addItem}>add test item</button>
+      <button onClick={addItemViaWorker}>add test item VIA WORKER LOCK</button>
 
       {isLoading && <p>Loading...</p>}
       <ul>
