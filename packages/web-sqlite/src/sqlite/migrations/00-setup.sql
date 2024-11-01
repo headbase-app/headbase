@@ -9,63 +9,80 @@
  */
 
 
--- Tags
 create table if not exists tags (
+    -- Common
     id text not null primary key,
     created_at text not null default (strftime('%FT%R:%fZ')),
     is_deleted integer not null default 0 check (is_deleted in (0, 1)),
     hbv text not null,
+    -- Common Entity
     current_version_id text
 );
 
 create table if not exists tags_versions (
-    entity_id text not null,
+    -- Common
     id text not null primary key,
     created_at text not null default (strftime('%FT%R:%fZ')),
+    is_deleted integer not null default 0 check (is_deleted in (0, 1)),
+    hbv text not null,
+    -- Common Version
+    entity_id text not null,
     previous_version_id text,
     created_by text not null,
-    hbv text not null,
+    -- Custom
     name text not null,
     colour text
 );
 
 create table if not exists fields (
+    -- Common
     id text not null primary key,
     created_at text not null default (strftime('%FT%R:%fZ')),
     is_deleted integer not null default 0 check (is_deleted in (0, 1)),
     hbv text not null,
+    -- Common Entity
     current_version_id text,
-    -- A fields type should never change, so this is added to the entity table not the version.
-    type text not null
+    -- Custom
+    type text not null -- A fields type should never change, so this is added to the entity table not the version.
 );
 
 create table if not exists fields_versions (
-    entity_id text not null,
+    -- Common
     id text not null primary key,
     created_at text not null default (strftime('%FT%R:%fZ')),
+    is_deleted integer not null default 0 check (is_deleted in (0, 1)),
+    hbv text not null,
+    -- Common Version
+    entity_id text not null,
     previous_version_id text,
     created_by text not null,
-    hbv text not null,
+    -- Custom
     label text not null,
     description text,
     settings json
 );
 
 create table if not exists content_types (
+    -- Common
     id text not null primary key,
     created_at text not null default (strftime('%FT%R:%fZ')),
     is_deleted integer not null default 0 check (is_deleted in (0, 1)),
     hbv text not null,
+    -- Common Entity
     current_version_id text
 );
 
 create table if not exists content_types_versions (
-    entity_id text not null,
+    -- Common
     id text not null primary key,
     created_at text not null default (strftime('%FT%R:%fZ')),
+    is_deleted integer not null default 0 check (is_deleted in (0, 1)),
+    hbv text not null,
+    -- Common Version
+    entity_id text not null,
     previous_version_id text,
     created_by text not null,
-    hbv text not null,
+    -- Custom
     name text not null,
     description text,
     icon text,
@@ -76,22 +93,28 @@ create table if not exists content_types_versions (
 );
 
 create table if not exists content (
+    -- Common
     id text not null primary key,
     created_at text not null default (strftime('%FT%R:%fZ')),
     is_deleted integer not null default 0 check (is_deleted in (0, 1)),
     hbv text not null,
-    current_version_id text,
-    -- A content items type should never change, so this is added to the entity table not the version.
-    type text not null
+    -- Common Entity
+    current_version_id text
+    -- Custom
+    type text not null -- A content items type should never change, so this is added to the entity table not the version.
 );
 
 create table if not exists content_versions (
-    entity_id text not null,
+    -- Common
     id text not null primary key,
     created_at text not null default (strftime('%FT%R:%fZ')),
+    is_deleted integer not null default 0 check (is_deleted in (0, 1)),
+    hbv text not null,
+    -- Common Version
+    entity_id text not null,
     previous_version_id text,
     created_by text not null,
-    hbv text not null,
+    -- Custom
     name text not null,
     is_favourite integer not null default 0 check (is_favourite in (0, 1)),
     tags json,
@@ -99,20 +122,26 @@ create table if not exists content_versions (
 );
 
 create table if not exists views (
+    -- Common
     id text not null primary key,
     created_at text not null default (strftime('%FT%R:%fZ')),
     is_deleted integer not null default 0 check (is_deleted in (0, 1)),
     hbv text not null,
+    -- Common Entity
     current_version_id text
 );
 
 create table if not exists views_versions (
-    entity_id text not null,
+    -- Common
     id text not null primary key,
     created_at text not null default (strftime('%FT%R:%fZ')),
+    is_deleted integer not null default 0 check (is_deleted in (0, 1)),
+    hbv text not null,
+    -- Common Version
+    entity_id text not null,
     previous_version_id text,
     created_by text not null,
-    hbv text not null,
+    -- Custom
     name text not null,
     description text,
     is_favourite integer not null default 0 check (is_favourite in (0, 1)),
