@@ -19,15 +19,15 @@ It is not just a "notes app" or a "task management app", it is what you decide t
 
 Your content in Headbase is built using four building blocks:
 - **Fields** are the core of your content, and range from basic types like text and numbers to more advanced types like media, scales and relationships.
-- **Content items** are just groups of fields with a title, edited together.
-- **Views** allow you to query your content items and display results using a list, kanban board, calendar, canvas and more.
-- **Templates** allow you to create re-usable groups of fields. This is where you define your concept of a note, task, recipe, bookmark... anything you want.
+- **Content items** are the main thing you create and edit by re-using your existing fields or creating more as you go.
+- **Views** allow you to query your content items and display the results using a list, kanban board, calendar, canvas and more.
+- **Templates** allow you to easily create content items with a pre-defined group of fields. This is where you define your concept of a note, task, recipe, bookmark... anything you want.
 
 If you want to learn more about how the Headbase content system works and see some examples, check out the **[content structure guide](./docs/content-structure.md)**.
 
 ### Cloud Features
 Headbase is a local-first progressive web app, meaning it's designed to work on your device and doesn't need an internet connection after you download it for the first time.  
-If you wish to enable features like cloud backups and cross-device synchronisation, you can do this by [self-hosting your own server](./docs/self-hosting.md).
+If you wish to enable features like cloud backups and cross-device synchronisation, you can do this by **[self-hosting your own server](./docs/self-hosting.md)**.
 
 ## Project Structure
 This is a monorepo containing all projects related to Headbase:
