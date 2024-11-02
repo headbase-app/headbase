@@ -2,8 +2,8 @@
 
 <div align="center">
 <p><b>⚠️ Under Active Development ⚠️</b></p>
-<p>This project is early in development and not yet ready for general use.<br>
-Dont trust this app with any critical data and expect bugs, missing docs, incomplete features etc!</p>
+<p>This app is early in development and not yet ready for general use.<br>
+Dont trust this app with any important data and expect bugs, missing docs, incomplete features etc!</p>
 </div>
 
 ---
@@ -12,20 +12,23 @@ Dont trust this app with any critical data and expect bugs, missing docs, incomp
 The customizable database for your brain. Note-taking, task-management, personal knowledge bases and more.
 
 ## About
-The way each person wants to organise their content (such as notes, tasks etc) is unique, personal and often use-case specific.  
-Headbase gives you the building blocks to create your own content databases, in your own way. It is not just a "notes app"
-or a "task management app", it is what you decide to build.  
+The way each person wants to organise content such as notes, tasks and more is unique, personal and often use-case specific.  
+Headbase gives you the building blocks to create your own content databases, in your own way.  
+It is not just a "notes app" or a "task management app", it is what you decide to build.  
 
-### Content Structure
+Headbase is built using four building blocks:
+- **Fields** are the core of headbase, and range from basic types like text and numbers to more advanced types like media, scales and relationships.
+- **Content items** are just a group of fields with a title, edited together.
+- **Views** allow you to query your content and display items using a list, kanban board, calendar, canvas and more.
+- **Templates** allow you to create re-usable groups of fields. This is where you define your concept of a note, task, recipe, bookmark... anything.
 
-You build your own content structure using "fields", "content types" and "views".  
-The diagram below gives a rough example of how this could work, and for more details visit the **[content structure guide](./docs/content-structure.md)**.
+If you want to learn more about how the Headbase content system works and see some examples, check out the **[content structure guide](./docs/content-structure.md)**.
 
-![](./docs/content-structure.png)
+![](./docs/headbase-data-structure.svg)
 
 ### Cloud Features
 Headbase is a local-first progressive web app, meaning it's designed to work on your device, and doesn't need an internet connection.  
-If you wish to enable features like cloud storage and cross device synchronisation, you can do this by self-hosting your own [Localful](https://github.com/ben-ryder/localful) server.
+If you wish to enable features like cloud storage and cross device synchronisation, you can do this by [self-hosting your own server](./docs/self-hosting.md).
 
 ## Project Structure
 This is a monorepo containing all projects related to Headbase:
