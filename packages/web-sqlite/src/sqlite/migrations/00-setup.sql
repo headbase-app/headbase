@@ -8,32 +8,6 @@
   as distinct files.
  */
 
-
-create table if not exists tags (
-    -- Common
-    id text not null primary key,
-    created_at text not null default (strftime('%FT%R:%fZ')),
-    is_deleted integer not null default 0 check (is_deleted in (0, 1)),
-    hbv text not null,
-    -- Common Entity
-    current_version_id text
-);
-
-create table if not exists tags_versions (
-    -- Common
-    id text not null primary key,
-    created_at text not null default (strftime('%FT%R:%fZ')),
-    is_deleted integer not null default 0 check (is_deleted in (0, 1)),
-    hbv text not null,
-    -- Common Version
-    entity_id text not null,
-    previous_version_id text,
-    created_by text not null,
-    -- Custom
-    name text not null,
-    colour text
-);
-
 create table if not exists fields (
     -- Common
     id text not null primary key,
@@ -62,7 +36,7 @@ create table if not exists fields_versions (
     settings json
 );
 
-create table if not exists content_types (
+create table if not exists content_items (
     -- Common
     id text not null primary key,
     created_at text not null default (strftime('%FT%R:%fZ')),
@@ -72,7 +46,7 @@ create table if not exists content_types (
     current_version_id text
 );
 
-create table if not exists content_types_versions (
+create table if not exists content_items_versions (
     -- Common
     id text not null primary key,
     created_at text not null default (strftime('%FT%R:%fZ')),
@@ -84,15 +58,10 @@ create table if not exists content_types_versions (
     created_by text not null,
     -- Custom
     name text not null,
-    description text,
-    icon text,
-    colour text,
-    template_name text,
-    template_tags json,
     fields json
 );
 
-create table if not exists content (
+create table if not exists templates (
     -- Common
     id text not null primary key,
     created_at text not null default (strftime('%FT%R:%fZ')),
@@ -100,11 +69,9 @@ create table if not exists content (
     hbv text not null,
     -- Common Entity
     current_version_id text
-    -- Custom
-    type text not null -- A content items type should never change, so this is added to the entity table not the version.
 );
 
-create table if not exists content_versions (
+create table if not exists templates_versions (
     -- Common
     id text not null primary key,
     created_at text not null default (strftime('%FT%R:%fZ')),
@@ -115,10 +82,8 @@ create table if not exists content_versions (
     previous_version_id text,
     created_by text not null,
     -- Custom
-    name text not null,
-    is_favourite integer not null default 0 check (is_favourite in (0, 1)),
-    tags json,
-    fields json
+    template_name text not null,
+    template_fields json
 );
 
 create table if not exists views (
@@ -129,6 +94,8 @@ create table if not exists views (
     hbv text not null,
     -- Common Entity
     current_version_id text
+    -- Custom
+    type text not null -- A views type should never change, so this is added to the entity table not the version.
 );
 
 create table if not exists views_versions (
@@ -144,7 +111,6 @@ create table if not exists views_versions (
     -- Custom
     name text not null,
     description text,
-    is_favourite integer not null default 0 check (is_favourite in (0, 1)),
-    tags json,
-    query json
+    template_options json
+    settings json
 );

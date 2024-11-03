@@ -17,7 +17,6 @@
   position: absolute;
   bottom: 0;
 
-  background: var(--j-c-atom-200);
   color: var(--j-c-primary-text);
   padding: var(--j-space-4);
   line-height: 0;
@@ -25,7 +24,7 @@
   box-shadow: var(--j-shadow-md);
 
   &:hover {
-    background: var(--j-c-atom-50);
+    background: var(--j-c-atom-200);
     cursor: pointer;
     box-shadow: none;
   }
@@ -35,9 +34,27 @@
   display: flex;
   align-items: center;
   width: max-content;
-  background-color: var(--j-c-background-f2);
-  border-top-right-radius: 5px;
-  border-top-left-radius: 5px;
+  position: relative;
+  height: 100%;
+
+  &:after {
+    content: "";
+    background-color: transparent;
+    width: 100%;
+    height: var(--j-space-2);
+    position: absolute;
+    bottom: 0;
+  }
+
+  &:hover {
+    background: var(--j-c-atom-200);
+  }
+
+  &--active {
+    &:after {
+      background-color: var(--j-c-primary);
+    }
+  }
 
   &__select,
   &__close {
@@ -46,8 +63,20 @@
 
     &:hover {
       cursor: pointer;
-      color: var(--j-c-primary);
     }
+  }
+
+  &__select {
+    padding: var(--j-space-4) var(--j-space-6);
+    padding-right: var(--j-space-16);
+    font-weight: var(--j-text-weight-medium);
+    display: flex;
+    align-items: center;
+  }
+
+  &__close {
+    position: absolute;
+    right: var(--j-space-3);
   }
 
   &__save-status {
@@ -58,42 +87,27 @@
       height: 8px;
       border-radius: 8px;
       background-color: var(--j-c-orange-400);
-      margin-left: var(--j-space-3);
+      margin-left: var(--j-space-2);
     }
-  }
-
-  &__select {
-    padding: var(--j-space-5);
-    padding-right: 0;
-    font-weight: var(--j-text-weight-medium);
   }
 
   &__close {
-    padding: var(--j-space-5);
-
     &:hover {
       color: var(--j-c-red-300);
     }
-  }
-
-  &--active {
-    background: var(--j-c-background);
   }
 }
 
 .workspace-tabs__list {
   display: flex;
-  gap: var(--j-space-5);
   overflow-x: scroll;
   min-height: 49px;
-
-  background-color: var(--j-c-background-f1);
-  padding-top: var(--j-space-5);
-  padding-left: var(--j-space-5);
-  padding-right: var(--j-space-5);
+  scrollbar-width: none;
+  border-bottom: var(--j-border-width-md) solid var(--j-c-background-f2);
 }
 
 .workspace-area {
   max-height: calc(100vh - 50px);
-  overflow: scroll;
+  overflow-y: scroll;
+  scrollbar-width: none;
 }

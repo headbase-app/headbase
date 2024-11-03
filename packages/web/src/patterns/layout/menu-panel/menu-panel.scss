@@ -13,7 +13,7 @@
   &:hover,
   &:focus {
     outline: none;
-    background-color: var(--j-c-atom-50);
+    background-color: var(--j-c-atom-100);
     color: var(--j-c-mono-200);
     cursor: pointer;
   }
@@ -23,15 +23,6 @@
   }
 }
 
-@mixin section-border {
-  content: '';
-  display: block;
-  height: var(--j-border-width-md);
-  width: calc(100% - var(--j-space-5)*2);
-  background-color: var(--j-c-blueGrey-800);
-  margin: auto;
-}
-
 .menu-panel {
   width: 100%;
   position: absolute;
@@ -39,7 +30,7 @@
   z-index: var(--j-z-layer-1);
   transition: all var(--j-motion-duration-medium) var(--j-motion-ease-in-out);
 
-  background: var(--j-c-atom-200);
+  background: var(--j-c-background-f1);
   color: var(--j-c-mono-100);
 
   @include breakpoint(md) {
@@ -58,10 +49,6 @@
   }
 
   &__database {
-    &::after {
-      @include section-border();
-    }
-
     &-content {
       padding: var(--j-space-3) var(--j-space-5);
       display: flex;
@@ -116,11 +103,6 @@
     position: absolute;
     bottom: 0;
     width: 100%;
-    background-color: var(--j-c-atom-200);
-
-    &::before {
-      @include section-border()
-    }
 
     &-content {
       display: flex;
