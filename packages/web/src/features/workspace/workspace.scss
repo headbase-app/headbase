@@ -16,12 +16,12 @@
 .workspace__menu-button {
   position: absolute;
   bottom: 0;
+  margin: var(--j-space-4);
 
   color: var(--j-c-primary-text);
   padding: var(--j-space-4);
   line-height: 0;
-  border-top-right-radius: var(--j-border-radius-md);
-  box-shadow: var(--j-shadow-md);
+  border-radius: var(--j-border-radius-md);
 
   &:hover {
     background: var(--j-c-atom-200);

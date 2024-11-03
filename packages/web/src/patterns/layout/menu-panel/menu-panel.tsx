@@ -1,6 +1,5 @@
 
 import {
-	PenLine as EditIcon,
 	CloudDownload as StatusDownloadIcon,
 	PlusSquare as NewContentIcon,
 	Search as SearchIcon,
@@ -11,6 +10,7 @@ import {
 	UserCircle as AccountIcon,
 	ChevronFirst as CollapseMenuIcon,
 	ChevronDown as DownArrowIcon,
+	Settings as SettingsIcon
 } from "lucide-react"
 import {MainPanelAction} from "./main-panel-action";
 
@@ -70,34 +70,43 @@ export function MenuPanel(props: WithMenuPanelProps) {
 
 	return (
 		// todo: review accessibility of showing/hiding menu
-		<div className={classNames('menu-panel', {'menu-panel--menu-hidden': !props.isMenuPanelOpen})}>
-			<div className="menu-panel__database">
-				<div className="menu-panel__database-content">
-					<JTooltip content='Manage databases' renderAsChild={true} variant='dark'>
-						<button
-							className="menu-panel__database-edit"
-							onClick={() => {
-								if (currentDatabase.status === LiveQueryStatus.SUCCESS) {
-									setDatabaseManagerDialogTab({type: 'edit', databaseId: currentDatabase.result.id})
-								}
-							}}
-						>
-							<span className="menu-panel__database-name" tabIndex={-1}>{currentDatabase.status === LiveQueryStatus.SUCCESS && currentDatabase.result.name}</span>
-							{currentDatabase && <JIcon><DownArrowIcon width={2} /></JIcon>}
-						</button>
-					</JTooltip>
-				</div>
+		<div className={classNames('menu-panel', {'menu-panel--collapsed': !props.isMenuPanelOpen})}>
+			<div className="menu-panel__top">
+				<JTooltip content='Manage databases' renderAsChild={true} variant='dark'>
+					<button
+						className="menu-panel__database-edit"
+						onClick={() => {
+							if (currentDatabase.status === LiveQueryStatus.SUCCESS) {
+								setDatabaseManagerDialogTab({type: 'edit', databaseId: currentDatabase.result.id})
+							}
+						}}
+					>
+						<span className="menu-panel__database-name" tabIndex={-1}>{currentDatabase.status === LiveQueryStatus.SUCCESS && currentDatabase.result.name}</span>
+						{currentDatabase && <JIcon><DownArrowIcon width={2} /></JIcon>}
+					</button>
+				</JTooltip>
+				<JTooltip content='Database status' renderAsChild={true} variant='dark'>
+					<button
+						aria-label='Database status'
+						className="menu-panel__status"
+						onClick={() => {
+							setStatusDialogOpen(true);
+						}}
+					><JIcon><StatusDownloadIcon /></JIcon></button>
+				</JTooltip>
+				<JTooltip content='Create content' renderAsChild={true} variant='dark'>
+					<button
+						className="menu-panel__create"
+						onClick={() => {
+							setNewContentDialogOpen(true)
+						}}
+					>
+						<JIcon><NewContentIcon/></JIcon>
+					</button>
+				</JTooltip>
 			</div>
 
 			<div className="menu-panel__actions">
-				<MainPanelAction
-					text='New Content'
-					icon={<NewContentIcon/>}
-					onSelect={() => {
-						setNewContentDialogOpen(true)
-					}}
-					isSpecial={true}
-				/>
 				<MainPanelAction
 					text='Search'
 					icon={<SearchIcon/>}
@@ -128,60 +137,46 @@ export function MenuPanel(props: WithMenuPanelProps) {
 				/>
 			</div>
 
-			<div className="menu-panel__favorites">
+			<div className="menu-panel__content-items">
 				<div className="menu-panel__favorites-header">
-					<h3>Favorite Views</h3>
+					<h3>Content items</h3>
 				</div>
 				<div>
-					No Favorites Found
+					No items found
 				</div>
 			</div>
 
-			<div className="menu-panel__favorites">
-				<div className="menu-panel__favorites-header">
-					<h3>Favorite Content</h3>
-				</div>
-				<div>
-					No Favorites Found
-				</div>
-			</div>
-
-			<div className="menu-panel__user">
-				<div className="menu-panel__user-content">
-					<JTooltip content="Account" renderAsChild={true} variant='dark'>
-						<button
-							aria-label='Open account settings'
-							className="menu-panel__account"
-							onClick={() => {
-								setAccountDialogOpen(true)
-							}}
-						><AccountIcon/></button>
-					</JTooltip>
-					<JTooltip content='Logs' renderAsChild={true} variant='dark'>
-						<button
-							aria-label='Open application logs'
-							className="menu-panel__logs"
-							onClick={() => {
-								setStatusDialogOpen(true);
-							}}
-						><JIcon><StatusDownloadIcon /></JIcon></button>
-					</JTooltip>
-					<JTooltip content="Help" renderAsChild={true} variant='dark'>
-						<button
-							aria-label='Open help'
-							className="menu-panel__help"
-						><HelpIcon/></button>
-					</JTooltip>
-					<JTooltip content="Collapse Menu" renderAsChild={true} variant='dark'>
-						<button
-							aria-label='Collapse Menu'
-							className="menu-panel__menu"
-							onClick={() => {
-								props.setIsMenuPanelOpen(false)
-							}}
-						><CollapseMenuIcon/></button>
-					</JTooltip>
-				</div>
+			<div className="menu-panel__bottom">
+				<JTooltip content="Account settings" renderAsChild={true} variant='dark'>
+					<button
+						aria-label='Account settings'
+						className="menu-panel__account"
+						onClick={() => {
+							setAccountDialogOpen(true)
+						}}
+					><AccountIcon/></button>
+				</JTooltip>
+				<JTooltip content="Settings" renderAsChild={true} variant='dark'>
+					<button
+						aria-label='Settings'
+						className="menu-panel__settings"
+					><SettingsIcon/></button>
+				</JTooltip>
+				<JTooltip content="Help" renderAsChild={true} variant='dark'>
+					<button
+						aria-label='Help'
+						className="menu-panel__help"
+					><HelpIcon/></button>
+				</JTooltip>
+				<JTooltip content="Hide menu" renderAsChild={true} variant='dark'>
+					<button
+						aria-label='Hide menu'
+						className="menu-panel__menu"
+						onClick={() => {
+							props.setIsMenuPanelOpen(false)
+						}}
+					><CollapseMenuIcon/></button>
+				</JTooltip>
 			</div>
 		</div>
 	)

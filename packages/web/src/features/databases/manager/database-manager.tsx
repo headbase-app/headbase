@@ -116,7 +116,7 @@ export function DatabaseManagerDialog() {
 			}}
 			role={openTab ? 'dialog' : 'alertdialog'}
 			disableOutsideClose={!currentDatabaseId}
-			title="Database Manager"
+			title="Manage databases"
 			description="Manage your current database"
 			content={dialogContent}
 		/>
