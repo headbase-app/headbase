@@ -1,7 +1,6 @@
 
 import {
 	PenLine as EditIcon,
-	Database as DatabaseListIcon,
 	CloudDownload as StatusDownloadIcon,
 	PlusSquare as NewContentIcon,
 	Search as SearchIcon,
@@ -10,7 +9,8 @@ import {
 	Shapes as DataStructureIcon,
 	HelpCircle as HelpIcon,
 	UserCircle as AccountIcon,
-	ChevronFirst as CollapseMenuIcon
+	ChevronFirst as CollapseMenuIcon,
+	ChevronDown as DownArrowIcon,
 } from "lucide-react"
 import {MainPanelAction} from "./main-panel-action";
 
@@ -73,15 +73,7 @@ export function MenuPanel(props: WithMenuPanelProps) {
 		<div className={classNames('menu-panel', {'menu-panel--menu-hidden': !props.isMenuPanelOpen})}>
 			<div className="menu-panel__database">
 				<div className="menu-panel__database-content">
-					<JTooltip content="All Databases" renderAsChild={true} variant='dark'>
-						<button
-							className="menu-panel__database-switch"
-							onClick={() => {
-								setDatabaseManagerDialogTab({type: 'list'})
-							}}
-						><JIcon><DatabaseListIcon /></JIcon></button>
-					</JTooltip>
-					<JTooltip content='Edit Database' renderAsChild={true} variant='dark'>
+					<JTooltip content='Manage databases' renderAsChild={true} variant='dark'>
 						<button
 							className="menu-panel__database-edit"
 							onClick={() => {
@@ -91,7 +83,7 @@ export function MenuPanel(props: WithMenuPanelProps) {
 							}}
 						>
 							<span className="menu-panel__database-name" tabIndex={-1}>{currentDatabase.status === LiveQueryStatus.SUCCESS && currentDatabase.result.name}</span>
-							{currentDatabase && <JIcon size='sm'><EditIcon/></JIcon>}
+							{currentDatabase && <JIcon><DownArrowIcon width={2} /></JIcon>}
 						</button>
 					</JTooltip>
 				</div>

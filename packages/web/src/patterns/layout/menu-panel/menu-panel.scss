@@ -31,7 +31,7 @@
   transition: all var(--j-motion-duration-medium) var(--j-motion-ease-in-out);
 
   background: var(--j-c-background-f1);
-  color: var(--j-c-mono-100);
+  color: var(--j-c-text);
 
   @include breakpoint(md) {
     width: var(--menu-panel-width);
@@ -50,7 +50,7 @@
 
   &__database {
     &-content {
-      padding: var(--j-space-3) var(--j-space-5);
+      padding: var(--j-space-4);
       display: flex;
       align-items: center;
     }
@@ -64,7 +64,7 @@
 
     &-edit {
       @include menu-panel-button();
-      padding: var(--j-space-3);
+      padding: var(--j-space-4);
 
       display: flex;
       align-items: center;
@@ -91,7 +91,7 @@
 
   &__actions {
     margin-top: var(--j-space-12);
-    padding: var(--j-space-3) var(--j-space-3);
+    padding: var(--j-space-4);
   }
 
   &__favorites {
