@@ -81,11 +81,11 @@ export function Workspace(props: WorkspaceProps) {
 	return (
 		<div className={classNames('workspace', {'workspace--menu-hidden': !props.isMenuPanelOpen})}>
 			{!props.isMenuPanelOpen && (
-				<JTooltip content='Open Menu' renderAsChild={true} variant='dark'>
+				<JTooltip content='Show menu' renderAsChild={true} variant='dark'>
 					<button
 						className='workspace__menu-button'
 						onClick={() => {props.setIsMenuPanelOpen(true)}}
-						title='Open Menu'
+						aria-label='Show Menu'
 					><ExpandMenuIcon size={24}/></button>
 				</JTooltip>
 			)}

@@ -1,0 +1,17 @@
+
+.j-input,
+.j-textarea ,
+.j-select,
+.j-multiselect {
+  &__element {
+    border-color: var(--j-c-blueGrey-700);
+
+    &:hover:not(:focus) {
+      border-color: var(--j-c-blueGrey-500);
+    }
+  }
+}
+
+.j-dialog__header {
+  border-bottom: none;
+}

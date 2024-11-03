@@ -15,8 +15,10 @@ export function Tab(props: TabProps) {
 		<div className={classNames('workspace-tab', {
 			'workspace-tab--active': props.isActive
 		})}>
-			<button className='workspace-tab__select' onClick={() => {props.onSelect()}}>{props.name}</button>
-			{props.isUnsaved && <span className='workspace-tab__save-status'><span className='j-hidden'>Unsaved</span></span>}
+			<button className='workspace-tab__select' onClick={() => {props.onSelect()}}>
+				{props.name}
+				{props.isUnsaved && <span className='workspace-tab__save-status'><span className='j-hidden'>Unsaved</span></span>}
+			</button>
 			<button className='workspace-tab__close' onClick={() => {props.onClose()}} aria-label={`Close tab ${props.name}`}><JIcon size='xs'><CloseIcon /></JIcon></button>
 		</div>
 	)
