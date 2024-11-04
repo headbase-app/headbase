@@ -1,4 +1,3 @@
-import { SQLocalDrizzle } from 'sqlocal/drizzle';
 import {drizzle, SqliteRemoteDatabase} from 'drizzle-orm/sqlite-proxy';
 import {desc, eq, sql} from "drizzle-orm";
 import {Observable} from "rxjs";
@@ -7,6 +6,8 @@ import DatabaseSharedWorker from "./shared.worker.ts?sharedworker"
 
 import migration1 from "./migrations/00-setup.sql?raw"
 import {CreateTagDto, TagDto, tags, tagsVersions} from "./schema/tags";
+import {DatabaseAdapter} from "./adapters/database.ts";
+import {WebDatabaseAdapter} from "./adapters/sqlite-worker.ts";
 
 const HEADBASE_VERSION = '1.0'
 const SCHEMA = {tags, tagsVersions}
@@ -21,14 +22,18 @@ export type LiveQuery<DataPromise> = {
 	error: Error
 }
 
+export interface DatabaseConfig {
+	databaseAdapter: typeof WebDatabaseAdapter
+}
+
 
 export class Database {
 	readonly #contextId: string;
 
 	readonly #databaseId: string;
 	readonly #databaseFilename: string;
-	readonly #sqLocal: SQLocalDrizzle
-	readonly #db: SqliteRemoteDatabase<typeof SCHEMA>
+	readonly #databaseAdapter: DatabaseAdapter;
+	readonly #database: SqliteRemoteDatabase<typeof SCHEMA>
 	#hasInit: boolean
 
 	readonly #events: EventTarget
@@ -37,13 +42,22 @@ export class Database {
 
 	readonly #databaseLockAbort: AbortController
 
-	constructor(databaseId: string) {
+	constructor(databaseId: string, config: DatabaseConfig) {
 		this.#contextId = window.crypto.randomUUID()
 
 		this.#databaseId = databaseId;
 		this.#databaseFilename = `headbase-${databaseId}.sqlite3`;
-		this.#sqLocal = new SQLocalDrizzle(this.#databaseFilename);
-		this.#db = drizzle(this.#sqLocal.driver, this.#sqLocal.batchDriver, {casing: 'snake_case', schema: SCHEMA});
+		this.#databaseAdapter = new config.databaseAdapter(this.#databaseFilename)
+		this.#database = drizzle(
+			async (sql, params, method) => {
+				console.debug(`[database] Running sqk statement: ${sql}`)
+				return this.#databaseAdapter.run(sql, params)
+			},
+			(queries) => {
+				throw new Error(`[database] Batch queries are not supported yet. Attempted query: ${queries}`)
+			},
+			{casing: 'snake_case', schema: SCHEMA}
+		);
 		this.#hasInit = false;
 
 		this.#events = new EventTarget()
@@ -70,7 +84,8 @@ export class Database {
 	async #ensureInit() {
 		if (!this.#hasInit) {
 			console.debug(`[database] running migrations for '${this.#databaseId}'`);
-			await this.#db.run(sql.raw(migration1))
+			await this.#databaseAdapter.init(this.#databaseFilename)
+			await this.#database.run(sql.raw(migration1))
 			this.#hasInit = true
 		}
 	}
@@ -100,7 +115,7 @@ export class Database {
 		await this.#ensureInit()
 		console.debug(`[database] running get tags`)
 
-		return this.#db
+		return this.#database
 			.select({
 				id: tags.id,
 				createdAt: tags.createdAt,
@@ -146,7 +161,7 @@ export class Database {
 		const versionId = window.crypto.randomUUID()
 		const createdAt = new Date().toISOString()
 
-		await this.#db.insert(tags).values({
+		await this.#database.insert(tags).values({
 			id: entityId,
 			createdAt,
 			isDeleted: false,
@@ -154,7 +169,7 @@ export class Database {
 			currentVersionId: versionId
 		})
 
-		await this.#db.insert(tagsVersions).values({
+		await this.#database.insert(tagsVersions).values({
 			id: versionId,
 			createdAt,
 			isDeleted: false,
@@ -180,7 +195,7 @@ export class Database {
 		this.#broadcastChannel.close()
 		this.#sharedWorker.port.close()
 		this.#databaseLockAbort.abort()
-		await this.#sqLocal.destroy()
+		await this.#databaseAdapter.close()
 
 		console.debug(`[database] closed database '${this.#databaseId}' from context '${this.#contextId}'`)
 	}
