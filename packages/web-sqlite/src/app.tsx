@@ -1,7 +1,7 @@
 import {useEffect, useState} from "react";
 import {Database} from "./sqlite/database.ts";
 import {TagDto} from "./sqlite/schema/tags.ts";
-import {WebDatabaseAdapter} from "./sqlite/adapters/sqlite-worker.ts";
+import {WebClientAdapter} from "./sqlite/adapters/web-client-adapter.ts";
 
 export default function App() {
   const [currentDatabaseId, setCurrentDatabaseId] = useState<string>();
@@ -15,7 +15,7 @@ export default function App() {
     if (!currentDatabaseId) return
 
     console.debug('[react] creating database instance')
-    const instance = new Database(currentDatabaseId, {databaseAdapter: WebDatabaseAdapter});
+    const instance = new Database(currentDatabaseId, {databaseAdapter: WebClientAdapter});
     setDb(instance)
 
     return () => {

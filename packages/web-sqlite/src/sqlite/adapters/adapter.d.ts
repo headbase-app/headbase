@@ -3,10 +3,13 @@ export interface QueryResponse {
 	rows: any[][] | any[]
 }
 
-export abstract class DatabaseAdapter {
-	constructor(databaseFilename: string) {}
+export interface AdapterOptions {
+	databaseId: string
+	contextId: string
+}
 
-	async init(): Promise<void> {}
+export abstract class DatabaseAdapter {
+	constructor(options: AdapterOptions) {}
 
 	async close(): Promise<void> {}
 

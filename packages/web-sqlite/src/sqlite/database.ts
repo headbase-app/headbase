@@ -2,12 +2,9 @@ import {drizzle, SqliteRemoteDatabase} from 'drizzle-orm/sqlite-proxy';
 import {desc, eq, sql} from "drizzle-orm";
 import {Observable} from "rxjs";
 
-import DatabaseSharedWorker from "./shared.worker.ts?sharedworker"
-
 import migration1 from "./migrations/00-setup.sql?raw"
 import {CreateTagDto, TagDto, tags, tagsVersions} from "./schema/tags";
-import {DatabaseAdapter} from "./adapters/database.ts";
-import {WebDatabaseAdapter} from "./adapters/sqlite-worker.ts";
+import {WebClientAdapter} from "./adapters/web-client-adapter.ts";
 
 const HEADBASE_VERSION = '1.0'
 const SCHEMA = {tags, tagsVersions}
@@ -23,7 +20,7 @@ export type LiveQuery<DataPromise> = {
 }
 
 export interface DatabaseConfig {
-	databaseAdapter: typeof WebDatabaseAdapter
+	databaseAdapter: typeof WebClientAdapter
 }
 
 
@@ -31,26 +28,21 @@ export class Database {
 	readonly #contextId: string;
 
 	readonly #databaseId: string;
-	readonly #databaseFilename: string;
-	readonly #databaseAdapter: DatabaseAdapter;
+	readonly #databaseAdapter: WebClientAdapter;
 	readonly #database: SqliteRemoteDatabase<typeof SCHEMA>
 	#hasInit: boolean
 
 	readonly #events: EventTarget
 	readonly #broadcastChannel: BroadcastChannel
-	readonly #sharedWorker: SharedWorker
-
-	readonly #databaseLockAbort: AbortController
 
 	constructor(databaseId: string, config: DatabaseConfig) {
 		this.#contextId = window.crypto.randomUUID()
 
 		this.#databaseId = databaseId;
-		this.#databaseFilename = `headbase-${databaseId}.sqlite3`;
-		this.#databaseAdapter = new config.databaseAdapter(this.#databaseFilename)
+		this.#databaseAdapter = new config.databaseAdapter({contextId: this.#contextId, databaseId: this.#databaseId})
 		this.#database = drizzle(
 			async (sql, params, method) => {
-				console.debug(`[database] Running sqk statement: ${sql}`)
+				console.debug(`[database] Running sql statement: ${sql}`)
 				return this.#databaseAdapter.run(sql, params)
 			},
 			(queries) => {
@@ -63,46 +55,16 @@ export class Database {
 		this.#events = new EventTarget()
 		this.#broadcastChannel = new BroadcastChannel(`headbase-${this.#databaseId}`)
 
-		this.#databaseLockAbort = new AbortController()
-		this.#sharedWorker = new DatabaseSharedWorker()
-
 		this.#broadcastChannel.addEventListener('message', this.#handleBroadcastEvent.bind(this))
-		this.#sharedWorker.port.postMessage({type: 'database-init', detail: {contextId: this.#contextId, databaseId: this.#databaseId}})
-
-		this.#sharedWorker.port.onmessage = async (message: MessageEvent) => {
-			console.debug('[shared-worker-client] received message from shared worker: ', message.data)
-			if (message.data.type === 'worker-tag-create') {
-				await this.createTag(message.data.detail.createTagDto)
-			}
-		}
-
-		navigator.locks.request(`headbase-${this.#databaseId}`, {signal: this.#databaseLockAbort.signal}, this.#setupDatabaseLock.bind(this))
-
 		console.debug(`[database] init complete for '${databaseId}' using contextId '${this.#contextId}'`)
 	}
 
 	async #ensureInit() {
 		if (!this.#hasInit) {
 			console.debug(`[database] running migrations for '${this.#databaseId}'`);
-			await this.#databaseAdapter.init(this.#databaseFilename)
 			await this.#database.run(sql.raw(migration1))
 			this.#hasInit = true
 		}
-	}
-
-	async #setupDatabaseLock(lock: Lock | null) {
-		console.debug(`[database] acquired lock on '${lock?.name || this.#databaseId}' using context '${this.#contextId}'`);
-
-		this.#sharedWorker.port.postMessage({type: 'database-lock', detail: {databaseId: this.#databaseId, contextId: this.#contextId}})
-
-		// Indefinitely maintain this lock by returning a promise.
-		// When the tab or database class is closed, the lock will be released and then another context can claim the lock if required.
-		return new Promise<void>((resolve) => {
-			this.#databaseLockAbort.signal.addEventListener('abort', () => {
-				console.debug(`[database] aborting lock '${lock?.name || this.#databaseId}' from context '${this.#contextId}'`);
-				resolve()
-			})
-		})
 	}
 
 	async #handleBroadcastEvent(event: MessageEvent) {
@@ -183,18 +145,11 @@ export class Database {
 
 		this.#events.dispatchEvent(new CustomEvent('tags-update'))
 		this.#broadcastChannel.postMessage({type: 'tags-update'})
-		this.#sharedWorker.port.postMessage({type: 'tags-update'})
-	}
-
-	requestWorkerCreateTag(createTagDto: CreateTagDto) {
-		this.#sharedWorker.port.postMessage({type: 'worker-tag-create', detail: {databaseId: this.#databaseId, createTagDto}})
 	}
 
 	async close() {
 		console.debug(`[database] close started for database '${this.#databaseId}' from context '${this.#contextId}'`)
 		this.#broadcastChannel.close()
-		this.#sharedWorker.port.close()
-		this.#databaseLockAbort.abort()
 		await this.#databaseAdapter.close()
 
 		console.debug(`[database] closed database '${this.#databaseId}' from context '${this.#contextId}'`)
