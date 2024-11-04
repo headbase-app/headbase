@@ -13,6 +13,7 @@
   }
 }
 
+// todo: use menu-panel-button mixin from menu panel?
 .workspace__menu-button {
   position: absolute;
   bottom: 0;
@@ -23,9 +24,12 @@
   line-height: 0;
   border-radius: var(--j-border-radius-md);
 
-  &:hover {
+  &:hover,
+  &:focus {
     background: var(--j-c-atom-200);
+    color: var(--j-c-teal-300);
     cursor: pointer;
+    outline: none;
     box-shadow: none;
   }
 }

@@ -14,12 +14,8 @@
   &:focus {
     outline: none;
     background-color: var(--j-c-atom-100);
-    color: var(--j-c-mono-200);
-    cursor: pointer;
-  }
-
-  &:focus {
     color: var(--j-c-teal-300);
+    cursor: pointer;
   }
 }
 
