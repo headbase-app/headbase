@@ -2,7 +2,7 @@ import {Observable} from "rxjs";
 
 import {TransactionsAPI} from "./apis/transactions/transactions";
 import { EventsService } from "./services/events/events.service";
-import {DatabasesAPI} from "./apis/databases";
+import {DatabasesManagementAPI} from "./apis/database-management";
 import {EventTypes, HeadbaseEvent} from "./services/events/events";
 import {LIVE_QUERY_LOADING_STATE, LiveQueryResult, LiveQueryStatus} from "./control-flow";
 import {Logger} from "../src/utils/logger";
@@ -19,7 +19,7 @@ export class HeadbaseWeb {
 	readonly #generalStorage: GeneralStorageService
 	readonly #sharedWorker: SharedWorker
 
-	readonly databases: DatabasesAPI
+	readonly databases: DatabasesManagementAPI
 	readonly tx: TransactionsAPI
 	readonly server: ServerAPI
 
@@ -31,7 +31,7 @@ export class HeadbaseWeb {
 		this.#sharedWorker = new SharedWorkerService()
 		this.#generalStorage = new GeneralStorageService()
 
-		this.databases = new DatabasesAPI({eventService: this.#eventsService})
+		this.databases = new DatabasesManagementAPI({eventService: this.#eventsService})
 		this.tx = new TransactionsAPI(
 			{
 				eventsService: this.#eventsService,

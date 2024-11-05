@@ -33,6 +33,7 @@ create table if not exists fields_versions (
     -- Custom
     label text not null,
     description text,
+    icon text,
     settings json
 );
 
@@ -58,6 +59,7 @@ create table if not exists content_items_versions (
     created_by text not null,
     -- Custom
     name text not null,
+    icon text,
     fields json
 );
 
@@ -83,6 +85,7 @@ create table if not exists templates_versions (
     created_by text not null,
     -- Custom
     template_name text not null,
+    template_icon text,
     template_fields json
 );
 
@@ -111,6 +114,7 @@ create table if not exists views_versions (
     -- Custom
     name text not null,
     description text,
-    template_options json
+    icon text,
+    templates_available json
     settings json
 );

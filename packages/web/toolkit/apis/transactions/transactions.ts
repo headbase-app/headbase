@@ -26,7 +26,7 @@ import {TimestampField} from "../../schemas/common/fields";
 import {QueryDefinition, QueryIndex} from "../../schemas/query";
 import {ExportData} from "../../schemas/export";
 import {KeyStorageService} from "../../services/key-storage.service";
-import {DatabasesAPI} from "../databases";
+import {DatabasesAPI} from "../database-management";
 import {createIdField} from "@headbase-app/common";
 import {TableTypes, TableKeys, LocalEntityWithExposedFields} from "../../schemas/schema";
 
