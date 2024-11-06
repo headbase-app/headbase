@@ -3,11 +3,13 @@ import {desc, eq, sql} from "drizzle-orm";
 import {Observable} from "rxjs";
 
 import migration1 from "./migrations/00-setup.sql?raw"
-import {CreateTagDto, TagDto, tags, tagsVersions} from "./schema/tags";
 import {WebClientAdapter} from "./adapters/web-client-adapter.ts";
+import {fieldsVersions, fields, FieldDto} from "./schema/tables/fields/fields.ts";
+import {CreateFieldDto} from "./schema/tables/fields/fields.ts";
+
 
 const HEADBASE_VERSION = '1.0'
-const SCHEMA = {tags, tagsVersions}
+const SCHEMA = {fields, fieldsVersions} as const
 
 export type LiveQuery<DataPromise> = {
 		status: "loading"
@@ -41,7 +43,7 @@ export class Database {
 		this.#databaseId = databaseId;
 		this.#databaseAdapter = new config.databaseAdapter({contextId: this.#contextId, databaseId: this.#databaseId})
 		this.#database = drizzle(
-			async (sql, params, method) => {
+			async (sql, params) => {
 				console.debug(`[database] Running sql statement: ${sql}`)
 				return this.#databaseAdapter.run(sql, params)
 			},
@@ -73,57 +75,68 @@ export class Database {
 		this.#events.dispatchEvent(new CustomEvent(event.data.type, event.data.detail))
 	}
 
-	async getTags(): Promise<TagDto[]> {
+	/**
+	 * A temporary method to test the shared worker making database requests.
+	 * @param createFieldDto
+	 */
+	async requestWorkerCreateField(createFieldDto: CreateFieldDto) {
+		return this.#databaseAdapter.requestWorkerCreateField(createFieldDto)
+	}
+
+	async getFields(): Promise<FieldDto[]> {
 		await this.#ensureInit()
-		console.debug(`[database] running get tags`)
+		console.debug(`[database] running get fields`)
 
 		return this.#database
 			.select({
-				id: tags.id,
-				createdAt: tags.createdAt,
-				updatedAt: tagsVersions.createdAt,
-				isDeleted: tags.isDeleted,
-				versionId: tagsVersions.id,
-				previousVersionId: tagsVersions.previousVersionId,
-				versionCreatedBy: tagsVersions.createdBy,
-				name: tagsVersions.createdBy,
-				colour: tagsVersions.colour,
+				id: fields.id,
+				createdAt: fields.createdAt,
+				updatedAt: fieldsVersions.createdAt,
+				isDeleted: fields.isDeleted,
+				versionId: fieldsVersions.id,
+				previousVersionId: fieldsVersions.previousVersionId,
+				versionCreatedBy: fieldsVersions.createdBy,
+				type: fieldsVersions.type,
+				label: fieldsVersions.label,
+				description: fieldsVersions.description,
+				icon: fieldsVersions.icon,
+				settings: fieldsVersions.settings,
 			})
-			.from(tagsVersions)
-			.innerJoin(tags, eq(tags.id, tagsVersions.entityId))
-			.where(eq(tags.currentVersionId, tagsVersions.id))
-			.orderBy(desc(tagsVersions.createdAt));
+			.from(fieldsVersions)
+			.innerJoin(fields, eq(fields.id, fieldsVersions.entityId))
+			.where(eq(fields.currentVersionId, fieldsVersions.id))
+			.orderBy(desc(fieldsVersions.createdAt)) as unknown as FieldDto[];
 	}
 
-	liveGetTags() {
-		return new Observable<LiveQuery<ReturnType<Database['getTags']>>>((subscriber) => {
+	liveGetFields() {
+		return new Observable<LiveQuery<ReturnType<Database['getFields']>>>((subscriber) => {
 			subscriber.next({status: 'loading'})
 
 			const makeQuery = async () => {
 				subscriber.next({status: 'loading'})
-				const results = await this.getTags();
+				const results = await this.getFields();
 				subscriber.next({status: 'success', data: results})
 			}
 
-			this.#events.addEventListener('tags-update', makeQuery)
+			this.#events.addEventListener('fields-update', makeQuery)
 
 			makeQuery()
 
 			return () => {
-				this.#events.removeEventListener('tags-update', makeQuery)
+				this.#events.removeEventListener('fields-update', makeQuery)
 			}
 		})
 	}
 
-	async createTag(createTagDto: CreateTagDto) {
+	async createField(createFieldDto: CreateFieldDto) {
 		await this.#ensureInit()
-		console.debug(`[database] running create tag`)
+		console.debug(`[database] running create field`)
 
 		const entityId = window.crypto.randomUUID()
 		const versionId = window.crypto.randomUUID()
 		const createdAt = new Date().toISOString()
 
-		await this.#database.insert(tags).values({
+		await this.#database.insert(fields).values({
 			id: entityId,
 			createdAt,
 			isDeleted: false,
@@ -131,20 +144,23 @@ export class Database {
 			currentVersionId: versionId
 		})
 
-		await this.#database.insert(tagsVersions).values({
+		await this.#database.insert(fieldsVersions).values({
 			id: versionId,
 			createdAt,
 			isDeleted: false,
 			hbv: HEADBASE_VERSION,
 			entityId: entityId,
 			previousVersionId: null,
-			createdBy: createTagDto.createdBy,
-			name: createTagDto.name,
-			colour: createTagDto.colour,
+			createdBy: createFieldDto.createdBy,
+			type: createFieldDto.type,
+			label: createFieldDto.label,
+			description: createFieldDto.description,
+			icon: createFieldDto.icon,
+			settings: 'settings' in createFieldDto ? createFieldDto.settings : null,
 		})
 
-		this.#events.dispatchEvent(new CustomEvent('tags-update'))
-		this.#broadcastChannel.postMessage({type: 'tags-update'})
+		this.#events.dispatchEvent(new CustomEvent('fields-update'))
+		this.#broadcastChannel.postMessage({type: 'fields-update'})
 	}
 
 	async close() {

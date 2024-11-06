@@ -1,4 +1,4 @@
-import React, {useEffect} from "react";
+import React from "react";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { Helmet, HelmetProvider } from "react-helmet-async";
 
@@ -9,7 +9,6 @@ import { PageNotFound } from "./pages/page-not-found";
 import { WelcomePage } from "./pages/welcome";
 
 import "./app.scss"
-import {useHeadbase} from "@headbase-toolkit/react/use-headbase";
 
 export function App() {
 

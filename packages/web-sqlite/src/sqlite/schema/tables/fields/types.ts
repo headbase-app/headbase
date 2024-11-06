@@ -1,11 +1,8 @@
-import {ShortTextSettings, ShortTextValue} from "./fields/types/basic.ts";
 
 export const FIELD_TYPES =  {
 	textShort: {
 		label: "Short Text",
 		id: "textShort",
-		settingsSchema: ShortTextSettings,
-		valueSchema: ShortTextValue,
 	},
 	textLong: {
 		label: "Long Text",
@@ -39,13 +36,13 @@ export const FIELD_TYPES =  {
 		label: "Boolean",
 		id: "boolean",
 	},
-	timestamp: {
-		label: "Timestamp",
-		id: "timestamp",
-	},
 	date: {
 		label: "Date",
 		id: "date",
+	},
+	timestamp: {
+		label: "Timestamp",
+		id: "timestamp",
 	},
 	select: {
 		label: "Select",

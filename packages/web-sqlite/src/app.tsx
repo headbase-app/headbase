@@ -1,7 +1,8 @@
 import {useEffect, useState} from "react";
 import {Database} from "./sqlite/database.ts";
-import {TagDto} from "./sqlite/schema/tags.ts";
 import {WebClientAdapter} from "./sqlite/adapters/web-client-adapter.ts";
+import {FieldDto} from "./sqlite/schema/tables/fields/fields.ts";
+import {FIELD_TYPES} from "./sqlite/schema/tables/fields/types.ts";
 
 export default function App() {
   const [currentDatabaseId, setCurrentDatabaseId] = useState<string>();
@@ -9,7 +10,7 @@ export default function App() {
 
   const [db, setDb] = useState<Database | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [results, setResults] = useState<TagDto[]>([]);
+  const [results, setResults] = useState<FieldDto[]>([]);
 
   useEffect(() => {
     if (!currentDatabaseId) return
@@ -29,7 +30,7 @@ export default function App() {
   useEffect(() => {
     if (!db || !currentDatabaseId) return
 
-    const observable = db.liveGetTags()
+    const observable = db.liveGetFields()
     const subscriber = observable.subscribe((next) => {
       if (next.status === 'success') {
         setResults(next.data)
@@ -51,20 +52,25 @@ export default function App() {
   async function addItem() {
     if (!db || !currentDatabaseId) return
 
-    await db.createTag({
-      name: 'example 1',
+    await db.createField({
+      label: 'example 1',
+      description: null,
       createdBy: 'testing 1',
-      colour: 'blue'
+      type: FIELD_TYPES.markdown.id,
+      settings: {
+        defaultLines: 5
+      }
     })
   }
 
   async function addItemViaWorker() {
     if (!db || !currentDatabaseId) return
 
-    db.requestWorkerCreateTag({
-      name: 'example 1 - FROM WORKER',
+    db.requestWorkerCreateField({
+      label: 'example 1 FROM WORKER',
+      description: 'this was created via the shared worker',
       createdBy: 'testing 1',
-      colour: 'blue'
+      type: FIELD_TYPES.textShort.id,
     })
   }
 
@@ -79,7 +85,7 @@ export default function App() {
 
       <p>testing</p>
       <button onClick={addItem}>add test item</button>
-      <button onClick={addItemViaWorker}>add test item VIA WORKER LOCK</button>
+      <button onClick={addItemViaWorker}>add test item VIA SHARED WORKER</button>
 
       {isLoading && <p>Loading...</p>}
       <ul>

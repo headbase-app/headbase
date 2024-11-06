@@ -1,6 +1,7 @@
 import type {AdapterOptions, DatabaseAdapter, QueryResponse} from "./adapter.d.ts";
 import { SQLocal } from 'sqlocal';
 import DatabaseSharedWorker from "../shared.worker.ts?sharedworker";
+import {CreateFieldDto} from "../schema/tables/fields/fields.ts";
 
 
 export class WebClientAdapter implements DatabaseAdapter {
@@ -60,5 +61,13 @@ export class WebClientAdapter implements DatabaseAdapter {
 	async run(sql: string, params: any[]): Promise<QueryResponse> {
 		// @ts-expect-error -- This method is not exposed from sqlocal, but we
 		return this.#db.exec(sql, params)
+	}
+
+	/**
+	 * A temporary method to test the shared worker making database requests.
+	 * @param createFieldDto
+	 */
+	async requestWorkerCreateField(createFieldDto: CreateFieldDto) {
+		return this.#sharedWorker.port.postMessage({type: 'create-field-test', detail: {contextId: this.#contextId, databaseId: this.#databaseId, createFieldDto}})
 	}
 }

@@ -15,9 +15,7 @@ create table if not exists fields (
     is_deleted integer not null default 0 check (is_deleted in (0, 1)),
     hbv text not null,
     -- Common Entity
-    current_version_id text,
-    -- Custom
-    type text not null -- A fields type should never change, so this is added to the entity table not the version.
+    current_version_id text
 );
 
 create table if not exists fields_versions (
@@ -31,6 +29,7 @@ create table if not exists fields_versions (
     previous_version_id text,
     created_by text not null,
     -- Custom
+    type text not null,
     label text not null,
     description text,
     icon text,
@@ -97,8 +96,6 @@ create table if not exists views (
     hbv text not null,
     -- Common Entity
     current_version_id text
-    -- Custom
-    type text not null -- A views type should never change, so this is added to the entity table not the version.
 );
 
 create table if not exists views_versions (
@@ -112,6 +109,7 @@ create table if not exists views_versions (
     previous_version_id text,
     created_by text not null,
     -- Custom
+    type text not null,
     name text not null,
     description text,
     icon text,

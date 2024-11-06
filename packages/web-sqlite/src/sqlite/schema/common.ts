@@ -17,7 +17,9 @@ export const commonVersionFields = {
 	createdBy: text().notNull(),
 }
 
-export const isFavouriteField = int({mode: 'boolean'}).notNull()
+export interface BaseCreateDto {
+	createdBy: string
+}
 
 export interface BaseDto {
 	id: string
