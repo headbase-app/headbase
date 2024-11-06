@@ -63,19 +63,8 @@ export default function App() {
     })
   }
 
-  async function addItemViaWorker() {
-    if (!db || !currentDatabaseId) return
-
-    db.requestWorkerCreateField({
-      label: 'example 1 FROM WORKER',
-      description: 'this was created via the shared worker',
-      createdBy: 'testing 1',
-      type: FIELD_TYPES.textShort.id,
-    })
-  }
-
   return (
-    <>
+    <div className='bg-atom-500'>
       <label htmlFor='database-id'>Database ID</label>
       <input value={databaseIdInput || ''} onChange={(e) => setDatabaseIdInput(e.target.value)}/>
       <button onClick={() => {
@@ -85,7 +74,6 @@ export default function App() {
 
       <p>testing</p>
       <button onClick={addItem}>add test item</button>
-      <button onClick={addItemViaWorker}>add test item VIA SHARED WORKER</button>
 
       {isLoading && <p>Loading...</p>}
       <ul>
@@ -93,6 +81,6 @@ export default function App() {
           <li key={result.id}>{JSON.stringify(result)}</li>
         ))}
       </ul>
-    </>
+    </div>
   )
 }

@@ -9,9 +9,11 @@ declare const self: SharedWorkerGlobalScope
 console.debug('[shared-worker] init background service')
 
 class BackgroundService {
+	//@ts-expect-error -- ok that it isn't used yet
 	#contextId: string
 	readonly #portStore: PortStore
 	readonly #databaseLockStore: DatabaseLockStore
+	//@ts-expect-error -- ok that it isn't used yet
 	#instanceStore: DatabaseInstanceStore
 
 	constructor() {
@@ -60,4 +62,4 @@ class BackgroundService {
 	}
 }
 
-const backgroundService = new BackgroundService()
+new BackgroundService()

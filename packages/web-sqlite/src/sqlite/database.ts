@@ -38,7 +38,7 @@ export class Database {
 	readonly #broadcastChannel: BroadcastChannel
 
 	constructor(databaseId: string, config: DatabaseConfig) {
-		this.#contextId = window.crypto.randomUUID()
+		this.#contextId = self.crypto.randomUUID()
 
 		this.#databaseId = databaseId;
 		this.#databaseAdapter = new config.databaseAdapter({contextId: this.#contextId, databaseId: this.#databaseId})
@@ -73,14 +73,6 @@ export class Database {
 		console.debug(`[broadcast] received broadcast message:`, event.data)
 		// Relay events to local event target so everywhere only has to subscribe to the single event source.
 		this.#events.dispatchEvent(new CustomEvent(event.data.type, event.data.detail))
-	}
-
-	/**
-	 * A temporary method to test the shared worker making database requests.
-	 * @param createFieldDto
-	 */
-	async requestWorkerCreateField(createFieldDto: CreateFieldDto) {
-		return this.#databaseAdapter.requestWorkerCreateField(createFieldDto)
 	}
 
 	async getFields(): Promise<FieldDto[]> {
@@ -132,8 +124,8 @@ export class Database {
 		await this.#ensureInit()
 		console.debug(`[database] running create field`)
 
-		const entityId = window.crypto.randomUUID()
-		const versionId = window.crypto.randomUUID()
+		const entityId = self.crypto.randomUUID()
+		const versionId = self.crypto.randomUUID()
 		const createdAt = new Date().toISOString()
 
 		await this.#database.insert(fields).values({
