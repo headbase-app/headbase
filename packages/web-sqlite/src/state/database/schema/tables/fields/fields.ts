@@ -60,7 +60,7 @@ export type AllFieldTypes =
 export type CreateFieldDto = BaseCreateDto & {
 	label: string,
 	description: string | null,
-	icon?: string,
+	icon: string | null,
 } & AllFieldTypes
 
 // todo: prevent field type from changing in types?
