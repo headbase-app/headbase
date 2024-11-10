@@ -8,6 +8,7 @@ import NotFoundPage from "./pages/404.tsx";
 import {HomePage} from "./pages";
 import NewFieldPage from "./pages/fields/new.tsx";
 import EditFieldPage from "./pages/fields/[id]/edit.tsx";
+import {EncryptionTests} from "./pages/encryption.tsx";
 
 export function App() {
   return (
@@ -18,6 +19,8 @@ export function App() {
         <Route path='/fields' component={FieldsPage} />
         <Route path='/fields/new' component={NewFieldPage} />
         <Route path='/fields/:fieldId' component={EditFieldPage} />
+
+        <Route path='/encryption' component={EncryptionTests} />
 
         <Route component={NotFoundPage} />
       </Switch>
