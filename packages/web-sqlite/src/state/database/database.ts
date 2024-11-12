@@ -7,6 +7,7 @@ import {WebClientAdapter} from "./adapters/web-client-adapter.ts";
 import {fieldsVersions, fields, FieldDto} from "./schema/tables/fields/fields.ts";
 import {CreateFieldDto} from "./schema/tables/fields/fields.ts";
 import {contentItems, contentItemsVersions} from "./schema/tables/content-items/content-items.ts";
+import {WorkerClientAdapter} from "./adapters/worker/worker-client-adapter.ts";
 
 
 const HEADBASE_VERSION = '1.0'
@@ -26,7 +27,7 @@ export type LiveQuery<DataPromise> = {
 }
 
 export interface DatabaseConfig {
-	databaseAdapter: typeof WebClientAdapter
+	databaseAdapter: typeof WebClientAdapter | typeof WorkerClientAdapter
 }
 
 
@@ -34,7 +35,7 @@ export class Database {
 	readonly #contextId: string;
 
 	readonly #databaseId: string;
-	readonly #databaseAdapter: WebClientAdapter;
+	readonly #databaseAdapter: WebClientAdapter | WorkerClientAdapter;
 	readonly #database: SqliteRemoteDatabase<typeof SCHEMA>
 	#hasInit: boolean
 

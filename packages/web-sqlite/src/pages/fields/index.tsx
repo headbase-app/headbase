@@ -4,6 +4,7 @@ import {WebClientAdapter} from "../../state/database/adapters/web-client-adapter
 import {FieldDto} from "../../state/database/schema/tables/fields/fields.ts";
 import {FIELD_TYPES} from "../../state/database/schema/tables/fields/types.ts";
 import {Link} from "wouter";
+import {WorkerClientAdapter} from "../../state/database/adapters/worker/worker-client-adapter.ts";
 
 
 export default function FieldsPage() {
@@ -18,7 +19,7 @@ export default function FieldsPage() {
     if (!currentDatabaseId) return
 
     console.debug('[react] creating database instance')
-    const instance = new Database(currentDatabaseId, {databaseAdapter: WebClientAdapter});
+    const instance = new Database(currentDatabaseId, {databaseAdapter: WorkerClientAdapter});
     setDb(instance)
 
     return () => {

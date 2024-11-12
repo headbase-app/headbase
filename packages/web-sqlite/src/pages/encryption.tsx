@@ -72,8 +72,6 @@ async function setup() {
 
 }
 
-setup()
-
 export function EncryptionTests() {
 	useEffect(() => {
 

@@ -27,12 +27,7 @@ export const EncryptionMetadata = z.object({
 })
 export type EncryptionMetadata = z.infer<typeof EncryptionMetadata>
 
-/**
- *
- * Thanks to the following resources which were used to refine this implementation:
- * - https://github.com/AKASHAorg/easy-web-crypto
- * - https://developer.mozilla.org/en-US/docs/Glossary/Base64
- */
+
 export class EncryptionService {
 
 	static generateUUID(): string {
@@ -56,7 +51,7 @@ export class EncryptionService {
 
 		let unlockKey: UnlockKey
 		try {
-			const rawMetadata = EncryptionService._base64ToBytes(base64Metadata)
+			const rawMetadata = EncryptionService._hexStringToBytes(base64Metadata)
 			const metadata = UnlockKeyMetadata.parse(JSON.parse(new TextDecoder().decode(rawMetadata)))
 			unlockKey = await EncryptionService._deriveUnlockKey(password, metadata.salt)
 		}
@@ -106,10 +101,13 @@ export class EncryptionService {
 		return validationSchema.parse(result)
 	}
 
+	/**
+	 * Create a 256-bit encryption key, which will be returned in the format "<spec-version>.<hex-string>"
+	 */
 	static async _createEncryptionKey(): Promise<string> {
 		const keyMaterial = window.crypto.getRandomValues(new Uint8Array(32));
-		const base64Key = EncryptionService._bytesToBase64(keyMaterial)
-		return `v1.${base64Key}`
+		const hexString = EncryptionService._bytesToHexString(keyMaterial)
+		return `v1.${hexString}`
 	}
 
 	private static _getEncryptionCryptoKey(encryptionKeyString: string): Promise<CryptoKey> {
@@ -118,7 +116,7 @@ export class EncryptionService {
 		let keyMaterial
 		try {
 			const [version, base64Key] = encryptionKeyString.split('.')
-			keyMaterial = EncryptionService._base64ToBytes(base64Key)
+			keyMaterial = EncryptionService._hexStringToBytes(base64Key)
 		}
 		catch (e) {
 			throw new HeadbaseError({type: ErrorTypes.INVALID_OR_CORRUPTED_DATA, originalError: e})
@@ -147,9 +145,9 @@ export class EncryptionService {
 		)
 
 		const salt = derivationSalt
-			? EncryptionService._base64ToBytes(derivationSalt)
+			? EncryptionService._hexStringToBytes(derivationSalt)
 			: window.crypto.getRandomValues(new Uint8Array(16));
-		const encodedSalt = derivationSalt || EncryptionService._bytesToBase64(salt)
+		const encodedSalt = derivationSalt || EncryptionService._bytesToHexString(salt)
 
 		const derivedKey = await window.crypto.subtle.deriveKey(
 			{
@@ -182,7 +180,7 @@ export class EncryptionService {
 		const base64WrappedKey = await EncryptionService._encryptWithKey(unlockKey.key, encryptionKey)
 
 		const encodedMetadata = new TextEncoder().encode(JSON.stringify(unlockKey.metadata))
-		const base64Metadata = EncryptionService._bytesToBase64(encodedMetadata)
+		const base64Metadata = EncryptionService._bytesToHexString(encodedMetadata)
 
 		return `v1:${base64Metadata}:${base64WrappedKey}`
 	}
@@ -198,16 +196,16 @@ export class EncryptionService {
 			key,
 			new TextEncoder().encode(JSON.stringify(data))
 		)
-		const base64CipherText = EncryptionService._bytesToBase64(new Uint8Array(cipherTextBuffer))
+		const base64CipherText = EncryptionService._bytesToHexString(new Uint8Array(cipherTextBuffer))
 
-		const base64Iv = EncryptionService._bytesToBase64(iv)
+		const base64Iv = EncryptionService._bytesToHexString(iv)
 
 		const metadata: EncryptionMetadata = {
 			algo: "AES-GCM",
 			iv: base64Iv,
 		}
 		const encodedMetadata = new TextEncoder().encode(JSON.stringify(metadata))
-		const base64Metadata = EncryptionService._bytesToBase64(encodedMetadata)
+		const base64Metadata = EncryptionService._bytesToHexString(encodedMetadata)
 
 		return `v1.${base64Metadata}.${base64CipherText}`
 	}
@@ -229,10 +227,10 @@ export class EncryptionService {
 		let cipherText: Uint8Array
 		let iv: Uint8Array
 		try {
-			const decodedMetadata = EncryptionService._base64ToBytes(base64Metadata)
+			const decodedMetadata = EncryptionService._hexStringToBytes(base64Metadata)
 			const metadata = EncryptionMetadata.parse(JSON.parse(new TextDecoder().decode(decodedMetadata)))
-			cipherText = EncryptionService._base64ToBytes(base64CipherText)
-			iv = EncryptionService._base64ToBytes(metadata.iv)
+			cipherText = EncryptionService._hexStringToBytes(base64CipherText)
+			iv = EncryptionService._hexStringToBytes(metadata.iv)
 		}
 		catch (e) {
 			throw new HeadbaseError({type: ErrorTypes.INVALID_OR_CORRUPTED_DATA, originalError: e})
@@ -256,27 +254,34 @@ export class EncryptionService {
 	}
 
 	/**
-	 * Convert a Uint8Array into a base64 encoded string.
+	 * Convert a Uint8Array into a hexadecimal string.
+	 *
+	 * todo: replace with byteArray.toHex() once implemented in browsers
+	 * https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Uint8Array/toHex
 	 *
 	 * @private
 	 * @param byteArray
 	 */
-	private static _bytesToBase64(byteArray: Uint8Array): string {
-		const binString = Array.from(byteArray, (byte) =>
-			String.fromCodePoint(byte),
-		).join("");
-		return btoa(binString);
+	private static _bytesToHexString(byteArray: Uint8Array): string {
+		return Array.from(byteArray, (byte) => {
+			return ('0' + (byte & 0xff).toString(16)).slice(-2);
+		}).join('');
 	}
 
 	/**
-	 * Convert a base64 encoded string into a Uint8Array.
+	 * Convert a hexadecimal string into a Uint8Array.
 	 *
-	 * @param base64String
+	 * todo: replace with Uint8Array.fromHex() once implemented in browsers
+	 * https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Uint8Array/fromHex
+	 *
+	 * @param hexString
 	 * @private
 	 */
-	private static _base64ToBytes(base64String: string): Uint8Array {
-		const binString = atob(base64String);
-		// @ts-expect-error -- this is copied from MDN (https://developer.mozilla.org/en-US/docs/Glossary/Base64#the_unicode_problem) and does work.
-		return Uint8Array.from(binString, (m) => m.codePointAt(0));
+	private static _hexStringToBytes(hexString: string): Uint8Array {
+		const bytes = [];
+		for (let c = 0; c < hexString.length; c += 2) {
+			bytes.push(parseInt(hexString.substring(c, c + 2), 16));
+		}
+		return Uint8Array.from(bytes);
 	}
 }
