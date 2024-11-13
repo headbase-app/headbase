@@ -1,10 +1,10 @@
 import {useEffect, useState} from "react";
-import {Database} from "../../state/database/database.ts";
-import {WebClientAdapter} from "../../state/database/adapters/web-client-adapter.ts";
-import {FieldDto} from "../../state/database/schema/tables/fields/fields.ts";
-import {FIELD_TYPES} from "../../state/database/schema/tables/fields/types.ts";
+import {Database} from "../../logic/database/database.ts";
+import {WebClientAdapter} from "../../logic/database/adapters/web-client-adapter.ts";
+import {FieldDto} from "../../logic/database/schema/tables/fields/fields.ts";
+import {FIELD_TYPES} from "../../logic/database/schema/tables/fields/types.ts";
 import {Link} from "wouter";
-import {WorkerClientAdapter} from "../../state/database/adapters/worker/worker-client-adapter.ts";
+import {WorkerAdapter} from "../../logic/database/adapters/worker-adapter.ts";
 
 
 export default function FieldsPage() {
@@ -19,7 +19,7 @@ export default function FieldsPage() {
     if (!currentDatabaseId) return
 
     console.debug('[react] creating database instance')
-    const instance = new Database(currentDatabaseId, {databaseAdapter: WorkerClientAdapter});
+    const instance = new Database(currentDatabaseId, {databaseAdapter: WorkerAdapter});
     setDb(instance)
 
     return () => {

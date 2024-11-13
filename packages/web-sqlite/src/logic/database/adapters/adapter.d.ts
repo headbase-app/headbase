@@ -1,5 +1,5 @@
 
-export interface QueryResponse {
+export interface SqlQueryResponse {
 	rows: any[][] | any[]
 }
 
@@ -13,7 +13,7 @@ export abstract class DatabaseAdapter {
 
 	async close(): Promise<void> {}
 
-	async run(sql: string, params: any[]): Promise<QueryResponse> {
+	async run(sql: string, params: any[]): Promise<SqlQueryResponse> {
 		return {rows: []}
 	}
 }

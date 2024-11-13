@@ -1,4 +1,3 @@
-import {default as promiserFactory} from "../lib/sqlite/sqlite3-worker1-promiser.mjs";
 import {useEffect} from "react";
 
 
