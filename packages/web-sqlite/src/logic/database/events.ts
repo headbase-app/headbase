@@ -1,14 +1,14 @@
 import {SqlQueryResponse} from "./adapters/adapter";
 
-export interface BaseClientEvent {
+export interface BaseEvent {
 	messageId: string
 }
 
-export interface BaseWorkerResponseEvent {
+export interface BaseResponseEvent {
 	targetMessageId: string
 }
 
-export interface ClientOpenEvent extends BaseClientEvent {
+export interface OpenEvent extends BaseEvent {
 	type: 'open',
 	detail: {
 		databaseId: string
@@ -17,7 +17,7 @@ export interface ClientOpenEvent extends BaseClientEvent {
 	}
 }
 
-export interface WorkerOpenResponseEvent extends BaseWorkerResponseEvent {
+export interface OpenResponseEvent extends BaseResponseEvent {
 	type: 'open',
 	detail: {
 		success: true
@@ -27,7 +27,7 @@ export interface WorkerOpenResponseEvent extends BaseWorkerResponseEvent {
 	}
 }
 
-export interface ClientQueryEvent extends BaseClientEvent {
+export interface QueryEvent extends BaseEvent {
 	type: 'query',
 	detail: {
 		databaseId: string
@@ -37,7 +37,7 @@ export interface ClientQueryEvent extends BaseClientEvent {
 	}
 }
 
-export interface WorkerQueryResponseEvent extends BaseWorkerResponseEvent {
+export interface QueryResponseEvent extends BaseResponseEvent {
 	type: 'query',
 	detail: {
 		success: true,
@@ -49,7 +49,7 @@ export interface WorkerQueryResponseEvent extends BaseWorkerResponseEvent {
 }
 
 
-export interface ClientCloseEvent extends BaseClientEvent {
+export interface CloseEvent extends BaseEvent {
 	type: 'close',
 	detail: {
 		databaseId: string
@@ -57,7 +57,7 @@ export interface ClientCloseEvent extends BaseClientEvent {
 	}
 }
 
-export interface WorkerCloseResponseEvent extends BaseWorkerResponseEvent {
+export interface CloseResponseEvent extends BaseResponseEvent {
 	type: 'close',
 	detail: {
 		success: true
@@ -67,10 +67,32 @@ export interface WorkerCloseResponseEvent extends BaseWorkerResponseEvent {
 	}
 }
 
-export interface ClientExportEvent extends BaseClientEvent {
+export interface ExportEvent extends BaseEvent {
 	type: 'export',
 	detail: {
 		databaseId: string
 		contextId: string
 	}
 }
+
+export interface ExportResponseEvent extends BaseResponseEvent {
+	type: 'export',
+	detail: {
+		success: true
+		database: Uint8Array
+	} | {
+		success: false,
+		error: string
+	}
+}
+
+export interface ErrorEvent {
+	type: 'error'
+	targetMessageId?: string
+	detail: {
+		error: string
+	}
+}
+
+export type AdapterEvents = OpenEvent | QueryEvent | CloseEvent | ExportEvent
+export type WorkerEvents = OpenResponseEvent | QueryResponseEvent | CloseResponseEvent | ExportResponseEvent | ErrorEvent

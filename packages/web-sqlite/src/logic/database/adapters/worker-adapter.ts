@@ -1,5 +1,6 @@
 import type {AdapterOptions, DatabaseAdapter, QueryResponse} from "./adapter.d.ts";
 import WorkerService from "./sqlite.worker.ts?worker"
+import {AdapterEvents, QueryResponseEvent, WorkerEvents} from "../events.ts";
 
 
 export class WorkerAdapter implements DatabaseAdapter {
@@ -14,11 +15,13 @@ export class WorkerAdapter implements DatabaseAdapter {
 
 		this.#worker = new WorkerService();
 		this.#worker.postMessage({
-			type: 'connect',
+			type: 'open',
+			messageId: self.crypto.randomUUID(),
 			detail: {
 				databaseId: this.#databaseId,
 				contextId: this.#contextId,
-		}});
+				encryptionKey: 'thisisanamazingkey'
+		}} as AdapterEvents);
 
 		this.#databaseLockAbort = new AbortController()
 		navigator.locks.request(`headbase-${this.#databaseId}`, {signal: this.#databaseLockAbort.signal}, this.#setupDatabaseLock.bind(this))
@@ -39,34 +42,39 @@ export class WorkerAdapter implements DatabaseAdapter {
 
 	async close(): Promise<void> {
 		console.debug('close')
+
+		await this.#sendWorkerRequest({
+			type: 'close',
+			messageId: self.crypto.randomUUID(),
+			detail: {
+				contextId: this.#contextId,
+				databaseId: this.#databaseId,
+			}
+		})
+
+		this.#worker.terminate()
 		this.#databaseLockAbort.abort()
 	}
 
 	async run(sql: string, params: any[]): Promise<QueryResponse> {
-		// todo: replace with Encryption library
-		const messageId = self.crypto.randomUUID()
-
-		this.#worker.postMessage({
-			type: 'sql',
-			messageId,
+		const workerResponse = await this.#sendWorkerRequest<QueryResponseEvent>({
+			type: 'query',
+			messageId: self.crypto.randomUUID(),
 			detail: {
+				databaseId: this.#databaseId,
+				contextId: this.#contextId,
 				sql,
 				params
 			}
 		})
 
-		const workerResponse = await this.#sendWorkerRequest<QueryResponse>({
-			type: 'sql',
-			messageId,
-			detail: {
-				sql,
-				params
-			}
-		})
-		console.debug(`received response for ${messageId}`)
 		console.debug(workerResponse)
 
-		return {rows: []}
+		if (!workerResponse.detail.success) {
+			throw new Error(workerResponse.detail.error)
+		}
+
+		return workerResponse.detail.result
 	}
 
 	/**
@@ -77,9 +85,10 @@ export class WorkerAdapter implements DatabaseAdapter {
 	 * todo: wrapper should convert error events into promise rejections?
 	 *
 	 * @param message
+	 * @param options
 	 * @private
 	 */
-	#sendWorkerRequest<T>(message: any, options?: {timeout: number}): Promise<T> {
+	#sendWorkerRequest<Response extends WorkerEvents>(message: AdapterEvents, options?: {timeout: number}): Promise<Response> {
 		return new Promise((resolve, reject) => {
 			// listen for message and resolve when response message is sent.
 			// todo: how to handle cleaning up of event listeners?
@@ -93,18 +102,19 @@ export class WorkerAdapter implements DatabaseAdapter {
 			}
 			timeoutSignal.addEventListener('abort', abortListener)
 
-			responseListener = (event: MessageEvent) => {
+			responseListener = (event: MessageEvent<WorkerEvents>) => {
 				console.debug('received event while awaiting response')
 				console.debug(event)
-				if (event.data.type === 'response' && event.data.targetMessageId === message.messageId) {
+				if (event.data.targetMessageId === message.messageId) {
 					this.#worker.removeEventListener('message', responseListener)
 					timeoutSignal.removeEventListener('abort', abortListener)
-					return resolve(event.data.returnValue as T)
+					return resolve(event.data as Response)
 				}
 			}
-
 			this.#worker.addEventListener('message', responseListener)
 
+			console.debug('sent')
+			console.debug(message)
 			this.#worker.postMessage(message)
 		})
 	}
