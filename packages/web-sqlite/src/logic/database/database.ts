@@ -1,10 +1,10 @@
 import {drizzle, SqliteRemoteDatabase} from 'drizzle-orm/sqlite-proxy';
-import {and, desc, eq, sql} from "drizzle-orm";
+import {and, desc, eq, SQL, sql} from "drizzle-orm";
 import {Observable} from "rxjs";
 
 import migration1 from "./migrations/00-setup.sql?raw"
 import {WorkerAdapter} from "./adapters/worker-adapter.ts";
-import {fieldsVersions, fields, FieldDto} from "./schema/tables/fields/fields.ts";
+import {fieldsVersions, fields, FieldDto, FieldVersionDto} from "./schema/tables/fields/fields.ts";
 import {CreateFieldDto} from "./schema/tables/fields/fields.ts";
 import {contentItems, contentItemsVersions} from "./schema/tables/content-items/content-items.ts";
 
@@ -29,6 +29,20 @@ export interface DatabaseConfig {
 	databaseAdapter: typeof WorkerAdapter
 }
 
+export interface EntitySnapshot {
+	[entityId: string]: {
+		isDeleted: boolean
+		versions: {
+			[versionId: string]: boolean
+		}
+	}
+}
+
+export interface GlobalListingOptions {
+	filter?: {
+		isDeleted?: boolean
+	}
+}
 
 export class Database {
 	readonly #contextId: string;
@@ -66,6 +80,7 @@ export class Database {
 
 	async #ensureInit() {
 		if (!this.#hasInit) {
+			await this.#databaseAdapter.init()
 			console.debug(`[database] running migrations for '${this.#databaseId}'`);
 			await this.#database.run(sql.raw(migration1))
 			this.#hasInit = true
@@ -179,7 +194,7 @@ export class Database {
 		await this.#ensureInit()
 		console.debug(`[database] running delete field: ${id}`)
 
-		// todo: throw error on
+		// todo: throw error on?
 
 		await this.#database
 			.update(fields)
@@ -216,7 +231,7 @@ export class Database {
 				settings: fieldsVersions.settings,
 			})
 			.from(fields)
-			.innerJoin(fields, eq(fields.id, fieldsVersions.entityId))
+			.innerJoin(fieldsVersions, eq(fields.id, fieldsVersions.entityId))
 			.where(
 				and(
 					eq(fields.id, id),
@@ -226,9 +241,20 @@ export class Database {
 			.orderBy(desc(fieldsVersions.createdAt)) as unknown as FieldDto;
 	}
 
-	async getFields(): Promise<FieldDto[]> {
+	async getFields(options?: GlobalListingOptions): Promise<FieldDto[]> {
 		await this.#ensureInit()
 		console.debug(`[database] running get fields`)
+
+		const filters: SQL[] = [
+			eq(fields.currentVersionId, fieldsVersions.id)
+		]
+		if (typeof options?.filter?.isDeleted === 'boolean') {
+			filters.push(
+				eq(fields.isDeleted, options?.filter.isDeleted)
+			)
+		}
+
+		const order: SQL = desc(fieldsVersions.createdAt)
 
 		return this.#database
 			.select({
@@ -247,8 +273,43 @@ export class Database {
 			})
 			.from(fields)
 			.innerJoin(fieldsVersions, eq(fields.id, fieldsVersions.entityId))
-			.where(eq(fields.currentVersionId, fieldsVersions.id))
-			.orderBy(desc(fieldsVersions.createdAt)) as unknown as FieldDto[];
+			.where(and(...filters))
+			.orderBy(order) as unknown as FieldDto[];
+	}
+
+	async getFieldsSnapshot(): Promise<EntitySnapshot> {
+		const entities = await this.#database
+			.select({
+				id: fields.id,
+				isDeleted: fields.isDeleted,
+			})
+			.from(fields)
+
+		const versions = await this.#database
+			.select({
+				id: fieldsVersions.id,
+				entityId: fieldsVersions.entityId,
+				isDeleted: fieldsVersions.isDeleted,
+			})
+			.from(fieldsVersions)
+
+		const snapshot: EntitySnapshot = {}
+
+		for (const entity of entities) {
+			snapshot[entity.id] = {isDeleted: entity.isDeleted, versions: {}}
+		}
+		for (const version of versions) {
+			if (snapshot[version.entityId]) {
+				snapshot[version.entityId].versions[version.id] = version.isDeleted
+			}
+			else {
+				// todo: may need to handle a different way?
+				// We can't throw an error as this may occur if in the middle of a sync etc
+				console.error('Found version with no matching entity')
+			}
+		}
+
+		return snapshot
 	}
 
 	liveGetField(id: string) {
@@ -271,13 +332,13 @@ export class Database {
 		})
 	}
 
-	liveGetFields() {
+	liveGetFields(options?: GlobalListingOptions) {
 		return new Observable<LiveQuery<ReturnType<Database['getFields']>>>((subscriber) => {
 			subscriber.next({status: 'loading'})
 
 			const makeQuery = async () => {
 				subscriber.next({status: 'loading'})
-				const results = await this.getFields();
+				const results = await this.getFields(options);
 				subscriber.next({status: 'success', data: results})
 			}
 
@@ -291,58 +352,101 @@ export class Database {
 		})
 	}
 
-	// async getFieldVersion(versionId: string) {
-	// 	await this.#ensureInit()
-	// 	console.debug(`[database] running get field version: ${versionId}`)
-	//
-	// 	return this.#database
-	// 		.select({
-	// 			id: fields.id,
-	// 			createdAt: fields.createdAt,
-	// 			updatedAt: fieldsVersions.createdAt,
-	// 			isDeleted: fields.isDeleted,
-	// 			versionId: fieldsVersions.id,
-	// 			previousVersionId: fieldsVersions.previousVersionId,
-	// 			versionCreatedBy: fieldsVersions.createdBy,
-	// 			type: fieldsVersions.type,
-	// 			label: fieldsVersions.label,
-	// 			description: fieldsVersions.description,
-	// 			icon: fieldsVersions.icon,
-	// 			settings: fieldsVersions.settings,
-	// 		})
-	// 		.from(fieldsVersions)
-	// 		.innerJoin(fields, eq(fields.id, fieldsVersions.entityId))
-	// 		.where(eq(fieldsVersions.id, versionId)) as unknown as FieldDto;
-	// }
-	//
-	// async getFieldVersions(id: string) {
-	// 	await this.#ensureInit()
-	// 	console.debug(`[database] running get fields: ${id}`)
-	//
-	// 	return this.#database
-	// 		.select({
-	// 			id: fields.id,
-	// 			createdAt: fields.createdAt,
-	// 			updatedAt: fieldsVersions.createdAt,
-	// 			isDeleted: fields.isDeleted,
-	// 			versionId: fieldsVersions.id,
-	// 			previousVersionId: fieldsVersions.previousVersionId,
-	// 			versionCreatedBy: fieldsVersions.createdBy,
-	// 			type: fieldsVersions.type,
-	// 			label: fieldsVersions.label,
-	// 			description: fieldsVersions.description,
-	// 			icon: fieldsVersions.icon,
-	// 			settings: fieldsVersions.settings,
-	// 		})
-	// 		.from(fieldsVersions)
-	// 		.innerJoin(fields, eq(fields.id, fieldsVersions.entityId))
-	// 		.where(eq(fields.currentVersionId, fieldsVersions.id))
-	// 		.orderBy(desc(fieldsVersions.createdAt)) as unknown as FieldDto[];
-	// }
-	//
-	// async deleteFieldVersion(id: string): Promise<void> {}
-	//
-	// liveGetFieldVersions() {}
+	async getFieldVersion(versionId: string) {
+		await this.#ensureInit()
+		console.debug(`[database] running getFieldVersion: ${versionId}`)
+
+		return this.#database
+			.select({
+				id: fieldsVersions.id,
+				createdAt: fieldsVersions.createdAt,
+				isDeleted: fieldsVersions.isDeleted,
+				entityId: fieldsVersions.id,
+				previousVersionId: fieldsVersions.previousVersionId,
+				versionCreatedBy: fieldsVersions.createdBy,
+				type: fieldsVersions.type,
+				label: fieldsVersions.label,
+				description: fieldsVersions.description,
+				icon: fieldsVersions.icon,
+				settings: fieldsVersions.settings,
+			})
+			.from(fieldsVersions)
+			.where(eq(fieldsVersions.id, versionId)) as unknown as FieldVersionDto;
+	}
+
+	async getFieldVersions(id: string) {
+		await this.#ensureInit()
+		console.debug(`[database] running getFieldVersions: ${id}`)
+
+		return this.#database
+			.select({
+				id: fieldsVersions.id,
+				createdAt: fieldsVersions.createdAt,
+				isDeleted: fieldsVersions.isDeleted,
+				entityId: fieldsVersions.id,
+				previousVersionId: fieldsVersions.previousVersionId,
+				versionCreatedBy: fieldsVersions.createdBy,
+				type: fieldsVersions.type,
+				label: fieldsVersions.label,
+				description: fieldsVersions.description,
+				icon: fieldsVersions.icon,
+				settings: fieldsVersions.settings,
+			})
+			.from(fieldsVersions)
+			.where(eq(fieldsVersions.entityId, id))
+			.orderBy(desc(fieldsVersions.createdAt)) as unknown as FieldVersionDto[];
+	}
+
+	async deleteFieldVersion(id: string): Promise<void> {
+		const currentVersion = await this.#database
+			.select({id: fieldsVersions.id, entityId: fieldsVersions.entityId})
+			.from(fieldsVersions)
+			.where(eq(fieldsVersions.id, id))
+		if (!currentVersion) {
+			throw new Error('Version not found')
+		}
+
+		const currentEntity = await this.#database
+			.select({id: fields.id, currentVersionId: fields.currentVersionId})
+			.from(fields)
+			.where(eq(fields.id, currentVersion[0].entityId))
+		if (!currentVersion) {
+			throw new Error('Entity for version not found')
+		}
+
+		if (currentEntity[0].currentVersionId === id) {
+			throw new Error('Attempted to delete current version')
+		}
+
+		await this.#database
+			.delete(fieldsVersions)
+			.where(eq(fieldsVersions.entityId, id))
+
+		this.#events.dispatchEvent(new CustomEvent('fields-version-update'))
+		this.#broadcastChannel.postMessage({type: 'fields-version-update'})
+	}
+
+	liveGetFieldVersions(id: string) {
+		return new Observable<LiveQuery<ReturnType<Database['getFieldVersions']>>>((subscriber) => {
+			subscriber.next({status: 'loading'})
+
+			const makeQuery = async () => {
+				subscriber.next({status: 'loading'})
+				const results = await this.getFieldVersions(id);
+				subscriber.next({status: 'success', data: results})
+			}
+
+			this.#events.addEventListener('fields-update', makeQuery)
+			this.#events.addEventListener('fields-version-update', makeQuery)
+
+			makeQuery()
+
+			return () => {
+				this.#events.removeEventListener('fields-update', makeQuery)
+				this.#events.removeEventListener('fields-version-update', makeQuery)
+			}
+		})
+	}
 
 	/**
 	 * Content items

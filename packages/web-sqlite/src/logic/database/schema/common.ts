@@ -21,7 +21,7 @@ export interface BaseCreateDto {
 	createdBy: string
 }
 
-export interface BaseDto {
+export interface BaseEntityDto {
 	id: string
 	createdAt: string
 	updatedAt: string
@@ -29,4 +29,13 @@ export interface BaseDto {
 	versionId: string
 	previousVersionId: string | null
 	versionCreatedBy: string
+}
+
+export interface BaseVersionDto {
+	id: string
+	createdAt: string
+	isDeleted: boolean
+	entityId: string
+	previousVersionId: string | null
+	createdBy: string
 }

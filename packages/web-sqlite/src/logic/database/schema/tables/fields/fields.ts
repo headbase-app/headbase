@@ -1,5 +1,12 @@
 import {customType, sqliteTable, text} from "drizzle-orm/sqlite-core";
-import {BaseCreateDto, BaseDto, commonEntityFields, commonFields, commonVersionFields} from "../../common.ts";
+import {
+	BaseCreateDto,
+	BaseEntityDto,
+	BaseVersionDto,
+	commonEntityFields,
+	commonFields,
+	commonVersionFields
+} from "../../common.ts";
 import {
 	BooleanSettings,
 	ColourSettings, DateSettings,
@@ -66,7 +73,13 @@ export type CreateFieldDto = BaseCreateDto & {
 // todo: prevent field type from changing in types?
 export type UpdateFieldDto = CreateFieldDto
 
-export type FieldDto = BaseDto & {
+export type FieldDto = BaseEntityDto & {
+	label: string,
+	description:  string | null,
+	icon:  string | null,
+} & AllFieldTypes
+
+export type FieldVersionDto = BaseVersionDto & {
 	label: string,
 	description:  string | null,
 	icon:  string | null,

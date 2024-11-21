@@ -1,6 +1,5 @@
 import {useEffect, useState} from "react";
 import {Database} from "../../logic/database/database.ts";
-import {WebClientAdapter} from "../../logic/database/adapters/web-client-adapter.ts";
 import {FieldDto} from "../../logic/database/schema/tables/fields/fields.ts";
 import {FIELD_TYPES} from "../../logic/database/schema/tables/fields/types.ts";
 import {Link} from "wouter";
@@ -10,7 +9,6 @@ import {WorkerAdapter} from "../../logic/database/adapters/worker-adapter.ts";
 export default function FieldsPage() {
   const [currentDatabaseId, setCurrentDatabaseId] = useState<string>();
   const [databaseIdInput, setDatabaseIdInput] = useState<string>('testing');
-
   const [db, setDb] = useState<Database | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [results, setResults] = useState<FieldDto[]>([]);

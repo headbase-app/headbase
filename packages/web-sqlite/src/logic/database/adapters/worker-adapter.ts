@@ -1,4 +1,4 @@
-import type {AdapterOptions, DatabaseAdapter, QueryResponse} from "./adapter.d.ts";
+import type {AdapterOptions, DatabaseAdapter, SqlQueryResponse} from "./adapter.d.ts";
 import WorkerService from "./sqlite.worker.ts?worker"
 import {AdapterEvents, QueryResponseEvent, WorkerEvents} from "../events.ts";
 
@@ -14,14 +14,6 @@ export class WorkerAdapter implements DatabaseAdapter {
 		this.#databaseId = options.databaseId
 
 		this.#worker = new WorkerService();
-		this.#worker.postMessage({
-			type: 'open',
-			messageId: self.crypto.randomUUID(),
-			detail: {
-				databaseId: this.#databaseId,
-				contextId: this.#contextId,
-				encryptionKey: 'thisisanamazingkey'
-		}} as AdapterEvents);
 
 		this.#databaseLockAbort = new AbortController()
 		navigator.locks.request(`headbase-${this.#databaseId}`, {signal: this.#databaseLockAbort.signal}, this.#setupDatabaseLock.bind(this))
@@ -40,6 +32,17 @@ export class WorkerAdapter implements DatabaseAdapter {
 		})
 	}
 
+	async init(): Promise<void> {
+		await this.#sendWorkerRequest({
+			type: 'open',
+			messageId: self.crypto.randomUUID(),
+			detail: {
+				databaseId: this.#databaseId,
+				contextId: this.#contextId,
+				encryptionKey: 'thisisanamazingkey'
+			}} as AdapterEvents)
+	}
+
 	async close(): Promise<void> {
 		console.debug('close')
 
@@ -56,7 +59,7 @@ export class WorkerAdapter implements DatabaseAdapter {
 		this.#databaseLockAbort.abort()
 	}
 
-	async run(sql: string, params: any[]): Promise<QueryResponse> {
+	async run(sql: string, params: any[]): Promise<SqlQueryResponse> {
 		const workerResponse = await this.#sendWorkerRequest<QueryResponseEvent>({
 			type: 'query',
 			messageId: self.crypto.randomUUID(),

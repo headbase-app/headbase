@@ -1,38 +1,41 @@
 import sqlite3InitModule from "../../../lib/sqlite/sqlite3.mjs"
-import {AdapterEvents, WorkerEvents} from "../events.ts";
+import {AdapterEvents, WorkerEvents} from "../events";
 
 const DatabaseStore = new Map<string, any>();
 
+function sqliteFactory() {
+	let sqlite
 
-(async function (self: DedicatedWorkerGlobalScope) {
-	const sqlite3 = await sqlite3InitModule()
-	const opfsAvaliable = sqlite3.capi.sqlite3_vfs_find("opfs")
-	if (!opfsAvaliable) {
-		self.postMessage({
-			type: 'error',
-			detail: {
-				error: 'opfs_not_available'
-			}
-		})
-	}
-
-	self.onmessage = async function (messageEvent: MessageEvent<AdapterEvents>) {
-		console.debug('event')
-		console.debug(messageEvent)
-
-		if (!opfsAvaliable) {
-			return self.postMessage({
-				type: messageEvent.data.type,
-				targetMessageId: messageEvent.data.messageId,
-				detail: {
-					success: false,
-					error: 'opfs_not_available'
-				}
-			} as WorkerEvents)
+	return async () => {
+		if (sqlite) {
+			return sqlite
 		}
 
+		sqlite = await sqlite3InitModule()
+		const opfsAvaliable = sqlite.capi.sqlite3_vfs_find("opfs")
+		if (!opfsAvaliable) {
+			console.error('[worker] opfs_not_available')
+			self.postMessage({
+				type: 'error',
+				detail: {
+					error: 'opfs_not_available'
+				}
+			})
+			return
+		}
+		return sqlite
+	}
+}
+
+(function (self: DedicatedWorkerGlobalScope) {
+	console.debug('[worker] init')
+
+	console.debug('[worker] onmessage register')
+	self.onmessage = async function (messageEvent: MessageEvent<AdapterEvents>) {
+		const sqlite3 = await sqliteFactory()()
+		if (!sqlite3) return
+
 		if (messageEvent.data.type === 'open') {
-			console.debug('attempting open')
 			const db = new sqlite3.oo1.OpfsDb({
 				filename: `/headbase-v1/${messageEvent.data.detail.databaseId}.sqlite3`,
 				vfs: 'multipleciphers-opfs'
@@ -45,6 +48,7 @@ const DatabaseStore = new Map<string, any>();
 				})
 			}
 			catch(e) {
+				console.debug('[worker] error starting')
 				console.error(e)
 				return self.postMessage({
 					type: messageEvent.data.type,
@@ -66,7 +70,8 @@ const DatabaseStore = new Map<string, any>();
 			} as WorkerEvents);
 		}
 		else if (messageEvent.data.type === 'query') {
-			console.debug('running query')
+			console.debug('[worker] running query')
+			console.debug(messageEvent.data)
 			const db = DatabaseStore.get(messageEvent.data.detail.databaseId);
 			if (!db) {
 				return self.postMessage({
@@ -81,18 +86,16 @@ const DatabaseStore = new Map<string, any>();
 
 			const result = db.exec({
 				sql: messageEvent.data.detail.sql,
-				params: messageEvent.data.detail.params,
+				bind: messageEvent.data.detail.params,
 				returnValue: 'resultRows'
 			})
-
-			console.debug(result)
 
 			return self.postMessage({
 				type: messageEvent.data.type,
 				targetMessageId: messageEvent.data.messageId,
 				detail: {
 					success: true,
-					result
+					result: {rows: result}
 				}
 			});
 		}
