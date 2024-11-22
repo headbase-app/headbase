@@ -26,7 +26,7 @@ import {
 	UpdateDatabaseDto
 } from "../schemas/database";
 
-export interface DatabaseAPIDependencies {
+export interface DatabasesManagementAPIDependencies {
 	eventService: EventsService
 }
 
@@ -37,12 +37,12 @@ type AnyDatabaseEvent =
 	CustomEvent<DatabaseLockEvent['detail']>
 
 
-export class DatabasesAPI {
+export class DatabasesManagementAPI {
 	#appStorageDatabase?: IDBPDatabase
 	readonly #eventsService: EventsService
 
 	constructor(
-		deps: DatabaseAPIDependencies
+		deps: DatabasesManagementAPIDependencies
 	) {
 		this.#eventsService = deps.eventService
 	}

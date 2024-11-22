@@ -1,91 +1,36 @@
-import {useEffect, useState} from "react";
-import {Database} from "./sqlite/database.ts";
-import {TagDto} from "./sqlite/schema/tags.ts";
+import { StrictMode } from 'react'
+import { createRoot } from 'react-dom/client'
 
-export default function App() {
-  const [currentDatabaseId, setCurrentDatabaseId] = useState<string>();
-  const [databaseIdInput, setDatabaseIdInput] = useState<string>('testing');
+import "./styles/index.css"
+import {Route, Switch} from "wouter";
+import FieldsPage from "./pages/fields";
+import NotFoundPage from "./pages/404.tsx";
+import {HomePage} from "./pages";
+import NewFieldPage from "./pages/fields/new.tsx";
+import EditFieldPage from "./pages/fields/[id]/edit.tsx";
+import {EncryptionTests} from "./pages/encryption.tsx";
 
-  const [db, setDb] = useState<Database | null>(null);
-  const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [results, setResults] = useState<TagDto[]>([]);
-
-  useEffect(() => {
-    if (!currentDatabaseId) return
-
-    console.debug('[react] creating database instance')
-    const instance = new Database(currentDatabaseId);
-    setDb(instance)
-
-    return () => {
-      console.debug('[react] closing database instance')
-      instance.close()
-      setDb(null)
-    }
-  }, [currentDatabaseId]);
-
-
-  useEffect(() => {
-    if (!db || !currentDatabaseId) return
-
-    const observable = db.liveGetTags()
-    const subscriber = observable.subscribe((next) => {
-      if (next.status === 'success') {
-        setResults(next.data)
-        setIsLoading(false)
-      }
-      else if (next.status === 'loading') {
-        setIsLoading(true)
-      }
-      else {
-        console.error(next.error)
-      }
-    })
-
-    return () => {
-      subscriber.unsubscribe()
-    }
-  }, [db, currentDatabaseId]);
-
-  async function addItem() {
-    if (!db || !currentDatabaseId) return
-
-    await db.createTag({
-      name: 'example 1',
-      createdBy: 'testing 1',
-      colour: 'blue'
-    })
-  }
-
-  async function addItemViaWorker() {
-    if (!db || !currentDatabaseId) return
-
-    db.requestWorkerCreateTag({
-      name: 'example 1 - FROM WORKER',
-      createdBy: 'testing 1',
-      colour: 'blue'
-    })
-  }
-
+export function App() {
   return (
     <>
-      <label htmlFor='database-id'>Database ID</label>
-      <input value={databaseIdInput || ''} onChange={(e) => setDatabaseIdInput(e.target.value)}/>
-      <button onClick={() => {
-        setCurrentDatabaseId(databaseIdInput)
-      }}>set database
-      </button>
+      <Switch>
+        <Route path='/' component={HomePage} />
 
-      <p>testing</p>
-      <button onClick={addItem}>add test item</button>
-      <button onClick={addItemViaWorker}>add test item VIA WORKER LOCK</button>
+        <Route path='/fields' component={FieldsPage} />
+        <Route path='/fields/new' component={NewFieldPage} />
+        <Route path='/fields/:fieldId' component={EditFieldPage} />
 
-      {isLoading && <p>Loading...</p>}
-      <ul>
-        {results.map(result => (
-          <li key={result.id}>{JSON.stringify(result)}</li>
-        ))}
-      </ul>
+        <Route path='/encryption' component={EncryptionTests} />
+
+        <Route component={NotFoundPage} />
+      </Switch>
     </>
   )
 }
+
+
+createRoot(document.getElementById('root')!).render(
+  <StrictMode>
+    <App />
+  </StrictMode>,
+)
