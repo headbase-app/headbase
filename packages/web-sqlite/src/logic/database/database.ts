@@ -4,7 +4,7 @@ import {Observable} from "rxjs";
 
 import migration1 from "./migrations/00-setup.sql?raw"
 import {WorkerAdapter} from "./adapters/worker-adapter.ts";
-import {fieldsVersions, fields, FieldDto, FieldVersionDto} from "./schema/tables/fields/fields.ts";
+import {fieldsVersions, fields, FieldDto, FieldVersionDto, UpdateFieldDto} from "./schema/tables/fields/fields.ts";
 import {CreateFieldDto} from "./schema/tables/fields/fields.ts";
 import {contentItems, contentItemsVersions} from "./schema/tables/content-items/content-items.ts";
 
@@ -145,7 +145,7 @@ export class Database {
 		return this.getField(entityId)
 	}
 
-	async updateField(id: string, updateDto: CreateFieldDto): Promise<FieldDto> {
+	async updateField(id: string, updateDto: UpdateFieldDto): Promise<FieldDto> {
 		await this.#ensureInit()
 		console.debug(`[database] running update field`)
 

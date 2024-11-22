@@ -8,8 +8,8 @@ import {
 	TextLongValue,
 	TextShortSettings,
 	TextShortValue, TimestampSettings, TimestampValue, URLSettings, URLValue
-} from "../fields/types/basic.ts";
-import {SelectMultipleSettings, SelectMultipleValue, SelectSettings, SelectValue} from "../fields/types/select.ts";
+} from "./types/basic.ts";
+import {SelectMultipleSettings, SelectMultipleValue, SelectSettings, SelectValue} from "./types/select.ts";
 import {
 	FilesSettings,
 	FilesValue, ImagesSettings, ImagesValue,
@@ -17,13 +17,13 @@ import {
 	PointValue,
 	ScaleSettings,
 	ScaleValue
-} from "../fields/types/special.ts";
+} from "./types/special.ts";
 import {
 	ReferenceManySettings,
 	ReferenceManyValue,
 	ReferenceOneSettings,
 	ReferenceOneValue
-} from "../fields/types/references.ts";
+} from "./types/references.ts";
 
 export const FieldValues = z.union([
 	TextShortSettings.pick({type: true}).extend({value: TextShortValue}),

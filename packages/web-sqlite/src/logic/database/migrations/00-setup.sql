@@ -36,6 +36,35 @@ create table if not exists fields_versions (
     settings json
 );
 
+create table if not exists content_types (
+    -- Common
+     id text not null primary key,
+     created_at text not null default (strftime('%FT%R:%fZ')),
+     is_deleted integer not null default 0 check (is_deleted in (0, 1)),
+     hbv text not null,
+    -- Common Entity
+    current_version_id text
+);
+
+create table if not exists content_types_versions (
+    -- Common
+    id text not null primary key,
+    created_at text not null default (strftime('%FT%R:%fZ')),
+    is_deleted integer not null default 0 check (is_deleted in (0, 1)),
+    hbv text not null,
+    -- Common Version
+    entity_id text not null,
+    previous_version_id text,
+    created_by text not null,
+    -- Custom
+    name text not null,
+    icon text,
+    colour text,
+    description text,
+    template_name text,
+    template_fields json
+);
+
 create table if not exists content_items (
     -- Common
     id text not null primary key,
@@ -57,35 +86,10 @@ create table if not exists content_items_versions (
     previous_version_id text,
     created_by text not null,
     -- Custom
+    type text not null,
     name text not null,
-    icon text,
+    is_favorite integer not null default 0 check (is_favorite in (0, 1)),
     fields json
-);
-
-create table if not exists templates (
-    -- Common
-    id text not null primary key,
-    created_at text not null default (strftime('%FT%R:%fZ')),
-    is_deleted integer not null default 0 check (is_deleted in (0, 1)),
-    hbv text not null,
-    -- Common Entity
-    current_version_id text
-);
-
-create table if not exists templates_versions (
-    -- Common
-    id text not null primary key,
-    created_at text not null default (strftime('%FT%R:%fZ')),
-    is_deleted integer not null default 0 check (is_deleted in (0, 1)),
-    hbv text not null,
-    -- Common Version
-    entity_id text not null,
-    previous_version_id text,
-    created_by text not null,
-    -- Custom
-    template_name text not null,
-    template_icon text,
-    template_fields json
 );
 
 create table if not exists views (
@@ -111,8 +115,9 @@ create table if not exists views_versions (
     -- Custom
     type text not null,
     name text not null,
-    description text,
     icon text,
-    templates_available json
+    colour text,
+    description text,
+    is_favorite integer not null default 0 check (is_favorite in (0, 1)),
     settings json
 );

@@ -37,7 +37,7 @@ TODO
   - The **database name is not encrypted**. This is so databases can be identified by users prior to decryption.
   - The **device name is not encrypted**. This is set by the user each time they set up a new device and is saved to data entity versions so users can identify which device a version was created on. It it also used by the client and server during data syncronisation, hence why it needs to be unencrypted.
 
-![A diagram of database encryption.](./diagrams/database-encryption.png)
+![A diagram of database encryption.](diagrams/database-encryption.png)
 
 ## Server Password
 - The server credentials (`account email` and `account password`) are totally separate to any database encryption in order to easily support local-only uses.
@@ -46,7 +46,7 @@ TODO
 - The `server password` is then used in server authentication along with `account email`.
 - The first half of the split `account key` has no current purpose, but may in future versions of Localful for something like creating an account level encryption key or similar.
 
-![A high-level diagram of the server password system described above.](./diagrams/server-password-derivation.png)
+![A high-level diagram of the server password system described above.](diagrams/server-password-derivation.png)
 
 ## Implementation Details
 

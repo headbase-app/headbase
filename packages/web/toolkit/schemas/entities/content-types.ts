@@ -5,8 +5,8 @@ import {createIdField} from "@headbase-app/common";
 
 export const ContentTypeData = z.object({
 	name: NameField,
-	description: DescriptionField,
 	icon: z.string().optional(),
+	description: DescriptionField,
 	colourVariant: ColourVariants.optional(),
 	contentTemplateName: NameField.optional(),
 	contentTemplateTags: z.array(createIdField()).optional(),
