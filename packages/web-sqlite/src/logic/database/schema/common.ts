@@ -1,3 +1,4 @@
+import {z} from "zod";
 import {int, text} from "drizzle-orm/sqlite-core";
 
 export const commonFields = {
@@ -16,6 +17,8 @@ export const commonVersionFields = {
 	previousVersionId: text(),
 	createdBy: text().notNull(),
 }
+
+export const IdField = z.string().uuid();
 
 export interface BaseCreateDto {
 	createdBy: string

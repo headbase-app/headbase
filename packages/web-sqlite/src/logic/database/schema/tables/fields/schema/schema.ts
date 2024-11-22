@@ -78,8 +78,8 @@ export const FIELD_SCHEMAS =  {
 		value: TimestampValue
 	},
 	date: {
-		label: DateSettings,
-		id: DateValue
+		settings: DateSettings,
+		value: DateValue
 	},
 	select: {
 		settings: SelectSettings,
@@ -114,3 +114,30 @@ export const FIELD_SCHEMAS =  {
 		value: ReferenceManyValue
 	}
 } as const
+
+export type AllFieldSettings =
+	TextShortSettings |
+	TextLongSettings |
+	MarkdownSettings |
+	URLSettings |
+	EmailSettings |
+	ColourSettings |
+	PhoneSettings |
+	NumberSettings |
+	BooleanSettings |
+	TimestampSettings |
+	DateSettings |
+	SelectSettings |
+	SelectMultipleSettings |
+	ScaleSettings |
+	PointSettings |
+	FilesSettings |
+	ImagesSettings |
+	ReferenceOneSettings |
+	ReferenceManySettings
+
+export interface FieldDtoFields {
+	label: string,
+	description: string | null,
+	icon: string | null,
+}

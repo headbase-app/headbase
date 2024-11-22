@@ -4,15 +4,24 @@ import {Observable} from "rxjs";
 
 import migration1 from "./migrations/00-setup.sql?raw"
 import {WorkerAdapter} from "./adapters/worker-adapter.ts";
-import {fieldsVersions, fields, FieldDto, FieldVersionDto, UpdateFieldDto} from "./schema/tables/fields/fields.ts";
 import {CreateFieldDto} from "./schema/tables/fields/fields.ts";
-import {contentItems, contentItemsVersions} from "./schema/tables/content-items/content-items.ts";
 
+import {fieldsVersions, fields, FieldDto, FieldVersionDto, UpdateFieldDto} from "./schema/tables/fields/fields.ts";
+import {contentItems, contentItemsVersions} from "./schema/tables/content-items/content-items.ts";
+import {contentTypes, contentTypesVersions} from "./schema/tables/content-types/content-types.ts";
+import {views, viewsVersions} from "./schema/tables/views/views.ts";
+
+/**
+ * todo: this file and the Database class are insanely big, and contain very repetitive CRUD code.
+ * Consider how to refactor to make this more manageable.
+ */
 
 const HEADBASE_VERSION = '1.0'
 const SCHEMA = {
 	fields, fieldsVersions,
-	contentItems, contentItemsVersions
+	contentTypes, contentTypesVersions,
+	contentItems, contentItemsVersions,
+	views, viewsVersions,
 } as const
 
 export type LiveQuery<DataPromise> = {
@@ -43,6 +52,7 @@ export interface GlobalListingOptions {
 		isDeleted?: boolean
 	}
 }
+
 
 export class Database {
 	readonly #contextId: string;

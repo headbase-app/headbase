@@ -8,8 +8,8 @@ import {
 	TextLongValue,
 	TextShortSettings,
 	TextShortValue, TimestampSettings, TimestampValue, URLSettings, URLValue
-} from "./types/basic.ts";
-import {SelectMultipleSettings, SelectMultipleValue, SelectSettings, SelectValue} from "./types/select.ts";
+} from "./schema/types/basic.ts";
+import {SelectMultipleSettings, SelectMultipleValue, SelectSettings, SelectValue} from "./schema/types/select.ts";
 import {
 	FilesSettings,
 	FilesValue, ImagesSettings, ImagesValue,
@@ -17,13 +17,14 @@ import {
 	PointValue,
 	ScaleSettings,
 	ScaleValue
-} from "./types/special.ts";
+} from "./schema/types/special.ts";
 import {
 	ReferenceManySettings,
 	ReferenceManyValue,
 	ReferenceOneSettings,
 	ReferenceOneValue
-} from "./types/references.ts";
+} from "./schema/types/references.ts";
+import {IdField} from "../../common.ts";
 
 export const FieldValues = z.union([
 	TextShortSettings.pick({type: true}).extend({value: TextShortValue}),
@@ -49,8 +50,7 @@ export const FieldValues = z.union([
 export type FieldValues = z.infer<typeof FieldValues>
 
 export const FieldStorage = z.record(
-	// todo: validate as uuid?
-	z.string(),
+	IdField,
 	FieldValues
 )
 export type FieldStorage = z.infer<typeof FieldStorage>

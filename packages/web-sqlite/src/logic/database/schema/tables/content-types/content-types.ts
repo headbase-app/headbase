@@ -12,29 +12,25 @@ export const contentTypesVersions = sqliteTable('content_types_versions', {
 	...commonVersionFields,
 	name: text().notNull(),
 	icon: text(),
+	colour: text(),
 	description: text(),
-	fields: text({ mode: 'json' }),
-	colourVariant: text(),
 	templateName: text(),
-	templateTags: text(),
+	templateFields: text({ mode: 'json' }),
 });
 
-export type CreateContentItemDto = BaseCreateDto & {
+interface ContentItemDtoFields {
 	name: string,
 	icon: string | null,
-	fields: FieldStorage
+	colour: string | null,
+	description: string | null,
+	templateName: string | null,
+	templateFields: FieldStorage
 }
+
+export type CreateContentItemDto = BaseCreateDto & ContentItemDtoFields
 
 export type UpdateContentItemDto = CreateContentItemDto
 
-export type ContentItemDto = BaseEntityDto & {
-	name: string,
-	icon:  string | null,
-	fields: FieldStorage
-}
+export type ContentItemDto = BaseEntityDto & ContentItemDtoFields
 
-export type ContentItemVersionDto = BaseVersionDto & {
-	name: string,
-	icon:  string | null,
-	fields: FieldStorage
-}
+export type ContentItemVersionDto = BaseVersionDto & ContentItemDtoFields
