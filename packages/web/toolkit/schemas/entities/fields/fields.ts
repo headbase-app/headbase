@@ -17,7 +17,7 @@ export const FieldBase = z.object({
 	required: z.boolean()
 }).strict()
 export type FieldBase = z.infer<typeof FieldBase>
-
+ 
 export const FieldBasicStringValue = z.string().optional()
 export type FieldBasicStringValue = z.infer<typeof FieldBasicStringValue>
 

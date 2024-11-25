@@ -4,12 +4,13 @@ import {Observable} from "rxjs";
 
 import migration1 from "./migrations/00-setup.sql?raw"
 import {WorkerAdapter} from "./adapters/worker-adapter.ts";
-import {CreateFieldDto} from "./schema/tables/fields/fields.ts";
 
-import {fieldsVersions, fields, FieldDto, FieldVersionDto, UpdateFieldDto} from "./schema/tables/fields/fields.ts";
-import {contentItems, contentItemsVersions} from "./schema/tables/content-items/content-items.ts";
-import {contentTypes, contentTypesVersions} from "./schema/tables/content-types/content-types.ts";
-import {views, viewsVersions} from "./schema/tables/views/views.ts";
+import {fieldsVersions, fields} from "./schema/fields/database.ts";
+import {contentItems, contentItemsVersions} from "./schema/content-items/database.ts";
+import {contentTypes, contentTypesVersions} from "./schema/content-types/database.ts";
+import {views, viewsVersions} from "./schema/views/dtos.ts";
+
+import {CreateFieldDto, FieldDto, FieldVersionDto, UpdateFieldDto} from "./schema/fields/dtos.ts";
 
 /**
  * todo: this file and the Database class are insanely big, and contain very repetitive CRUD code.
@@ -143,7 +144,7 @@ export class Database {
 				previousVersionId: null,
 				createdBy: createDto.createdBy,
 				type: createDto.type,
-				label: createDto.label,
+				name: createDto.name,
 				description: createDto.description,
 				icon: createDto.icon,
 				settings: 'settings' in createDto ? createDto.settings : null,
@@ -186,7 +187,7 @@ export class Database {
 				previousVersionId: currentField.versionId,
 				createdBy: updateDto.createdBy,
 				type: updateDto.type,
-				label: updateDto.label,
+				name: updateDto.name,
 				description: updateDto.description,
 				icon: updateDto.icon,
 				settings: 'settings' in updateDto ? updateDto.settings : null,
@@ -235,7 +236,7 @@ export class Database {
 				previousVersionId: fieldsVersions.previousVersionId,
 				versionCreatedBy: fieldsVersions.createdBy,
 				type: fieldsVersions.type,
-				label: fieldsVersions.label,
+				name: fieldsVersions.name,
 				description: fieldsVersions.description,
 				icon: fieldsVersions.icon,
 				settings: fieldsVersions.settings,
@@ -276,7 +277,7 @@ export class Database {
 				previousVersionId: fieldsVersions.previousVersionId,
 				versionCreatedBy: fieldsVersions.createdBy,
 				type: fieldsVersions.type,
-				label: fieldsVersions.label,
+				name: fieldsVersions.name,
 				description: fieldsVersions.description,
 				icon: fieldsVersions.icon,
 				settings: fieldsVersions.settings,
@@ -375,7 +376,7 @@ export class Database {
 				previousVersionId: fieldsVersions.previousVersionId,
 				versionCreatedBy: fieldsVersions.createdBy,
 				type: fieldsVersions.type,
-				label: fieldsVersions.label,
+				name: fieldsVersions.name,
 				description: fieldsVersions.description,
 				icon: fieldsVersions.icon,
 				settings: fieldsVersions.settings,
@@ -397,7 +398,7 @@ export class Database {
 				previousVersionId: fieldsVersions.previousVersionId,
 				versionCreatedBy: fieldsVersions.createdBy,
 				type: fieldsVersions.type,
-				label: fieldsVersions.label,
+				name: fieldsVersions.name,
 				description: fieldsVersions.description,
 				icon: fieldsVersions.icon,
 				settings: fieldsVersions.settings,

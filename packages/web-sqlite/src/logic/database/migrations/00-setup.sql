@@ -30,7 +30,7 @@ create table if not exists fields_versions (
     created_by text not null,
     -- Custom
     type text not null,
-    label text not null,
+    name text not null,
     description text,
     icon text,
     settings json

@@ -1,9 +1,10 @@
 import {z} from "zod";
-import {FIELD_TYPES} from "../types.ts";
+import {FIELDS} from "../types.ts";
+import {BaseFieldData} from "../dtos.ts";
 
 
-export const ScaleSettings = z.object({
-	type: z.literal(FIELD_TYPES.scale.id),
+export const ScaleFieldData = BaseFieldData.extend({
+	type: z.literal(FIELDS.scale.id),
 	settings: z.object({
 		minLabel: z.string()
 			.min(1, "minimum label must be between 1 and 20 chars")
@@ -17,16 +18,16 @@ export const ScaleSettings = z.object({
 			.max(10,  "scale must be between 3 and 10")
 	})
 }).strict()
-export type ScaleSettings = z.infer<typeof ScaleSettings>
+export type ScaleFieldData = z.infer<typeof ScaleFieldData>
 
 export const ScaleValue = z.number().min(1)
 export type ScaleValue = z.infer<typeof ScaleValue>
 
 
-export const PointSettings = z.object({
-	type: z.literal(FIELD_TYPES.point.id),
+export const PointFieldData = BaseFieldData.extend({
+	type: z.literal(FIELDS.point.id),
 }).strict()
-export type PointSettings = z.infer<typeof PointSettings>
+export type PointFieldData = z.infer<typeof PointFieldData>
 
 export const PointValue = z.object({
 	x: z.number(),
@@ -35,18 +36,18 @@ export const PointValue = z.object({
 export type PointValue = z.infer<typeof PointValue>
 
 
-export const FilesSettings = z.object({
-	type: z.literal(FIELD_TYPES.files.id),
+export const FilesFieldData = BaseFieldData.extend({
+	type: z.literal(FIELDS.files.id),
 }).strict()
-export type FilesSettings = z.infer<typeof FilesSettings>
+export type FilesFieldData = z.infer<typeof FilesFieldData>
 
 export const FilesValue = z.array(z.string())
 export type FilesValue = z.infer<typeof FilesValue>
 
-export const ImagesSettings = z.object({
-	type: z.literal(FIELD_TYPES.images.id),
+export const ImagesFieldData = BaseFieldData.extend({
+	type: z.literal(FIELDS.images.id),
 }).strict()
-export type ImagesSettings = z.infer<typeof ImagesSettings>
+export type ImagesFieldData = z.infer<typeof ImagesFieldData>
 
 export const ImagesValue = z.array(z.string())
 export type ImagesValue = z.infer<typeof ImagesValue>

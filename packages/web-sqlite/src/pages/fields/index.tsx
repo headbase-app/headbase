@@ -1,7 +1,7 @@
 import {useEffect, useState} from "react";
 import {Database} from "../../logic/database/database.ts";
-import {FieldDto} from "../../logic/database/schema/tables/fields/fields.ts";
-import {FIELD_TYPES} from "../../logic/database/schema/tables/fields/schema/types.ts";
+import {FieldDto} from "../../logic/database/schema/fields/fields.ts";
+import {FIELD_TYPES} from "../../logic/database/schema/fields/types.ts";
 import {Link} from "wouter";
 import {WorkerAdapter} from "../../logic/database/adapters/worker-adapter.ts";
 
