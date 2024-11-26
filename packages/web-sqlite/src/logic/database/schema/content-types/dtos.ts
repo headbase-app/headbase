@@ -1,4 +1,4 @@
-import {FieldStorage} from "../fields/field-storage.ts";
+import {FieldStorage} from "../common/field-storage.ts";
 import {BaseCreateDto, BaseEntityDto, BaseVersionDto} from "../common/dto.ts";
 import {z} from "zod";
 import {ColourField, DescriptionField, IconField, NameField} from "../common/fields.ts";

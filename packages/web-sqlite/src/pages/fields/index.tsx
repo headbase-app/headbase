@@ -3,7 +3,7 @@ import {Database} from "../../logic/database/database.ts";
 import {FieldDto} from "../../logic/database/schema/fields/fields.ts";
 import {FIELD_TYPES} from "../../logic/database/schema/fields/types.ts";
 import {Link} from "wouter";
-import {WorkerAdapter} from "../../logic/database/adapters/worker-adapter.ts";
+import {WorkerAdapter} from "../../logic/database/web-adapter/web-adapter.ts";
 
 
 export default function FieldsPage() {

@@ -1,5 +1,5 @@
 import sqlite3InitModule from "../../../lib/sqlite/sqlite3.mjs"
-import {AdapterEvents, WorkerEvents} from "./events.ts";
+import {AdapterEvents, WorkerEvents} from "./messages.js";
 
 const DatabaseStore = new Map<string, any>();
 

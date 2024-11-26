@@ -7,20 +7,20 @@ import {
 	MarkdownValue, NumberFieldData, NumberValue, PhoneFieldData, PhoneValue, TextLongFieldData,
 	TextLongValue, TextShortFieldData,
 	TextShortValue, TimestampFieldData, TimestampValue, URLFieldData, URLValue
-} from "./types/basic.ts";
-import {SelectFieldData, SelectMultipleFieldData, SelectMultipleValue, SelectValue} from "./types/select.ts";
+} from "../fields/types/basic.ts";
+import {SelectFieldData, SelectMultipleFieldData, SelectMultipleValue, SelectValue} from "../fields/types/select.ts";
 import {
 	FilesFieldData,
 	FilesValue, ImagesFieldData, ImagesValue, PointFieldData,
 	PointValue, ScaleFieldData,
 	ScaleValue
-} from "./types/special.ts";
+} from "../fields/types/special.ts";
 import {
 	ReferenceManyFieldData,
 	ReferenceManyValue, ReferenceOneFieldData,
 	ReferenceOneValue
-} from "./types/references.ts";
-import {IdField} from "../common/fields.ts";
+} from "../fields/types/references.ts";
+import {IdField} from "./fields.ts";
 
 export const FieldValues = z.union([
 	TextShortFieldData.pick({type: true}).extend({value: TextShortValue}),

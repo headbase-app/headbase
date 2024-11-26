@@ -3,7 +3,6 @@ import {and, desc, eq, SQL, sql} from "drizzle-orm";
 import {Observable} from "rxjs";
 
 import migration1 from "./migrations/00-setup.sql?raw"
-import {WorkerAdapter} from "./adapters/worker-adapter.ts";
 
 import {fieldsVersions, fields} from "./schema/fields/database.ts";
 import {contentItems, contentItemsVersions} from "./schema/content-items/database.ts";
@@ -12,8 +11,8 @@ import {views, viewsVersions} from "./schema/views/database.ts";
 
 import {CreateFieldDto, FieldDto, FieldVersionDto, UpdateFieldDto} from "./schema/fields/dtos.ts";
 import {ContentTypeDto, CreateContentTypeDto, UpdateContentTypeDto} from "./schema/content-types/dtos.ts";
-import {EventsService} from "../services/events/events.service.ts";
-import {AnyHeadbaseEvent, EventTypes, HeadbaseEvent} from "../services/events/events.ts";
+import {AnyHeadbaseEvent, EventTypes} from "../services/events/events.ts";
+import {PlatformAdapter} from "./adapter.ts";
 
 /**
  * todo: this file and the Database class are insanely big, and contain very repetitive CRUD code.
@@ -39,8 +38,8 @@ export type LiveQuery<DataPromise> = {
 }
 
 export interface DatabaseConfig {
-	databaseAdapter: typeof WorkerAdapter
-	eventService: EventsService
+	contextId: string
+	platformAdapter: PlatformAdapter
 }
 
 export interface EntitySnapshot {
@@ -61,22 +60,21 @@ export interface GlobalListingOptions {
 
 export class Database {
 	readonly #contextId: string;
-
 	readonly #databaseId: string;
-	readonly #databaseAdapter: WorkerAdapter;
-	readonly #database: SqliteRemoteDatabase<typeof SCHEMA>
+	
+	readonly #platformAdapter: PlatformAdapter;
 	#hasInit: boolean
-
-	readonly #eventService: EventsService
+	
+	readonly #database: SqliteRemoteDatabase<typeof SCHEMA>
 
 	constructor(databaseId: string, config: DatabaseConfig) {
-		this.#contextId = self.crypto.randomUUID()
+		this.#contextId = config.contextId
+		this.#databaseId = databaseId
 
-		this.#databaseId = databaseId;
-		this.#databaseAdapter = new config.databaseAdapter({contextId: this.#contextId, databaseId: this.#databaseId})
+		this.#platformAdapter = config.platformAdapter;
 		this.#database = drizzle(
 			async (sql, params) => {
-				return this.#databaseAdapter.run(sql, params)
+				return this.#platformAdapter.runSql({contextId: this.#contextId, databaseId: this.#databaseId}, sql, params)
 			},
 			(queries) => {
 				throw new Error(`[database] Batch queries are not supported yet. Attempted query: ${queries}`)
@@ -85,13 +83,14 @@ export class Database {
 		);
 		this.#hasInit = false;
 
-		this.#eventService = config.eventService
 		console.debug(`[database] init complete for '${databaseId}' using contextId '${this.#contextId}'`)
 	}
 
 	async #ensureInit() {
 		if (!this.#hasInit) {
-			await this.#databaseAdapter.init()
+			await this.#platformAdapter.init()
+			await this.#platformAdapter.openDatabase({contextId: this.#contextId, databaseId: this.#databaseId})
+			
 			console.debug(`[database] running migrations for '${this.#databaseId}'`);
 			await this.#database.run(sql.raw(migration1))
 			this.#hasInit = true
@@ -100,7 +99,7 @@ export class Database {
 
 	async close() {
 		console.debug(`[database] close started for database '${this.#databaseId}' from context '${this.#contextId}'`)
-		await this.#databaseAdapter.close()
+		await this.#platformAdapter.closeDatabase({contextId: this.#contextId, databaseId: this.#databaseId})
 
 		console.debug(`[database] closed database '${this.#databaseId}' from context '${this.#contextId}'`)
 	}
@@ -143,7 +142,7 @@ export class Database {
 				settings: 'settings' in createDto ? createDto.settings : null,
 			})
 
-		this.#eventService.dispatch(EventTypes.DATA_CHANGE, {databaseId: this.#databaseId, tableKey: 'fields', id: entityId, action: 'create'})
+		this.#platformAdapter.dispatchEvent(EventTypes.DATA_CHANGE, {databaseId: this.#databaseId, tableKey: 'fields', id: entityId, action: 'create'})
 
 		return this.getField(entityId)
 	}
@@ -185,7 +184,7 @@ export class Database {
 				settings: 'settings' in updateDto ? updateDto.settings : null,
 			})
 
-		this.#eventService.dispatch(EventTypes.DATA_CHANGE, {databaseId: this.#databaseId, tableKey: 'fields', id: id, action: 'update'})
+		this.#platformAdapter.dispatchEvent(EventTypes.DATA_CHANGE, {databaseId: this.#databaseId, tableKey: 'fields', id: id, action: 'update'})
 
 		// Return the updated field
 		// todo: do this via "returning" in version insert?
@@ -209,7 +208,7 @@ export class Database {
 			.delete(fieldsVersions)
 			.where(eq(fieldsVersions.entityId, id))
 
-		this.#eventService.dispatch(EventTypes.DATA_CHANGE, {databaseId: this.#databaseId, tableKey: 'fields', id: id, action: 'delete'})
+		this.#platformAdapter.dispatchEvent(EventTypes.DATA_CHANGE, {databaseId: this.#databaseId, tableKey: 'fields', id: id, action: 'delete'})
 	}
 
 	async getField(id: string): Promise<FieldDto> {
@@ -326,17 +325,17 @@ export class Database {
 			const handleEvent = (e: AnyHeadbaseEvent) => {
 				// Discard if tableKey or ID doesn't match, as the data won't have changed.
 				if (e.detail.id === id && e.detail.data.id === id) {
-					Logger.debug(`[observableGet] Received event that requires re-query`)
+					console.debug(`[observableGet] Received event that requires re-query`)
 					runQuery()
 				}
 			}
 
-			this.#events.addEventListener('fields-update', makeQuery)
+			this.#platformAdapter.subscribeEvent(EventTypes.DATA_CHANGE, handleEvent)
 
 			makeQuery()
 
 			return () => {
-				this.#events.removeEventListener('fields-update', makeQuery)
+				this.#platformAdapter.unsubscribeEvent(EventTypes.DATA_CHANGE, makeQuery)
 			}
 		})
 	}
@@ -351,12 +350,12 @@ export class Database {
 				subscriber.next({status: 'success', data: results})
 			}
 
-			this.#events.addEventListener('fields-update', makeQuery)
+			this.#platformAdapter.subscribeEvent(EventTypes.DATA_CHANGE, makeQuery)
 
 			makeQuery()
 
 			return () => {
-				this.#events.removeEventListener('fields-update', makeQuery)
+				this.#platformAdapter.unsubscribeEvent(EventTypes.DATA_CHANGE, makeQuery)
 			}
 		})
 	}
@@ -431,7 +430,7 @@ export class Database {
 			.delete(fieldsVersions)
 			.where(eq(fieldsVersions.entityId, id))
 
-		this.#eventService.dispatch('data-change', {databaseId: this.#databaseId, tableKey: 'fields', id: id, action: 'delete-version'})
+		this.#platformAdapter.dispatchEvent('data-change', {databaseId: this.#databaseId, tableKey: 'fields', id: id, action: 'delete-version'})
 	}
 
 	liveGetFieldVersions(id: string) {
@@ -495,7 +494,7 @@ export class Database {
 				templateFields: createDto.templateFields,
 			})
 
-		this.#eventService.dispatch('data-change', {databaseId: this.#databaseId, tableKey: 'content_types', id: entityId, action: 'create'})
+		this.#platformAdapter.dispatchEvent('data-change', {databaseId: this.#databaseId, tableKey: 'content_types', id: entityId, action: 'create'})
 
 		return this.getField(entityId)
 	}
@@ -537,8 +536,8 @@ export class Database {
 				settings: 'settings' in updateDto ? updateDto.settings : null,
 			})
 
-		this.#events.dispatchEvent(new CustomEvent('fields-update'))
-		this.#broadcastChannel.postMessage({type: 'fields-update'})
+		this.#events.dispatchEvent(new CustomEvent(EventTypes.DATA_CHANGE))
+		this.#broadcastChannel.postMessage({type: EventTypes.DATA_CHANGE})
 
 		// Return the updated field
 		// todo: do this via "returning" in version insert?
@@ -562,8 +561,8 @@ export class Database {
 			.delete(fieldsVersions)
 			.where(eq(fieldsVersions.entityId, id))
 
-		this.#events.dispatchEvent(new CustomEvent('fields-update'))
-		this.#broadcastChannel.postMessage({type: 'fields-update'})
+		this.#events.dispatchEvent(new CustomEvent(EventTypes.DATA_CHANGE))
+		this.#broadcastChannel.postMessage({type: EventTypes.DATA_CHANGE})
 	}
 
 	async getField(id: string): Promise<ContentTypeDto> {
@@ -677,12 +676,12 @@ export class Database {
 				subscriber.next({status: 'success', data: results})
 			}
 
-			this.#events.addEventListener('fields-update', makeQuery)
+			this.#platformAdapter.subscribeEvent(EventTypes.DATA_CHANGE, makeQuery)
 
 			makeQuery()
 
 			return () => {
-				this.#events.removeEventListener('fields-update', makeQuery)
+				this.#platformAdapter.unsubscribeEvent(EventTypes.DATA_CHANGE, makeQuery)
 			}
 		})
 	}
@@ -697,12 +696,12 @@ export class Database {
 				subscriber.next({status: 'success', data: results})
 			}
 
-			this.#events.addEventListener('fields-update', makeQuery)
+			this.#platformAdapter.subscribeEvent(EventTypes.DATA_CHANGE, makeQuery)
 
 			makeQuery()
 
 			return () => {
-				this.#events.removeEventListener('fields-update', makeQuery)
+				this.#platformAdapter.unsubscribeEvent(EventTypes.DATA_CHANGE, makeQuery)
 			}
 		})
 	}
@@ -791,14 +790,14 @@ export class Database {
 				subscriber.next({status: 'success', data: results})
 			}
 
-			this.#events.addEventListener('fields-update', makeQuery)
-			this.#events.addEventListener('fields-version-update', makeQuery)
+			this.#platformAdapter.subscribeEvent(EventTypes.DATA_CHANGE, makeQuery)
+			this.#platformAdapter.subscribeEvent('fields-version-update', makeQuery)
 
 			makeQuery()
 
 			return () => {
-				this.#events.removeEventListener('fields-update', makeQuery)
-				this.#events.removeEventListener('fields-version-update', makeQuery)
+				this.#platformAdapter.unsubscribeEvent(EventTypes.DATA_CHANGE, makeQuery)
+				this.#platformAdapter.unsubscribeEvent('fields-version-update', makeQuery)
 			}
 		})
 	}

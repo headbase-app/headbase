@@ -1,6 +1,6 @@
 import {z} from "zod";
 
-import {FieldStorage} from "../fields/field-storage.ts";
+import {FieldStorage} from "../common/field-storage.ts";
 import {BooleanField, IdField, NameField} from "../common/fields.ts";
 import {BaseCreateDto, BaseEntityDto, BaseVersionDto} from "../common/dto.ts";
 
