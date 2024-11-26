@@ -33,7 +33,7 @@ export interface DataEntityChangeEvent {
 		data: {
 			databaseId: string
 			tableKey: string
-			action: 'create' | 'update' | 'delete' | 'purge'
+			action: 'create' | 'update' | 'delete' | 'purge' | 'delete-version'
 			id: string,
 		}
 	}
@@ -140,4 +140,5 @@ export type EventTypes = keyof EventMap
 // todo: simply event declarations and work better with built-in event emitter more.
 export type AnyHeadbaseEvent =
 	CustomEvent<UserLoginEvent['detail']> |
-	CustomEvent<UserLogoutEvent['detail']>
+	CustomEvent<UserLogoutEvent['detail']> |
+	CustomEvent<DataEntityChangeEvent['detail']>

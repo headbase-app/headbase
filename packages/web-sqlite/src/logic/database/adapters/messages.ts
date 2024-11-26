@@ -1,4 +1,4 @@
-import {SqlQueryResponse} from "./adapters/adapter";
+import {SqlQueryResponse} from "./adapter";
 
 export interface BaseEvent {
 	messageId: string

@@ -1,8 +1,9 @@
 import {EventContext, EventMap, EventTypes, HeadbaseEvent} from "./events";
-import { EncryptionService } from "../../services/encryption/encryption";
+import { EncryptionService } from "../encryption/encryption.ts";
 
-// todo: this is using logger from web project but this the toolkit
-import {Logger} from "../../../src/utils/logger";
+export interface EventsServiceConfig {
+	key: string
+}
 
 
 /**
@@ -15,13 +16,13 @@ export class EventsService {
 	localBroadcastChannel: BroadcastChannel | undefined
 	contextId: string
 
-	constructor() {
+	constructor(config: EventsServiceConfig) {
 		this.eventTarget = new EventTarget()
 		this.contextId = EncryptionService.generateUUID()
 
-		this.localBroadcastChannel = new BroadcastChannel("headbase_events")
+		this.localBroadcastChannel = new BroadcastChannel(`headbase_${config.key}`)
 		this.localBroadcastChannel.onmessage = (message: MessageEvent<HeadbaseEvent>) => {
-			Logger.debug('[EventManager] Received broadcast channel message', message.data)
+			console.debug('[EventManager] Received broadcast channel message', message.data)
 			this.dispatch(message.data.type, message.data.detail.data, message.data.detail.context)
 		}
 	}
@@ -38,7 +39,7 @@ export class EventsService {
 			data: data,
 		}
 
-		Logger.debug(`[EventManager] Dispatching event:`, type, eventDetail)
+		console.debug(`[EventManager] Dispatching event:`, type, eventDetail)
 
 		const event = new CustomEvent(type, { detail: eventDetail })
 		this.eventTarget.dispatchEvent(event)

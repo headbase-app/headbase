@@ -1,6 +1,6 @@
 import type {AdapterOptions, DatabaseAdapter, SqlQueryResponse} from "./adapter.d.ts";
 import WorkerService from "./sqlite.worker.ts?worker"
-import {AdapterEvents, QueryResponseEvent, WorkerEvents} from "../events.ts";
+import {AdapterEvents, QueryResponseEvent, WorkerEvents} from "./events.ts";
 
 
 export class WorkerAdapter implements DatabaseAdapter {
