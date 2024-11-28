@@ -1,15 +1,17 @@
 import {useEffect, useState} from "react";
 import {Database} from "../../logic/database/database.ts";
-import {FieldDto} from "../../logic/database/schema/fields/fields.ts";
-import {FIELD_TYPES} from "../../logic/database/schema/fields/types.ts";
 import {Link} from "wouter";
-import {WorkerAdapter} from "../../logic/database/web-adapter/web-adapter.ts";
+import {WebPlatformAdapter} from "../../logic/database/web-adapter/web-adapter.ts";
+import {DeviceContext} from "../../logic/database/adapter.ts";
+import {FieldDto} from "../../logic/database/schema/fields/dtos.ts";
+import {FIELDS} from "../../logic/database/schema/fields/types.ts";
 
 
 export default function FieldsPage() {
+  const [db, setDb] = useState<Database | null>(null);
+
   const [currentDatabaseId, setCurrentDatabaseId] = useState<string>();
   const [databaseIdInput, setDatabaseIdInput] = useState<string>('testing');
-  const [db, setDb] = useState<Database | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [results, setResults] = useState<FieldDto[]>([]);
 
@@ -17,7 +19,9 @@ export default function FieldsPage() {
     if (!currentDatabaseId) return
 
     console.debug('[react] creating database instance')
-    const instance = new Database(currentDatabaseId, {databaseAdapter: WorkerAdapter});
+    const context: DeviceContext = {id: self.crypto.randomUUID()}
+    const platformAdapter = new WebPlatformAdapter({context})
+    const instance = new Database(currentDatabaseId, {context, platformAdapter});
     setDb(instance)
 
     return () => {
@@ -54,11 +58,11 @@ export default function FieldsPage() {
     if (!db || !currentDatabaseId) return
 
     await db.createField({
-      label: 'example 1',
+      name: 'example 1',
       description: null,
       icon: null,
       createdBy: 'testing 1',
-      type: FIELD_TYPES.markdown.id,
+      type: FIELDS.markdown.id,
       settings: {
         defaultLines: 5
       }
@@ -98,7 +102,7 @@ export default function FieldsPage() {
       <ul className='container mx-auto p-4'>
         {results.map(result => (
           <li key={result.id} className='bg-background-f1 mb-4 text-text p-4 rounded-sm'>
-            <h3 className='text-text-emphasis text-lg'>{result.label}</h3>
+            <h3 className='text-text-emphasis text-lg'>{result.name}</h3>
             <p><small>{result.id} (version {result.versionId} from {result.versionCreatedBy})</small></p>
             <p>Created at: {result.createdAt}</p>
             <p>Updated at: {result.updatedAt}</p>

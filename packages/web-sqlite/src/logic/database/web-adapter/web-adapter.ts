@@ -1,16 +1,18 @@
-import {DeviceContext, PlatformAdapter, SqlQueryResponse} from "../adapter.ts";
+import {DeviceContext, PlatformAdapter, PlatformAdapterConfig, SqlDataType, SqlQueryResponse} from "../adapter.ts";
 import WorkerService from "./sqlite.worker.ts?worker"
-import {AdapterEvents, QueryResponseEvent, WorkerEvents} from "./messages.ts";
 import {EventMap, EventTypes, HeadbaseEvent} from "../../services/events/events.ts";
+import {ClientMessages, QueryResponseMessage, WorkerMessages} from "./messages.ts";
 
 
 export class WebPlatformAdapter implements PlatformAdapter {
 	// readonly #databaseLockAbort: AbortController
+	readonly #context: DeviceContext
 	readonly #worker: Worker
 	#eventTarget: EventTarget
 	#localBroadcastChannel: BroadcastChannel | undefined
 
-	constructor() {
+	constructor(config: PlatformAdapterConfig) {
+		this.#context = config.context;
 		this.#worker = new WorkerService();
 		// this.#databaseLockAbort = new AbortController()
 
@@ -19,7 +21,7 @@ export class WebPlatformAdapter implements PlatformAdapter {
 		this.#localBroadcastChannel = new BroadcastChannel(`headbase_events`)
 		this.#localBroadcastChannel.onmessage = (message: MessageEvent<HeadbaseEvent>) => {
 			console.debug('[EventManager] Received broadcast channel message', message.data)
-			this.dispatchEvent(message.data.type, message.data.detail.data, message.data.detail.context)
+			this.dispatchEvent(message.data.type, message.data.detail)
 		}
 	}
 
@@ -56,7 +58,7 @@ export class WebPlatformAdapter implements PlatformAdapter {
 	 * @param options
 	 * @private
 	 */
-	#sendWorkerRequest<Response extends WorkerEvents>(message: AdapterEvents, options?: {timeout: number}): Promise<Response> {
+	#sendWorkerRequest<Response extends WorkerMessages>(message: ClientMessages, options?: {timeout: number}): Promise<Response> {
 		return new Promise((resolve, reject) => {
 			// listen for message and resolve when response message is sent.
 			// todo: how to handle cleaning up of event listeners?
@@ -87,15 +89,16 @@ export class WebPlatformAdapter implements PlatformAdapter {
 		})
 	}
 
-	async openDatabase(context: DeviceContext): Promise<void> {
+	async openDatabase(databaseId: string): Promise<void> {
 		await this.#sendWorkerRequest({
 			type: 'open',
 			messageId: self.crypto.randomUUID(),
 			detail: {
-				databaseId: context.databaseId,
-				contextId: context.contextId,
+				databaseId,
+				context: this.#context,
 				encryptionKey: 'thisisanamazingkey'
-			}} as AdapterEvents)
+			}
+		})
 
 		// navigator.locks.request(
 		// 	`headbase-db-${context.databaseId}`,
@@ -103,28 +106,28 @@ export class WebPlatformAdapter implements PlatformAdapter {
 		// )
 	}
 
-	async closeDatabase(context: DeviceContext): Promise<void> {
+	async closeDatabase(databaseId: string): Promise<void> {
 		console.debug('close')
 
 		await this.#sendWorkerRequest({
 			type: 'close',
 			messageId: self.crypto.randomUUID(),
 			detail: {
-				databaseId: context.databaseId,
-				contextId: context.contextId,
+				databaseId,
+				context: this.#context,
 			}
 		})
 
 		//this.#databaseLockAbort.abort()
 	}
 
-	async runSql(context: DeviceContext, sql: string, params: any[]): Promise<SqlQueryResponse> {
-		const workerResponse = await this.#sendWorkerRequest<QueryResponseEvent>({
+	async runSql(databaseId: string, sql: string, params: SqlDataType[]): Promise<SqlQueryResponse> {
+		const workerResponse = await this.#sendWorkerRequest<QueryResponseMessage>({
 			type: 'query',
 			messageId: self.crypto.randomUUID(),
 			detail: {
-				databaseId: context.databaseId,
-				contextId: context.contextId,
+				databaseId,
+				context: this.#context,
 				sql,
 				params
 			}
@@ -137,20 +140,15 @@ export class WebPlatformAdapter implements PlatformAdapter {
 		return workerResponse.detail.result
 	}
 
-	dispatchEvent<Event extends keyof EventMap>(type: Event, data: EventMap[Event]["detail"]["data"], context?: DeviceContext): void {
-		const eventDetail = {
-			context: context || {contextId: this.contextId},
-			data: data,
-		}
-
-		console.debug(`[EventManager] Dispatching event:`, type, eventDetail)
+	dispatchEvent<Event extends keyof EventMap>(type: Event, eventDetail: EventMap[Event]["detail"]): void {
+		console.debug(`[EventManager] Dispatching '${type}' event: ${eventDetail}`)
 
 		const event = new CustomEvent(type, { detail: eventDetail })
-		this.eventTarget.dispatchEvent(event)
+		this.#eventTarget.dispatchEvent(event)
 
 		// Only broadcast events to other instances and the shared worker if they originate in the current context,
 		// otherwise hello infinite event ping pong!
-		if (event.detail.context.contextId === this.) {
+		if (event.detail.context.id === this.#context.id) {
 			if (this.#localBroadcastChannel) {
 				// Don't send open/close events as that is unique to every instance.
 				if (type !== EventTypes.DATABASE_OPEN && type !== EventTypes.DATABASE_CLOSE) {

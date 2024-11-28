@@ -1,6 +1,6 @@
 import {z} from "zod";
 import {VIEWS} from "../types.ts";
-import {BaseViewData} from "../dtos.ts";
+import {BaseViewData} from "./base.ts";
 
 export const ListViewData = BaseViewData.extend({
 	type: z.literal(VIEWS.list.id),

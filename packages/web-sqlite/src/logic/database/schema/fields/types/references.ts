@@ -1,7 +1,7 @@
 import {z} from "zod";
 import {FIELDS} from "../types.ts";
 import {IdField} from "../../common/fields.ts";
-import {BaseFieldData} from "../dtos.ts";
+import {BaseFieldData} from "./base.ts";
 
 export const ReferenceOneFieldData = BaseFieldData.extend({
 	type: z.literal(FIELDS.referenceOne.id),

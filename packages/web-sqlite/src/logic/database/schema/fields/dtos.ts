@@ -1,7 +1,6 @@
 import {z} from "zod";
 
 import {BaseCreateDto, BaseEntityDto, BaseVersionDto} from "../common/dto.ts";
-import {DescriptionField, IconField, NameField} from "../common/fields.ts";
 import {
 	BooleanFieldData,
 	ColourFieldData, DateFieldData,
@@ -15,12 +14,6 @@ import {ReferenceManyFieldData, ReferenceOneFieldData} from "./types/references.
 import {SelectFieldData, SelectMultipleFieldData} from "./types/select.ts";
 import {FilesFieldData, ImagesFieldData, PointFieldData, ScaleFieldData} from "./types/special.ts";
 
-export const BaseFieldData = z.object({
-	name: NameField,
-	description: DescriptionField,
-	icon: IconField
-})
-export type BaseFieldData = z.infer<typeof BaseFieldData>
 
 export const CreateFieldDto = z.union([
 	// Basics

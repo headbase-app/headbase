@@ -10,13 +10,14 @@ import {contentTypes, contentTypesVersions} from "./schema/content-types/databas
 import {views, viewsVersions} from "./schema/views/database.ts";
 
 import {CreateFieldDto, FieldDto, FieldVersionDto, UpdateFieldDto} from "./schema/fields/dtos.ts";
-import {ContentTypeDto, CreateContentTypeDto, UpdateContentTypeDto} from "./schema/content-types/dtos.ts";
-import {AnyHeadbaseEvent, EventTypes} from "../services/events/events.ts";
-import {PlatformAdapter} from "./adapter.ts";
+import {DataChangeEvent, EventTypes} from "../services/events/events.ts";
+import {DeviceContext, PlatformAdapter} from "./adapter.ts";
 
 /**
  * todo: this file and the Database class are insanely big, and contain very repetitive CRUD code.
  * Consider how to refactor to make this more manageable.
+ *
+ * todo: refactor events (and platform adapter) to be database specific?
  */
 
 const HEADBASE_VERSION = '1.0'
@@ -38,7 +39,7 @@ export type LiveQuery<DataPromise> = {
 }
 
 export interface DatabaseConfig {
-	contextId: string
+	context: DeviceContext
 	platformAdapter: PlatformAdapter
 }
 
@@ -59,7 +60,7 @@ export interface GlobalListingOptions {
 
 
 export class Database {
-	readonly #contextId: string;
+	readonly #context: DeviceContext;
 	readonly #databaseId: string;
 	
 	readonly #platformAdapter: PlatformAdapter;
@@ -68,13 +69,13 @@ export class Database {
 	readonly #database: SqliteRemoteDatabase<typeof SCHEMA>
 
 	constructor(databaseId: string, config: DatabaseConfig) {
-		this.#contextId = config.contextId
+		this.#context = config.context
 		this.#databaseId = databaseId
 
 		this.#platformAdapter = config.platformAdapter;
 		this.#database = drizzle(
 			async (sql, params) => {
-				return this.#platformAdapter.runSql({contextId: this.#contextId, databaseId: this.#databaseId}, sql, params)
+				return this.#platformAdapter.runSql(this.#databaseId, sql, params)
 			},
 			(queries) => {
 				throw new Error(`[database] Batch queries are not supported yet. Attempted query: ${queries}`)
@@ -83,13 +84,13 @@ export class Database {
 		);
 		this.#hasInit = false;
 
-		console.debug(`[database] init complete for '${databaseId}' using contextId '${this.#contextId}'`)
+		console.debug(`[database] init complete for '${databaseId}' using contextId '${this.#context.id}'`)
 	}
 
 	async #ensureInit() {
 		if (!this.#hasInit) {
 			await this.#platformAdapter.init()
-			await this.#platformAdapter.openDatabase({contextId: this.#contextId, databaseId: this.#databaseId})
+			await this.#platformAdapter.openDatabase(this.#databaseId)
 			
 			console.debug(`[database] running migrations for '${this.#databaseId}'`);
 			await this.#database.run(sql.raw(migration1))
@@ -98,10 +99,10 @@ export class Database {
 	}
 
 	async close() {
-		console.debug(`[database] close started for database '${this.#databaseId}' from context '${this.#contextId}'`)
-		await this.#platformAdapter.closeDatabase({contextId: this.#contextId, databaseId: this.#databaseId})
+		console.debug(`[database] close started for database '${this.#databaseId}' from context '${this.#context.id}'`)
+		await this.#platformAdapter.closeDatabase(this.#databaseId)
 
-		console.debug(`[database] closed database '${this.#databaseId}' from context '${this.#contextId}'`)
+		console.debug(`[database] closed database '${this.#databaseId}' from context '${this.#context.id}'`)
 	}
 
 	/**
@@ -142,16 +143,24 @@ export class Database {
 				settings: 'settings' in createDto ? createDto.settings : null,
 			})
 
-		this.#platformAdapter.dispatchEvent(EventTypes.DATA_CHANGE, {databaseId: this.#databaseId, tableKey: 'fields', id: entityId, action: 'create'})
+		this.#platformAdapter.dispatchEvent(EventTypes.DATA_CHANGE, {
+			context: this.#context,
+			data: {
+				databaseId: this.#databaseId,
+				tableKey: 'fields',
+				id: entityId,
+				action: 'create'
+			}
+		})
 
 		return this.getField(entityId)
 	}
 
-	async updateField(id: string, updateDto: UpdateFieldDto): Promise<FieldDto> {
+	async updateField(entityId: string, updateDto: UpdateFieldDto): Promise<FieldDto> {
 		await this.#ensureInit()
 		console.debug(`[database] running update field`)
 
-		const currentField = await this.getField(id)
+		const currentField = await this.getField(entityId)
 
 		if (currentField.type !== updateDto.type) {
 			throw new Error('Attempted to change type of field')
@@ -165,7 +174,7 @@ export class Database {
 			.set({
 				currentVersionId: versionId,
 			})
-			.where(eq(fields.id, id))
+			.where(eq(fields.id, entityId))
 
 		await this.#database
 			.insert(fieldsVersions)
@@ -174,7 +183,7 @@ export class Database {
 				createdAt: updatedAt,
 				isDeleted: false,
 				hbv: HEADBASE_VERSION,
-				entityId: id,
+				entityId,
 				previousVersionId: currentField.versionId,
 				createdBy: updateDto.createdBy,
 				type: updateDto.type,
@@ -184,16 +193,24 @@ export class Database {
 				settings: 'settings' in updateDto ? updateDto.settings : null,
 			})
 
-		this.#platformAdapter.dispatchEvent(EventTypes.DATA_CHANGE, {databaseId: this.#databaseId, tableKey: 'fields', id: id, action: 'update'})
+		this.#platformAdapter.dispatchEvent(EventTypes.DATA_CHANGE, {
+			context: this.#context,
+			data: {
+				databaseId: this.#databaseId,
+				tableKey: 'fields',
+				id: entityId,
+				action: 'update'
+			}
+		})
 
 		// Return the updated field
 		// todo: do this via "returning" in version insert?
-		return this.getField(id)
+		return this.getField(entityId)
 	}
 
-	async deleteField(id: string): Promise<void> {
+	async deleteField(entityId: string): Promise<void> {
 		await this.#ensureInit()
-		console.debug(`[database] running delete field: ${id}`)
+		console.debug(`[database] running delete field: ${entityId}`)
 
 		// todo: throw error on?
 
@@ -202,18 +219,26 @@ export class Database {
 			.set({
 				isDeleted: true,
 			})
-			.where(eq(fields.id, id))
+			.where(eq(fields.id, entityId))
 
 		await this.#database
 			.delete(fieldsVersions)
-			.where(eq(fieldsVersions.entityId, id))
+			.where(eq(fieldsVersions.entityId, entityId))
 
-		this.#platformAdapter.dispatchEvent(EventTypes.DATA_CHANGE, {databaseId: this.#databaseId, tableKey: 'fields', id: id, action: 'delete'})
+		this.#platformAdapter.dispatchEvent(EventTypes.DATA_CHANGE, {
+			context: this.#context,
+			data: {
+				databaseId: this.#databaseId,
+				tableKey: 'fields',
+				id: entityId,
+				action: 'update'
+			}
+		})
 	}
 
-	async getField(id: string): Promise<FieldDto> {
+	async getField(entityId: string): Promise<FieldDto> {
 		await this.#ensureInit()
-		console.debug(`[database] running get field: ${id}`)
+		console.debug(`[database] running get field: ${entityId}`)
 
 		return this.#database
 			.select({
@@ -234,7 +259,7 @@ export class Database {
 			.innerJoin(fieldsVersions, eq(fields.id, fieldsVersions.entityId))
 			.where(
 				and(
-					eq(fields.id, id),
+					eq(fields.id, entityId),
 					eq(fields.currentVersionId, fieldsVersions.id)
 				)
 			)
@@ -312,19 +337,22 @@ export class Database {
 		return snapshot
 	}
 
-	liveGetField(id: string) {
+	liveGetField(entityId: string) {
 		return new Observable<LiveQuery<ReturnType<Database['getField']>>>((subscriber) => {
 			subscriber.next({status: 'loading'})
 
-			const makeQuery = async () => {
+			const runQuery = async () => {
 				subscriber.next({status: 'loading'})
-				const results = await this.getField(id);
+				const results = await this.getField(entityId);
 				subscriber.next({status: 'success', data: results})
 			}
 
-			const handleEvent = (e: AnyHeadbaseEvent) => {
-				// Discard if tableKey or ID doesn't match, as the data won't have changed.
-				if (e.detail.id === id && e.detail.data.id === id) {
+			const handleEvent = (e: CustomEvent<DataChangeEvent['detail']>) => {
+				if (
+					e.detail.data.databaseId === this.#databaseId &&
+					e.detail.data.tableKey === 'fields' &&
+					e.detail.data.id === entityId
+				) {
 					console.debug(`[observableGet] Received event that requires re-query`)
 					runQuery()
 				}
@@ -332,10 +360,10 @@ export class Database {
 
 			this.#platformAdapter.subscribeEvent(EventTypes.DATA_CHANGE, handleEvent)
 
-			makeQuery()
+			runQuery()
 
 			return () => {
-				this.#platformAdapter.unsubscribeEvent(EventTypes.DATA_CHANGE, makeQuery)
+				this.#platformAdapter.unsubscribeEvent(EventTypes.DATA_CHANGE, handleEvent)
 			}
 		})
 	}
@@ -344,18 +372,28 @@ export class Database {
 		return new Observable<LiveQuery<ReturnType<Database['getFields']>>>((subscriber) => {
 			subscriber.next({status: 'loading'})
 
-			const makeQuery = async () => {
+			const runQuery = async () => {
 				subscriber.next({status: 'loading'})
 				const results = await this.getFields(options);
 				subscriber.next({status: 'success', data: results})
 			}
 
-			this.#platformAdapter.subscribeEvent(EventTypes.DATA_CHANGE, makeQuery)
+			const handleEvent = (e: CustomEvent<DataChangeEvent['detail']>) => {
+				if (
+					e.detail.data.databaseId === this.#databaseId &&
+					e.detail.data.tableKey === 'fields'
+				) {
+					console.debug(`[observableGet] Received event that requires re-query`)
+					runQuery()
+				}
+			}
 
-			makeQuery()
+			this.#platformAdapter.subscribeEvent(EventTypes.DATA_CHANGE, handleEvent)
+
+			runQuery()
 
 			return () => {
-				this.#platformAdapter.unsubscribeEvent(EventTypes.DATA_CHANGE, makeQuery)
+				this.#platformAdapter.unsubscribeEvent(EventTypes.DATA_CHANGE, handleEvent)
 			}
 		})
 	}
@@ -382,9 +420,9 @@ export class Database {
 			.where(eq(fieldsVersions.id, versionId)) as unknown as FieldVersionDto;
 	}
 
-	async getFieldVersions(id: string) {
+	async getFieldVersions(entityId: string) {
 		await this.#ensureInit()
-		console.debug(`[database] running getFieldVersions: ${id}`)
+		console.debug(`[database] running getFieldVersions: ${entityId}`)
 
 		return this.#database
 			.select({
@@ -401,15 +439,15 @@ export class Database {
 				settings: fieldsVersions.settings,
 			})
 			.from(fieldsVersions)
-			.where(eq(fieldsVersions.entityId, id))
+			.where(eq(fieldsVersions.entityId, entityId))
 			.orderBy(desc(fieldsVersions.createdAt)) as unknown as FieldVersionDto[];
 	}
 
-	async deleteFieldVersion(id: string): Promise<void> {
+	async deleteFieldVersion(entityId: string): Promise<void> {
 		const currentVersion = await this.#database
 			.select({id: fieldsVersions.id, entityId: fieldsVersions.entityId})
 			.from(fieldsVersions)
-			.where(eq(fieldsVersions.id, id))
+			.where(eq(fieldsVersions.id, entityId))
 		if (!currentVersion) {
 			throw new Error('Version not found')
 		}
@@ -422,382 +460,50 @@ export class Database {
 			throw new Error('Entity for version not found')
 		}
 
-		if (currentEntity[0].currentVersionId === id) {
+		if (currentEntity[0].currentVersionId === entityId) {
 			throw new Error('Attempted to delete current version')
 		}
 
 		await this.#database
 			.delete(fieldsVersions)
-			.where(eq(fieldsVersions.entityId, id))
+			.where(eq(fieldsVersions.entityId, entityId))
 
-		this.#platformAdapter.dispatchEvent('data-change', {databaseId: this.#databaseId, tableKey: 'fields', id: id, action: 'delete-version'})
-	}
-
-	liveGetFieldVersions(id: string) {
-		return new Observable<LiveQuery<ReturnType<Database['getFieldVersions']>>>((subscriber) => {
-			subscriber.next({status: 'loading'})
-
-			const makeQuery = async () => {
-				subscriber.next({status: 'loading'})
-				const results = await this.getFieldVersions(id);
-				subscriber.next({status: 'success', data: results})
-			}
-
-			const checkEvent = (event: CustomEvent) => {
-				makeQuery()
-			}
-			this.#eventService.subscribe('data-change', checkEvent)
-
-			return () => {
-				this.#eventService.subscribe('data-change', checkEvent)
-			}
-		})
-	}
-
-	/**
-	 * Content items
-	 */
-	async createContentType(createDto: CreateContentTypeDto): Promise<ContentTypeDto> {
-		await this.#ensureInit()
-		console.debug(`[database] running createContentType`)
-
-		const entityId = self.crypto.randomUUID()
-		const versionId = self.crypto.randomUUID()
-		const createdAt = new Date().toISOString()
-
-		await this.#database
-			.insert(contentTypes)
-			.values({
+		this.#platformAdapter.dispatchEvent(EventTypes.DATA_CHANGE, {
+			context: this.#context,
+			data: {
+				databaseId: this.#databaseId,
+				tableKey: 'fields',
 				id: entityId,
-				createdAt,
-				isDeleted: false,
-				hbv: HEADBASE_VERSION,
-				currentVersionId: versionId
-			})
-
-		await this.#database
-			.insert(contentTypesVersions)
-			.values({
-				id: versionId,
-				createdAt,
-				isDeleted: false,
-				hbv: HEADBASE_VERSION,
-				entityId: entityId,
-				previousVersionId: null,
-				createdBy: createDto.createdBy,
-				//
-				name: createDto.name,
-				icon: createDto.icon,
-				colour: createDto.colour,
-				description: createDto.description,
-				templateName: createDto.templateName,
-				templateFields: createDto.templateFields,
-			})
-
-		this.#platformAdapter.dispatchEvent('data-change', {databaseId: this.#databaseId, tableKey: 'content_types', id: entityId, action: 'create'})
-
-		return this.getField(entityId)
-	}
-
-	async updateField(id: string, updateDto: UpdateContentTypeDto): Promise<ContentTypeDto> {
-		await this.#ensureInit()
-		console.debug(`[database] running update field`)
-
-		const currentField = await this.getField(id)
-
-		if (currentField.type !== updateDto.type) {
-			throw new Error('Attempted to change type of field')
-		}
-
-		const versionId = self.crypto.randomUUID()
-		const updatedAt = new Date().toISOString()
-
-		await this.#database
-			.update(fields)
-			.set({
-				currentVersionId: versionId,
-			})
-			.where(eq(fields.id, id))
-
-		await this.#database
-			.insert(fieldsVersions)
-			.values({
-				id: versionId,
-				createdAt: updatedAt,
-				isDeleted: false,
-				hbv: HEADBASE_VERSION,
-				entityId: id,
-				previousVersionId: currentField.versionId,
-				createdBy: updateDto.createdBy,
-				type: updateDto.type,
-				name: updateDto.name,
-				description: updateDto.description,
-				icon: updateDto.icon,
-				settings: 'settings' in updateDto ? updateDto.settings : null,
-			})
-
-		this.#events.dispatchEvent(new CustomEvent(EventTypes.DATA_CHANGE))
-		this.#broadcastChannel.postMessage({type: EventTypes.DATA_CHANGE})
-
-		// Return the updated field
-		// todo: do this via "returning" in version insert?
-		return this.getField(id)
-	}
-
-	async deleteField(id: string): Promise<void> {
-		await this.#ensureInit()
-		console.debug(`[database] running delete field: ${id}`)
-
-		// todo: throw error on?
-
-		await this.#database
-			.update(fields)
-			.set({
-				isDeleted: true,
-			})
-			.where(eq(fields.id, id))
-
-		await this.#database
-			.delete(fieldsVersions)
-			.where(eq(fieldsVersions.entityId, id))
-
-		this.#events.dispatchEvent(new CustomEvent(EventTypes.DATA_CHANGE))
-		this.#broadcastChannel.postMessage({type: EventTypes.DATA_CHANGE})
-	}
-
-	async getField(id: string): Promise<ContentTypeDto> {
-		await this.#ensureInit()
-		console.debug(`[database] running get field: ${id}`)
-
-		return this.#database
-			.select({
-				id: fields.id,
-				createdAt: fields.createdAt,
-				updatedAt: fieldsVersions.createdAt,
-				isDeleted: fields.isDeleted,
-				versionId: fieldsVersions.id,
-				previousVersionId: fieldsVersions.previousVersionId,
-				versionCreatedBy: fieldsVersions.createdBy,
-				type: fieldsVersions.type,
-				name: fieldsVersions.name,
-				description: fieldsVersions.description,
-				icon: fieldsVersions.icon,
-				settings: fieldsVersions.settings,
-			})
-			.from(fields)
-			.innerJoin(fieldsVersions, eq(fields.id, fieldsVersions.entityId))
-			.where(
-				and(
-					eq(fields.id, id),
-					eq(fields.currentVersionId, fieldsVersions.id)
-				)
-			)
-			.orderBy(desc(fieldsVersions.createdAt)) as unknown as FieldDto;
-	}
-
-	async getFields(options?: GlobalListingOptions): Promise<ContentTypeDto[]> {
-		await this.#ensureInit()
-		console.debug(`[database] running get fields`)
-
-		const filters: SQL[] = [
-			eq(fields.currentVersionId, fieldsVersions.id)
-		]
-		if (typeof options?.filter?.isDeleted === 'boolean') {
-			filters.push(
-				eq(fields.isDeleted, options?.filter.isDeleted)
-			)
-		}
-
-		const order: SQL = desc(fieldsVersions.createdAt)
-
-		return this.#database
-			.select({
-				id: fields.id,
-				createdAt: fields.createdAt,
-				updatedAt: fieldsVersions.createdAt,
-				isDeleted: fields.isDeleted,
-				versionId: fieldsVersions.id,
-				previousVersionId: fieldsVersions.previousVersionId,
-				versionCreatedBy: fieldsVersions.createdBy,
-				type: fieldsVersions.type,
-				name: fieldsVersions.name,
-				description: fieldsVersions.description,
-				icon: fieldsVersions.icon,
-				settings: fieldsVersions.settings,
-			})
-			.from(fields)
-			.innerJoin(fieldsVersions, eq(fields.id, fieldsVersions.entityId))
-			.where(and(...filters))
-			.orderBy(order) as unknown as FieldDto[];
-	}
-
-	async getFieldsSnapshot(): Promise<EntitySnapshot> {
-		const entities = await this.#database
-			.select({
-				id: fields.id,
-				isDeleted: fields.isDeleted,
-			})
-			.from(fields)
-
-		const versions = await this.#database
-			.select({
-				id: fieldsVersions.id,
-				entityId: fieldsVersions.entityId,
-				isDeleted: fieldsVersions.isDeleted,
-			})
-			.from(fieldsVersions)
-
-		const snapshot: EntitySnapshot = {}
-
-		for (const entity of entities) {
-			snapshot[entity.id] = {isDeleted: entity.isDeleted, versions: {}}
-		}
-		for (const version of versions) {
-			if (snapshot[version.entityId]) {
-				snapshot[version.entityId].versions[version.id] = version.isDeleted
-			}
-			else {
-				// todo: may need to handle a different way?
-				// We can't throw an error as this may occur if in the middle of a sync etc
-				console.error('Found version with no matching entity')
-			}
-		}
-
-		return snapshot
-	}
-
-	liveGetField(id: string) {
-		return new Observable<LiveQuery<ReturnType<Database['getField']>>>((subscriber) => {
-			subscriber.next({status: 'loading'})
-
-			const makeQuery = async () => {
-				subscriber.next({status: 'loading'})
-				const results = await this.getField(id);
-				subscriber.next({status: 'success', data: results})
-			}
-
-			this.#platformAdapter.subscribeEvent(EventTypes.DATA_CHANGE, makeQuery)
-
-			makeQuery()
-
-			return () => {
-				this.#platformAdapter.unsubscribeEvent(EventTypes.DATA_CHANGE, makeQuery)
+				action: 'delete-version'
 			}
 		})
 	}
 
-	liveGetFields(options?: GlobalListingOptions) {
-		return new Observable<LiveQuery<ReturnType<Database['getFields']>>>((subscriber) => {
-			subscriber.next({status: 'loading'})
-
-			const makeQuery = async () => {
-				subscriber.next({status: 'loading'})
-				const results = await this.getFields(options);
-				subscriber.next({status: 'success', data: results})
-			}
-
-			this.#platformAdapter.subscribeEvent(EventTypes.DATA_CHANGE, makeQuery)
-
-			makeQuery()
-
-			return () => {
-				this.#platformAdapter.unsubscribeEvent(EventTypes.DATA_CHANGE, makeQuery)
-			}
-		})
-	}
-
-	async getFieldVersion(versionId: string) {
-		await this.#ensureInit()
-		console.debug(`[database] running getFieldVersion: ${versionId}`)
-
-		return this.#database
-			.select({
-				id: fieldsVersions.id,
-				createdAt: fieldsVersions.createdAt,
-				isDeleted: fieldsVersions.isDeleted,
-				entityId: fieldsVersions.id,
-				previousVersionId: fieldsVersions.previousVersionId,
-				versionCreatedBy: fieldsVersions.createdBy,
-				type: fieldsVersions.type,
-				name: fieldsVersions.name,
-				description: fieldsVersions.description,
-				icon: fieldsVersions.icon,
-				settings: fieldsVersions.settings,
-			})
-			.from(fieldsVersions)
-			.where(eq(fieldsVersions.id, versionId)) as unknown as FieldVersionDto;
-	}
-
-	async getFieldVersions(id: string) {
-		await this.#ensureInit()
-		console.debug(`[database] running getFieldVersions: ${id}`)
-
-		return this.#database
-			.select({
-				id: fieldsVersions.id,
-				createdAt: fieldsVersions.createdAt,
-				isDeleted: fieldsVersions.isDeleted,
-				entityId: fieldsVersions.id,
-				previousVersionId: fieldsVersions.previousVersionId,
-				versionCreatedBy: fieldsVersions.createdBy,
-				type: fieldsVersions.type,
-				name: fieldsVersions.name,
-				description: fieldsVersions.description,
-				icon: fieldsVersions.icon,
-				settings: fieldsVersions.settings,
-			})
-			.from(fieldsVersions)
-			.where(eq(fieldsVersions.entityId, id))
-			.orderBy(desc(fieldsVersions.createdAt)) as unknown as FieldVersionDto[];
-	}
-
-	async deleteFieldVersion(id: string): Promise<void> {
-		const currentVersion = await this.#database
-			.select({id: fieldsVersions.id, entityId: fieldsVersions.entityId})
-			.from(fieldsVersions)
-			.where(eq(fieldsVersions.id, id))
-		if (!currentVersion) {
-			throw new Error('Version not found')
-		}
-
-		const currentEntity = await this.#database
-			.select({id: fields.id, currentVersionId: fields.currentVersionId})
-			.from(fields)
-			.where(eq(fields.id, currentVersion[0].entityId))
-		if (!currentVersion) {
-			throw new Error('Entity for version not found')
-		}
-
-		if (currentEntity[0].currentVersionId === id) {
-			throw new Error('Attempted to delete current version')
-		}
-
-		await this.#database
-			.delete(fieldsVersions)
-			.where(eq(fieldsVersions.entityId, id))
-
-		this.#events.dispatchEvent(new CustomEvent('fields-version-update'))
-		this.#broadcastChannel.postMessage({type: 'fields-version-update'})
-	}
-
-	liveGetFieldVersions(id: string) {
+	liveGetFieldVersions(entityId: string) {
 		return new Observable<LiveQuery<ReturnType<Database['getFieldVersions']>>>((subscriber) => {
 			subscriber.next({status: 'loading'})
 
-			const makeQuery = async () => {
+			const runQuery = async () => {
 				subscriber.next({status: 'loading'})
-				const results = await this.getFieldVersions(id);
+				const results = await this.getFieldVersions(entityId);
 				subscriber.next({status: 'success', data: results})
 			}
 
-			this.#platformAdapter.subscribeEvent(EventTypes.DATA_CHANGE, makeQuery)
-			this.#platformAdapter.subscribeEvent('fields-version-update', makeQuery)
+			const handleEvent = (e: CustomEvent<DataChangeEvent['detail']>) => {
+				if (
+					e.detail.data.databaseId === this.#databaseId &&
+					e.detail.data.tableKey === 'fields' &&
+					e.detail.data.id === entityId
+				) {
+					console.debug(`[observableGet] Received event that requires re-query`)
+					runQuery()
+				}
+			}
 
-			makeQuery()
+			this.#platformAdapter.subscribeEvent(EventTypes.DATA_CHANGE, handleEvent)
 
 			return () => {
-				this.#platformAdapter.unsubscribeEvent(EventTypes.DATA_CHANGE, makeQuery)
-				this.#platformAdapter.unsubscribeEvent('fields-version-update', makeQuery)
+				this.#platformAdapter.unsubscribeEvent(EventTypes.DATA_CHANGE, handleEvent)
 			}
 		})
 	}

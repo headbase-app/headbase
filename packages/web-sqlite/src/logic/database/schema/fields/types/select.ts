@@ -1,6 +1,6 @@
 import {z} from "zod";
 import {FIELDS} from "../types.ts";
-import {BaseFieldData} from "../dtos.ts";
+import {BaseFieldData} from "./base.ts";
 
 export const _SelectSettings = z.object({
 	options: z.array(z.object({

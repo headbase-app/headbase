@@ -1,23 +1,23 @@
-import {SqlQueryResponse} from "../adapter.ts";
+import {DeviceContext, SqlQueryResponse} from "../adapter.ts";
 
-export interface BaseEvent {
+export interface BaseMessage {
 	messageId: string
 }
 
-export interface BaseResponseEvent {
+export interface BaseResponseMessage {
 	targetMessageId: string
 }
 
-export interface OpenEvent extends BaseEvent {
+export interface OpenMessage extends BaseMessage {
 	type: 'open',
 	detail: {
+		context: DeviceContext
 		databaseId: string
-		contextId: string
 		encryptionKey: string
 	}
 }
 
-export interface OpenResponseEvent extends BaseResponseEvent {
+export interface OpenResponseMessage extends BaseResponseMessage {
 	type: 'open',
 	detail: {
 		success: true
@@ -27,17 +27,17 @@ export interface OpenResponseEvent extends BaseResponseEvent {
 	}
 }
 
-export interface QueryEvent extends BaseEvent {
+export interface QueryMessage extends BaseMessage {
 	type: 'query',
 	detail: {
+		context: DeviceContext
 		databaseId: string
-		contextId: string
 		sql: string
 		params: unknown[]
 	}
 }
 
-export interface QueryResponseEvent extends BaseResponseEvent {
+export interface QueryResponseMessage extends BaseResponseMessage {
 	type: 'query',
 	detail: {
 		success: true,
@@ -49,15 +49,15 @@ export interface QueryResponseEvent extends BaseResponseEvent {
 }
 
 
-export interface CloseEvent extends BaseEvent {
+export interface CloseMessage extends BaseMessage {
 	type: 'close',
 	detail: {
+		context: DeviceContext
 		databaseId: string
-		contextId: string
 	}
 }
 
-export interface CloseResponseEvent extends BaseResponseEvent {
+export interface CloseResponseMessage extends BaseResponseMessage {
 	type: 'close',
 	detail: {
 		success: true
@@ -67,15 +67,15 @@ export interface CloseResponseEvent extends BaseResponseEvent {
 	}
 }
 
-export interface ExportEvent extends BaseEvent {
+export interface ExportMessage extends BaseMessage {
 	type: 'export',
 	detail: {
+		context: DeviceContext
 		databaseId: string
-		contextId: string
 	}
 }
 
-export interface ExportResponseEvent extends BaseResponseEvent {
+export interface ExportResponseMessage extends BaseResponseMessage {
 	type: 'export',
 	detail: {
 		success: true
@@ -86,7 +86,7 @@ export interface ExportResponseEvent extends BaseResponseEvent {
 	}
 }
 
-export interface ErrorEvent {
+export interface ErrorMessage {
 	type: 'error'
 	targetMessageId?: string
 	detail: {
@@ -94,5 +94,5 @@ export interface ErrorEvent {
 	}
 }
 
-export type AdapterEvents = OpenEvent | QueryEvent | CloseEvent | ExportEvent
-export type WorkerEvents = OpenResponseEvent | QueryResponseEvent | CloseResponseEvent | ExportResponseEvent | ErrorEvent
+export type ClientMessages = OpenMessage | QueryMessage | CloseMessage | ExportMessage
+export type WorkerMessages = OpenResponseMessage | QueryResponseMessage | CloseResponseMessage | ExportResponseMessage | ErrorMessage

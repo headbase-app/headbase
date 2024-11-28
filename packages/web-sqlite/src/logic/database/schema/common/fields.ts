@@ -15,7 +15,7 @@ export type NameField = z.infer<typeof NameField>
 
 export const DescriptionField = z.string()
 	.max(200, "description must be between 1 and 200 chars")
-	.optional()
+	.nullable()
 export type DescriptionField = z.infer<typeof DescriptionField>
 
 export const ColourField = z.enum(JColourVariantsList);

@@ -1,4 +1,5 @@
 import {UserDto} from "@headbase-app/common";
+import {DeviceContext} from "../../database/adapter.ts";
 
 export const EventTypes = {
 	// Data Events
@@ -22,14 +23,10 @@ export const EventTypes = {
 	USER_LOGOUT: 'user-logout',
 } as const
 
-export interface EventContext {
-	contextId: string
-}
-
-export interface DataEntityChangeEvent {
+export interface DataChangeEvent {
 	type: typeof EventTypes.DATA_CHANGE,
 	detail: {
-		context: EventContext,
+		context: DeviceContext,
 		data: {
 			databaseId: string
 			tableKey: string
@@ -42,7 +39,7 @@ export interface DataEntityChangeEvent {
 export interface DatabaseOpenEvent {
 	type: typeof EventTypes.DATABASE_OPEN,
 	detail: {
-		context: EventContext,
+		context: DeviceContext,
 		data: {
 			id: string
 		}
@@ -52,7 +49,7 @@ export interface DatabaseOpenEvent {
 export interface DatabaseCloseEvent {
 	type: typeof EventTypes.DATABASE_CLOSE,
 	detail: {
-		context: EventContext,
+		context: DeviceContext,
 		data: {
 			id: string
 		}
@@ -62,7 +59,7 @@ export interface DatabaseCloseEvent {
 export interface DatabaseUnlockEvent {
 	type: typeof EventTypes.DATABASE_UNLOCK,
 	detail: {
-		context: EventContext,
+		context: DeviceContext,
 		data: {
 			id: string
 		}
@@ -72,7 +69,7 @@ export interface DatabaseUnlockEvent {
 export interface DatabaseLockEvent {
 	type: typeof EventTypes.DATABASE_LOCK,
 	detail: {
-		context: EventContext,
+		context: DeviceContext,
 		data: {
 			id: string
 		}
@@ -82,7 +79,7 @@ export interface DatabaseLockEvent {
 export interface DatabaseChangeEvent {
 	type: typeof EventTypes.DATABASE_CHANGE,
 	detail: {
-		context: EventContext,
+		context: DeviceContext,
 		data: {
 			id: string
 			action: 'create' | 'update' | 'delete' | 'purge' | 'change-password'
@@ -93,7 +90,7 @@ export interface DatabaseChangeEvent {
 export interface StoragePermissionEvent {
 	type: typeof EventTypes.STORAGE_PERMISSION,
 	detail: {
-		context: EventContext,
+		context: DeviceContext,
 		data: {
 			isGranted: boolean
 		}
@@ -103,7 +100,7 @@ export interface StoragePermissionEvent {
 export interface UserLoginEvent {
 	type: typeof EventTypes.USER_LOGIN,
 	detail: {
-		context: EventContext,
+		context: DeviceContext,
 		data: {
 			serverUrl: string
 			user: UserDto
@@ -114,17 +111,17 @@ export interface UserLoginEvent {
 export interface UserLogoutEvent {
 	type: typeof EventTypes.USER_LOGOUT,
 	detail: {
-		context: EventContext,
+		context: DeviceContext,
 	}
 }
 
 export type HeadbaseEvent =
-	DataEntityChangeEvent |
+	DataChangeEvent |
 	DatabaseOpenEvent | DatabaseCloseEvent | DatabaseChangeEvent |
 	DatabaseUnlockEvent | DatabaseLockEvent
 
 export interface EventMap {
-	[EventTypes.DATA_CHANGE]: DataEntityChangeEvent,
+	[EventTypes.DATA_CHANGE]: DataChangeEvent,
 	[EventTypes.DATABASE_OPEN]: DatabaseOpenEvent,
 	[EventTypes.DATABASE_CLOSE]: DatabaseCloseEvent,
 	[EventTypes.DATABASE_UNLOCK]: DatabaseUnlockEvent,
@@ -141,4 +138,4 @@ export type EventTypes = keyof EventMap
 export type AnyHeadbaseEvent =
 	CustomEvent<UserLoginEvent['detail']> |
 	CustomEvent<UserLogoutEvent['detail']> |
-	CustomEvent<DataEntityChangeEvent['detail']>
+	CustomEvent<DataChangeEvent['detail']>
