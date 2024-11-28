@@ -1,10 +1,12 @@
-import sqlite3InitModule from "../../../lib/sqlite/sqlite3.mjs"
-import {AdapterEvents, WorkerEvents} from "./messages.js";
+// @ts-expect-error -- doesn't have any types, can't gey types to work so far.
+import sqlite3InitModule, {SQLite3, SQLite3Database} from "../../../lib/sqlite/sqlite3.mjs"
 
-const DatabaseStore = new Map<string, any>();
+import {ClientMessages, WorkerMessages} from "./messages.ts";
+
+const DatabaseStore = new Map<string, SQLite3Database>();
 
 function sqliteFactory() {
-	let sqlite
+	let sqlite: SQLite3
 
 	return async () => {
 		if (sqlite) {
@@ -31,7 +33,7 @@ function sqliteFactory() {
 	console.debug('[worker] init')
 
 	console.debug('[worker] onmessage register')
-	self.onmessage = async function (messageEvent: MessageEvent<AdapterEvents>) {
+	self.onmessage = async function (messageEvent: MessageEvent<ClientMessages>) {
 		const sqlite3 = await sqliteFactory()()
 		if (!sqlite3) return
 
@@ -57,7 +59,7 @@ function sqliteFactory() {
 						success: false,
 						error: e
 					}
-				} as WorkerEvents);
+				} as WorkerMessages);
 			}
 			DatabaseStore.set(messageEvent.data.detail.databaseId, db)
 
@@ -67,7 +69,7 @@ function sqliteFactory() {
 				detail: {
 					success: true
 				}
-			} as WorkerEvents);
+			} as WorkerMessages);
 		}
 		else if (messageEvent.data.type === 'query') {
 			console.debug('[worker] running query')

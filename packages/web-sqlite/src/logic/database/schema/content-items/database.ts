@@ -11,6 +11,6 @@ export const contentItemsVersions = sqliteTable('content_items_versions', {
 	...commonVersionFields,
 	type: text().notNull(),
 	name: text().notNull(),
-	isFavorite: int({mode: 'boolean'}).notNull(),
+	isFavourite: int({mode: 'boolean'}).notNull(),
 	fields: text({ mode: 'json' }),
 });

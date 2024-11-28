@@ -88,7 +88,7 @@ create table if not exists content_items_versions (
     -- Custom
     type text not null,
     name text not null,
-    is_favorite integer not null default 0 check (is_favorite in (0, 1)),
+    is_favourite integer not null default 0 check (is_favourite in (0, 1)),
     fields json
 );
 
@@ -118,6 +118,6 @@ create table if not exists views_versions (
     icon text,
     colour text,
     description text,
-    is_favorite integer not null default 0 check (is_favorite in (0, 1)),
+    is_favourite integer not null default 0 check (is_favourite in (0, 1)),
     settings json
 );

@@ -1,7 +1,0 @@
-{
-  "compilerOptions": {
-    "composite": true,
-    "lib": ["webworker"]
-  },
-  "include": ["**/*.worker.ts"]
-}

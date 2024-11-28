@@ -1,5 +1,5 @@
 import {UserDto} from "@headbase-app/common";
-import {DeviceContext} from "../../database/adapter.ts";
+import {DeviceContext} from "../../../lib/headbase-core/adapter.ts";
 
 export const EventTypes = {
 	// Data Events
@@ -29,7 +29,8 @@ export interface DataChangeEvent {
 		context: DeviceContext,
 		data: {
 			databaseId: string
-			tableKey: string
+			// todo: make enum?
+			tableKey: 'fields' | 'content_types' | 'content_items' | 'views'
 			action: 'create' | 'update' | 'delete' | 'purge' | 'delete-version'
 			id: string,
 		}

@@ -1,8 +1,8 @@
 import {useEffect, useState} from "react";
-import {Database} from "../../logic/database/database.ts";
+import {Database} from "../../lib/headbase-core/database.ts";
 import {Link} from "wouter";
 import {WebPlatformAdapter} from "../../logic/database/web-adapter/web-adapter.ts";
-import {DeviceContext} from "../../logic/database/adapter.ts";
+import {DeviceContext} from "../../lib/headbase-core/adapter.ts";
 import {FieldDto} from "../../logic/database/schema/fields/dtos.ts";
 import {FIELDS} from "../../logic/database/schema/fields/types.ts";
 

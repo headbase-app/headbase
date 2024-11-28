@@ -1,5 +1,4 @@
-import {DeviceContext, PlatformAdapter, PlatformAdapterConfig, SqlDataType, SqlQueryResponse} from "../adapter.ts";
-import WorkerService from "./sqlite.worker.ts?worker"
+import {DeviceContext, PlatformAdapter, PlatformAdapterConfig, SqlDataType, SqlQueryResponse} from "../../../lib/headbase-core/adapter.ts";
 import {EventMap, EventTypes, HeadbaseEvent} from "../../services/events/events.ts";
 import {ClientMessages, QueryResponseMessage, WorkerMessages} from "./messages.ts";
 
@@ -13,7 +12,7 @@ export class WebPlatformAdapter implements PlatformAdapter {
 
 	constructor(config: PlatformAdapterConfig) {
 		this.#context = config.context;
-		this.#worker = new WorkerService();
+		this.#worker = new Worker(new URL("./sqlite.worker.ts", import.meta.url), {type: 'module'});
 		// this.#databaseLockAbort = new AbortController()
 
 		// todo: separate broadcast channel for different databases?

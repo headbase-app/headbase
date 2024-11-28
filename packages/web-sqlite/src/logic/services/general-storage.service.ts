@@ -1,5 +1,5 @@
 import * as z from "zod"
-import {LocalUserDto} from "../schemas/user";
+import {LocalUserDto} from "../user.ts";
 
 
 export class GeneralStorageService {

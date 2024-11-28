@@ -1,4 +1,4 @@
-import {DeviceContext, SqlQueryResponse} from "../adapter.ts";
+import {DeviceContext, SqlQueryResponse} from "../../../lib/headbase-core/adapter.ts";
 
 export interface BaseMessage {
 	messageId: string

@@ -21,6 +21,6 @@ export const viewsVersions = sqliteTable('views_versions', {
 	icon: text(),
 	colour: text(),
 	description: text(),
-	isFavorite: int({mode: 'boolean'}).notNull(),
+	isFavourite: int({mode: 'boolean'}).notNull(),
 	settings: text({ mode: 'json' }),
 });
