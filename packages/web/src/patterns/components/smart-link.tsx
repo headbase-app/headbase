@@ -4,7 +4,7 @@ import {
 	JButtonLinkProps,
 	JPillLinkProps,
 } from "@ben-ryder/jigsaw-react";
-import { Link } from "react-router-dom";
+import { Link } from "wouter";
 
 export function SmartLink(
 	props: JTextLinkProps | JArrowLinkProps | JButtonLinkProps | JPillLinkProps,
@@ -13,7 +13,6 @@ export function SmartLink(
 		const { href, children, ...htmlProps } = props;
 		return (
 			<>
-				{/* @ts-ignore */}
 				<Link to={href || ''} {...htmlProps}>{children}</Link>
 			</>
 		);

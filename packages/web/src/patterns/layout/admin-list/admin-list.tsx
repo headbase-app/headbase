@@ -1,6 +1,6 @@
 import { ReactNode } from "react";
 import { JButton, JProse } from "@ben-ryder/jigsaw-react";
-import { GenericManagerNavigate } from "../../../common/generic-manager/generic-manager";
+import { GenericManagerNavigate } from "../../features/common/generic-manager/generic-manager";
 
 export interface AdminListItemProps {
 	id: string

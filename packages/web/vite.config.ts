@@ -9,6 +9,10 @@ import tsconfigPaths from "vite-tsconfig-paths";
 export default defineConfig({
 	server: {
 		port: 42101,
+		headers: {
+			'Cross-Origin-Opener-Policy': 'same-origin',
+			'Cross-Origin-Embedder-Policy': 'require-corp',
+		},
 	},
 	plugins: [
 		tsconfigPaths(),
