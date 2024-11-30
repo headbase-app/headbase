@@ -47,17 +47,17 @@ export class ItemsHttpController {
     }
   }
 
-  async getItems(req: Request, res: Response, next: NextFunction) {
+  async queryItems(req: Request, res: Response, next: NextFunction) {
     try {
       const requestUser = await this.accessControlService.validateAuthentication(req);
       const query = await validateSchema(req.query, ItemsQueryParams);
 
       if ("ids" in query) {
-        const items = await this.itemsService.getItemsById(requestUser, query.ids);
+        const items = await this.itemsService.queryItemsById(requestUser, query.ids);
         return res.status(HttpStatusCodes.OK).json(items)
       }
       else {
-        const result = await this.itemsService.getItemsByFilters(requestUser, query)
+        const result = await this.itemsService.queryItemsByFilters(requestUser, query)
         return res.status(HttpStatusCodes.OK).json(result)
       }
     }

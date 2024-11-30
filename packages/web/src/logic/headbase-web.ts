@@ -2,17 +2,15 @@ import {Observable} from "rxjs";
 
 import {DatabasesManagementAPI} from "./services/database-management/database-management.ts";
 import {EventTypes} from "./services/events/events";
-import {ErrorTypes, HeadbaseError, LIVE_QUERY_LOADING_STATE, LiveQueryResult, LiveQueryStatus} from "./control-flow";
+import {LIVE_QUERY_LOADING_STATE, LiveQueryResult, LiveQueryStatus} from "./control-flow";
 import {GeneralStorageService} from "./services/general-storage.service";
 import {ServerAPI} from "./services/server/server.ts";
 import {WebPlatformAdapter} from "./services/database/web-adapter.ts";
 import {DeviceContext} from "../lib/headbase-core/adapter.ts";
 import {EncryptionService} from "./services/encryption/encryption.ts";
 import {Database} from "../lib/headbase-core/database.ts";
-import {KeyStorageService} from "./services/key-storage.service.ts";
 
 export const HEADBASE_VERSION = '1.0'
-export const HEADBASE_INDEXDB_ENTITY_VERSION = 1
 export const HEADBASE_INDEXDB_DATABASE_VERSION = 1
 
 export class HeadbaseWeb {
@@ -20,6 +18,7 @@ export class HeadbaseWeb {
 	readonly #platformAdapter: WebPlatformAdapter
 	readonly #generalStorage: GeneralStorageService
 
+	readonly db: Database
 	readonly databases: DatabasesManagementAPI
 	readonly server: ServerAPI
 
@@ -32,6 +31,10 @@ export class HeadbaseWeb {
 		}
 		this.#platformAdapter = new WebPlatformAdapter({
 			context: this.#context
+		})
+		this.db = new Database({
+			context: this.#context,
+			platformAdapter: this.#platformAdapter,
 		})
 
 		this.#generalStorage = new GeneralStorageService()
@@ -73,20 +76,20 @@ export class HeadbaseWeb {
 				runQuery()
 			}
 
-			this.#platformAdapter.subscribeEvent(EventTypes.STORAGE_PERMISSION, handleEvent)
+			this.#platformAdapter.events.subscribe(EventTypes.STORAGE_PERMISSION, handleEvent)
 
 			// Run initial query
 			runQuery()
 
 			return () => {
-				this.#platformAdapter.unsubscribeEvent(EventTypes.STORAGE_PERMISSION, handleEvent)
+				this.#platformAdapter.events.unsubscribe(EventTypes.STORAGE_PERMISSION, handleEvent)
 			}
 		})
 	}
 
 	async requestStoragePermissions() {
 		const result = await navigator.storage.persist()
-		this.#platformAdapter.dispatchEvent(EventTypes.STORAGE_PERMISSION, {
+		this.#platformAdapter.events.dispatch(EventTypes.STORAGE_PERMISSION, {
 			context: this.#context,
 			data: {
 				isGranted: result
@@ -100,23 +103,5 @@ export class HeadbaseWeb {
 
 	async close() {
 		await this.#platformAdapter.destroy()
-	}
-
-	async openDatabase(databaseId: string): Promise<Database> {
-		const database = await this.databases.get(databaseId)
-		const encryptionKey = await KeyStorageService.get(databaseId)
-
-		if (database.isUnlocked) {
-			throw new HeadbaseError({type: ErrorTypes.INVALID_PASSWORD_OR_KEY, devMessage: "Database is not unlocked."})
-		}
-
-		if (!encryptionKey) {
-			throw new HeadbaseError({type: ErrorTypes.INVALID_PASSWORD_OR_KEY, devMessage: "Encryption key not found."})
-		}
-
-		return new Database(databaseId, {
-			context: this.#context,
-			platformAdapter: this.#platformAdapter,
-		})
 	}
 }

@@ -4,26 +4,27 @@ import {Observable} from "rxjs";
 
 import migration1 from "../../logic/services/database/migrations/00-setup.sql?raw"
 
-import {fieldsVersions, fields} from "../../logic/services/database/tables/fields/database.ts";
-import {contentItems, contentItemsVersions} from "../../logic/services/database/tables/database.ts";
-import {contentTypes, contentTypesVersions} from "../../logic/services/database/tables/database.ts";
-import {views, viewsVersions} from "../../logic/services/database/tables/views/database.ts";
+import {fields, fieldsVersions} from "../../logic/services/database/tables/fields.ts";
+import {contentTypes, contentTypesVersions} from '../../logic/services/database/tables/content-types.ts';
+import {contentItems, contentItemsVersions} from '../../logic/services/database/tables/content-items.ts';
+import {views, viewsVersions} from '../../logic/services/database/tables/views.ts';
 
-import {CreateFieldDto, FieldDto, FieldVersionDto, UpdateFieldDto} from "../../logic/services/database/tables/fields/dtos.ts";
-import {DataChangeEvent, EventTypes} from "../../logic/services/events/events.ts";
 import {DeviceContext, PlatformAdapter} from "./adapter.ts";
+import {DataChangeEvent, EventTypes} from "../../logic/services/events/events.ts";
+import {ErrorTypes, HeadbaseError, LiveQueryResult} from "../../logic/control-flow.ts";
+
+import {CreateFieldDto, FieldDto, FieldVersionDto, UpdateFieldDto} from "../../logic/schemas/fields/dtos.ts";
 import {
 	ContentTypeDto, ContentTypeVersionDto,
 	CreateContentTypeDto,
 	UpdateContentTypeDto
-} from "../../logic/services/database/tables/content-types/dtos.ts";
+} from "../../logic/schemas/content-types/dtos.ts";
 import {
 	ContentItemDto, ContentItemVersionDto,
 	CreateContentItemDto,
 	UpdateContentItemDto
-} from "../../logic/services/database/tables/content-items/dtos.ts";
-import {CreateViewDto, UpdateViewDto, ViewDto, ViewVersionDto} from "../../logic/services/database/tables/views/dtos.ts";
-
+} from "../../logic/schemas/content-items/dtos.ts";
+import {CreateViewDto, UpdateViewDto, ViewDto, ViewVersionDto} from "../../logic/schemas/views/dtos.ts";
 
 /**
  * todo: this file and the Database class are insanely big, and contain very repetitive CRUD code.
@@ -39,16 +40,6 @@ const SCHEMA = {
 	contentItems, contentItemsVersions,
 	views, viewsVersions,
 } as const
-
-export type LiveQuery<DataPromise> = {
-		status: "loading"
-	} | {
-	status: "success",
-	data: Awaited<DataPromise>
-} | {
-	status: 'error',
-	error: Error
-}
 
 export interface DatabaseConfig {
 	context: DeviceContext
@@ -73,21 +64,24 @@ export interface GlobalListingOptions {
 
 export class Database {
 	readonly #context: DeviceContext;
-	readonly #databaseId: string;
+	#databaseId: string | null;
 	
 	readonly #platformAdapter: PlatformAdapter;
 	#hasInit: boolean
 	
 	readonly #database: SqliteRemoteDatabase<typeof SCHEMA>
 
-	constructor(databaseId: string, config: DatabaseConfig) {
+	constructor(config: DatabaseConfig) {
 		this.#context = config.context
-		this.#databaseId = databaseId
+		this.#databaseId = null
 
 		this.#platformAdapter = config.platformAdapter;
 		this.#database = drizzle(
 			async (sql, params) => {
-				return this.#platformAdapter.runSql(this.#databaseId, sql, params)
+				if (!this.#databaseId) {
+					throw new HeadbaseError({type: ErrorTypes.NO_CURRENT_DATABASE, devMessage: "Attempted to perform transaction when database isn't open"})
+				}
+				return this.#platformAdapter.database.exec(this.#databaseId, sql, params)
 			},
 			(queries) => {
 				throw new Error(`[database] Batch queries are not supported yet. Attempted query: ${queries}`)
@@ -95,25 +89,34 @@ export class Database {
 			{casing: 'snake_case', schema: SCHEMA}
 		);
 		this.#hasInit = false;
-
-		console.debug(`[database] init complete for '${databaseId}' using contextId '${this.#context.id}'`)
 	}
 
-	async #ensureInit() {
+	async #ensureInit(): Promise<string> {
+		if (!this.#databaseId) {
+			throw new HeadbaseError({type: ErrorTypes.NO_CURRENT_DATABASE, devMessage: "Attempted to perform transaction when database isn't open"})
+		}
+
 		if (!this.#hasInit) {
-			await this.#platformAdapter.init()
-			await this.#platformAdapter.openDatabase(this.#databaseId)
-			
 			console.debug(`[database] running migrations for '${this.#databaseId}'`);
 			await this.#database.run(sql.raw(migration1))
 			this.#hasInit = true
 		}
+
+		return this.#databaseId
+	}
+
+	async open(databaseId: string, encryptionKey: string): Promise<void> {
+		await this.#platformAdapter.database.open(databaseId, encryptionKey)
+		this.#databaseId = databaseId
 	}
 
 	async close() {
-		console.debug(`[database] close started for database '${this.#databaseId}' from context '${this.#context.id}'`)
-		await this.#platformAdapter.closeDatabase(this.#databaseId)
+		if (!this.#databaseId) {
+			throw new HeadbaseError({type: ErrorTypes.NO_CURRENT_DATABASE, devMessage: "Attempted to close database when nothing is open"})
+		}
 
+		await this.#platformAdapter.database.close(this.#databaseId)
+		this.#databaseId = null;
 		console.debug(`[database] closed database '${this.#databaseId}' from context '${this.#context.id}'`)
 	}
 
@@ -121,7 +124,7 @@ export class Database {
 	 * Fields
 	 */
 	async createField(createDto: CreateFieldDto): Promise<FieldDto> {
-		await this.#ensureInit()
+		const databaseId = await this.#ensureInit()
 		console.debug(`[database] running create field`)
 
 		const entityId = self.crypto.randomUUID()
@@ -155,10 +158,10 @@ export class Database {
 				settings: 'settings' in createDto ? createDto.settings : null,
 			})
 
-		this.#platformAdapter.dispatchEvent(EventTypes.DATA_CHANGE, {
+		this.#platformAdapter.events.dispatch(EventTypes.DATA_CHANGE, {
 			context: this.#context,
 			data: {
-				databaseId: this.#databaseId,
+				databaseId,
 				tableKey: 'fields',
 				id: entityId,
 				action: 'create'
@@ -169,7 +172,7 @@ export class Database {
 	}
 
 	async updateField(entityId: string, updateDto: UpdateFieldDto): Promise<FieldDto> {
-		await this.#ensureInit()
+		const databaseId = await this.#ensureInit()
 		console.debug(`[database] running update field`)
 
 		const currentEntity = await this.getField(entityId)
@@ -205,10 +208,10 @@ export class Database {
 				settings: 'settings' in updateDto ? updateDto.settings : null,
 			})
 
-		this.#platformAdapter.dispatchEvent(EventTypes.DATA_CHANGE, {
+		this.#platformAdapter.events.dispatch(EventTypes.DATA_CHANGE, {
 			context: this.#context,
 			data: {
-				databaseId: this.#databaseId,
+				databaseId,
 				tableKey: 'fields',
 				id: entityId,
 				action: 'update'
@@ -221,7 +224,7 @@ export class Database {
 	}
 
 	async deleteField(entityId: string): Promise<void> {
-		await this.#ensureInit()
+		const databaseId = await this.#ensureInit()
 		console.debug(`[database] running delete field: ${entityId}`)
 
 		// todo: throw error on?
@@ -237,10 +240,10 @@ export class Database {
 			.delete(fieldsVersions)
 			.where(eq(fieldsVersions.entityId, entityId))
 
-		this.#platformAdapter.dispatchEvent(EventTypes.DATA_CHANGE, {
+		this.#platformAdapter.events.dispatch(EventTypes.DATA_CHANGE, {
 			context: this.#context,
 			data: {
-				databaseId: this.#databaseId,
+				databaseId,
 				tableKey: 'fields',
 				id: entityId,
 				action: 'delete'
@@ -278,7 +281,7 @@ export class Database {
 			.orderBy(desc(fieldsVersions.createdAt)) as unknown as FieldDto;
 	}
 
-	async getFields(options?: GlobalListingOptions): Promise<FieldDto[]> {
+	async queryFields(options?: GlobalListingOptions): Promise<FieldDto[]> {
 		await this.#ensureInit()
 		console.debug(`[database] running get fields`)
 
@@ -314,7 +317,9 @@ export class Database {
 			.orderBy(order) as unknown as FieldDto[];
 	}
 
-	async getFieldsSnapshot(): Promise<EntitySnapshot> {
+	async queryFieldsSnapshot(): Promise<EntitySnapshot> {
+		await this.#ensureInit()
+
 		const entities = await this.#database
 			.select({
 				id: fields.id,
@@ -350,13 +355,13 @@ export class Database {
 	}
 
 	liveGetField(entityId: string) {
-		return new Observable<LiveQuery<ReturnType<Database['getField']>>>((subscriber) => {
+		return new Observable<LiveQueryResult<FieldDto>>((subscriber) => {
 			subscriber.next({status: 'loading'})
 
 			const runQuery = async () => {
 				subscriber.next({status: 'loading'})
 				const results = await this.getField(entityId);
-				subscriber.next({status: 'success', data: results})
+				subscriber.next({status: 'success', result: results})
 			}
 
 			const handleEvent = (e: CustomEvent<DataChangeEvent['detail']>) => {
@@ -370,24 +375,24 @@ export class Database {
 				}
 			}
 
-			this.#platformAdapter.subscribeEvent(EventTypes.DATA_CHANGE, handleEvent)
+			this.#platformAdapter.events.subscribe(EventTypes.DATA_CHANGE, handleEvent)
 
 			runQuery()
 
 			return () => {
-				this.#platformAdapter.unsubscribeEvent(EventTypes.DATA_CHANGE, handleEvent)
+				this.#platformAdapter.events.unsubscribe(EventTypes.DATA_CHANGE, handleEvent)
 			}
 		})
 	}
 
-	liveGetFields(options?: GlobalListingOptions) {
-		return new Observable<LiveQuery<ReturnType<Database['getFields']>>>((subscriber) => {
+	liveQueryFields(options?: GlobalListingOptions) {
+		return new Observable<LiveQueryResult<FieldDto[]>>((subscriber) => {
 			subscriber.next({status: 'loading'})
 
 			const runQuery = async () => {
 				subscriber.next({status: 'loading'})
-				const results = await this.getFields(options);
-				subscriber.next({status: 'success', data: results})
+				const results = await this.queryFields(options);
+				subscriber.next({status: 'success', result: results})
 			}
 
 			const handleEvent = (e: CustomEvent<DataChangeEvent['detail']>) => {
@@ -400,12 +405,12 @@ export class Database {
 				}
 			}
 
-			this.#platformAdapter.subscribeEvent(EventTypes.DATA_CHANGE, handleEvent)
+			this.#platformAdapter.events.subscribe(EventTypes.DATA_CHANGE, handleEvent)
 
 			runQuery()
 
 			return () => {
-				this.#platformAdapter.unsubscribeEvent(EventTypes.DATA_CHANGE, handleEvent)
+				this.#platformAdapter.events.unsubscribe(EventTypes.DATA_CHANGE, handleEvent)
 			}
 		})
 	}
@@ -456,6 +461,8 @@ export class Database {
 	}
 
 	async deleteFieldVersion(versionId: string): Promise<void> {
+		const databaseId = await this.#ensureInit()
+
 		const version = await this.#database
 			.select({id: fieldsVersions.id, entityId: fieldsVersions.entityId})
 			.from(fieldsVersions)
@@ -480,10 +487,10 @@ export class Database {
 			.delete(fieldsVersions)
 			.where(eq(fieldsVersions.id, versionId))
 
-		this.#platformAdapter.dispatchEvent(EventTypes.DATA_CHANGE, {
+		this.#platformAdapter.events.dispatch(EventTypes.DATA_CHANGE, {
 			context: this.#context,
 			data: {
-				databaseId: this.#databaseId,
+				databaseId,
 				tableKey: 'fields',
 				id: currentEntity[0].id,
 				action: 'delete-version'
@@ -492,13 +499,13 @@ export class Database {
 	}
 
 	liveGetFieldVersions(entityId: string) {
-		return new Observable<LiveQuery<ReturnType<Database['getFieldVersions']>>>((subscriber) => {
+		return new Observable<LiveQueryResult<FieldVersionDto[]>>((subscriber) => {
 			subscriber.next({status: 'loading'})
 
 			const runQuery = async () => {
 				subscriber.next({status: 'loading'})
 				const results = await this.getFieldVersions(entityId);
-				subscriber.next({status: 'success', data: results})
+				subscriber.next({status: 'success', result: results})
 			}
 
 			const handleEvent = (e: CustomEvent<DataChangeEvent['detail']>) => {
@@ -512,20 +519,19 @@ export class Database {
 				}
 			}
 
-			this.#platformAdapter.subscribeEvent(EventTypes.DATA_CHANGE, handleEvent)
+			this.#platformAdapter.events.subscribe(EventTypes.DATA_CHANGE, handleEvent)
 
 			return () => {
-				this.#platformAdapter.unsubscribeEvent(EventTypes.DATA_CHANGE, handleEvent)
+				this.#platformAdapter.events.unsubscribe(EventTypes.DATA_CHANGE, handleEvent)
 			}
 		})
 	}
 
-
 	/**
 	 * Content types
 	 */
-	async createContentType(createDto: CreateContentTypeDto): Promise<ContentTypeDto> {
-		await this.#ensureInit()
+	async createType(createDto: CreateContentTypeDto): Promise<ContentTypeDto> {
+		const databaseId = await this.#ensureInit()
 
 		const entityId = self.crypto.randomUUID()
 		const versionId = self.crypto.randomUUID()
@@ -560,23 +566,23 @@ export class Database {
 				templateFields: createDto.templateFields,
 			})
 
-		this.#platformAdapter.dispatchEvent(EventTypes.DATA_CHANGE, {
+		this.#platformAdapter.events.dispatch(EventTypes.DATA_CHANGE, {
 			context: this.#context,
 			data: {
-				databaseId: this.#databaseId,
+				databaseId,
 				tableKey: 'content_types',
 				id: entityId,
 				action: 'create'
 			}
 		})
 
-		return this.getContentType(entityId)
+		return this.getType(entityId)
 	}
 
-	async updateContentType(entityId: string, updateDto: UpdateContentTypeDto): Promise<ContentTypeDto> {
-		await this.#ensureInit()
+	async updateType(entityId: string, updateDto: UpdateContentTypeDto): Promise<ContentTypeDto> {
+		const databaseId = await this.#ensureInit()
 
-		const currentEntity = await this.getContentType(entityId)
+		const currentEntity = await this.getType(entityId)
 
 		const versionId = self.crypto.randomUUID()
 		const updatedAt = new Date().toISOString()
@@ -607,10 +613,10 @@ export class Database {
 				templateFields: updateDto.templateFields,
 			})
 
-		this.#platformAdapter.dispatchEvent(EventTypes.DATA_CHANGE, {
+		this.#platformAdapter.events.dispatch(EventTypes.DATA_CHANGE, {
 			context: this.#context,
 			data: {
-				databaseId: this.#databaseId,
+				databaseId,
 				tableKey: 'content_types',
 				id: entityId,
 				action: 'update'
@@ -619,11 +625,11 @@ export class Database {
 
 		// Return the updated field
 		// todo: do this via "returning" in version insert?
-		return this.getContentType(entityId)
+		return this.getType(entityId)
 	}
 
-	async deleteContentType(entityId: string): Promise<void> {
-		await this.#ensureInit()
+	async deleteType(entityId: string): Promise<void> {
+		const databaseId = await this.#ensureInit()
 		console.debug(`[database] running delete field: ${entityId}`)
 
 		// todo: throw error on?
@@ -640,10 +646,10 @@ export class Database {
 			.delete(contentTypesVersions)
 			.where(eq(contentTypesVersions.entityId, entityId))
 
-		this.#platformAdapter.dispatchEvent(EventTypes.DATA_CHANGE, {
+		this.#platformAdapter.events.dispatch(EventTypes.DATA_CHANGE, {
 			context: this.#context,
 			data: {
-				databaseId: this.#databaseId,
+				databaseId,
 				tableKey: 'content_types',
 				id: entityId,
 				action: 'delete'
@@ -651,8 +657,9 @@ export class Database {
 		})
 	}
 
-	async getContentType(entityId: string): Promise<ContentTypeDto> {
+	async getType(entityId: string): Promise<ContentTypeDto> {
 		await this.#ensureInit()
+
 		return this.#database
 			.select({
 				id: contentTypes.id,
@@ -681,7 +688,7 @@ export class Database {
 			.orderBy(desc(contentTypesVersions.createdAt)) as unknown as ContentTypeDto;
 	}
 
-	async getContentTypes(options?: GlobalListingOptions): Promise<ContentTypeDto[]> {
+	async queryTypes(options?: GlobalListingOptions): Promise<ContentTypeDto[]> {
 		await this.#ensureInit()
 
 		const filters: SQL[] = [
@@ -718,7 +725,9 @@ export class Database {
 			.orderBy(order) as unknown as ContentTypeDto[];
 	}
 
-	async getContentTypesSnapshot(): Promise<EntitySnapshot> {
+	async queryTypesSnapshot(): Promise<EntitySnapshot> {
+		await this.#ensureInit()
+
 		const entities = await this.#database
 			.select({
 				id: contentTypes.id,
@@ -753,14 +762,14 @@ export class Database {
 		return snapshot
 	}
 
-	liveGetContentType(entityId: string) {
-		return new Observable<LiveQuery<ReturnType<Database['getContentType']>>>((subscriber) => {
+	liveGetType(entityId: string) {
+		return new Observable<LiveQueryResult<ContentTypeDto>>((subscriber) => {
 			subscriber.next({status: 'loading'})
 
 			const runQuery = async () => {
 				subscriber.next({status: 'loading'})
-				const results = await this.getContentType(entityId);
-				subscriber.next({status: 'success', data: results})
+				const results = await this.getType(entityId);
+				subscriber.next({status: 'success', result: results})
 			}
 
 			const handleEvent = (e: CustomEvent<DataChangeEvent['detail']>) => {
@@ -773,24 +782,24 @@ export class Database {
 				}
 			}
 
-			this.#platformAdapter.subscribeEvent(EventTypes.DATA_CHANGE, handleEvent)
+			this.#platformAdapter.events.subscribe(EventTypes.DATA_CHANGE, handleEvent)
 
 			runQuery()
 
 			return () => {
-				this.#platformAdapter.unsubscribeEvent(EventTypes.DATA_CHANGE, handleEvent)
+				this.#platformAdapter.events.unsubscribe(EventTypes.DATA_CHANGE, handleEvent)
 			}
 		})
 	}
 
-	liveGetContentTypes(options?: GlobalListingOptions) {
-		return new Observable<LiveQuery<ReturnType<Database['getContentTypes']>>>((subscriber) => {
+	liveQueryTypes(options?: GlobalListingOptions) {
+		return new Observable<LiveQueryResult<ContentTypeDto[]>>((subscriber) => {
 			subscriber.next({status: 'loading'})
 
 			const runQuery = async () => {
 				subscriber.next({status: 'loading'})
-				const results = await this.getContentTypes(options);
-				subscriber.next({status: 'success', data: results})
+				const results = await this.queryTypes(options);
+				subscriber.next({status: 'success', result: results})
 			}
 
 			const handleEvent = (e: CustomEvent<DataChangeEvent['detail']>) => {
@@ -802,17 +811,17 @@ export class Database {
 				}
 			}
 
-			this.#platformAdapter.subscribeEvent(EventTypes.DATA_CHANGE, handleEvent)
+			this.#platformAdapter.events.subscribe(EventTypes.DATA_CHANGE, handleEvent)
 
 			runQuery()
 
 			return () => {
-				this.#platformAdapter.unsubscribeEvent(EventTypes.DATA_CHANGE, handleEvent)
+				this.#platformAdapter.events.unsubscribe(EventTypes.DATA_CHANGE, handleEvent)
 			}
 		})
 	}
 
-	async getContentTypeVersion(versionId: string) {
+	async getTypeVersion(versionId: string) {
 		await this.#ensureInit()
 
 		return this.#database
@@ -835,7 +844,7 @@ export class Database {
 			.where(eq(contentTypesVersions.id, versionId)) as unknown as ContentTypeVersionDto;
 	}
 
-	async getContentTypeVersions(entityId: string) {
+	async getTypeVersions(entityId: string) {
 		await this.#ensureInit()
 
 		return this.#database
@@ -859,7 +868,9 @@ export class Database {
 			.orderBy(desc(contentTypesVersions.createdAt)) as unknown as ContentTypeVersionDto[];
 	}
 
-	async deleteContentTypeVersion(versionId: string): Promise<void> {
+	async deleteTypeVersion(versionId: string): Promise<void> {
+		const databaseId = await this.#ensureInit()
+
 		const version = await this.#database
 			.select({id: contentTypesVersions.id, entityId: contentTypesVersions.entityId})
 			.from(contentTypesVersions)
@@ -884,10 +895,10 @@ export class Database {
 			.delete(fieldsVersions)
 			.where(eq(fieldsVersions.id, versionId))
 
-		this.#platformAdapter.dispatchEvent(EventTypes.DATA_CHANGE, {
+		this.#platformAdapter.events.dispatch(EventTypes.DATA_CHANGE, {
 			context: this.#context,
 			data: {
-				databaseId: this.#databaseId,
+				databaseId,
 				tableKey: 'fields',
 				id: currentEntity[0].id,
 				action: 'delete-version'
@@ -895,14 +906,14 @@ export class Database {
 		})
 	}
 
-	liveGetContentTypeVersions(entityId: string) {
-		return new Observable<LiveQuery<ReturnType<Database['getContentTypeVersions']>>>((subscriber) => {
+	liveGetTypeVersions(entityId: string) {
+		return new Observable<LiveQueryResult<ContentTypeVersionDto[]>>((subscriber) => {
 			subscriber.next({status: 'loading'})
 
 			const runQuery = async () => {
 				subscriber.next({status: 'loading'})
-				const results = await this.getContentTypeVersions(entityId);
-				subscriber.next({status: 'success', data: results})
+				const results = await this.getTypeVersions(entityId);
+				subscriber.next({status: 'success', result: results})
 			}
 
 			const handleEvent = (e: CustomEvent<DataChangeEvent['detail']>) => {
@@ -915,10 +926,10 @@ export class Database {
 				}
 			}
 
-			this.#platformAdapter.subscribeEvent(EventTypes.DATA_CHANGE, handleEvent)
+			this.#platformAdapter.events.subscribe(EventTypes.DATA_CHANGE, handleEvent)
 
 			return () => {
-				this.#platformAdapter.unsubscribeEvent(EventTypes.DATA_CHANGE, handleEvent)
+				this.#platformAdapter.events.unsubscribe(EventTypes.DATA_CHANGE, handleEvent)
 			}
 		})
 	}
@@ -927,8 +938,8 @@ export class Database {
 	/**
 	 * Content items
 	 */
-	async createContentItem(createDto: CreateContentItemDto): Promise<ContentItemDto> {
-		await this.#ensureInit()
+	async createItem(createDto: CreateContentItemDto): Promise<ContentItemDto> {
+		const databaseId = await this.#ensureInit()
 
 		const entityId = self.crypto.randomUUID()
 		const versionId = self.crypto.randomUUID()
@@ -961,23 +972,23 @@ export class Database {
 				fields: createDto.fields,
 			})
 
-		this.#platformAdapter.dispatchEvent(EventTypes.DATA_CHANGE, {
+		this.#platformAdapter.events.dispatch(EventTypes.DATA_CHANGE, {
 			context: this.#context,
 			data: {
-				databaseId: this.#databaseId,
+				databaseId,
 				tableKey: 'content_items',
 				id: entityId,
 				action: 'create'
 			}
 		})
 
-		return this.getContentItem(entityId)
+		return this.getItem(entityId)
 	}
 
-	async updateContentItem(entityId: string, updateDto: UpdateContentItemDto): Promise<ContentItemDto> {
-		await this.#ensureInit()
+	async updateItem(entityId: string, updateDto: UpdateContentItemDto): Promise<ContentItemDto> {
+		const databaseId = await this.#ensureInit()
 
-		const currentEntity = await this.getContentItem(entityId)
+		const currentEntity = await this.getItem(entityId)
 
 		const versionId = self.crypto.randomUUID()
 		const updatedAt = new Date().toISOString()
@@ -1006,10 +1017,10 @@ export class Database {
 				fields: updateDto.fields,
 			})
 
-		this.#platformAdapter.dispatchEvent(EventTypes.DATA_CHANGE, {
+		this.#platformAdapter.events.dispatch(EventTypes.DATA_CHANGE, {
 			context: this.#context,
 			data: {
-				databaseId: this.#databaseId,
+				databaseId,
 				tableKey: 'content_items',
 				id: entityId,
 				action: 'update'
@@ -1018,11 +1029,11 @@ export class Database {
 
 		// Return the updated field
 		// todo: do this via "returning" in version insert?
-		return this.getContentItem(entityId)
+		return this.getItem(entityId)
 	}
 
-	async deleteContentItem(entityId: string): Promise<void> {
-		await this.#ensureInit()
+	async deleteItem(entityId: string): Promise<void> {
+		const databaseId = await this.#ensureInit()
 		console.debug(`[database] running delete field: ${entityId}`)
 
 		// todo: throw error on?
@@ -1039,10 +1050,10 @@ export class Database {
 			.delete(contentItemsVersions)
 			.where(eq(contentItemsVersions.entityId, entityId))
 
-		this.#platformAdapter.dispatchEvent(EventTypes.DATA_CHANGE, {
+		this.#platformAdapter.events.dispatch(EventTypes.DATA_CHANGE, {
 			context: this.#context,
 			data: {
-				databaseId: this.#databaseId,
+				databaseId,
 				tableKey: 'content_items',
 				id: entityId,
 				action: 'delete'
@@ -1050,8 +1061,9 @@ export class Database {
 		})
 	}
 
-	async getContentItem(entityId: string): Promise<ContentItemDto> {
+	async getItem(entityId: string): Promise<ContentItemDto> {
 		await this.#ensureInit()
+
 		return this.#database
 			.select({
 				id: contentItems.id,
@@ -1078,7 +1090,7 @@ export class Database {
 			.orderBy(desc(contentItemsVersions.createdAt)) as unknown as ContentItemDto;
 	}
 
-	async getContentItems(options?: GlobalListingOptions): Promise<ContentItemDto[]> {
+	async queryItems(options?: GlobalListingOptions): Promise<ContentItemDto[]> {
 		await this.#ensureInit()
 
 		const filters: SQL[] = [
@@ -1113,7 +1125,9 @@ export class Database {
 			.orderBy(order) as unknown as ContentItemDto[];
 	}
 
-	async getContentItemsSnapshot(): Promise<EntitySnapshot> {
+	async queryItemsSnapshot(): Promise<EntitySnapshot> {
+		await this.#ensureInit()
+
 		const entities = await this.#database
 			.select({
 				id: contentItems.id,
@@ -1148,14 +1162,14 @@ export class Database {
 		return snapshot
 	}
 
-	liveGetContentItem(entityId: string) {
-		return new Observable<LiveQuery<ReturnType<Database['getContentItem']>>>((subscriber) => {
+	liveGetItem(entityId: string) {
+		return new Observable<LiveQueryResult<ContentItemDto>>((subscriber) => {
 			subscriber.next({status: 'loading'})
 
 			const runQuery = async () => {
 				subscriber.next({status: 'loading'})
-				const results = await this.getContentItem(entityId);
-				subscriber.next({status: 'success', data: results})
+				const results = await this.getItem(entityId);
+				subscriber.next({status: 'success', result: results})
 			}
 
 			const handleEvent = (e: CustomEvent<DataChangeEvent['detail']>) => {
@@ -1168,24 +1182,24 @@ export class Database {
 				}
 			}
 
-			this.#platformAdapter.subscribeEvent(EventTypes.DATA_CHANGE, handleEvent)
+			this.#platformAdapter.events.subscribe(EventTypes.DATA_CHANGE, handleEvent)
 
 			runQuery()
 
 			return () => {
-				this.#platformAdapter.unsubscribeEvent(EventTypes.DATA_CHANGE, handleEvent)
+				this.#platformAdapter.events.unsubscribe(EventTypes.DATA_CHANGE, handleEvent)
 			}
 		})
 	}
 
-	liveGetContentItems(options?: GlobalListingOptions) {
-		return new Observable<LiveQuery<ReturnType<Database['getContentItems']>>>((subscriber) => {
+	liveQueryItems(options?: GlobalListingOptions) {
+		return new Observable<LiveQueryResult<ContentItemDto[]>>((subscriber) => {
 			subscriber.next({status: 'loading'})
 
 			const runQuery = async () => {
 				subscriber.next({status: 'loading'})
-				const results = await this.getContentItems(options);
-				subscriber.next({status: 'success', data: results})
+				const results = await this.queryItems(options);
+				subscriber.next({status: 'success', result: results})
 			}
 
 			const handleEvent = (e: CustomEvent<DataChangeEvent['detail']>) => {
@@ -1197,17 +1211,17 @@ export class Database {
 				}
 			}
 
-			this.#platformAdapter.subscribeEvent(EventTypes.DATA_CHANGE, handleEvent)
+			this.#platformAdapter.events.subscribe(EventTypes.DATA_CHANGE, handleEvent)
 
 			runQuery()
 
 			return () => {
-				this.#platformAdapter.unsubscribeEvent(EventTypes.DATA_CHANGE, handleEvent)
+				this.#platformAdapter.events.unsubscribe(EventTypes.DATA_CHANGE, handleEvent)
 			}
 		})
 	}
 
-	async getContentItemVersion(versionId: string) {
+	async getItemVersion(versionId: string) {
 		await this.#ensureInit()
 
 		return this.#database
@@ -1228,7 +1242,7 @@ export class Database {
 			.where(eq(contentItemsVersions.id, versionId)) as unknown as ContentItemVersionDto;
 	}
 
-	async getContentItemVersions(entityId: string) {
+	async getItemVersions(entityId: string) {
 		await this.#ensureInit()
 
 		return this.#database
@@ -1250,7 +1264,9 @@ export class Database {
 			.orderBy(desc(contentItemsVersions.createdAt)) as unknown as ContentItemVersionDto[];
 	}
 
-	async deleteContentItemVersion(versionId: string): Promise<void> {
+	async deleteItemVersion(versionId: string): Promise<void> {
+		const databaseId = await this.#ensureInit()
+
 		const version = await this.#database
 			.select({id: contentItemsVersions.id, entityId: contentItemsVersions.entityId})
 			.from(contentItemsVersions)
@@ -1275,10 +1291,10 @@ export class Database {
 			.delete(contentItemsVersions)
 			.where(eq(contentItemsVersions.id, versionId))
 
-		this.#platformAdapter.dispatchEvent(EventTypes.DATA_CHANGE, {
+		this.#platformAdapter.events.dispatch(EventTypes.DATA_CHANGE, {
 			context: this.#context,
 			data: {
-				databaseId: this.#databaseId,
+				databaseId,
 				tableKey: 'content_items',
 				id: currentEntity[0].id,
 				action: 'delete-version'
@@ -1286,14 +1302,14 @@ export class Database {
 		})
 	}
 
-	liveGetContentItemVersions(entityId: string) {
-		return new Observable<LiveQuery<ReturnType<Database['getContentItemVersions']>>>((subscriber) => {
+	liveGetItemVersions(entityId: string) {
+		return new Observable<LiveQueryResult<ContentItemVersionDto[]>>((subscriber) => {
 			subscriber.next({status: 'loading'})
 
 			const runQuery = async () => {
 				subscriber.next({status: 'loading'})
-				const results = await this.getContentItemVersions(entityId);
-				subscriber.next({status: 'success', data: results})
+				const results = await this.getItemVersions(entityId);
+				subscriber.next({status: 'success', result: results})
 			}
 
 			const handleEvent = (e: CustomEvent<DataChangeEvent['detail']>) => {
@@ -1306,10 +1322,10 @@ export class Database {
 				}
 			}
 
-			this.#platformAdapter.subscribeEvent(EventTypes.DATA_CHANGE, handleEvent)
+			this.#platformAdapter.events.subscribe(EventTypes.DATA_CHANGE, handleEvent)
 
 			return () => {
-				this.#platformAdapter.unsubscribeEvent(EventTypes.DATA_CHANGE, handleEvent)
+				this.#platformAdapter.events.unsubscribe(EventTypes.DATA_CHANGE, handleEvent)
 			}
 		})
 	}
@@ -1318,6 +1334,7 @@ export class Database {
 	 * Views
 	 */
 	async createView(createDto: CreateViewDto): Promise<ViewDto> {
+		const databaseId = await this.#ensureInit()
 		await this.#ensureInit()
 
 		const entityId = self.crypto.randomUUID()
@@ -1354,10 +1371,10 @@ export class Database {
 				settings: createDto.settings,
 			})
 
-		this.#platformAdapter.dispatchEvent(EventTypes.DATA_CHANGE, {
+		this.#platformAdapter.events.dispatch(EventTypes.DATA_CHANGE, {
 			context: this.#context,
 			data: {
-				databaseId: this.#databaseId,
+				databaseId,
 				tableKey: 'views',
 				id: entityId,
 				action: 'create'
@@ -1368,7 +1385,7 @@ export class Database {
 	}
 
 	async updateView(entityId: string, updateDto: UpdateViewDto): Promise<ViewDto> {
-		await this.#ensureInit()
+		const databaseId = await this.#ensureInit()
 
 		const currentEntity = await this.getView(entityId)
 
@@ -1402,10 +1419,10 @@ export class Database {
 				settings: updateDto.settings,
 			})
 
-		this.#platformAdapter.dispatchEvent(EventTypes.DATA_CHANGE, {
+		this.#platformAdapter.events.dispatch(EventTypes.DATA_CHANGE, {
 			context: this.#context,
 			data: {
-				databaseId: this.#databaseId,
+				databaseId,
 				tableKey: 'views',
 				id: entityId,
 				action: 'update'
@@ -1418,7 +1435,7 @@ export class Database {
 	}
 
 	async deleteView(entityId: string): Promise<void> {
-		await this.#ensureInit()
+		const databaseId = await this.#ensureInit()
 		// todo: throw error on not existing?
 
 		await this.#database
@@ -1433,10 +1450,10 @@ export class Database {
 			.delete(viewsVersions)
 			.where(eq(viewsVersions.entityId, entityId))
 
-		this.#platformAdapter.dispatchEvent(EventTypes.DATA_CHANGE, {
+		this.#platformAdapter.events.dispatch(EventTypes.DATA_CHANGE, {
 			context: this.#context,
 			data: {
-				databaseId: this.#databaseId,
+				databaseId,
 				tableKey: 'views',
 				id: entityId,
 				action: 'delete'
@@ -1446,6 +1463,7 @@ export class Database {
 
 	async getView(entityId: string): Promise<ViewDto> {
 		await this.#ensureInit()
+
 		return this.#database
 			.select({
 				id: views.id,
@@ -1475,7 +1493,7 @@ export class Database {
 			.orderBy(desc(viewsVersions.createdAt)) as unknown as ViewDto;
 	}
 
-	async getViews(options?: GlobalListingOptions): Promise<ViewDto[]> {
+	async queryViews(options?: GlobalListingOptions): Promise<ViewDto[]> {
 		await this.#ensureInit()
 
 		const filters: SQL[] = [
@@ -1513,7 +1531,9 @@ export class Database {
 			.orderBy(order) as unknown as ViewDto[];
 	}
 
-	async getViewsSnapshot(): Promise<EntitySnapshot> {
+	async queryViewsSnapshot(): Promise<EntitySnapshot> {
+		await this.#ensureInit()
+
 		const entities = await this.#database
 			.select({
 				id: views.id,
@@ -1549,13 +1569,13 @@ export class Database {
 	}
 
 	liveGetView(entityId: string) {
-		return new Observable<LiveQuery<ReturnType<Database['getView']>>>((subscriber) => {
+		return new Observable<LiveQueryResult<ViewDto>>((subscriber) => {
 			subscriber.next({status: 'loading'})
 
 			const runQuery = async () => {
 				subscriber.next({status: 'loading'})
 				const results = await this.getView(entityId);
-				subscriber.next({status: 'success', data: results})
+				subscriber.next({status: 'success', result: results})
 			}
 
 			const handleEvent = (e: CustomEvent<DataChangeEvent['detail']>) => {
@@ -1568,24 +1588,24 @@ export class Database {
 				}
 			}
 
-			this.#platformAdapter.subscribeEvent(EventTypes.DATA_CHANGE, handleEvent)
+			this.#platformAdapter.events.subscribe(EventTypes.DATA_CHANGE, handleEvent)
 
 			runQuery()
 
 			return () => {
-				this.#platformAdapter.unsubscribeEvent(EventTypes.DATA_CHANGE, handleEvent)
+				this.#platformAdapter.events.unsubscribe(EventTypes.DATA_CHANGE, handleEvent)
 			}
 		})
 	}
 
-	liveGetViews(options?: GlobalListingOptions) {
-		return new Observable<LiveQuery<ReturnType<Database['getViews']>>>((subscriber) => {
+	liveQueryViews(options?: GlobalListingOptions) {
+		return new Observable<LiveQueryResult<ViewDto[]>>((subscriber) => {
 			subscriber.next({status: 'loading'})
 
 			const runQuery = async () => {
 				subscriber.next({status: 'loading'})
-				const results = await this.getViews(options);
-				subscriber.next({status: 'success', data: results})
+				const results = await this.queryViews(options);
+				subscriber.next({status: 'success', result: results})
 			}
 
 			const handleEvent = (e: CustomEvent<DataChangeEvent['detail']>) => {
@@ -1597,12 +1617,12 @@ export class Database {
 				}
 			}
 
-			this.#platformAdapter.subscribeEvent(EventTypes.DATA_CHANGE, handleEvent)
+			this.#platformAdapter.events.subscribe(EventTypes.DATA_CHANGE, handleEvent)
 
 			runQuery()
 
 			return () => {
-				this.#platformAdapter.unsubscribeEvent(EventTypes.DATA_CHANGE, handleEvent)
+				this.#platformAdapter.events.unsubscribe(EventTypes.DATA_CHANGE, handleEvent)
 			}
 		})
 	}
@@ -1657,6 +1677,8 @@ export class Database {
 	}
 
 	async deleteViewVersion(versionId: string): Promise<void> {
+		const databaseId = await this.#ensureInit()
+
 		const version = await this.#database
 			.select({id: viewsVersions.id, entityId: viewsVersions.entityId})
 			.from(viewsVersions)
@@ -1681,10 +1703,10 @@ export class Database {
 			.delete(viewsVersions)
 			.where(eq(viewsVersions.id, versionId))
 
-		this.#platformAdapter.dispatchEvent(EventTypes.DATA_CHANGE, {
+		this.#platformAdapter.events.dispatch(EventTypes.DATA_CHANGE, {
 			context: this.#context,
 			data: {
-				databaseId: this.#databaseId,
+				databaseId,
 				tableKey: 'views',
 				id: currentEntity[0].id,
 				action: 'delete-version'
@@ -1693,13 +1715,13 @@ export class Database {
 	}
 
 	liveGetViewVersions(entityId: string) {
-		return new Observable<LiveQuery<ReturnType<Database['getViewVersions']>>>((subscriber) => {
+		return new Observable<LiveQueryResult<ViewVersionDto[]>>((subscriber) => {
 			subscriber.next({status: 'loading'})
 
 			const runQuery = async () => {
 				subscriber.next({status: 'loading'})
 				const results = await this.getViewVersions(entityId);
-				subscriber.next({status: 'success', data: results})
+				subscriber.next({status: 'success', result: results})
 			}
 
 			const handleEvent = (e: CustomEvent<DataChangeEvent['detail']>) => {
@@ -1712,10 +1734,10 @@ export class Database {
 				}
 			}
 
-			this.#platformAdapter.subscribeEvent(EventTypes.DATA_CHANGE, handleEvent)
+			this.#platformAdapter.events.subscribe(EventTypes.DATA_CHANGE, handleEvent)
 
 			return () => {
-				this.#platformAdapter.unsubscribeEvent(EventTypes.DATA_CHANGE, handleEvent)
+				this.#platformAdapter.events.unsubscribe(EventTypes.DATA_CHANGE, handleEvent)
 			}
 		})
 	}

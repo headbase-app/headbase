@@ -138,7 +138,7 @@ export class ServerAPI {
 		await this.#generalStorage.saveRefreshToken(loginResult.tokens.refreshToken)
 		await this.#generalStorage.saveAccessToken(loginResult.tokens.accessToken)
 
-		this.#platformAdapter.dispatchEvent(EventTypes.USER_LOGIN, {
+		this.#platformAdapter.events.dispatch(EventTypes.USER_LOGIN, {
 			context: this.#context,
 			data: {
 				serverUrl: loginDetails.serverUrl,
@@ -184,7 +184,7 @@ export class ServerAPI {
 		await this.#generalStorage.deleteAccessToken()
 		await this.#generalStorage.deleteRefreshToken()
 
-		this.#platformAdapter.dispatchEvent(EventTypes.USER_LOGOUT, {
+		this.#platformAdapter.events.dispatch(EventTypes.USER_LOGOUT, {
 			context: this.#context,
 		})
 	}
@@ -294,15 +294,15 @@ export class ServerAPI {
 				}
 			}
 
-			this.#platformAdapter.subscribeEvent(EventTypes.USER_LOGIN, handleEvent)
-			this.#platformAdapter.subscribeEvent(EventTypes.USER_LOGOUT, handleEvent)
+			this.#platformAdapter.events.subscribe(EventTypes.USER_LOGIN, handleEvent)
+			this.#platformAdapter.events.subscribe(EventTypes.USER_LOGOUT, handleEvent)
 
 			// Run initial query
 			runQuery()
 
 			return () => {
-				this.#platformAdapter.unsubscribeEvent(EventTypes.USER_LOGIN, handleEvent)
-				this.#platformAdapter.subscribeEvent(EventTypes.USER_LOGOUT, handleEvent)
+				this.#platformAdapter.events.unsubscribe(EventTypes.USER_LOGIN, handleEvent)
+				this.#platformAdapter.events.subscribe(EventTypes.USER_LOGOUT, handleEvent)
 			}
 		})
 	}

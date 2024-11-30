@@ -185,7 +185,7 @@ export class Application {
         // Items module routes
         const itemsHttpController = this.container.resolve<ItemsHttpController>(ItemsHttpController);
         app.post("/v1/items", itemsHttpController.createItem.bind(itemsHttpController))
-        app.get("/v1/items", itemsHttpController.getItems.bind(itemsHttpController))
+        app.get("/v1/items", itemsHttpController.queryItems.bind(itemsHttpController))
         app.get("/v1/items/:itemId", itemsHttpController.getItem.bind(itemsHttpController))
         app.delete("/v1/items/:itemId", itemsHttpController.deleteItem.bind(itemsHttpController))
 

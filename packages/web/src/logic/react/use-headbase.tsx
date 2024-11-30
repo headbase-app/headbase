@@ -21,7 +21,7 @@ export function useHeadbase() {
 	return headbaseContext as unknown as HeadbaseContext
 }
 
-export interface HeadbaseContextProviderProps extends PropsWithChildren {}
+export type HeadbaseContextProviderProps = PropsWithChildren
 
 export function HeadbaseContextProvider(props: HeadbaseContextProviderProps) {
 	const [headbase, setHeadbase] = useState<HeadbaseWeb | null>(null)

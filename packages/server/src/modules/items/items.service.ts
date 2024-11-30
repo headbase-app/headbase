@@ -87,7 +87,7 @@ export class ItemsService {
         })
     }
 
-    async getItemsById(userContext: UserContext, ids: string[]): Promise<ItemDto[]> {
+    async queryItemsById(userContext: UserContext, ids: string[]): Promise<ItemDto[]> {
         const items: ItemDto[] = []
         for (const id of ids) {
             // todo: this will run access checks on every fetch, is this ok here?
@@ -97,7 +97,7 @@ export class ItemsService {
         return items
     }
 
-    async getItemsByFilters(userContext: UserContext, filters: ItemsQueryByFiltersParams): Promise<ResourceListingResult<ItemDto>> {
+    async queryItemsByFilters(userContext: UserContext, filters: ItemsQueryByFiltersParams): Promise<ResourceListingResult<ItemDto>> {
         const vault = await this.vaultsService.get(userContext, filters.vaultId)
 
         // Fetching the vault has ensured the user has permissions to access the vault, but we must also check the item permissions.
@@ -108,7 +108,7 @@ export class ItemsService {
             targetUserId: vault.ownerId,
         })
 
-        return this.itemsDatabaseService.getItemsByFilters(filters)
+        return this.itemsDatabaseService.queryItemsByFilters(filters)
     }
 
     async _getAllItems(vaultId: string): Promise<ItemDto[]> {
@@ -197,7 +197,7 @@ export class ItemsService {
 
     async getVersionsByFilters(userContext: UserContext, filters: VersionsQueryByFiltersParams): Promise<ResourceListingResult<VersionDto>> {
         // Fetch all items to ensure the user has permissions to access these items, and ensure they all exist.
-        await this.getItemsById(userContext, filters.itemId)
+        await this.queryItemsById(userContext, filters.itemId)
         return this.itemsDatabaseService.getVersionsByFilters(filters)
     }
 

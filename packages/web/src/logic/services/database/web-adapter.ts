@@ -1,50 +1,29 @@
-import {DeviceContext, PlatformAdapter, PlatformAdapterConfig, SqlDataType, SqlQueryResponse} from "../../../lib/headbase-core/adapter.ts";
+import {
+	DatabaseAdapter,
+	DeviceContext, EventsAdapter,
+	PlatformAdapter,
+	PlatformAdapterConfig,
+	SqlDataType,
+	SqlQueryResponse
+} from "../../../lib/headbase-core/adapter.ts";
 import {EventMap, EventTypes, HeadbaseEvent} from "../events/events.ts";
 import {ClientMessages, QueryResponseMessage, WorkerMessages} from "./messages.ts";
 
-
-export class WebPlatformAdapter implements PlatformAdapter {
+export class WebDatabaseAdapter implements DatabaseAdapter {
 	// readonly #databaseLockAbort: AbortController
 	readonly #context: DeviceContext
 	readonly #worker: Worker
-	#eventTarget: EventTarget
-	#localBroadcastChannel: BroadcastChannel | undefined
 
 	constructor(config: PlatformAdapterConfig) {
 		this.#context = config.context;
 		this.#worker = new Worker(new URL("./sqlite.worker.ts", import.meta.url), {type: 'module'});
 		// this.#databaseLockAbort = new AbortController()
-
-		// todo: separate broadcast channel for different databases?
-		this.#eventTarget = new EventTarget()
-		this.#localBroadcastChannel = new BroadcastChannel(`headbase_events`)
-		this.#localBroadcastChannel.onmessage = (message: MessageEvent<HeadbaseEvent>) => {
-			console.debug('[EventManager] Received broadcast channel message', message.data)
-			this.dispatchEvent(message.data.type, message.data.detail)
-		}
-	}
-
-	async init() {
-		console.debug('[WebPlatformAdapter] init')
 	}
 
 	async destroy() {
 		console.debug('[WebPlatformAdapter] destroy')
 		this.#worker.terminate()
 	}
-
-	// async #setupDatabaseLock(lock: Lock | null) {
-	// 	console.debug(`[database] acquired lock on '${lock?.name || this.#databaseId}' using context '${this.#contextId}'`);
-	//
-	// 	// Indefinitely maintain this lock by returning a promise.
-	// 	// When the tab or database class is closed, the lock will be released and then another context can claim the lock if required.
-	// 	return new Promise<void>((resolve) => {
-	// 		this.#databaseLockAbort.signal.addEventListener('abort', () => {
-	// 			console.debug(`[database] aborting lock '${lock?.name || this.#databaseId}' from context '${this.#contextId}'`);
-	// 			resolve()
-	// 		})
-	// 	})
-	// }
 
 	/**
 	 * A promise wrapper around the worker to allow a request/response pattern.
@@ -88,7 +67,7 @@ export class WebPlatformAdapter implements PlatformAdapter {
 		})
 	}
 
-	async openDatabase(databaseId: string): Promise<void> {
+	async open(databaseId: string): Promise<void> {
 		await this.#sendWorkerRequest({
 			type: 'open',
 			messageId: self.crypto.randomUUID(),
@@ -105,7 +84,7 @@ export class WebPlatformAdapter implements PlatformAdapter {
 		// )
 	}
 
-	async closeDatabase(databaseId: string): Promise<void> {
+	async close(databaseId: string): Promise<void> {
 		console.debug('close')
 
 		await this.#sendWorkerRequest({
@@ -120,9 +99,9 @@ export class WebPlatformAdapter implements PlatformAdapter {
 		//this.#databaseLockAbort.abort()
 	}
 
-	async runSql(databaseId: string, sql: string, params: SqlDataType[]): Promise<SqlQueryResponse> {
+	async exec(databaseId: string, sql: string, params: SqlDataType[]): Promise<SqlQueryResponse> {
 		const workerResponse = await this.#sendWorkerRequest<QueryResponseMessage>({
-			type: 'query',
+			type: 'exec',
 			messageId: self.crypto.randomUUID(),
 			detail: {
 				databaseId,
@@ -139,7 +118,42 @@ export class WebPlatformAdapter implements PlatformAdapter {
 		return workerResponse.detail.result
 	}
 
-	dispatchEvent<Event extends keyof EventMap>(type: Event, eventDetail: EventMap[Event]["detail"]): void {
+	// async #setupDatabaseLock(lock: Lock | null) {
+	// 	console.debug(`[database] acquired lock on '${lock?.name || this.#databaseId}' using context '${this.#contextId}'`);
+	//
+	// 	// Indefinitely maintain this lock by returning a promise.
+	// 	// When the tab or database class is closed, the lock will be released and then another context can claim the lock if required.
+	// 	return new Promise<void>((resolve) => {
+	// 		this.#databaseLockAbort.signal.addEventListener('abort', () => {
+	// 			console.debug(`[database] aborting lock '${lock?.name || this.#databaseId}' from context '${this.#contextId}'`);
+	// 			resolve()
+	// 		})
+	// 	})
+	// }
+}
+
+export class WebEventsAdapter implements EventsAdapter {
+	readonly #context: DeviceContext
+	readonly #eventTarget: EventTarget
+	readonly #localBroadcastChannel: BroadcastChannel | undefined
+
+	constructor(config: PlatformAdapterConfig) {
+		this.#context = config.context;
+
+		// todo: separate broadcast channel for different databases?
+		this.#eventTarget = new EventTarget()
+		this.#localBroadcastChannel = new BroadcastChannel(`headbase_events`)
+		this.#localBroadcastChannel.onmessage = (message: MessageEvent<HeadbaseEvent>) => {
+			console.debug('[EventManager] Received broadcast channel message', message.data)
+			this.dispatch(message.data.type, message.data.detail)
+		}
+	}
+
+	async destroy() {
+		// todo: remove all event listeners?
+	}
+
+	dispatch<Event extends keyof EventMap>(type: Event, eventDetail: EventMap[Event]["detail"]): void {
 		console.debug(`[EventManager] Dispatching '${type}' event: ${eventDetail}`)
 
 		const event = new CustomEvent(type, { detail: eventDetail })
@@ -157,27 +171,42 @@ export class WebPlatformAdapter implements PlatformAdapter {
 		}
 	}
 
-	subscribeEvent<Event extends keyof EventMap>(type: Event, listener: (e: CustomEvent<EventMap[Event]["detail"]>) => void): void {
+	subscribe<Event extends keyof EventMap>(type: Event, listener: (e: CustomEvent<EventMap[Event]["detail"]>) => void): void {
 		// @ts-expect-error - We can add a callback for custom events!
 		this.#eventTarget.addEventListener(type, listener)
 	}
 
-	unsubscribeEvent<Event extends keyof EventMap>(type: Event, listener: (e: CustomEvent<EventMap[Event]["detail"]>) => void): void {
+	unsubscribe<Event extends keyof EventMap>(type: Event, listener: (e: CustomEvent<EventMap[Event]["detail"]>) => void): void {
 		// @ts-expect-error - We can add a callback for custom events!
 		this.#eventTarget.removeEventListener(type, listener)
 	}
 
-	subscribeAllEvents(listener: (e: CustomEvent<HeadbaseEvent>) => void): void {
+	subscribeAll(listener: (e: CustomEvent<HeadbaseEvent>) => void): void {
 		for (const event of Object.values(EventTypes)) {
 			// @ts-expect-error - We can add a callback for custom events!
 			this.#eventTarget.addEventListener(event, listener)
 		}
 	}
 
-	unsubscribeAllEvents(listener: (e: CustomEvent<HeadbaseEvent>) => void): void {
+	unsubscribeAll(listener: (e: CustomEvent<HeadbaseEvent>) => void): void {
 		for (const event of Object.values(EventTypes)) {
 			// @ts-expect-error - We can add a callback for custom events!
 			this.#eventTarget.removeEventListener(event, listener)
 		}
+	}
+}
+
+export class WebPlatformAdapter implements PlatformAdapter {
+	database: DatabaseAdapter
+	events: EventsAdapter
+
+	constructor(config: PlatformAdapterConfig) {
+		this.events = new WebEventsAdapter(config)
+		this.database = new WebDatabaseAdapter(config)
+	}
+
+	async destroy() {
+		await this.database.destroy()
+		await this.events.destroy()
 	}
 }

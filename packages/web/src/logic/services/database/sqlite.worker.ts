@@ -74,7 +74,7 @@ function getSqliteFactory() {
 				}
 			} as WorkerMessages);
 		}
-		else if (messageEvent.data.type === 'query') {
+		else if (messageEvent.data.type === 'exec') {
 			console.debug('[worker] running query')
 			console.debug(messageEvent.data)
 			const db = DatabaseStore.get(messageEvent.data.detail.databaseId);

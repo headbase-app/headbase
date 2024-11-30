@@ -92,7 +92,7 @@ export class DatabasesManagementAPI {
 		}
 
 		await KeyStorageService.set(database.id, encryptionKey)
-		this.#platformAdapter.dispatchEvent(EventTypes.DATABASE_UNLOCK, {
+		this.#platformAdapter.events.dispatch(EventTypes.DATABASE_UNLOCK, {
 			context: this.#context,
 			data: {
 				id
@@ -102,7 +102,7 @@ export class DatabasesManagementAPI {
 
 	async lock(id: string): Promise<void> {
 		await KeyStorageService.delete(id)
-		this.#platformAdapter.dispatchEvent(EventTypes.DATABASE_LOCK, {
+		this.#platformAdapter.events.dispatch(EventTypes.DATABASE_LOCK, {
 			context: this.#context,
 			data: {
 				id
@@ -133,7 +133,7 @@ export class DatabasesManagementAPI {
 
 		await tx.done
 
-		this.#platformAdapter.dispatchEvent(EventTypes.DATABASE_CHANGE, {
+		this.#platformAdapter.events.dispatch(EventTypes.DATABASE_CHANGE, {
 			context: this.#context,
 			data: {
 				id: databaseId,
@@ -185,17 +185,17 @@ export class DatabasesManagementAPI {
 				}
 			}
 
-			this.#platformAdapter.subscribeEvent(EventTypes.DATABASE_CHANGE, handleEvent)
-			this.#platformAdapter.subscribeEvent(EventTypes.DATABASE_UNLOCK, handleEvent)
-			this.#platformAdapter.subscribeEvent(EventTypes.DATABASE_LOCK, handleEvent)
+			this.#platformAdapter.events.subscribe(EventTypes.DATABASE_CHANGE, handleEvent)
+			this.#platformAdapter.events.subscribe(EventTypes.DATABASE_UNLOCK, handleEvent)
+			this.#platformAdapter.events.subscribe(EventTypes.DATABASE_LOCK, handleEvent)
 
 			// Run initial query
 			runQuery()
 
 			return () => {
-				this.#platformAdapter.unsubscribeEvent(EventTypes.DATABASE_CHANGE, handleEvent)
-				this.#platformAdapter.unsubscribeEvent(EventTypes.DATABASE_UNLOCK, handleEvent)
-				this.#platformAdapter.unsubscribeEvent(EventTypes.DATABASE_LOCK, handleEvent)
+				this.#platformAdapter.events.unsubscribe(EventTypes.DATABASE_CHANGE, handleEvent)
+				this.#platformAdapter.events.unsubscribe(EventTypes.DATABASE_UNLOCK, handleEvent)
+				this.#platformAdapter.events.unsubscribe(EventTypes.DATABASE_LOCK, handleEvent)
 			}
 		})
 	}
@@ -231,7 +231,7 @@ export class DatabasesManagementAPI {
 
 		await tx.done
 
-		this.#platformAdapter.dispatchEvent(EventTypes.DATABASE_CHANGE, {
+		this.#platformAdapter.events.dispatch(EventTypes.DATABASE_CHANGE, {
 			context: this.#context,
 			data: {
 				id,
@@ -278,7 +278,7 @@ export class DatabasesManagementAPI {
 		await tx.done
 
 		if (!preventEventDispatch) {
-			this.#platformAdapter.dispatchEvent(EventTypes.DATABASE_CHANGE, {
+			this.#platformAdapter.events.dispatch(EventTypes.DATABASE_CHANGE, {
 				context: this.#context,
 				data: {
 					id,
@@ -305,7 +305,7 @@ export class DatabasesManagementAPI {
 
 		// todo: delete sqlite database from OPFS?
 
-		this.#platformAdapter.dispatchEvent(EventTypes.DATABASE_CHANGE, {
+		this.#platformAdapter.events.dispatch(EventTypes.DATABASE_CHANGE, {
 			context: this.#context,
 			data: {
 				id,
@@ -360,17 +360,17 @@ export class DatabasesManagementAPI {
 				runQuery()
 			}
 
-			this.#platformAdapter.subscribeEvent(EventTypes.DATABASE_CHANGE, handleEvent)
-			this.#platformAdapter.subscribeEvent(EventTypes.DATABASE_UNLOCK, handleEvent)
-			this.#platformAdapter.subscribeEvent(EventTypes.DATABASE_LOCK, handleEvent)
+			this.#platformAdapter.events.subscribe(EventTypes.DATABASE_CHANGE, handleEvent)
+			this.#platformAdapter.events.subscribe(EventTypes.DATABASE_UNLOCK, handleEvent)
+			this.#platformAdapter.events.subscribe(EventTypes.DATABASE_LOCK, handleEvent)
 
 			// Run initial query
 			runQuery()
 
 			return () => {
-				this.#platformAdapter.unsubscribeEvent(EventTypes.DATABASE_CHANGE, handleEvent)
-				this.#platformAdapter.unsubscribeEvent(EventTypes.DATABASE_UNLOCK, handleEvent)
-				this.#platformAdapter.unsubscribeEvent(EventTypes.DATABASE_LOCK, handleEvent)
+				this.#platformAdapter.events.unsubscribe(EventTypes.DATABASE_CHANGE, handleEvent)
+				this.#platformAdapter.events.unsubscribe(EventTypes.DATABASE_UNLOCK, handleEvent)
+				this.#platformAdapter.events.unsubscribe(EventTypes.DATABASE_LOCK, handleEvent)
 			}
 		})
 	}

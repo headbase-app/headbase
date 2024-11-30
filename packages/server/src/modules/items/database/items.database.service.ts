@@ -166,7 +166,7 @@ export class ItemsDatabaseService {
 		}
 	}
 
-	async getItemsByFilters(filters: ItemsQueryByFiltersParams): Promise<ResourceListingResult<ItemDto>> {
+	async queryItemsByFilters(filters: ItemsQueryByFiltersParams): Promise<ResourceListingResult<ItemDto>> {
 		const sql = await this.databaseService.getSQL();
 
 		const offset = filters.offset || 0

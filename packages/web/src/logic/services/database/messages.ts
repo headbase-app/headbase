@@ -28,7 +28,7 @@ export interface OpenResponseMessage extends BaseResponseMessage {
 }
 
 export interface QueryMessage extends BaseMessage {
-	type: 'query',
+	type: 'exec',
 	detail: {
 		context: DeviceContext
 		databaseId: string
@@ -38,7 +38,7 @@ export interface QueryMessage extends BaseMessage {
 }
 
 export interface QueryResponseMessage extends BaseResponseMessage {
-	type: 'query',
+	type: 'exec',
 	detail: {
 		success: true,
 		result: SqlQueryResponse
