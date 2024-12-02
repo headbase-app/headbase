@@ -1,14 +1,13 @@
-import React, {ReactNode, useCallback, useEffect, useRef, useState} from "react";
-import {PropsWithChildren} from "../../../utils/children-prop";
+import React, {PropsWithChildren, ReactNode, useCallback, useEffect, useRef, useState} from "react";
 import {JDialog} from "@ben-ryder/jigsaw-react";
 import {DatabaseListScreen} from "../screens/database-list";
 import {DatabaseCreateScreen} from "../screens/database-create";
-import { useHeadbase } from "@headbase-toolkit/react/use-headbase";
 import { DatabaseEditScreen } from "../screens/database-edit";
 import {DatabaseUnlockScreen} from "../screens/database-unlock";
 import {_DatabaseDialogContext, DatabaseManagerTabs, useDatabaseManagerDialogContext} from "./database-manager-context";
 import {useWorkspaceContext} from "../../workspace/workspace-context";
 import {DatabaseChangePasswordScreen} from "../screens/database-change-password";
+import {useHeadbase} from "../../../../logic/react/use-headbase.tsx";
 
 export function DatabaseManagerDialogProvider(props: PropsWithChildren) {
 	const [openTab, _setOpenTab] = useState<DatabaseManagerTabs|undefined>(undefined)

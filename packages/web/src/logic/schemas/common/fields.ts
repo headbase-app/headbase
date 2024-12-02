@@ -18,7 +18,7 @@ export const DescriptionField = z.string()
 	.nullable()
 export type DescriptionField = z.infer<typeof DescriptionField>
 
-export const ColourField = z.enum(JColourVariantsList);
+export const ColourField = z.enum(JColourVariantsList).nullable();
 export type ColourField = z.infer<typeof ColourField>;
 
 export const IconField = z.string().nullable()

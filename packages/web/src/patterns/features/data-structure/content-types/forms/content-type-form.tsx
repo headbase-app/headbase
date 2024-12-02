@@ -1,4 +1,4 @@
-import { FormEvent, useEffect, useMemo, useState } from "react";
+import { FormEvent, useMemo, useState } from "react";
 import {
 	JInput,
 	JButtonGroup,
@@ -9,131 +9,70 @@ import {
 	JFormRow,
 	JTextArea,
 	JProse,
-	JMultiSelectOptionData,
-	JOptionData, JColourVariants, JSelect, JMultiSelect
+	JOptionData, JColourVariants, JSelect, JColourVariantsList, JTable
 } from "@ben-ryder/jigsaw-react";
-import {GenericFormProps} from "../../../../common/generic-form/generic-form";
-import { LiveQueryStatus } from "@headbase-toolkit/control-flow";
-import { ErrorCallout } from "../../../../patterns/components/error-callout/error-callout";
-import {useHeadbase} from "@headbase-toolkit/react/use-headbase";
-import {useContentQuery} from "@headbase-toolkit/react/use-content-query";
-import {ContentTypeData} from "@headbase-toolkit/schemas/entities/content-types";
-import {ColourVariants} from "@headbase-toolkit/schemas/common/fields";
-import {FIELD_TYPES} from "@headbase-toolkit/schemas/entities/fields/field-types";
-
+import {
+	ContentTypeData,
+} from "../../../../../logic/schemas/content-types/dtos.ts";
+import {LiveQueryStatus} from "../../../../../logic/control-flow.ts";
+import {useFieldQuery} from "../../../../../logic/react/tables/use-field-query.tsx";
+import {ErrorCallout} from "../../../../components/error-callout/error-callout.tsx";
+import {FieldStorage} from "../../../../../logic/schemas/common/field-storage.ts";
+import {GenericFormProps} from "../../../common/generic-form/generic-form.tsx";
 
 export function ContentTypeForm(props: GenericFormProps<ContentTypeData>) {
-	const {currentDatabaseId, headbase} = useHeadbase()
 	const [errors, setErrors] = useState<unknown[]>([]);
 
-	const [name, setName] = useState<string>(props.data.name);
-	const [description, setDescription] = useState<string>(props.data.description || '');
-	const [icon, setIcon] = useState<string>(props.data.icon || '');
+	const [name, setName] = useState<string>(props.data?.name || '');
+	const [description, setDescription] = useState<string>(props.data?.description || '');
+	const [icon, setIcon] = useState<string>(props.data?.icon || '');
 
-	const [contentTemplateTags, setContentTemplateTags] = useState<JMultiSelectOptionData[]>([]);
-
-	const allTags = useContentQuery(currentDatabaseId, {table: 'tags'})
-	const tagOptions: JMultiSelectOptionData[] = allTags.status === LiveQueryStatus.SUCCESS
-		? allTags.result.map(tag => ({
-			text: tag.data.name,
-			value: tag.id,
-			variant: tag.data.colourVariant
-		}))
-		: []
-
-	useEffect(() => {
-		async function loadSelectedTags() {
-			if (!currentDatabaseId || !headbase) return
-
-			if (props.data.contentTemplateTags && props.data.contentTemplateTags.length > 0) {
-				try {
-					const selectedTags = await headbase.tx.getMany(currentDatabaseId, 'tags', props.data.contentTemplateTags)
-					setContentTemplateTags(selectedTags.result.map(tag => ({
-						text: tag.data.name,
-						value: tag.id,
-						variant: tag.data.colourVariant
-					}))
-					)
-					if (Array.isArray(selectedTags.errors) && selectedTags.errors.length > 0) {
-						setErrors((e) => {
-							// @ts-expect-error -- todo: review this type issue.
-							return [...e, ...selectedTags.errors]})
-					}
-				}
-				catch (e) {
-					setErrors((e) => {return [...e, e]})
-				}
-			}
-		}
-		loadSelectedTags()
-	}, [currentDatabaseId, headbase])
-
-	const [colour, setColour] = useState<ColourVariants | ''>(props.data.colourVariant || '');
+	const [colour, setColour] = useState<JColourVariants | null>(props.data?.colour || null);
 	const colourVariantOptions: JOptionData[] = useMemo(() => {
 		return [
 			{ text: "-- Select Colour --", value: "" },
-			...ColourVariants.options.map((variant) => ({
+			...JColourVariantsList.map((variant) => ({
 				// todo: replace with generic labels, not direct from Jigsaw
-				text: JColourVariants[variant].label,
+				text: variant,
 				value: variant
 			}))
 		];
 	}, []);
 
-	const [contentTemplateName, setContentTemplateName] = useState<string>(props.data.contentTemplateName || '');
+	const [templateName, setTemplateName] = useState<string>(props.data?.templateName || '');
 
-	const [fieldOptions, setFieldOptions] = useState<JMultiSelectOptionData[]>([]);
-	const allFields = useContentQuery(currentDatabaseId, {table: 'fields'})
-	useEffect(() => {
-		if (allFields.status === LiveQueryStatus.SUCCESS) {
-			const fieldOptionMappings: JMultiSelectOptionData[] = allFields.status === LiveQueryStatus.SUCCESS
-				? allFields.result.map(field => ({
-					text: `${field.data.label} (${FIELD_TYPES[field.data.type].label})`,
-					value: field.id,
-				}))
-				: []
-			setFieldOptions(fieldOptionMappings)
-		}
-	}, [allFields])
+	const allFields = useFieldQuery({filter: {isDeleted: false}});
 
-	const [selectedFields, setSelectedFields] = useState<JMultiSelectOptionData[]>([]);
-	useEffect(() => {
-		async function loadSelectedFields() {
-			if (!currentDatabaseId || !headbase) return
-
-			if (props.data.fields && props.data.fields.length > 0) {
-				try {
-					const selectedFields = await headbase.tx.getMany(currentDatabaseId, 'fields', props.data.fields)
-					setSelectedFields(selectedFields.result.map(field => ({
-						text: `${field.data.label} (${FIELD_TYPES[field.data.type].label})`,
-						value: field.id,
-					})))
-					if (Array.isArray(selectedFields.errors) && selectedFields.errors.length > 0) {
-						setErrors((e) => {
-							// @ts-expect-error -- todo: review this type issue.
-							return [...e, ...selectedTags.errors]})
-					}
-				}
-				catch (newError) {
-					setErrors((e) => {return [...e, newError]})
-				}
-			}
-		}
-		loadSelectedFields()
-	}, [currentDatabaseId, headbase])
-
+	const [selectedFields, setSelectedFields] = useState<string>('');
 
 	function onSave(e: FormEvent) {
 		e.preventDefault()
 
+		if (!(allFields.status === 'success')) {
+			throw new Error('Attempted to save before fields were loaded.')
+		}
+
+		const templateFields: FieldStorage = {}
+		const fieldDeclarations = selectedFields.split('')
+		for (const fieldsDeclaration of fieldDeclarations) {
+			const [fieldId, defaultValue] = fieldsDeclaration.split(":")
+
+			const matchingField = allFields.result.filter(field => field.id === fieldId)
+			if (matchingField[0]) {
+				templateFields[fieldId] = {
+					type: matchingField[0].type,
+					value: JSON.parse(defaultValue)
+				}
+			}
+		}
+
 		const parseResult = ContentTypeData.safeParse({
 			name,
 			description,
-			icon: icon || undefined,
-			colourVariant: colour || undefined,
-			contentTemplateName: contentTemplateName || undefined,
-			contentTemplateTags: contentTemplateTags.map(t => t.value),
-			fields: selectedFields.map(f => f.value)
+			icon,
+			colour,
+			templateName,
+			templateFields
 		} as ContentTypeData)
 		if (!parseResult.success) {
 			console.error(parseResult.error)
@@ -203,8 +142,8 @@ export function ContentTypeForm(props: GenericFormProps<ContentTypeData>) {
 						id="variant"
 						label="Colour"
 						options={colourVariantOptions}
-						value={colour}
-						onChange={(e) => {setColour(e.target.value as ColourVariants|"")}}
+						value={colour || undefined}
+						onChange={(e) => {setColour(e.target.value as JColourVariants|null)}}
 					/>
 				</JFormRow>
 				<JProse>
@@ -215,9 +154,9 @@ export function ContentTypeForm(props: GenericFormProps<ContentTypeData>) {
 						label="Template Name"
 						id="templateName"
 						type="text"
-						value={contentTemplateName}
+						value={templateName}
 						onChange={(e) => {
-							setContentTemplateName(e.target.value);
+							setTemplateName(e.target.value);
 						}}
 						placeholder="a name template..."
 					/>
@@ -225,32 +164,40 @@ export function ContentTypeForm(props: GenericFormProps<ContentTypeData>) {
 						<p>Can be used to autogenerate the name of content when created. Use <code>$date</code> for the current date in format <code>YYYY-MM-DD</code>.</p>
 					</JProse>
 				</JFormRow>
-				<JFormRow>
-					<JMultiSelect
-						id="templateTags"
-						label="Template Tags"
-						options={tagOptions}
-						selectedOptions={contentTemplateTags}
-						setSelectedOptions={setContentTemplateTags}
-						searchText="Search and select tags..."
-						noOptionsText="No Tags Found"
-					/>
-				</JFormRow>
 				<JProse>
 					<hr/>
 				</JProse>
 				<JFormRow>
-					<JMultiSelect
+					<JTextArea
 						id="fields"
 						label="Fields"
-						options={fieldOptions}
-						selectedOptions={selectedFields}
-						setSelectedOptions={setSelectedFields}
-						searchText="Search and select fields..."
-						noOptionsText="No Fields Found"
+						placeholder="Content tyoe fields...."
+						value={selectedFields}
+						onChange={(e) => {setSelectedFields(e.target.value)}}
 					/>
 					<JProse>
-						<p>Fields will be ordered as they are selected here.</p>
+						<p>Enter one field per line in the format <code>fieldId:defaultValue</code>.</p>
+
+						{allFields.status === LiveQueryStatus.SUCCESS && (
+							<JTable>
+								<thead>
+									<tr>
+										<th>Name</th>
+										<th>ID</th>
+										<th>Type</th>
+									</tr>
+								</thead>
+								<tbody>
+									{allFields.result.map(field => (
+										<tr>
+											<td>{field.name}</td>
+											<td>{field.id}</td>
+											<td>{field.type}</td>
+										</tr>
+									))}
+								</tbody>
+							</JTable>
+						)}
 					</JProse>
 				</JFormRow>
 			</JFormContent>

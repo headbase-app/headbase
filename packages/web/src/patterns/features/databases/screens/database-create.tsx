@@ -1,8 +1,8 @@
 import {DatabaseBasicDataForm, DatabaseBasicFields} from "../forms/database-basic-data-form";
 import {useCallback, useState} from "react";
 import {DatabasePasswordForm} from "../forms/database-password-form";
-import {useHeadbase} from "@headbase-toolkit/react/use-headbase";
 import {useDatabaseManagerDialogContext} from "../manager/database-manager-context";
+import {useHeadbase} from "../../../../logic/react/use-headbase.tsx";
 
 export type DatabaseCreateSteps = 'basic-info' | 'encryption'
 

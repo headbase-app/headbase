@@ -4,7 +4,7 @@ import {useCallback, useEffect} from "react";
 import {useViewFormData, ViewFormOptions} from "../form/useViewFormData";
 import {ViewForm} from "../form/view-form";
 import {JButton} from "@ben-ryder/jigsaw-react";
-import {useHeadbase} from "@headbase-toolkit/react/use-headbase";
+import {useHeadbase} from "../../../../logic/react/use-headbase.tsx";
 
 export interface ViewEditTabProps extends WithTabData, ViewFormOptions {}
 
@@ -17,14 +17,8 @@ export function ViewEditTab(props: ViewEditTabProps) {
 		setName,
 		description,
 		setDescription,
-		tags,
-		setTags,
 		isFavourite,
 		setIsFavourite,
-		queryTags,
-		setQueryTags,
-		queryContentTypes,
-		setQueryContentTypes,
 	} = useViewFormData({viewId: props.viewId})
 
 	const onSave = useCallback(async () => {
@@ -32,13 +26,15 @@ export function ViewEditTab(props: ViewEditTabProps) {
 
 		if (props.viewId) {
 			try {
-				await headbase.tx.update(currentDatabaseId, 'views', props.viewId, {
+				await headbase.db.updateView(props.viewId, {
+					type: 'list',
+					createdBy: 'todo',
+					icon: null,
 					name: name,
-					description: description !== '' ? description : undefined,
-					tags:  tags,
+					colour: null,
+					description: description,
 					isFavourite: isFavourite,
-					queryTags: queryTags,
-					queryContentTypes: queryContentTypes,
+					settings: null
 				})
 				setTabIsUnsaved(props.tabIndex, false)
 			}
@@ -48,15 +44,17 @@ export function ViewEditTab(props: ViewEditTabProps) {
 		}
 		else {
 			try {
-				const newViewId = await headbase.tx.create(currentDatabaseId, 'views', {
+				const newView = await headbase.db.createView({
+					type: 'list',
+					createdBy: 'todo',
+					icon: null,
+					colour: null,
 					name: name,
-					description: description !== '' ? description : undefined,
-					tags:  tags,
+					description: description,
 					isFavourite: isFavourite,
-					queryTags: queryTags,
-					queryContentTypes: queryContentTypes,
+					settings: null
 				})
-				replaceTab(props.tabIndex, {type: 'view', viewId: newViewId})
+				replaceTab(props.tabIndex, {type: 'view', viewId: newView.id})
 			}
 			catch (e) {
 				console.error(e)
@@ -80,7 +78,7 @@ export function ViewEditTab(props: ViewEditTabProps) {
 		}
 
 		try {
-			await headbase.tx.delete(currentDatabaseId, 'views', props.viewId)
+			await headbase.db.deleteView(props.viewId)
 			closeTab(props.tabIndex)
 		}
 		catch (e) {
@@ -98,24 +96,9 @@ export function ViewEditTab(props: ViewEditTabProps) {
 		setDescription(description)
 	}, [props.tabIndex])
 
-	const onTagsChange = useCallback((tags: string[]) => {
-		setTabIsUnsaved(props.tabIndex, true)
-		setTags(tags)
-	}, [props.tabIndex])
-
 	const onIsFavouriteChange = useCallback((isFavourite: boolean) => {
 		setTabIsUnsaved(props.tabIndex, true)
 		setIsFavourite(isFavourite)
-	}, [props.tabIndex])
-
-	const onQueryTagsChange = useCallback((queryTags: string[]) => {
-		setTabIsUnsaved(props.tabIndex, true)
-		setQueryTags(queryTags)
-	}, [props.tabIndex])
-
-	const onQueryContentTypesChange = useCallback((queryContentTypes: string[]) => {
-		setTabIsUnsaved(props.tabIndex, true)
-		setQueryContentTypes(queryContentTypes)
 	}, [props.tabIndex])
 
 	return (
@@ -135,14 +118,8 @@ export function ViewEditTab(props: ViewEditTabProps) {
 				onNameChange={onNameChange}
 				description={description}
 				onDescriptionChange={onDescriptionChange}
-				tags={tags}
-				onTagsChange={onTagsChange}
 				isFavourite={isFavourite}
 				onIsFavouriteChange={onIsFavouriteChange}
-				queryTags={queryTags}
-				onQueryTagsChange={onQueryTagsChange}
-				queryContentTypes={queryContentTypes}
-				onQueryContentTypesChange={onQueryContentTypesChange}
 				onSave={onSave}
 				tabIndex={props.tabIndex}
 				onDelete={props.viewId ? onDelete : undefined}

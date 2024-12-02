@@ -1,6 +1,6 @@
 import React from "react";
 import {JDialog} from "@ben-ryder/jigsaw-react";
-import {createModalContext} from "../../common/dialog/generic-dialog";
+import {createModalContext} from "../common/dialog/generic-dialog.tsx";
 
 export const {
 	context: StatusDialogContext,

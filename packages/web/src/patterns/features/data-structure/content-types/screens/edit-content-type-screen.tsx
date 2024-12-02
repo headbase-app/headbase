@@ -1,26 +1,26 @@
 import React, { useState } from "react";
-import { ErrorCallout } from "../../../../patterns/components/error-callout/error-callout";
-import {ErrorTypes, LiveQueryStatus} from "@headbase-toolkit/control-flow";
-import {
-	GenericManagerContentScreenProps,
-} from "../../../../common/generic-manager/generic-manager";
 import {ContentTypeForm} from "../forms/content-type-form";
-import {useHeadbase} from "@headbase-toolkit/react/use-headbase";
-import {useContent} from "@headbase-toolkit/react/use-content";
-import {ContentTypeData} from "@headbase-toolkit/schemas/entities/content-types";
-
+import {useHeadbase} from "../../../../../logic/react/use-headbase.tsx";
+import {GenericManagerContentScreenProps} from "../../../common/generic-manager/generic-manager.tsx";
+import {useContentType} from "../../../../../logic/react/tables/use-type.tsx";
+import {ContentTypeData} from "../../../../../logic/schemas/content-types/dtos.ts";
+import {ErrorTypes, LiveQueryStatus} from "../../../../../logic/control-flow.ts";
+import {ErrorCallout} from "../../../../components/error-callout/error-callout.tsx";
 
 export function EditContentTypeScreen(props: GenericManagerContentScreenProps) {
 	const {currentDatabaseId, headbase} = useHeadbase()
 	const [errors, setErrors] = useState<unknown[]>([])
 
-	const contentTypeQuery = useContent(currentDatabaseId, 'content_types', props.id)
+	const contentTypeQuery = useContentType(props.id)
 
-	async function onSave(updatedData: Partial<ContentTypeData>) {
+	async function onSave(updatedData: ContentTypeData) {
 		if (!currentDatabaseId || !headbase) return setErrors([{type: ErrorTypes.NO_CURRENT_DATABASE}])
 
 		try {
-			await headbase.tx.update(currentDatabaseId, "content_types", props.id, updatedData)
+			await headbase.db.updateType(props.id, {
+				...updatedData,
+				createdBy: 'todo',
+			})
 			props.navigate({screen: "list"})
 		}
 		catch (e) {
@@ -32,7 +32,7 @@ export function EditContentTypeScreen(props: GenericManagerContentScreenProps) {
 		if (!currentDatabaseId || !headbase) return setErrors([{type: ErrorTypes.NO_CURRENT_DATABASE}])
 
 		try {
-			await headbase.tx.delete(currentDatabaseId, "content_types", props.id)
+			await headbase.db.deleteType(props.id)
 			props.navigate({screen: "list"})
 		}
 		catch (e) {
@@ -48,8 +48,8 @@ export function EditContentTypeScreen(props: GenericManagerContentScreenProps) {
 			)}
 			{contentTypeQuery.status === LiveQueryStatus.SUCCESS &&
         <ContentTypeForm
-        	title={`Edit Content Type '${contentTypeQuery.result.data.name}'`}
-        	data={contentTypeQuery.result.data}
+        	title={`Edit Content Type '${contentTypeQuery.result.name}'`}
+        	data={contentTypeQuery.result}
         	onSave={onSave}
         	onDelete={onDelete}
         	navigate={props.navigate}

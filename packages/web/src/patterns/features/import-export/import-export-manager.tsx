@@ -1,7 +1,7 @@
 import {useRef} from "react";
-import {useHeadbase} from "@headbase-toolkit/react/use-headbase";
 import {ExportDatabase} from "./export-database";
 import {ImportDatabase} from "./import-database";
+import {useHeadbase} from "../../../logic/react/use-headbase.tsx";
 
 export function ImportExportManager() {
 	const { currentDatabaseId } = useHeadbase()

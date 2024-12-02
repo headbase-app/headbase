@@ -4,7 +4,7 @@ import { WithTabData } from "../../workspace/workspace";
 import {useWorkspaceContext} from "../../workspace/workspace-context";
 import {useCallback, useEffect} from "react";
 import {ContentFormOptions, useContentFormData} from "../form/useContentFormData";
-import {useHeadbase} from "@headbase-toolkit/react/use-headbase";
+import {useHeadbase} from "../../../../logic/react/use-headbase.tsx";
 
 export interface ContentTabProps extends WithTabData, ContentFormOptions {}
 
@@ -37,13 +37,16 @@ export function ContentTab(props: ContentTabProps) {
 
 		if (props.contentId) {
 			try {
-				await headbase.tx.update(currentDatabaseId, 'content', props.contentId, {
-					type: contentTypeId,
-					name: name,
-					tags:  tags,
-					fields: fieldStorage,
-					isFavourite: isFavourite
-				})
+				await headbase.db.updateItem(
+					props.contentId,
+					{
+						createdBy: 'todo',
+						type: contentTypeId,
+						name: name,
+						fields: fieldStorage,
+						isFavourite: isFavourite
+					}
+				)
 				setTabIsUnsaved(props.tabIndex, false)
 			}
 			catch (e) {
@@ -52,14 +55,14 @@ export function ContentTab(props: ContentTabProps) {
 		}
 		else {
 			try {
-				const newContentId = await headbase.tx.create(currentDatabaseId, 'content', {
+				const newContent = await headbase.db.createItem({
+					createdBy: 'todo',
 					type: contentTypeId,
 					name: name,
-					tags:  tags,
 					fields: fieldStorage,
 					isFavourite: isFavourite
 				})
-				replaceTab(props.tabIndex, {type: 'content', contentId: newContentId})
+				replaceTab(props.tabIndex, {type: 'content', contentId: newContent.id})
 			}
 			catch (e) {
 				console.error(e)
@@ -84,7 +87,7 @@ export function ContentTab(props: ContentTabProps) {
 		}
 
 		try {
-			await headbase.tx.delete(currentDatabaseId, 'content', props.contentId)
+			await headbase.db.deleteItem(props.contentId)
 			closeTab(props.tabIndex)
 		}
 		catch (e) {
@@ -119,7 +122,7 @@ export function ContentTab(props: ContentTabProps) {
 				onSave={onSave}
 				tabIndex={props.tabIndex}
 				onDelete={props.contentId ? onDelete : undefined}
-				fields={contentType?.data.fields}
+				fields={contentType?.templateFields}
 				fieldStorage={fieldStorage}
 				onFieldStorageChange={setField}
 			/>

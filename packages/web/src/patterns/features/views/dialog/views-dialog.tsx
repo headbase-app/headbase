@@ -1,10 +1,10 @@
 import React from "react";
 import { JButton, JDialog } from "@ben-ryder/jigsaw-react";
-import {createModalContext} from "../../../common/dialog/generic-dialog";
 
 import "./views-dialog.scss"
 import {useWorkspaceContext} from "../../workspace/workspace-context";
 import {ViewList} from "../../views-list/view-list";
+import {createModalContext} from "../../common/dialog/generic-dialog.tsx";
 
 export const {
 	context: ViewsDialogContext,

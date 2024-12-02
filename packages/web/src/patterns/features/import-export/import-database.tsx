@@ -1,9 +1,9 @@
-import {useHeadbase} from "@headbase-toolkit/react/use-headbase";
 import {useRef} from "react";
 import {JButton, JErrorText, JInput} from "@ben-ryder/jigsaw-react";
 import {useForm} from "react-hook-form";
 import {z} from "zod";
-import {HeadbaseError} from "@headbase-toolkit/control-flow";
+import {useHeadbase} from "../../../logic/react/use-headbase.tsx";
+import {HeadbaseError} from "../../../logic/control-flow.ts";
 
 const ImportForm = z.object({
 	file: z.string(),
@@ -52,7 +52,8 @@ export function ImportDatabase() {
 		}
 
 		try {
-			await headbase.tx.import(currentDatabaseId, importData)
+			//await headbase.db.import(currentDatabaseId, importData)
+			throw new Error("not implemented yet")
 		}
 		catch (e) {
 			if (e instanceof HeadbaseError) {

@@ -1,8 +1,8 @@
 import { useState } from "react";
-import { GenericManagerScreens } from "../../../common/generic-manager/generic-manager";
 import {CreateContentTypeScreen} from "./screens/create-content-type-screen";
 import {EditContentTypeScreen} from "./screens/edit-content-type-screen";
 import {ListContentTypesScreen} from "./screens/list-content-types-screen";
+import {GenericManagerScreens} from "../../common/generic-manager/generic-manager.tsx";
 
 
 export function ContentTypesManager() {

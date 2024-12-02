@@ -1,10 +1,8 @@
 import {useCallback, useEffect, useRef, useState} from "react";
-import {useHeadbase} from "@headbase-toolkit/react/use-headbase";
-import {TableTypes} from "@headbase-toolkit/schemas/schema";
-import {FieldStorage, FieldValues} from "@headbase-toolkit/schemas/entities/fields/fields";
-import {EntityDto} from "@headbase-toolkit/schemas/common/entities";
-import {ContentTypeData} from "@headbase-toolkit/schemas/entities/content-types";
-import {ContentData} from "@headbase-toolkit/schemas/entities/content";
+import {FieldStorage} from "../../../../logic/schemas/common/field-storage.ts";
+import {useHeadbase} from "../../../../logic/react/use-headbase.tsx";
+import {ContentTypeDto} from "../../../../logic/schemas/content-types/dtos.ts";
+import {ContentItemDto} from "../../../../logic/schemas/content-items/dtos.ts";
 
 // todo: make type require at least one of these?
 export interface ContentFormOptions {
@@ -23,7 +21,7 @@ export interface ContentFormDataHandlers {
 	onNameChange: (name: string) => void;
 	onTagsChange: (tags: string[]) => void;
 	onIsFavouriteChange: (isFavourite: boolean) => void
-	onFieldStorageChange: (key: string, value: FieldValues) => void
+	onFieldStorageChange: (key: string, value: any) => void
 }
 
 /**
@@ -34,13 +32,13 @@ export function useContentFormData(options: ContentFormOptions) {
 	const {headbase, currentDatabaseId} = useHeadbase()
 
 	const [contentTypeId, setContentTypeId] = useState<string | undefined>(options.contentTypeId)
-	const [contentType, setContentType] = useState<EntityDto<ContentTypeData> | undefined>()
+	const [contentType, setContentType] = useState<ContentTypeDto | undefined>()
 
 	const latestFieldStorage = useRef<FieldStorage>({})
 	const [fieldStorage, setFieldStorage] = useState<FieldStorage>({})
 
-	const latestContent = useRef<EntityDto<ContentData> | undefined>()
-	const [content, setContent] = useState<EntityDto<ContentData> | undefined>()
+	const latestContent = useRef<ContentItemDto | undefined>()
+	const [content, setContent] = useState<ContentItemDto | undefined>()
 
 	const latestName = useRef<string>('')
 	const [name, setName] = useState<string>('')
@@ -57,7 +55,7 @@ export function useContentFormData(options: ContentFormOptions) {
 
 		const queryContentTypeId = options.contentTypeId || contentTypeId
 		if (queryContentTypeId) {
-			const contentTypeQuery = headbase.tx.liveGet(currentDatabaseId, 'content_types', queryContentTypeId)
+			const contentTypeQuery = headbase.db.liveGetType(queryContentTypeId)
 			const subscription = contentTypeQuery.subscribe((liveQuery) => {
 				if (liveQuery.status === 'success') {
 					setContentType(liveQuery.result)
@@ -79,27 +77,24 @@ export function useContentFormData(options: ContentFormOptions) {
 		if (!headbase || !currentDatabaseId) return
 
 		if (options.contentId) {
-			const contentQuery = headbase.tx.liveGet(currentDatabaseId, 'content', options.contentId)
+			const contentQuery = headbase.db.liveGetItem(options.contentId)
 			const subscription = contentQuery.subscribe((liveQuery) => {
 				if (liveQuery.status === 'success') {
 					/**
 					 * This logic "merges" the new loaded content with the existing content, and will
 					 * not overwrite anything that the user has changed so edits are not lost.
 					 */
-					if (latestName.current === '' || latestName.current === latestContent.current?.data.name) {
-						setName(liveQuery.result.data.name)
+					if (latestName.current === '' || latestName.current === latestContent.current?.name) {
+						setName(liveQuery.result.name)
 					}
 					// todo: I don't think this array comparison will work, might need to "diff" it instead?
-					if (latestTags.current.length === 0 || latestTags.current === latestContent.current?.data.tags) {
-						setTags(liveQuery.result.data.tags)
-					}
-					if (!latestIsFavourite.current || latestIsFavourite.current === latestContent.current?.data.isFavourite) {
-						setIsFavourite(liveQuery.result.data.isFavourite ?? false)
+					if (!latestIsFavourite.current || latestIsFavourite.current === latestContent.current?.isFavourite) {
+						setIsFavourite(liveQuery.result.isFavourite ?? false)
 					}
 
-					setContentTypeId(liveQuery.result.data.type)
+					setContentTypeId(liveQuery.result.type)
 					setContent(liveQuery.result)
-					setFieldStorage(liveQuery.result.data.fields)
+					setFieldStorage(liveQuery.result.fields)
 				}
 				else if (liveQuery.status === 'error') {
 					console.error('Error loading content')
@@ -133,7 +128,7 @@ export function useContentFormData(options: ContentFormOptions) {
 		latestFieldStorage.current = fieldStorage
 	}, [fieldStorage])
 
-	const setField = useCallback((id: string, value: FieldValues) => {
+	const setField = useCallback((id: string, value: any) => {
 		const updatedFields = {
 			...latestFieldStorage.current,
 		}

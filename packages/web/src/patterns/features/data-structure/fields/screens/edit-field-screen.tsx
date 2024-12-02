@@ -1,29 +1,27 @@
 import React, {ReactNode, useState} from "react";
-import {ErrorCallout} from "../../../../patterns/components/error-callout/error-callout";
-import {ErrorTypes} from "@headbase-toolkit/control-flow";
-import {GenericManagerContentScreenProps,} from "../../../../common/generic-manager/generic-manager";
 import {BasicFieldForm} from "../forms/basic-field-form";
-import {useHeadbase} from "@headbase-toolkit/react/use-headbase";
 import {JArrowButton} from "@ben-ryder/jigsaw-react";
 import {MarkdownFieldForm} from "../forms/markdown-field-form";
 import { ScaleFieldForm } from "../forms/scale-field-form";
 import { OptionsFieldForm } from "../forms/options-field-form";
-import {useContent} from "@headbase-toolkit/react/use-content";
-import {FieldDefinition} from "@headbase-toolkit/schemas/entities/fields/fields";
-import {FIELD_TYPES} from "@headbase-toolkit/schemas/entities/fields/field-types";
-
+import {useHeadbase} from "../../../../../logic/react/use-headbase.tsx";
+import {GenericManagerContentScreenProps} from "../../../common/generic-manager/generic-manager.tsx";
+import {useField} from "../../../../../logic/react/tables/use-field.tsx";
+import {ErrorTypes} from "../../../../../logic/control-flow.ts";
+import {UpdateFieldDto} from "../../../../../logic/schemas/fields/dtos.ts";
 
 export function EditFieldScreen(props: GenericManagerContentScreenProps) {
 	const {currentDatabaseId, headbase} = useHeadbase()
 	const [errors, setErrors] = useState<unknown[]>([])
 
-	const fieldQuery = useContent(currentDatabaseId, "fields", props.id)
+	const fieldQuery = useField(props.id)
 
-	async function onSave(updatedData: Partial<FieldDefinition>) {
+	// todo: better type?
+	async function onSave(updatedData: Omit<UpdateFieldDto, 'createdBy'>) {
 		if (!currentDatabaseId || !headbase) return setErrors([{type: ErrorTypes.NO_CURRENT_DATABASE}])
 
 		try {
-			await headbase.tx.update(currentDatabaseId, 'fields', props.id, updatedData)
+			await headbase.db.updateField(props.id, updatedData)
 			props.navigate({screen: "list"})
 		}
 		catch (e) {

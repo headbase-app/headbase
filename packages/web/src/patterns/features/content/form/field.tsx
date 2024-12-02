@@ -1,11 +1,11 @@
 import {JInput, JLabel, JSelect, JTextArea} from "@ben-ryder/jigsaw-react";
 import {ChangeEvent, useCallback} from "react";
-import {MarkdownEditor} from "../../../patterns/components/markdown-editor/markdown-editor";
-import {ScaleField} from "../../../patterns/components/scale-field/scale-field";
-import {FieldDefinition} from "@headbase-toolkit/schemas/entities/fields/fields";
+import {FieldDto} from "../../../../logic/schemas/fields/dtos.ts";
+import {ScaleField} from "../../../components/scale-field/scale-field.tsx";
+import {MarkdownEditor} from "../../../components/markdown-editor/markdown-editor.tsx";
 
 export interface FieldProps {
-	field: FieldDefinition
+	field: FieldDto
 	// todo: look at improving types here
 	value?: any
 	onChange: (value: any) => void
@@ -22,14 +22,14 @@ export function CustomField(props: FieldProps) {
 			<ScaleField field={props.field} value={props.value} onChange={props.onChange} />
 		)
 	}
-	else if (props.field.type === 'options') {
+	else if (props.field.type === 'select') {
 		return (
 			<JSelect
-				label={props.field.label}
+				label={props.field.name}
 				tooltip={props.field.description ? {content: props.field.description} : undefined}
-				options={props.field.options.map(option => ({
-					text: option,
-					value: option
+				options={props.field.settings.options.map(option => ({
+					text: option.label,
+					value: option.value,
 				}))}
 				value={props.value || ''}
 				onChange={onChange}
@@ -39,7 +39,7 @@ export function CustomField(props: FieldProps) {
 	else if (props.field.type === 'markdown') {
 		return (
 			<>
-				<JLabel htmlFor='markdown' tooltip={props.field.description ? {content: props.field.description} : undefined}>{props.field.label}</JLabel>
+				<JLabel htmlFor='markdown' tooltip={props.field.description ? {content: props.field.description} : undefined}>{props.field.name}</JLabel>
 				<MarkdownEditor
 					id='markdown'
 					value={props.value || ''}
@@ -52,9 +52,8 @@ export function CustomField(props: FieldProps) {
 		return (
 			<JInput
 				type='checkbox'
-				label={props.field.label}
-				required={props.field.required}
-				placeholder={props.field.description}
+				label={props.field.name}
+				placeholder={props.field.description || undefined}
 				value={props.value || false}
 				onChange={onChange}
 			/>
@@ -64,9 +63,8 @@ export function CustomField(props: FieldProps) {
 		return (
 			<JInput
 				type='datetime-local'
-				label={props.field.label}
-				required={props.field.required}
-				placeholder={props.field.description}
+				label={props.field.name}
+				placeholder={props.field.description || undefined}
 				value={props.value || ''}
 				onChange={onChange}
 			/>
@@ -76,9 +74,8 @@ export function CustomField(props: FieldProps) {
 		return (
 			<JInput
 				type='date'
-				label={props.field.label}
-				required={props.field.required}
-				placeholder={props.field.description}
+				label={props.field.name}
+				placeholder={props.field.description || undefined}
 				value={props.value || ''}
 				onChange={onChange}
 			/>
@@ -88,9 +85,8 @@ export function CustomField(props: FieldProps) {
 		return (
 			<JInput
 				type='url'
-				label={props.field.label}
-				required={props.field.required}
-				placeholder={props.field.description}
+				label={props.field.name}
+				placeholder={props.field.description || undefined}
 				value={props.value || ''}
 				onChange={onChange}
 			/>
@@ -100,9 +96,8 @@ export function CustomField(props: FieldProps) {
 		return (
 			<JInput
 				type='number'
-				label={props.field.label}
-				required={props.field.required}
-				placeholder={props.field.description}
+				label={props.field.name}
+				placeholder={props.field.description || undefined}
 				value={props.value || 0}
 				onChange={onChange}
 			/>
@@ -111,9 +106,8 @@ export function CustomField(props: FieldProps) {
 	else if (props.field.type === 'textLong') {
 		return (
 			<JTextArea
-				label={props.field.label}
-				required={props.field.required}
-				placeholder={props.field.description}
+				label={props.field.name}
+				placeholder={props.field.description || undefined}
 				rows={4}
 				value={props.value || ''}
 				onChange={onChange}
@@ -123,9 +117,8 @@ export function CustomField(props: FieldProps) {
 	else {
 		return (
 			<JInput
-				label={props.field.label}
-				required={props.field.required}
-				placeholder={props.field.description}
+				label={props.field.name}
+				placeholder={props.field.description || undefined}
 				value={props.value || ''}
 				onChange={onChange}
 			/>

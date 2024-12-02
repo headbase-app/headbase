@@ -3,27 +3,25 @@ import {
 	JInput,
 	JErrorText,
 	JButtonGroup, JButton,
-	JForm, JFormContent, JFormRow, JMultiSelectOptionData, JMultiSelect, JSelect, JProse
+	JForm, JFormContent, JFormRow, JSelect, JProse
 } from "@ben-ryder/jigsaw-react";
-import { useContentQuery } from "@headbase-toolkit/react/use-content-query";
-import { LiveQueryStatus } from "@headbase-toolkit/control-flow";
 import { WithTabData } from "../../workspace/workspace";
 import {ContentFormData, ContentFormDataHandlers} from "./useContentFormData";
 
 import "./content-form.scss"
-import {useHeadbase} from "@headbase-toolkit/react/use-headbase";
 import {CustomField} from "./field";
-import {FieldDefinition} from "@headbase-toolkit/schemas/entities/fields/fields";
-import {EntityDto} from "@headbase-toolkit/schemas/common/entities";
+import {useHeadbase} from "../../../../logic/react/use-headbase.tsx";
+import {FieldDto} from "../../../../logic/schemas/fields/dtos.ts";
+import {FieldStorage} from "../../../../logic/schemas/common/field-storage.ts";
 
 export interface ContentFormProps extends WithTabData, ContentFormData, ContentFormDataHandlers {
-	fields?: string[]
+	fields?: FieldStorage
 	onSave: () => void;
 	onDelete?: () => void;
 }
 
 export interface ContentFormFields {
-	[key: string]: EntityDto<FieldDefinition>
+	[key: string]: FieldDto
 }
 
 // todo: handle situation where content form is open and content gets deleted?
@@ -32,20 +30,11 @@ export function ContentForm(props: ContentFormProps) {
 	const {headbase, currentDatabaseId} = useHeadbase()
 	const [error, setError] = useState<string | null>(null);
 
-	const tagQuery = useContentQuery(currentDatabaseId, {table: 'tags'})
-	const tagOptions: JMultiSelectOptionData[] = tagQuery.status === LiveQueryStatus.SUCCESS
-		? tagQuery.result.map(tag => ({
-			text: tag.data.name,
-			value: tag.id,
-			variant: tag.data.colourVariant
-		}))
-		: []
-
 	const [contentTypeFields, setContentTypeFields] = useState<ContentFormFields>({})
 	useEffect(() => {
 		if (!headbase || !currentDatabaseId || !props.fields) return
 
-		const contentQuery = headbase.tx.liveGetMany(currentDatabaseId, 'fields', props.fields)
+		const contentQuery = headbase.db.liveQueryFields()
 		const subscription = contentQuery.subscribe((liveQuery) => {
 			if (liveQuery.status === 'success') {
 				const fields: ContentFormFields = {}
@@ -77,14 +66,14 @@ export function ContentForm(props: ContentFormProps) {
 	}
 
 	const fields: ReactNode[] = []
-	for (const fieldId of props?.fields || []) {
+	for (const fieldId of props.fields ? Object.keys(props.fields) : []) {
 		const field = contentTypeFields[fieldId]
 		if (field) {
 			const fieldValue = props.fieldStorage[fieldId]?.value
 			fields.push(
 				<JFormRow>
-					<CustomField field={field.data} value={fieldValue} onChange={(newValue) => {
-						props.onFieldStorageChange(field.id, {type: field.data.type, value: newValue})
+					<CustomField field={field} value={fieldValue} onChange={(newValue) => {
+						props.onFieldStorageChange(field.id, {type: field.type, value: newValue})
 					}} />
 				</JFormRow>
 			)
@@ -127,23 +116,6 @@ export function ContentForm(props: ContentFormProps) {
 								value: 'yes'
 							}
 						]}
-					/>
-				</JFormRow>
-				<JFormRow>
-					<JMultiSelect
-						id="tags"
-						label="Tags"
-						options={tagOptions}
-						selectedOptions={
-							props.tags
-								? tagOptions.filter(option => props.tags.includes(option.value))
-								: []
-						}
-						setSelectedOptions={(tags) => {
-							props.onTagsChange(tags.map(option => option.value))
-						}}
-						searchText="search and select tags..."
-						noOptionsText="No Tags Found"
 					/>
 				</JFormRow>
 

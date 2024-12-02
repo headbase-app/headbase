@@ -1,8 +1,8 @@
 import React from "react";
 import { JDialog } from "@ben-ryder/jigsaw-react";
-import {createModalContext} from "../../../common/dialog/generic-dialog";
 
 import {ContentList} from "../../content-list/content-list";
+import {createModalContext} from "../../common/dialog/generic-dialog.tsx";
 
 export const {
 	context: SearchDialogContext,

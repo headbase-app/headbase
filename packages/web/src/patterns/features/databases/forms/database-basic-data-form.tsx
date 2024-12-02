@@ -8,7 +8,7 @@ import {
 import {Controller, useForm} from "react-hook-form";
 import {zodResolver} from "@hookform/resolvers/zod";
 import {z} from "zod";
-import {CreateDatabaseDto} from "@headbase-toolkit/schemas/database";
+import {CreateDatabaseDto} from "../../../../logic/schemas/database.ts";
 
 export const DatabaseBasicFields = CreateDatabaseDto.omit({password: true})
 export type DatabaseBasicFields = z.infer<typeof DatabaseBasicFields>
@@ -29,7 +29,7 @@ export function DatabaseBasicDataForm(props: DatabaseBasicDataFormProps) {
 		resolver: zodResolver(DatabaseBasicFields),
 		defaultValues: {
 			name: props.initialData?.name || '',
-			syncEnabled: props.initialData?.syncEnabled === undefined ? 1 : props.initialData.syncEnabled,
+			syncEnabled: props.initialData?.syncEnabled,
 		}
 	})
 
@@ -73,7 +73,7 @@ export function DatabaseBasicDataForm(props: DatabaseBasicDataFormProps) {
 							<JSelect
 								label="Sync Enabled?"
 								id="sync-enabled"
-								value={value === 1 ? 'yes' : 'no'}
+								value={value ? 'yes' : 'no'}
 								onChange={(e) => {
 									onChange(e.target.value === 'yes' ? 1 : 0);
 								}}

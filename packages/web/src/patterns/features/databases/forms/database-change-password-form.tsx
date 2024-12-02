@@ -8,7 +8,7 @@ import {
 import {Controller, useForm} from "react-hook-form";
 import {zodResolver} from "@hookform/resolvers/zod";
 import {z} from "zod";
-import {useHeadbase} from "@headbase-toolkit/react/use-headbase";
+import {useHeadbase} from "../../../../logic/react/use-headbase.tsx";
 
 
 const ChangePasswordFormSchema = z.object({

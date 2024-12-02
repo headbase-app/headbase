@@ -1,19 +1,16 @@
-import {LiveQueryStatus} from "@headbase-toolkit/control-flow";
 import {JButton} from "@ben-ryder/jigsaw-react";
 import {useWorkspaceContext} from "../../workspace/workspace-context";
 
 import "./new-content-menu.scss"
-import {useHeadbase} from "@headbase-toolkit/react/use-headbase";
-import {useContentQuery} from "@headbase-toolkit/react/use-content-query";
+import {useContentTypeQuery} from "../../../../logic/react/tables/use-type-query.tsx";
+import {LiveQueryStatus} from "../../../../logic/control-flow.ts";
 
 export interface NewContentMenuProps {
 	onOpen?: () => void
 }
 
 export function NewContentMenu(props: NewContentMenuProps) {
-	const { currentDatabaseId } = useHeadbase()
-
-	const contentTypesQuery = useContentQuery(currentDatabaseId, {table: 'content_types'})
+	const contentTypesQuery = useContentTypeQuery({filter: {isDeleted: false}})
 	const { openTab } = useWorkspaceContext()
 
 	return (
@@ -32,7 +29,7 @@ export function NewContentMenu(props: NewContentMenuProps) {
 															props.onOpen()
 														}
 													}}
-												>{type.data.name}</JButton></li>
+												>{type.name}</JButton></li>
 										)}
 									</ul>
 								)

@@ -1,19 +1,17 @@
-import { GenericManagerScreenProps } from "../../../../common/generic-manager/generic-manager";
-import { AdminList, AdminListItemProps } from "../../../../patterns/layout/admin-list/admin-list";
-import { LiveQueryStatus } from "@headbase-toolkit/control-flow";
-import {useHeadbase} from "@headbase-toolkit/react/use-headbase";
-import {useContentQuery} from "@headbase-toolkit/react/use-content-query";
+import {GenericManagerScreenProps} from "../../../common/generic-manager/generic-manager.tsx";
+import {useContentTypeQuery} from "../../../../../logic/react/tables/use-type-query.tsx";
+import {AdminList, AdminListItemProps} from "../../../../layout/admin-list/admin-list.tsx";
+import {LiveQueryStatus} from "../../../../../logic/control-flow.ts";
 
 
 export function ListContentTypesScreen(props: GenericManagerScreenProps) {
-	const {currentDatabaseId} = useHeadbase()
-	const contentTypes = useContentQuery(currentDatabaseId, {table: 'content_types'})
+	const contentTypes = useContentTypeQuery({filter: {isDeleted: false}})
 
 	const listItems: AdminListItemProps[] = contentTypes.status === LiveQueryStatus.SUCCESS
 		? contentTypes.result.map(contentType => ({
 			id: contentType.id,
-			title: contentType.data.name,
-			description: `desc: ${contentType.data.description} | entity: ${contentType.id} | version: ${contentType.versionId} | created: ${contentType.createdAt} | updated: ${contentType.updatedAt}`,
+			title: contentType.name,
+			description: `desc: ${contentType.description} | entity: ${contentType.id} | version: ${contentType.versionId} | created: ${contentType.createdAt} | updated: ${contentType.updatedAt}`,
 			navigate: props.navigate
 		}))
 		: []

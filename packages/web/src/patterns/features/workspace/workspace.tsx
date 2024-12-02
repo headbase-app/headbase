@@ -9,18 +9,16 @@ import {ContentListTab} from "../content-list/tab/content-list-tab";
 import {ViewEditTab} from "../views/tab/view-edit-tab";
 import {ViewListTab} from "../views-list/tab/view-list-tab";
 import {ViewTab} from "../views/tab/view-tab";
-import {WithMenuPanelProps} from "../../patterns/layout/menu-panel/menu-panel";
 import classNames from "classnames";
 import { ChevronLast as ExpandMenuIcon} from "lucide-react";
 import {JTooltip} from "@ben-ryder/jigsaw-react";
+import {WithMenuPanelProps} from "../../layout/menu-panel/menu-panel.tsx";
 
 export interface WithTabData {
 	tabIndex: number
 }
 
-interface WorkspaceProps extends WithMenuPanelProps {}
-
-export function Workspace(props: WorkspaceProps) {
+export function Workspace(props: WithMenuPanelProps) {
 	const {tabs, closeTab, setActiveTab, activeTab} = useWorkspaceContext()
 
 	const workspaceTabs: TabProps[] = []

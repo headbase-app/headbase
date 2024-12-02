@@ -5,7 +5,7 @@ import {useHeadbase} from "../use-headbase.tsx";
 import {ContentItemDto} from "../../schemas/content-items/dtos.ts";
 
 
-export function useItem(id: string) {
+export function useContentItem(id: string) {
 	const { headbase } = useHeadbase()
 	const [result, setResult] = useState<LiveQueryResult<ContentItemDto>>(LIVE_QUERY_LOADING_STATE)
 

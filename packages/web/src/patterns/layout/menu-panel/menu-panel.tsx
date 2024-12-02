@@ -16,19 +16,20 @@ import {MainPanelAction} from "./main-panel-action";
 
 import './menu-panel.scss'
 import { JIcon, JTooltip } from "@ben-ryder/jigsaw-react";
-import {useNewContentDialog} from "../../../features/new-content/new-content-dialog";
-import {useStatusDialog} from "../../../features/status/status-dialog";
-import {useSearchDialog} from "../../../features/search/dialog/search-dialog";
-import {useDataStructureDialog} from "../../../features/data-structure/data-structure-dialog";
-import { useViewsDialog } from "../../../features/views/dialog/views-dialog";
-import {useContentListDialog} from "../../../features/content-list/dialog/content-list-dialog";
-import {useHeadbase} from "@headbase-toolkit/react/use-headbase";
-import {useDatabaseManagerDialogContext} from "../../../features/databases/manager/database-manager-context";
 import classNames from "classnames";
-import {useAccountDialog} from "../../../features/account/account-dialog";
-import {useDatabase} from "@headbase-toolkit/react/use-database";
-import {LiveQueryStatus} from "@headbase-toolkit/control-flow";
 import {useEffect} from "react";
+import {useDatabaseManagerDialogContext} from "../../features/databases/manager/database-manager-context.tsx";
+import {useNewContentDialog} from "../../features/new-content/new-content-dialog.tsx";
+import {useStatusDialog} from "../../features/status/status-dialog.tsx";
+import {useSearchDialog} from "../../features/search/dialog/search-dialog.tsx";
+import {useDataStructureDialog} from "../../features/data-structure/data-structure-dialog.tsx";
+import {useViewsDialog} from "../../features/views/dialog/views-dialog.tsx";
+import {useContentListDialog} from "../../features/content-list/dialog/content-list-dialog.tsx";
+import {useAccountDialog} from "../../features/account/account-dialog.tsx";
+import {useHeadbase} from "../../../logic/react/use-headbase.tsx";
+import {useDatabase} from "../../../logic/react/databases/use-database.tsx";
+import {LiveQueryStatus} from "../../../logic/control-flow.ts";
+
 
 export interface WithMenuPanelProps {
 	isMenuPanelOpen: boolean

@@ -1,7 +1,7 @@
-import {createModalContext} from "../../common/dialog/generic-dialog";
 import React from "react";
 import {JDialog} from "@ben-ryder/jigsaw-react";
 import {NewContentMenu} from "./new-content-menu/new-content-menu";
+import {createModalContext} from "../common/dialog/generic-dialog.tsx";
 
 export const {
 	context: NewContentDialogContext,

@@ -1,12 +1,12 @@
 import {JButton, JCallout} from "@ben-ryder/jigsaw-react";
-import {useHeadbase} from "@headbase-toolkit/react/use-headbase";
-import {ErrorCallout} from "../../../patterns/components/error-callout/error-callout";
 import {useCallback} from "react";
 import {useWorkspaceContext} from "../../workspace/workspace-context";
 import {useDatabaseManagerDialogContext} from "../manager/database-manager-context";
-import { LiveQueryStatus } from "@headbase-toolkit/control-flow";
-import {useDatabases} from "@headbase-toolkit/react/use-databases";
-import {LocalDatabaseDto} from "@headbase-toolkit/schemas/database";
+import {useHeadbase} from "../../../../logic/react/use-headbase.tsx";
+import {useDatabases} from "../../../../logic/react/databases/use-databases.tsx";
+import {LocalDatabaseDto} from "../../../../logic/schemas/database.ts";
+import {LiveQueryStatus} from "../../../../logic/control-flow.ts";
+import {ErrorCallout} from "../../../components/error-callout/error-callout.tsx";
 
 export function DatabaseListScreen() {
 	const { setOpenTab, close } = useDatabaseManagerDialogContext()

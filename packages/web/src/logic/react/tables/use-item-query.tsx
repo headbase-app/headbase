@@ -6,7 +6,7 @@ import {GlobalListingOptions} from "../../../lib/headbase-core/database.ts";
 import {ContentItemDto} from "../../schemas/content-items/dtos.ts";
 
 
-export function useItemQuery(options?: GlobalListingOptions) {
+export function useContentItemQuery(options?: GlobalListingOptions) {
 	const { headbase } = useHeadbase()
 	const [result, setResult] = useState<LiveQueryResult<ContentItemDto[]>>(LIVE_QUERY_LOADING_STATE)
 

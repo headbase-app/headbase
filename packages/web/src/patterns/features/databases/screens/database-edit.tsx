@@ -1,11 +1,12 @@
 import {DatabaseBasicDataForm, DatabaseBasicFields} from "../forms/database-basic-data-form";
 import {useCallback} from "react";
-import {useHeadbase} from "@headbase-toolkit/react/use-headbase";
 import {JArrowButton, JButton} from "@ben-ryder/jigsaw-react";
-import { ErrorCallout } from "../../../patterns/components/error-callout/error-callout";
 import {useDatabaseManagerDialogContext} from "../manager/database-manager-context";
-import { LiveQueryStatus } from "@headbase-toolkit/control-flow";
-import {useDatabase} from "@headbase-toolkit/react/use-database";
+import {useHeadbase} from "../../../../logic/react/use-headbase.tsx";
+import {useDatabase} from "../../../../logic/react/databases/use-database.tsx";
+import {LiveQueryStatus} from "../../../../logic/control-flow.ts";
+import {ErrorCallout} from "../../../components/error-callout/error-callout.tsx";
+
 
 export interface DatabaseEditScreenProps {
 	databaseId: string

@@ -1,30 +1,17 @@
-import {ErrorCallout} from "../../patterns/components/error-callout/error-callout";
 import {useWorkspaceContext} from "../workspace/workspace-context";
-import {ContentCard} from "../../patterns/components/content-card/content-card";
-import {useHeadbase} from "@headbase-toolkit/react/use-headbase";
-import { LiveQueryStatus } from "@headbase-toolkit/control-flow";
-import {useContentQuery} from "@headbase-toolkit/react/use-content-query";
+import {useViewQuery} from "../../../logic/react/tables/use-view-query.tsx";
+import {LiveQueryStatus} from "../../../logic/control-flow.ts";
+import {ErrorCallout} from "../../components/error-callout/error-callout.tsx";
+import {ContentCard} from "../../components/content-card/content-card.tsx";
 
 export interface ViewListProps {
 	onOpen?: () => void
 }
 
 export function ViewList(props: ViewListProps) {
-	const {currentDatabaseId} = useHeadbase()
 	const { openTab } = useWorkspaceContext()
 
-	const contentQuery = useContentQuery(currentDatabaseId, {
-		table: 'views',
-		whereCursor: (localEntity, version) => {
-			return true
-		},
-		whereData: (entityDto) => {
-			return true
-		},
-		sort: (dtos) => {
-			return dtos
-		}
-	})
+	const contentQuery = useViewQuery({filter: {isDeleted: false}});
 
 	if (contentQuery.status === LiveQueryStatus.LOADING) {
 		return <p>Loading...</p>
@@ -42,8 +29,8 @@ export function ViewList(props: ViewListProps) {
 							<ContentCard
 								key={view.id}
 								id={view.id}
-								name={view.data.name}
-								description={view.data.description}
+								name={view.name}
+								description={view.description}
 								onSelect={() => {
 									openTab({type: "view", viewId: view.id})
 									if (props.onOpen) {
