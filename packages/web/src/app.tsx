@@ -1,5 +1,5 @@
 import React from "react";
-import { Router, Route } from "wouter";
+import {Router, Route, Switch} from "wouter";
 import { Helmet, HelmetProvider } from "react-helmet-async";
 
 import { routes } from "./routes";
@@ -8,8 +8,8 @@ import { MainPage } from "./pages/main/main";
 import { PageNotFound } from "./pages/page-not-found";
 import { WelcomePage } from "./pages/welcome";
 
-import "./styles/index.css"
 import "./app.scss"
+import "./styles/variables.css"
 
 export function App() {
 
@@ -58,11 +58,13 @@ export function App() {
 					<title>Headbase</title>
 				</Helmet>
 					{/* Basic Pages */}
+				<Switch>
 					<Route path={routes.main} component={MainPage} />
 					<Route path={routes.welcome} component={WelcomePage} />
 
 					{/* 404 Route */}
-					<Route path="*" component={PageNotFound} />
+					<Route component={PageNotFound} />
+				</Switch>
 			</HelmetProvider>
 		</Router>
 	);

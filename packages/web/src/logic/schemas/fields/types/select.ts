@@ -11,7 +11,7 @@ export const _SelectSettings = z.object({
 }).strict()
 
 export const SelectFieldData = BaseFieldData.extend({
-	type: z.literal(FIELDS.select.id),
+	type: z.literal(FIELDS.selectOne.id),
 	settings: _SelectSettings
 }).strict()
 export type SelectFieldData = z.infer<typeof SelectFieldData>
@@ -21,7 +21,7 @@ export type SelectValue = z.infer<typeof SelectValue>
 
 
 export const SelectMultipleFieldData = BaseFieldData.extend({
-	type: z.literal(FIELDS.selectMultiple.id),
+	type: z.literal(FIELDS.selectMany.id),
 	settings: _SelectSettings
 }).strict()
 export type SelectMultipleFieldData = z.infer<typeof SelectMultipleFieldData>

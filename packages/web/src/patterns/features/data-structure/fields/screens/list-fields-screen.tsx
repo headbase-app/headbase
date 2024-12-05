@@ -1,22 +1,19 @@
-import { GenericManagerScreenProps } from "../../../../common/generic-manager/generic-manager";
-import { AdminList, AdminListItemProps } from "../../../../patterns/layout/admin-list/admin-list";
-import { LiveQueryStatus } from "@headbase-toolkit/control-flow";
-import {useHeadbase} from "@headbase-toolkit/react/use-headbase";
-import {useContentQuery} from "@headbase-toolkit/react/use-content-query";
-import {FIELD_TYPES} from "@headbase-toolkit/schemas/entities/fields/field-types";
+import {GenericManagerScreenProps} from "../../../common/generic-manager/generic-manager.tsx";
+import {useFieldQuery} from "../../../../../logic/react/tables/use-field-query.tsx";
+import {AdminList, AdminListItemProps} from "../../../../layout/admin-list/admin-list.tsx";
+import {LiveQueryStatus} from "../../../../../logic/control-flow.ts";
+import {FIELDS} from "../../../../../logic/schemas/fields/types.ts";
 
 
 export function ListFieldsScreen(props: GenericManagerScreenProps) {
 
-	const { currentDatabaseId } = useHeadbase()
-
-	const fields = useContentQuery(currentDatabaseId, {table: 'fields'})
+	const fields = useFieldQuery({filter: {isDeleted: false}})
 
 	const listItems: AdminListItemProps[] = fields.status === LiveQueryStatus.SUCCESS
 		? fields.result.map(field => ({
 			id: field.id,
-			title: field.data.label,
-			description: `type: ${FIELD_TYPES[field.data.type].label} | entity: ${field.id} | version: ${field.versionId} | created: ${field.createdAt} | updated: ${field.updatedAt}`,
+			title: field.name,
+			description: `type: ${FIELDS[field.type].label} | entity: ${field.id} | version: ${field.versionId} | created: ${field.createdAt} | updated: ${field.updatedAt}`,
 			navigate: props.navigate
 		}))
 		: []

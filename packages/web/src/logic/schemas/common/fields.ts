@@ -16,12 +16,17 @@ export type NameField = z.infer<typeof NameField>
 export const DescriptionField = z.string()
 	.max(200, "description must be between 1 and 200 chars")
 	.nullable()
+	.optional()
 export type DescriptionField = z.infer<typeof DescriptionField>
 
-export const ColourField = z.enum(JColourVariantsList).nullable();
+export const ColourField = z.enum(JColourVariantsList)
+	.nullable()
+	.optional();
 export type ColourField = z.infer<typeof ColourField>;
 
-export const IconField = z.string().nullable()
+export const IconField = z.string()
+	.nullable()
+	.optional()
 export type IconField = z.infer<typeof IconField>;
 
 export const BooleanField = z.boolean()

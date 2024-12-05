@@ -73,7 +73,7 @@ export function ContentTypeForm(props: GenericFormProps<ContentTypeData>) {
 			colour,
 			templateName,
 			templateFields
-		} as ContentTypeData)
+		})
 		if (!parseResult.success) {
 			console.error(parseResult.error)
 			return
@@ -94,7 +94,7 @@ export function ContentTypeForm(props: GenericFormProps<ContentTypeData>) {
 				>Back</JArrowButton>
 			</div>
 			<div className="tag-form__header">
-				<h2>{props.title}</h2>
+				<h2>{props.data.name}</h2>
 				{errors.length > 0 && <ErrorCallout errors={errors} />}
 			</div>
 			<JFormContent>

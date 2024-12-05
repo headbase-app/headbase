@@ -1,17 +1,16 @@
 import React, {ReactNode, useState} from "react";
-import { ErrorCallout } from "../../../../patterns/components/error-callout/error-callout";
-import {ErrorTypes} from "@headbase-toolkit/control-flow";
-import {
-	GenericManagerScreenProps
-} from "../../../../common/generic-manager/generic-manager";
 import {BasicFieldForm} from "../forms/basic-field-form";
-import {useHeadbase} from "@headbase-toolkit/react/use-headbase";
 import { JArrowButton, JButton } from "@ben-ryder/jigsaw-react";
 import {MarkdownFieldForm} from "../forms/markdown-field-form";
 import { ScaleFieldForm } from "../forms/scale-field-form";
 import { OptionsFieldForm } from "../forms/options-field-form";
-import {FIELD_TYPES, FieldTypes} from "@headbase-toolkit/schemas/entities/fields/field-types";
-import {FieldDefinition} from "@headbase-toolkit/schemas/entities/fields/fields";
+import {GenericManagerScreenProps} from "../../../common/generic-manager/generic-manager.tsx";
+import {useHeadbase} from "../../../../../logic/react/use-headbase.tsx";
+import {FIELDS, FieldTypes} from "../../../../../logic/schemas/fields/types.ts";
+import {ErrorTypes} from "../../../../../logic/control-flow.ts";
+import {ErrorCallout} from "../../../../components/error-callout/error-callout.tsx";
+import {FieldData} from "../../../../../logic/schemas/fields/dtos.ts";
+
 
 export function CreateFieldScreen(props: GenericManagerScreenProps) {
 	const [errors, setErrors] = useState<unknown[]>([])
@@ -19,14 +18,18 @@ export function CreateFieldScreen(props: GenericManagerScreenProps) {
 
 	const [fieldType, setFieldType] = useState<FieldTypes|null>(null);
 
-	async function onSave(data: FieldDefinition) {
+	async function onSave(data: FieldData) {
 		if (!currentDatabaseId || !headbase) return setErrors([{type: ErrorTypes.NO_CURRENT_DATABASE}])
 
 		try {
-			await headbase.tx.create(currentDatabaseId, 'fields', data)
+			await headbase.db.createField({
+				...data,
+				createdBy: 'todo',
+			})
 			props.navigate({screen: "list"})
 		}
 		catch (e) {
+			console.error(e)
 			setErrors([e])
 		}
 	}
@@ -46,19 +49,28 @@ export function CreateFieldScreen(props: GenericManagerScreenProps) {
 					<JButton onClick={() => {setFieldType('textShort')}}>Short Text</JButton>
 					<JButton onClick={() => {setFieldType('textLong')}}>Long Text</JButton>
 					<JButton onClick={() => {setFieldType('markdown')}}>Markdown</JButton>
-				</div>
-				<div>
-					<JButton onClick={() => {setFieldType('options')}}>Options</JButton>
 					<JButton onClick={() => {setFieldType('url')}}>URL</JButton>
-				</div>
-				<div>
-					<JButton onClick={() => {setFieldType('number')}}>Number</JButton>
-					<JButton onClick={() => {setFieldType('scale')}}>Scale</JButton>
+					<JButton onClick={() => {setFieldType('email')}}>Email</JButton>
+					<JButton onClick={() => {setFieldType('colour')}}>Colour</JButton>
+					<JButton onClick={() => {setFieldType('phone')}}>Phone</JButton>
 					<JButton onClick={() => {setFieldType('boolean')}}>Boolean</JButton>
-				</div>
-				<div>
+					<JButton onClick={() => {setFieldType('number')}}>Number</JButton>
 					<JButton onClick={() => {setFieldType('date')}}>Date</JButton>
 					<JButton onClick={() => {setFieldType('timestamp')}}>Timestamp</JButton>
+				</div>
+				<div>
+					<JButton onClick={() => {setFieldType('referenceOne')}}>Reference (one)</JButton>
+					<JButton onClick={() => {setFieldType('referenceMany')}}>Reference (many)</JButton>
+				</div>
+				<div>
+					<JButton onClick={() => {setFieldType('selectOne')}}>Select (one)</JButton>
+					<JButton onClick={() => {setFieldType('selectMany')}}>Select (many)</JButton>
+				</div>
+				<div>
+					<JButton onClick={() => {setFieldType('scale')}}>Scale</JButton>
+					<JButton onClick={() => {setFieldType('point')}}>Point</JButton>
+					<JButton onClick={() => {setFieldType('files')}}>Files</JButton>
+					<JButton onClick={() => {setFieldType('images')}}>Images</JButton>
 				</div>
 			</div>
 		)
@@ -68,21 +80,23 @@ export function CreateFieldScreen(props: GenericManagerScreenProps) {
 	if (fieldType === 'markdown') {
 		createForm = (
 			<MarkdownFieldForm
-				data={{type: "markdown", label: "", lines: 3, required: false}}
+				data={{type: 'markdown', name: '', description: null, icon: null, settings: {defaultLines: 5}}}
 				onSave={onSave}
 				navigate={props.navigate}
 			/>
 		)
 	}
-	else if (fieldType === 'options') {
+	else if (fieldType === 'selectOne') {
 		createForm = (
 			<OptionsFieldForm
 				data={{
-					type: "options",
-					label: "",
-					required: false,
-					description: "",
-					options: []
+					type: "selectOne",
+					name: "",
+					description: null,
+					icon: null,
+					settings: {
+						options: []
+					}
 				}}
 				onSave={onSave}
 				navigate={props.navigate}
@@ -94,21 +108,36 @@ export function CreateFieldScreen(props: GenericManagerScreenProps) {
 			<ScaleFieldForm
 				data={{
 					type: "scale",
-					label: "",
-					required: false,
-					minLabel: "",
-					maxLabel: "",
-					scale: 5,
+					name: "",
+					description: null,
+					icon: null,
+					settings: {
+						scale: 5,
+						minLabel: "",
+						maxLabel: "",
+					}
 				}}
 				onSave={onSave}
 				navigate={props.navigate}
 			/>
 		)
 	}
+	else if (
+		fieldType === 'referenceOne' ||
+		fieldType === 'referenceMany' ||
+		fieldType === 'selectMany' ||
+		fieldType === 'point' ||
+		fieldType === 'files' ||
+		fieldType === 'images'
+	) {
+		createForm = (
+			<p>Field not supported yet</p>
+		)
+	}
 	else {
 		createForm = (
 			<BasicFieldForm
-				data={{ label: "", type: fieldType, required: false }}
+				data={{ type: fieldType, name: "", description: null, icon: null }}
 				onSave={onSave}
 				navigate={props.navigate}
 			/>
@@ -123,7 +152,7 @@ export function CreateFieldScreen(props: GenericManagerScreenProps) {
 				}}
 				direction="left"
 			>Back</JArrowButton>
-			<h2>{`Create ${FIELD_TYPES[fieldType].label} Field`}</h2>
+			<h2>{`Create ${FIELDS[fieldType].label} Field`}</h2>
 			<div>
 				{errors.length > 0 && <ErrorCallout errors={errors} />}
 			</div>

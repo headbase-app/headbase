@@ -14,6 +14,55 @@ import {ReferenceManyFieldData, ReferenceOneFieldData} from "./types/references.
 import {SelectFieldData, SelectMultipleFieldData} from "./types/select.ts";
 import {FilesFieldData, ImagesFieldData, PointFieldData, ScaleFieldData} from "./types/special.ts";
 
+export const FieldData = z.union([
+	// Basics
+	TextShortFieldData,
+	TextLongFieldData,
+	MarkdownFieldData,
+	URLFieldData,
+	EmailFieldData,
+	ColourFieldData,
+	PhoneFieldData,
+	BooleanFieldData,
+	NumberFieldData,
+	DateFieldData,
+	TimestampFieldData,
+	// References
+	ReferenceOneFieldData,
+	ReferenceManyFieldData,
+	// Select
+	SelectFieldData,
+	SelectMultipleFieldData,
+	// Special
+	ScaleFieldData,
+	PointFieldData,
+	FilesFieldData,
+	ImagesFieldData
+])
+export type FieldData =
+	// Basics
+	TextShortFieldData |
+	TextLongFieldData |
+	MarkdownFieldData |
+	URLFieldData |
+	EmailFieldData |
+	ColourFieldData |
+	PhoneFieldData |
+	BooleanFieldData |
+	NumberFieldData |
+	DateFieldData |
+	TimestampFieldData |
+	// References
+	ReferenceOneFieldData |
+	ReferenceManyFieldData |
+	// Select
+	SelectFieldData |
+	SelectMultipleFieldData |
+	// Special
+	ScaleFieldData |
+	PointFieldData |
+	FilesFieldData |
+	ImagesFieldData
 
 export const CreateFieldDto = z.union([
 	// Basics

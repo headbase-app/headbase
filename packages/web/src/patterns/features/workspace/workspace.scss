@@ -51,7 +51,7 @@
   }
 
   &:hover {
-    background: var(--j-c-atom-200);
+    background: var(--j-c-atom-100);
   }
 
   &--active {
@@ -107,11 +107,20 @@
   overflow-x: scroll;
   min-height: 49px;
   scrollbar-width: none;
-  border-bottom: var(--j-border-width-md) solid var(--j-c-background-f2);
+  background: var(--j-c-background-f1);
+  border-bottom: var(--j-border-width-sm) solid var(--j-c-blueGrey-900);
 }
 
 .workspace-area {
   max-height: calc(100vh - 50px);
   overflow-y: scroll;
   scrollbar-width: none;
+}
+
+.workspace-empty-content {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
 }

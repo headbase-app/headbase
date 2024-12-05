@@ -255,7 +255,7 @@ export class Database {
 		await this.#ensureInit()
 		console.debug(`[database] running get field: ${entityId}`)
 
-		return this.#database
+		const results = await this.#database
 			.select({
 				id: fields.id,
 				createdAt: fields.createdAt,
@@ -278,7 +278,13 @@ export class Database {
 					eq(fields.currentVersionId, fieldsVersions.id)
 				)
 			)
-			.orderBy(desc(fieldsVersions.createdAt)) as unknown as FieldDto;
+			.orderBy(desc(fieldsVersions.createdAt));
+
+		if (!results[0]) {
+			throw new HeadbaseError({type: ErrorTypes.ENTITY_NOT_FOUND})
+		}
+
+		return results[0] as unknown as FieldDto
 	}
 
 	async queryFields(options?: GlobalListingOptions): Promise<FieldDto[]> {
@@ -660,7 +666,7 @@ export class Database {
 	async getType(entityId: string): Promise<ContentTypeDto> {
 		await this.#ensureInit()
 
-		return this.#database
+		const results = await this.#database
 			.select({
 				id: contentTypes.id,
 				createdAt: contentTypes.createdAt,
@@ -685,7 +691,13 @@ export class Database {
 					eq(contentTypes.currentVersionId, contentTypesVersions.id)
 				)
 			)
-			.orderBy(desc(contentTypesVersions.createdAt)) as unknown as ContentTypeDto;
+			.orderBy(desc(contentTypesVersions.createdAt))
+
+		if (!results[0]) {
+			throw new HeadbaseError({type: ErrorTypes.ENTITY_NOT_FOUND})
+		}
+
+		return results[0] as unknown as ContentTypeDto;
 	}
 
 	async queryTypes(options?: GlobalListingOptions): Promise<ContentTypeDto[]> {
@@ -1064,7 +1076,7 @@ export class Database {
 	async getItem(entityId: string): Promise<ContentItemDto> {
 		await this.#ensureInit()
 
-		return this.#database
+		const results = await this.#database
 			.select({
 				id: contentItems.id,
 				createdAt: contentItems.createdAt,
@@ -1087,7 +1099,13 @@ export class Database {
 					eq(contentItems.currentVersionId, contentItemsVersions.id)
 				)
 			)
-			.orderBy(desc(contentItemsVersions.createdAt)) as unknown as ContentItemDto;
+			.orderBy(desc(contentItemsVersions.createdAt));
+
+		if (!results[0]) {
+			throw new HeadbaseError({type: ErrorTypes.ENTITY_NOT_FOUND})
+		}
+
+		return results[0] as unknown as ContentItemDto;
 	}
 
 	async queryItems(options?: GlobalListingOptions): Promise<ContentItemDto[]> {
@@ -1464,7 +1482,7 @@ export class Database {
 	async getView(entityId: string): Promise<ViewDto> {
 		await this.#ensureInit()
 
-		return this.#database
+		const results = await this.#database
 			.select({
 				id: views.id,
 				createdAt: views.createdAt,
@@ -1490,7 +1508,13 @@ export class Database {
 					eq(views.currentVersionId, viewsVersions.id)
 				)
 			)
-			.orderBy(desc(viewsVersions.createdAt)) as unknown as ViewDto;
+			.orderBy(desc(viewsVersions.createdAt))
+
+		if (!results[0]) {
+			throw new HeadbaseError({type: ErrorTypes.ENTITY_NOT_FOUND})
+		}
+
+		return results[0] as unknown as ViewDto;
 	}
 
 	async queryViews(options?: GlobalListingOptions): Promise<ViewDto[]> {

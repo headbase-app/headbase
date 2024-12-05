@@ -7,7 +7,7 @@ const DatabaseStore = new Map<string, SQLite3Database>();
 function getSqliteFactory() {
 	let sqlite: SQLite3 | null = null;
 
-	return () => {
+	return async () => {
 		if (sqlite) {
 			return sqlite
 		}
@@ -38,7 +38,7 @@ function getSqliteFactory() {
 	console.debug('[worker] onmessage register')
 	self.onmessage = async function (messageEvent: MessageEvent<ClientMessages>) {
 		const getSqlite3 = getSqliteFactory()
-		const sqlite3 = getSqlite3()
+		const sqlite3 = await getSqlite3()
 
 		if (messageEvent.data.type === 'open') {
 			const db = new sqlite3.oo1.OpfsDb({

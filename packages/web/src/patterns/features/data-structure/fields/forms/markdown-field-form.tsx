@@ -1,27 +1,26 @@
 import {
 	JInput, JButtonGroup, JButton, JForm, JFormContent, JFormRow, JErrorText, JTextArea
 } from "@ben-ryder/jigsaw-react";
-import {GenericFormProps} from "../../../../common/generic-form/generic-form";
-import {FieldMarkdown} from "@headbase-toolkit/schemas/entities/fields/fields";
 import {Controller, useForm} from "react-hook-form";
 import {zodResolver} from "@hookform/resolvers/zod";
+import {GenericFormProps} from "../../../common/generic-form/generic-form.tsx";
+import {MarkdownFieldData} from "../../../../../logic/schemas/fields/types/basic.ts";
 
-export interface MarkdownFieldFormProps extends Omit<GenericFormProps<FieldMarkdown>, 'title'> {}
 
-export function MarkdownFieldForm(props: MarkdownFieldFormProps) {
+export function MarkdownFieldForm(props: GenericFormProps<MarkdownFieldData>) {
 
-	function onSave(data: FieldMarkdown) {
+	function onSave(data: MarkdownFieldData) {
 		props.onSave(data)
 	}
 
-	const {handleSubmit, control, register, formState: {errors}, setValue, setError } = useForm<FieldMarkdown>({
-		resolver: zodResolver(FieldMarkdown),
+	const {handleSubmit, control, register, formState: {errors}, setValue, setError } = useForm<MarkdownFieldData>({
+		resolver: zodResolver(MarkdownFieldData),
 		defaultValues: {
 			type: 'markdown',
-			label: props.data.label || "",
-			description: props.data.description || "",
-			required: props.data.required || false,
-			lines: props.data.lines || 3,
+			name: props.data.name || "",
+			description: props.data.description || null,
+			icon: props.data.icon || null,
+			settings: props.data.settings || {defaultLines: 5}
 		}
 	})
 
@@ -33,15 +32,15 @@ export function MarkdownFieldForm(props: MarkdownFieldFormProps) {
 				<JFormRow>
 					<Controller
 						control={control}
-						name='label'
+						name='name'
 						render={({field}) => (
 							<JInput
 								{...field}
-								label="Label"
-								id="label"
+								label="Name"
+								id="name"
 								type="text"
-								placeholder="a field label..."
-								error={errors.label?.message}
+								placeholder="a field name..."
+								error={errors.name?.message}
 								required={true}
 							/>
 						)}
@@ -54,6 +53,7 @@ export function MarkdownFieldForm(props: MarkdownFieldFormProps) {
 						render={({field}) => (
 							<JTextArea
 								{...field}
+								value={field.value ?? ""}
 								label="Tooltip"
 								id="description"
 								placeholder="a breif description of your field..."
@@ -62,59 +62,36 @@ export function MarkdownFieldForm(props: MarkdownFieldFormProps) {
 						)}
 					/>
 				</JFormRow>
-				<JFormRow>
-					<Controller
-						control={control}
-						name='required'
-						render={({field}) => (
-							<JInput
-								ref={field.ref}
-								name={field.name}
-								checked={field.value}
-								onChange={() => {
-									setValue('required', !field.value)
-								}}
-								onBlur={field.onBlur}
-								disabled={field.disabled}
-								label="Is Required?"
-								id="required"
-								type="checkbox"
-								placeholder="You should be required to fill in this field"
-								error={errors.required?.message}
-							/>
-						)}
-					/>
-				</JFormRow>
-				<JFormRow>
-					<Controller
-						control={control}
-						name='lines'
-						render={({field}) => (
-							<JInput
-								name={field.name}
-								ref={field.ref}
-								disabled={field.disabled}
-								value={field.value}
-								onChange={(e) => {
-									try {
-										const newValue = parseInt(e.target.value)
-										field.onChange(newValue)
-									}
-									catch (e) {
-										setError('lines', {message: 'Lines must be an integer'})
-									}
-								}}
-								onBlur={field.onBlur}
-								label="Lines"
-								id="lins"
-								type="number"
-								// todo: add native min/max attributes?
-								placeholder="number of lines to display the field at..."
-								error={errors.lines?.message}
-							/>
-						)}
-					/>
-				</JFormRow>
+				{/*<JFormRow>*/}
+				{/*	<Controller*/}
+				{/*		control={control}*/}
+				{/*		name='lines'*/}
+				{/*		render={({field}) => (*/}
+				{/*			<JInput*/}
+				{/*				name={field.name}*/}
+				{/*				ref={field.ref}*/}
+				{/*				disabled={field.disabled}*/}
+				{/*				value={field.value}*/}
+				{/*				onChange={(e) => {*/}
+				{/*					try {*/}
+				{/*						const newValue = parseInt(e.target.value)*/}
+				{/*						field.onChange(newValue)*/}
+				{/*					}*/}
+				{/*					catch (e) {*/}
+				{/*						setError('lines', {message: 'Lines must be an integer'})*/}
+				{/*					}*/}
+				{/*				}}*/}
+				{/*				onBlur={field.onBlur}*/}
+				{/*				label="Lines"*/}
+				{/*				id="lins"*/}
+				{/*				type="number"*/}
+				{/*				// todo: add native min/max attributes?*/}
+				{/*				placeholder="number of lines to display the field at..."*/}
+				{/*				error={errors.lines?.message}*/}
+				{/*			/>*/}
+				{/*		)}*/}
+				{/*	/>*/}
+				{/*</JFormRow>*/}
 			</JFormContent>
 
 			<JFormRow>

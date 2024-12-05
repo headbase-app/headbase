@@ -11,8 +11,9 @@ import {ViewListTab} from "../views-list/tab/view-list-tab";
 import {ViewTab} from "../views/tab/view-tab";
 import classNames from "classnames";
 import { ChevronLast as ExpandMenuIcon} from "lucide-react";
-import {JTooltip} from "@ben-ryder/jigsaw-react";
+import {JProse, JTooltip} from "@ben-ryder/jigsaw-react";
 import {WithMenuPanelProps} from "../../layout/menu-panel/menu-panel.tsx";
+import {NewContentMenu} from "../new-content/new-content-menu/new-content-menu.tsx";
 
 export interface WithTabData {
 	tabIndex: number
@@ -87,23 +88,31 @@ export function Workspace(props: WithMenuPanelProps) {
 					><ExpandMenuIcon size={24}/></button>
 				</JTooltip>
 			)}
-			<div className='workspace-tabs'>
-				<ul className='workspace-tabs__list'>
-					{workspaceTabs.map((tab, tabIndex) => (
-						<li className='workspace-tabs__list-item' key={tabIndex}>
-							<Tab {...tab} />
-						</li>
-					))}
-				</ul>
-			</div>
-			<div className='workspace-area'>
-				<div>
-					{workspaceContent.map((tabContent, tabIndex) => (
-						<div key={tabIndex} style={{display: activeTab === tabIndex ? 'block' : 'none'}}>
-							{tabContent}
-						</div>
-					))}
+			{workspaceTabs.length > 0 && (
+				<div className='workspace-tabs'>
+					<ul className='workspace-tabs__list'>
+						{workspaceTabs.map((tab, tabIndex) => (
+							<li className='workspace-tabs__list-item' key={tabIndex}>
+								<Tab {...tab} />
+							</li>
+						))}
+					</ul>
 				</div>
+			)}
+			<div className='workspace-area'>
+				{workspaceContent.map((tabContent, tabIndex) => (
+					<div key={tabIndex} style={{display: activeTab === tabIndex ? 'block' : 'none'}}>
+						{tabContent}
+					</div>
+				))}
+				{workspaceContent.length === 0 && (
+					<div className='workspace-empty-content'>
+						<JProse>
+							<p>Add new content</p>
+						</JProse>
+						<NewContentMenu />
+					</div>
+				)}
 			</div>
 		</div>
 	)

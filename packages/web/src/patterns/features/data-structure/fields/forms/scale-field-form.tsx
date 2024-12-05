@@ -1,29 +1,25 @@
 import {
 	JInput, JButtonGroup, JButton, JForm, JFormContent, JFormRow, JErrorText, JTextArea, JProse
 } from "@ben-ryder/jigsaw-react";
-import {GenericFormProps} from "../../../../common/generic-form/generic-form";
 import {Controller, useForm} from "react-hook-form";
 import {zodResolver} from "@hookform/resolvers/zod";
-import {FieldScale} from "@headbase-toolkit/schemas/entities/fields/fields";
+import {GenericFormProps} from "../../../common/generic-form/generic-form.tsx";
+import {ScaleFieldData} from "../../../../../logic/schemas/fields/types/special.ts";
 
-export interface ScaleFieldFormProps extends Omit<GenericFormProps<FieldScale>, 'title'> {}
 
-export function ScaleFieldForm(props: ScaleFieldFormProps) {
+export function ScaleFieldForm(props: GenericFormProps<ScaleFieldData>) {
 
-	function onSave(data: FieldScale) {
+	function onSave(data: ScaleFieldData) {
 		props.onSave(data)
 	}
 
-	const {handleSubmit, control, register, formState: {errors}, setValue, setError } = useForm<FieldScale>({
-		resolver: zodResolver(FieldScale),
+	const {handleSubmit, control, register, formState: {errors}, setValue, setError } = useForm<ScaleFieldData>({
+		resolver: zodResolver(ScaleFieldData),
 		defaultValues: {
 			type: 'scale',
-			label: props.data.label || "",
+			name: props.data.name || "",
 			description: props.data.description || "",
-			required: props.data.required || false,
-			scale: props.data.scale || 5,
-			minLabel: props.data.minLabel || "",
-			maxLabel: props.data.maxLabel || "",
+			settings: props.data.settings
 		}
 	})
 
@@ -35,15 +31,15 @@ export function ScaleFieldForm(props: ScaleFieldFormProps) {
 				<JFormRow>
 					<Controller
 						control={control}
-						name='label'
+						name='name'
 						render={({field}) => (
 							<JInput
 								{...field}
 								label="Label"
-								id="label"
+								id="name"
 								type="text"
 								placeholder="a field label..."
-								error={errors.label?.message}
+								error={errors.name?.message}
 								required={true}
 							/>
 						)}
@@ -56,33 +52,11 @@ export function ScaleFieldForm(props: ScaleFieldFormProps) {
 						render={({field}) => (
 							<JTextArea
 								{...field}
+								value={field.value ?? ""}
 								label="Tooltip"
 								id="description"
 								placeholder="a breif description of your field..."
 								error={errors.description?.message}
-							/>
-						)}
-					/>
-				</JFormRow>
-				<JFormRow>
-					<Controller
-						control={control}
-						name='required'
-						render={({field}) => (
-							<JInput
-								ref={field.ref}
-								name={field.name}
-								checked={field.value}
-								onChange={() => {
-									setValue('required', !field.value)
-								}}
-								onBlur={field.onBlur}
-								disabled={field.disabled}
-								label="Is Required?"
-								id="required"
-								type="checkbox"
-								placeholder="You should be required to fill in this field"
-								error={errors.required?.message}
 							/>
 						)}
 					/>
@@ -94,7 +68,7 @@ export function ScaleFieldForm(props: ScaleFieldFormProps) {
 				<JFormRow>
 					<Controller
 						control={control}
-						name='scale'
+						name='settings.scale'
 						render={({field}) => (
 							<JInput
 								name={field.name}
@@ -107,7 +81,7 @@ export function ScaleFieldForm(props: ScaleFieldFormProps) {
 										field.onChange(newValue)
 									}
 									catch (e) {
-										setError('scale', {message: 'scale must be an integer'})
+										setError('settings.scale', {message: 'scale must be an integer'})
 									}
 								}}
 								onBlur={field.onBlur}
@@ -116,7 +90,7 @@ export function ScaleFieldForm(props: ScaleFieldFormProps) {
 								type="number"
 								// todo: add native min/max attributes?
 								placeholder="number of lines to display the field at..."
-								error={errors.scale?.message}
+								error={errors.settings?.scale?.message}
 							/>
 						)}
 					/>
@@ -124,7 +98,7 @@ export function ScaleFieldForm(props: ScaleFieldFormProps) {
 				<JFormRow>
 					<Controller
 						control={control}
-						name='minLabel'
+						name='settings.minLabel'
 						render={({field}) => (
 							<JInput
 								{...field}
@@ -132,7 +106,7 @@ export function ScaleFieldForm(props: ScaleFieldFormProps) {
 								id="min-label"
 								type="text"
 								placeholder="the label to display at the minimum of the scale..."
-								error={errors.minLabel?.message}
+								error={errors.settings?.minLabel?.message}
 								required={true}
 							/>
 						)}
@@ -141,7 +115,7 @@ export function ScaleFieldForm(props: ScaleFieldFormProps) {
 				<JFormRow>
 					<Controller
 						control={control}
-						name='maxLabel'
+						name='settings.maxLabel'
 						render={({field}) => (
 							<JInput
 								{...field}
@@ -149,7 +123,7 @@ export function ScaleFieldForm(props: ScaleFieldFormProps) {
 								id="max-label"
 								type="text"
 								placeholder="the label to display at the maximum of the scale..."
-								error={errors.maxLabel?.message}
+								error={errors.settings?.maxLabel?.message}
 								required={true}
 							/>
 						)}

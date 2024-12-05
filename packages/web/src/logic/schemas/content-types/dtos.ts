@@ -8,7 +8,10 @@ export const ContentTypeData = z.object({
 	icon: IconField,
 	colour: ColourField,
 	description: DescriptionField,
-	templateName: NameField,
+	// todo: add max/min string length?
+	templateName: z.string()
+		.nullable()
+		.optional(),
 	templateFields: FieldStorage
 })
 export type ContentTypeData = z.infer<typeof ContentTypeData>

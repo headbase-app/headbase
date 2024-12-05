@@ -1,8 +1,9 @@
 import { useState } from "react";
-import { GenericManagerScreens } from "../../../common/generic-manager/generic-manager";
 import { ListFieldsScreen } from "./screens/list-fields-screen";
 import {CreateFieldScreen} from "./screens/create-field-screen";
 import { EditFieldScreen } from "./screens/edit-field-screen";
+import {GenericManagerScreens} from "../../common/generic-manager/generic-manager.tsx";
+
 
 export function FieldsManager() {
 	const [currentScreen, navigate] = useState<GenericManagerScreens>({screen: "list"})

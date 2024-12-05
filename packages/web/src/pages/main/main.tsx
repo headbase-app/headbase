@@ -1,18 +1,27 @@
 import React, {useState} from "react";
 
 import "./main.scss"
-import {WorkspaceContextProvider} from "../../features/workspace/workspace-context";
-import {Workspace} from "../../features/workspace/workspace";
 import {MenuPanel} from "../../patterns/layout/menu-panel/menu-panel";
-import {NewContentDialog, NewContentDialogProvider} from "../../features/new-content/new-content-dialog";
-import {StatusDialog, StatusDialogProvider} from "../../features/status/status-dialog";
-import {SearchDialog, SearchDialogProvider} from "../../features/search/dialog/search-dialog";
-import {DataStructureDialog, DataStructureDialogProvider} from "../../features/data-structure/data-structure-dialog";
-import { ViewsDialog, ViewsDialogProvider } from "../../features/views/dialog/views-dialog";
-import {ContentListDialog, ContentListDialogProvider} from "../../features/content-list/dialog/content-list-dialog";
-import {DatabaseManagerDialog, DatabaseManagerDialogProvider} from "../../features/databases/manager/database-manager";
-import {AccountDialog, AccountDialogProvider} from "../../features/account/account-dialog";
-import {HeadbaseContextProvider} from "@headbase-toolkit/react/use-headbase";
+import { HeadbaseContextProvider } from "../../logic/react/use-headbase";
+import {WorkspaceContextProvider} from "../../patterns/features/workspace/workspace-context.tsx";
+import {
+	DatabaseManagerDialog,
+	DatabaseManagerDialogProvider
+} from "../../patterns/features/databases/manager/database-manager.tsx";
+import {NewContentDialog, NewContentDialogProvider} from "../../patterns/features/new-content/new-content-dialog.tsx";
+import {StatusDialog, StatusDialogProvider} from "../../patterns/features/status/status-dialog.tsx";
+import {SearchDialog, SearchDialogProvider} from "../../patterns/features/search/dialog/search-dialog.tsx";
+import {
+	DataStructureDialog,
+	DataStructureDialogProvider
+} from "../../patterns/features/data-structure/data-structure-dialog.tsx";
+import {ViewsDialog, ViewsDialogProvider} from "../../patterns/features/views/dialog/views-dialog.tsx";
+import {
+	ContentListDialog,
+	ContentListDialogProvider
+} from "../../patterns/features/content-list/dialog/content-list-dialog.tsx";
+import {AccountDialog, AccountDialogProvider} from "../../patterns/features/account/account-dialog.tsx";
+import {Workspace} from "../../patterns/features/workspace/workspace.tsx";
 
 
 export function MainPage() {

@@ -1,6 +1,6 @@
 
 import {
-	CloudDownload as StatusDownloadIcon,
+	CircleCheck as StatusIcon,
 	PlusSquare as NewContentIcon,
 	Search as SearchIcon,
 	List as AllContentIcon,
@@ -86,14 +86,14 @@ export function MenuPanel(props: WithMenuPanelProps) {
 						{currentDatabase && <JIcon><DownArrowIcon width={2} /></JIcon>}
 					</button>
 				</JTooltip>
-				<JTooltip content='Database status' renderAsChild={true} variant='dark'>
+				<JTooltip content='App status' renderAsChild={true} variant='dark'>
 					<button
 						aria-label='Database status'
 						className="menu-panel__status"
 						onClick={() => {
 							setStatusDialogOpen(true);
 						}}
-					><JIcon><StatusDownloadIcon /></JIcon></button>
+					><JIcon><StatusIcon /></JIcon></button>
 				</JTooltip>
 				<JTooltip content='Create content' renderAsChild={true} variant='dark'>
 					<button

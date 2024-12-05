@@ -67,7 +67,6 @@ export function AdminListItem(props: AdminListItemProps) {
         </div>
 			}
 			<div className="admin-list-item__actions">
-				<JButton variant="destructive" onClick={() => {props.navigate({screen: "edit", id: props.id})}}>Delete</JButton>
 				<JButton onClick={() => {props.navigate({screen: "edit", id: props.id})}}>Edit</JButton>
 			</div>
 		</li>

@@ -8,6 +8,8 @@ import {_DatabaseDialogContext, DatabaseManagerTabs, useDatabaseManagerDialogCon
 import {useWorkspaceContext} from "../../workspace/workspace-context";
 import {DatabaseChangePasswordScreen} from "../screens/database-change-password";
 import {useHeadbase} from "../../../../logic/react/use-headbase.tsx";
+import {EncryptionService} from "../../../../logic/services/encryption/encryption.ts";
+import {KeyStorageService} from "../../../../logic/services/key-storage.service.ts";
 
 export function DatabaseManagerDialogProvider(props: PropsWithChildren) {
 	const [openTab, _setOpenTab] = useState<DatabaseManagerTabs|undefined>(undefined)
@@ -86,8 +88,12 @@ export function DatabaseManagerDialog() {
 				if (lastOpenedDatabaseId) {
 					try {
 						// ensure the database exists and is unlocked before opening
+						// todo: refactor local database to return encryptionKey not isUnlocked?
 						const database = await headbase.databases.get(lastOpenedDatabaseId)
-						if (database.isUnlocked) {
+						const encryptionKey = await KeyStorageService.get(lastOpenedDatabaseId)
+
+						if (database.isUnlocked && encryptionKey) {
+							await headbase.db.open(lastOpenedDatabaseId, encryptionKey)
 							setCurrentDatabaseId(lastOpenedDatabaseId)
 						}
 					}

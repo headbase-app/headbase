@@ -25,6 +25,7 @@
   height: 100%;
   z-index: var(--j-z-layer-1);
   transition: all var(--j-motion-duration-medium) var(--j-motion-ease-in-out);
+  border-right: var(--j-border-width-sm) solid var(--j-c-blueGrey-900);
 
   background: var(--j-c-background-f1);
   color: var(--j-c-text);

@@ -1,47 +1,71 @@
 import {
 	JInput, JButtonGroup, JButton, JForm, JFormContent, JFormRow, JErrorText, JTextArea, JProse
 } from "@ben-ryder/jigsaw-react";
-import {GenericFormProps} from "../../../../common/generic-form/generic-form";
 import {Controller, useForm} from "react-hook-form";
 import {zodResolver} from "@hookform/resolvers/zod";
-import {FieldOptions} from "@headbase-toolkit/schemas/entities/fields/fields";
+import {SelectFieldData} from "../../../../../logic/schemas/fields/types/select.ts";
+import {GenericFormProps} from "../../../common/generic-form/generic-form.tsx";
+import {z} from "zod";
 
-export interface OptionsFieldFormProps extends Omit<GenericFormProps<FieldOptions>, 'title'> {}
+export const SelectFormFields = SelectFieldData.pick({
+	name: true,
+	description: true,
+	icon: true
+}).extend({
+	settingsText: z.string()
+})
+export type SelectFormFields = z.infer<typeof SelectFormFields>
 
-export function OptionsFieldForm(props: OptionsFieldFormProps) {
 
-	function onSave(data: FieldOptions) {
-		props.onSave(data)
+export function OptionsFieldForm(props: GenericFormProps<SelectFieldData>) {
+
+	function onSave(data: SelectFormFields) {
+		const lines = data.settingsText.split("\n")
+		const options = lines.map(line => {
+			const [label, value] = line.split(":")
+			return {label, value}
+		})
+
+		props.onSave({
+			type: 'selectOne',
+			...data,
+			settings: {
+				options
+			}
+		})
 	}
 
-	const {handleSubmit, control, register, formState: {errors}, setValue } = useForm<FieldOptions>({
-		resolver: zodResolver(FieldOptions),
+	const {
+		handleSubmit,
+		control,
+		formState: {errors}
+	} = useForm<SelectFormFields>({
+		resolver: zodResolver(SelectFormFields),
 		defaultValues: {
-			type: props.data.type,
-			label: props.data.label || "",
-			description: props.data.description || "",
-			required: props.data.required || false,
-			options: props.data.options || []
+			name: props.data.name || "",
+			description: props.data.description || null,
+			icon: props.data.icon || null,
+			settingsText: props.data.settings
+				? props.data.settings.options.map(option => {return `${option.label}:${option.value}`}).join("\n")
+				: ''
 		}
 	})
 
 	return (
 		<JForm className="content-form" onSubmit={handleSubmit(onSave)} noValidate>
-			<input {...register('type')} readOnly={true} style={{display: 'none'}} />
-
 			<JFormContent>
 				<JFormRow>
 					<Controller
 						control={control}
-						name='label'
+						name='name'
 						render={({field}) => (
 							<JInput
 								{...field}
-								label="Label"
-								id="label"
+								label="Name"
+								id="name"
 								type="text"
-								placeholder="a field label..."
-								error={errors.label?.message}
+								placeholder="a field name..."
+								error={errors.name?.message}
 								required={true}
 							/>
 						)}
@@ -54,33 +78,11 @@ export function OptionsFieldForm(props: OptionsFieldFormProps) {
 						render={({field}) => (
 							<JTextArea
 								{...field}
+								value={field.value ?? ""}
 								label="Tooltip"
 								id="description"
 								placeholder="a breif description of your field..."
 								error={errors.description?.message}
-							/>
-						)}
-					/>
-				</JFormRow>
-				<JFormRow>
-					<Controller
-						control={control}
-						name='required'
-						render={({field}) => (
-							<JInput
-								ref={field.ref}
-								name={field.name}
-								checked={field.value}
-								onChange={() => {
-									setValue('required', !field.value)
-								}}
-								onBlur={field.onBlur}
-								disabled={field.disabled}
-								label="Is Required?"
-								id="required"
-								type="checkbox"
-								placeholder="You should be required to fill in this field"
-								error={errors.required?.message}
 							/>
 						)}
 					/>
@@ -92,30 +94,22 @@ export function OptionsFieldForm(props: OptionsFieldFormProps) {
 				<JFormRow>
 					<Controller
 						control={control}
-						name='options'
+						name='settingsText'
 						render={({field}) => (
 							<JTextArea
-								value={field.value.join("\n")}
-								onChange={e => {
-									const value = e.target.value.split("\n")
-									field.onChange(value)
-								}}
-								ref={field.ref}
-								onBlur={field.onBlur}
-								name={field.name}
-								disabled={field.disabled}
+								{...field}
 								label="Options"
 								id="options"
 								placeholder="the options you can pick from, each entered on a new line.."
-								error={errors.options?.message}
-								tooltip={{
-									content: <p>Enter each option on a new line</p>
-								}}
+								error={errors.settingsText?.message}
 								rows={8}
 								required={true}
 							/>
 						)}
 					/>
+					<JProse>
+						<p>Type one value per line in the format <code>label:value</code>.</p>
+					</JProse>
 				</JFormRow>
 			</JFormContent>
 

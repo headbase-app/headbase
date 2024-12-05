@@ -1,5 +1,7 @@
 
+// todo: remove id value and just use key?
 export const FIELDS = {
+	// Basics
 	textShort: {
 		label: "Short Text",
 		id: "textShort",
@@ -28,13 +30,13 @@ export const FIELDS = {
 		label: "Phone",
 		id: "phone",
 	},
-	number: {
-		label: "Number",
-		id: "number",
-	},
 	boolean: {
 		label: "Boolean",
 		id: "boolean",
+	},
+	number: {
+		label: "Number",
+		id: "number",
 	},
 	date: {
 		label: "Date",
@@ -44,14 +46,25 @@ export const FIELDS = {
 		label: "Timestamp",
 		id: "timestamp",
 	},
-	select: {
-		label: "Select",
-		id: "select",
+	// References
+	referenceOne: {
+		label: "Reference One",
+		id: "referenceOne",
 	},
-	selectMultiple: {
-		label: "Select multiple",
-		id: "selectMultiple",
+	referenceMany: {
+		label: "Reference Many",
+		id: "referenceMany",
 	},
+	// Select
+	selectOne: {
+		label: "Select (one)",
+		id: "selectOne",
+	},
+	selectMany: {
+		label: "Select (many)",
+		id: "selectMany",
+	},
+	// Special
 	scale: {
 		label: "Scale",
 		id: "scale",
@@ -68,17 +81,10 @@ export const FIELDS = {
 		label: "Images",
 		id: "images",
 	},
-	referenceOne: {
-		label: "Reference One",
-		id: "referenceOne",
-	},
-	referenceMany: {
-		label: "Reference Many",
-		id: "referenceMany",
-	}
 } as const
 
 export const FieldTypes = [
+	// Basics
 	FIELDS.textShort.id,
 	FIELDS.textLong.id,
 	FIELDS.markdown.id,
@@ -89,13 +95,16 @@ export const FieldTypes = [
 	FIELDS.boolean.id,
 	FIELDS.date.id,
 	FIELDS.timestamp.id,
-	FIELDS.select.id,
-	FIELDS.selectMultiple.id,
+	// References
+	FIELDS.referenceOne.id,
+	FIELDS.referenceMany.id,
+	// Select
+	FIELDS.selectOne.id,
+	FIELDS.selectMany.id,
+	// Special
 	FIELDS.scale.id,
 	FIELDS.point.id,
 	FIELDS.files.id,
 	FIELDS.images.id,
-	FIELDS.referenceOne.id,
-	FIELDS.referenceMany.id,
 ] as const
 export type FieldTypes = keyof typeof FIELDS

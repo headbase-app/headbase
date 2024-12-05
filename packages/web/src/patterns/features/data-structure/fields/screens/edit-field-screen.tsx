@@ -8,7 +8,10 @@ import {useHeadbase} from "../../../../../logic/react/use-headbase.tsx";
 import {GenericManagerContentScreenProps} from "../../../common/generic-manager/generic-manager.tsx";
 import {useField} from "../../../../../logic/react/tables/use-field.tsx";
 import {ErrorTypes} from "../../../../../logic/control-flow.ts";
-import {UpdateFieldDto} from "../../../../../logic/schemas/fields/dtos.ts";
+import {FieldData} from "../../../../../logic/schemas/fields/dtos.ts";
+import {ErrorCallout} from "../../../../components/error-callout/error-callout.tsx";
+import {FIELDS} from "../../../../../logic/schemas/fields/types.ts";
+
 
 export function EditFieldScreen(props: GenericManagerContentScreenProps) {
 	const {currentDatabaseId, headbase} = useHeadbase()
@@ -16,12 +19,11 @@ export function EditFieldScreen(props: GenericManagerContentScreenProps) {
 
 	const fieldQuery = useField(props.id)
 
-	// todo: better type?
-	async function onSave(updatedData: Omit<UpdateFieldDto, 'createdBy'>) {
+	async function onSave(updatedData: FieldData) {
 		if (!currentDatabaseId || !headbase) return setErrors([{type: ErrorTypes.NO_CURRENT_DATABASE}])
 
 		try {
-			await headbase.db.updateField(props.id, updatedData)
+			await headbase.db.updateField(props.id, {...updatedData, createdBy: 'todo'})
 			props.navigate({screen: "list"})
 		}
 		catch (e) {
@@ -33,45 +35,61 @@ export function EditFieldScreen(props: GenericManagerContentScreenProps) {
 		if (!currentDatabaseId || !headbase) return setErrors([{type: ErrorTypes.NO_CURRENT_DATABASE}])
 
 		try {
-			await headbase.tx.delete(currentDatabaseId, 'fields', props.id)
+			await headbase.db.deleteField(props.id)
 			props.navigate({screen: "list"})
 		}
 		catch (e) {
+			console.error(e)
 			setErrors([e])
 		}
 	}
 
-	let content: ReactNode
 	if (fieldQuery.status === 'loading') {
-		content = <p>loading...</p>
+		return <p>loading...</p>
 	}
 	else if (fieldQuery.status === 'error') {
-		content = <ErrorCallout errors={fieldQuery.errors} />
+		return <ErrorCallout errors={fieldQuery.errors} />
 	}
-	else if (fieldQuery.result.data.type === 'markdown') {
+
+	let content: ReactNode
+	if (fieldQuery.result.type === 'markdown') {
 		content = (
 			<MarkdownFieldForm
-				data={fieldQuery.result.data}
+				data={fieldQuery.result}
 				onSave={onSave}
 				onDelete={onDelete}
 				navigate={props.navigate}
 			/>
 		)
 	}
-	else if (fieldQuery.result.data.type === 'options') {
+	else if (
+		fieldQuery.result.type === 'referenceOne' ||
+		fieldQuery.result.type === 'referenceMany' ||
+		fieldQuery.result.type === 'selectMany' ||
+		fieldQuery.result.type === 'point' ||
+		fieldQuery.result.type === 'files' ||
+		fieldQuery.result.type === 'images'
+	) {
+		content = (
+			<p>Field not supported yet</p>
+		)
+	}
+	else if (fieldQuery.result.type === 'selectOne') {
 		content = (
 			<OptionsFieldForm
-				data={fieldQuery.result.data}
+				data={fieldQuery.result}
 				onSave={onSave}
+				onDelete={onDelete}
 				navigate={props.navigate}
 			/>
 		)
 	}
-	else if (fieldQuery.result.data.type === 'scale') {
+	else if (fieldQuery.result.type === 'scale') {
 		content = (
 			<ScaleFieldForm
-				data={fieldQuery.result.data}
+				data={fieldQuery.result}
 				onSave={onSave}
+				onDelete={onDelete}
 				navigate={props.navigate}
 			/>
 		)
@@ -79,7 +97,7 @@ export function EditFieldScreen(props: GenericManagerContentScreenProps) {
 	else {
 		content = (
 			<BasicFieldForm
-				data={fieldQuery.result.data}
+				data={fieldQuery.result}
 				onSave={onSave}
 				onDelete={onDelete}
 				navigate={props.navigate}
@@ -97,7 +115,7 @@ export function EditFieldScreen(props: GenericManagerContentScreenProps) {
 			>All Fields</JArrowButton>
 			{errors.length > 0 && <ErrorCallout errors={errors} />}
 			{fieldQuery.status === 'success' && (
-				<h2>{`Edit ${FIELD_TYPES[fieldQuery.result.data.type].label} Field '${fieldQuery.result.data.label}'`}</h2>
+				<h2>{`Edit ${FIELDS[fieldQuery.result.type].label} Field '${fieldQuery.result.name}'`}</h2>
 			)}
 			{content}
 		</div>

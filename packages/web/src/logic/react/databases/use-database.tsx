@@ -9,7 +9,6 @@ export function useDatabase(databaseId: string|null) {
 	const [result, setResult] = useState<LiveQueryResult<LocalDatabaseDto>>(LIVE_QUERY_LOADING_STATE)
 
 	useEffect(() => {
-		console.debug(headbase, databaseId)
 		if (!headbase || !databaseId) return
 
 		const observable = headbase.databases.liveGet(databaseId)

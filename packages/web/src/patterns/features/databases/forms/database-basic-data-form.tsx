@@ -29,7 +29,7 @@ export function DatabaseBasicDataForm(props: DatabaseBasicDataFormProps) {
 		resolver: zodResolver(DatabaseBasicFields),
 		defaultValues: {
 			name: props.initialData?.name || '',
-			syncEnabled: props.initialData?.syncEnabled,
+			syncEnabled: props.initialData?.syncEnabled ?? false,
 		}
 	})
 
@@ -75,7 +75,7 @@ export function DatabaseBasicDataForm(props: DatabaseBasicDataFormProps) {
 								id="sync-enabled"
 								value={value ? 'yes' : 'no'}
 								onChange={(e) => {
-									onChange(e.target.value === 'yes' ? 1 : 0);
+									onChange(e.target.value === 'yes');
 								}}
 								options={[
 									{
