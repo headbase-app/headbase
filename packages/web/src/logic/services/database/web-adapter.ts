@@ -21,7 +21,6 @@ export class WebDatabaseAdapter implements DatabaseAdapter {
 	}
 
 	async destroy() {
-		console.debug('[WebPlatformAdapter] destroy')
 		this.#worker.terminate()
 	}
 
@@ -54,8 +53,6 @@ export class WebDatabaseAdapter implements DatabaseAdapter {
 
 			// @ts-expect-error -- just allow for now as it appears to work at runtime. todo: fix types
 			responseListener = (event: MessageEvent<WorkerEvents>) => {
-				console.debug('received event while awaiting response')
-				console.debug(event)
 				if (event.data.targetMessageId === message.messageId) {
 					this.#worker.removeEventListener('message', responseListener)
 					timeoutSignal.removeEventListener('abort', abortListener)
@@ -67,14 +64,14 @@ export class WebDatabaseAdapter implements DatabaseAdapter {
 		})
 	}
 
-	async open(databaseId: string): Promise<void> {
+	async open(databaseId: string, encryptionKey: string): Promise<void> {
 		await this.#sendWorkerRequest({
 			type: 'open',
 			messageId: self.crypto.randomUUID(),
 			detail: {
 				databaseId,
 				context: this.#context,
-				encryptionKey: 'thisisanamazingkey'
+				encryptionKey: encryptionKey
 			}
 		})
 
@@ -85,8 +82,6 @@ export class WebDatabaseAdapter implements DatabaseAdapter {
 	}
 
 	async close(databaseId: string): Promise<void> {
-		console.debug('close')
-
 		await this.#sendWorkerRequest({
 			type: 'close',
 			messageId: self.crypto.randomUUID(),
@@ -144,7 +139,6 @@ export class WebEventsAdapter implements EventsAdapter {
 		this.#eventTarget = new EventTarget()
 		this.#localBroadcastChannel = new BroadcastChannel(`headbase_events`)
 		this.#localBroadcastChannel.onmessage = (message: MessageEvent<HeadbaseEvent>) => {
-			console.debug('[EventManager] Received broadcast channel message', message.data)
 			this.dispatch(message.data.type, message.data.detail)
 		}
 	}
@@ -154,8 +148,6 @@ export class WebEventsAdapter implements EventsAdapter {
 	}
 
 	dispatch<Event extends keyof EventMap>(type: Event, eventDetail: EventMap[Event]["detail"]): void {
-		console.debug(`[EventManager] Dispatching '${type}' event: ${eventDetail}`)
-
 		const event = new CustomEvent(type, { detail: eventDetail })
 		this.#eventTarget.dispatchEvent(event)
 

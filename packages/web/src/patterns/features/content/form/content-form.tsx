@@ -71,7 +71,7 @@ export function ContentForm(props: ContentFormProps) {
 		if (field) {
 			const fieldValue = props.fieldStorage[fieldId]?.value
 			fields.push(
-				<JFormRow>
+				<JFormRow key={field.id}>
 					<CustomField field={field} value={fieldValue} onChange={(newValue) => {
 						props.onFieldStorageChange(field.id, {type: field.type, value: newValue})
 					}} />

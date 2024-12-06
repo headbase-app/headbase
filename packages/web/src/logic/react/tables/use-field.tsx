@@ -6,11 +6,11 @@ import {FieldDto} from "../../schemas/fields/dtos.ts";
 
 
 export function useField(id: string) {
-	const { headbase } = useHeadbase()
+	const { headbase, currentDatabaseId } = useHeadbase()
 	const [result, setResult] = useState<LiveQueryResult<FieldDto>>(LIVE_QUERY_LOADING_STATE)
 
 	useEffect(() => {
-		if (!headbase) return
+		if (!headbase || !currentDatabaseId) return
 
 		const observable = headbase.db.liveGetField(id)
 
@@ -25,7 +25,7 @@ export function useField(id: string) {
 		return () => {
 			subscription.unsubscribe()
 		}
-	}, [headbase])
+	}, [headbase, currentDatabaseId])
 
 	return result
 }

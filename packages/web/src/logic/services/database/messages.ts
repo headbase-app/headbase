@@ -1,4 +1,5 @@
 import {DeviceContext, SqlQueryResponse} from "../../../lib/headbase-core/adapter.ts";
+import {HeadbaseError, HeadbaseErrorCause} from "../../control-flow.ts";
 
 export interface BaseMessage {
 	messageId: string
@@ -90,7 +91,7 @@ export interface ErrorMessage {
 	type: 'error'
 	targetMessageId?: string
 	detail: {
-		error: string
+		cause: HeadbaseErrorCause
 	}
 }
 

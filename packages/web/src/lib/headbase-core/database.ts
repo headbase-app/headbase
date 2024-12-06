@@ -31,6 +31,8 @@ import {CreateViewDto, UpdateViewDto, ViewDto, ViewVersionDto} from "../../logic
  * Consider how to refactor to make this more manageable.
  *
  * todo: refactor events (and platform adapter) to be database specific?
+ *
+ * todo: update live queries to ensure errors are handled and passed via observers
  */
 
 const HEADBASE_VERSION = '1.0'
@@ -106,7 +108,8 @@ export class Database {
 	}
 
 	async open(databaseId: string, encryptionKey: string): Promise<void> {
-		await this.#platformAdapter.database.open(databaseId, encryptionKey)
+		const [_version, rawEncryptionKey] = encryptionKey.split('.');
+		await this.#platformAdapter.database.open(databaseId, rawEncryptionKey)
 		this.#databaseId = databaseId
 	}
 
@@ -810,8 +813,14 @@ export class Database {
 
 			const runQuery = async () => {
 				subscriber.next({status: 'loading'})
-				const results = await this.queryTypes(options);
-				subscriber.next({status: 'success', result: results})
+
+				try {
+					const results = await this.queryTypes(options)
+					subscriber.next({status: 'success', result: results})
+				}
+				catch(e) {
+					subscriber.next({status: 'error', errors: [e]})
+				}
 			}
 
 			const handleEvent = (e: CustomEvent<DataChangeEvent['detail']>) => {

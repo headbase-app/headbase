@@ -7,11 +7,11 @@ import {FieldDto} from "../../schemas/fields/dtos.ts";
 
 
 export function useFieldQuery(options?: GlobalListingOptions) {
-	const { headbase } = useHeadbase()
+	const { headbase, currentDatabaseId } = useHeadbase()
 	const [result, setResult] = useState<LiveQueryResult<FieldDto[]>>(LIVE_QUERY_LOADING_STATE)
 
 	useEffect(() => {
-		if (!headbase) return
+		if (!headbase || !currentDatabaseId) return
 		const observable = headbase.db.liveQueryFields(options)
 
 		const subscription = observable.subscribe((query) => {

@@ -43,7 +43,13 @@ export function ContentTypeForm(props: GenericFormProps<ContentTypeData>) {
 
 	const allFields = useFieldQuery({filter: {isDeleted: false}});
 
-	const [selectedFields, setSelectedFields] = useState<string>('');
+	const [selectedFields, setSelectedFields] = useState<string>(
+		props.data.templateFields
+			? Object.entries(props.data.templateFields).map(([fieldId, fieldStorage]) => {
+				return `${fieldId}:${fieldStorage.value}`;
+			}).join("\n")
+			: ''
+	);
 
 	function onSave(e: FormEvent) {
 		e.preventDefault()
@@ -53,15 +59,16 @@ export function ContentTypeForm(props: GenericFormProps<ContentTypeData>) {
 		}
 
 		const templateFields: FieldStorage = {}
-		const fieldDeclarations = selectedFields.split('')
+		const fieldDeclarations = selectedFields.split('\n')
 		for (const fieldsDeclaration of fieldDeclarations) {
 			const [fieldId, defaultValue] = fieldsDeclaration.split(":")
 
 			const matchingField = allFields.result.filter(field => field.id === fieldId)
 			if (matchingField[0]) {
+				// @ts-expect-error  todo: ensure value is correct type based on field
 				templateFields[fieldId] = {
 					type: matchingField[0].type,
-					value: JSON.parse(defaultValue)
+					value: defaultValue ?? ''
 				}
 			}
 		}
@@ -171,7 +178,7 @@ export function ContentTypeForm(props: GenericFormProps<ContentTypeData>) {
 					<JTextArea
 						id="fields"
 						label="Fields"
-						placeholder="Content tyoe fields...."
+						placeholder="Content type fields...."
 						value={selectedFields}
 						onChange={(e) => {setSelectedFields(e.target.value)}}
 					/>
@@ -189,7 +196,7 @@ export function ContentTypeForm(props: GenericFormProps<ContentTypeData>) {
 								</thead>
 								<tbody>
 									{allFields.result.map(field => (
-										<tr>
+										<tr key={field.id}>
 											<td>{field.name}</td>
 											<td>{field.id}</td>
 											<td>{field.type}</td>

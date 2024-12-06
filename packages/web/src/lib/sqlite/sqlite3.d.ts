@@ -5,7 +5,7 @@ export interface SQLite3 {
 		sqlite3_js_db_export: any
 	}
 	oo1: {
-		OpfsDb: any
+		DB: any
 	}
 }
 

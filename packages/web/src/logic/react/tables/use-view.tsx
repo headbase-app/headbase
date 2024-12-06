@@ -6,11 +6,11 @@ import {ViewDto} from "../../schemas/views/dtos.ts";
 
 
 export function useView(id: string) {
-	const { headbase } = useHeadbase()
+	const { headbase, currentDatabaseId } = useHeadbase()
 	const [result, setResult] = useState<LiveQueryResult<ViewDto>>(LIVE_QUERY_LOADING_STATE)
 
 	useEffect(() => {
-		if (!headbase) return
+		if (!headbase || !currentDatabaseId) return
 
 		const observable = headbase.db.liveGetView(id)
 

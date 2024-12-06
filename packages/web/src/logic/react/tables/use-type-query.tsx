@@ -7,24 +7,28 @@ import {ContentTypeDto} from "../../schemas/content-types/dtos.ts";
 
 
 export function useContentTypeQuery(options?: GlobalListingOptions) {
-	const { headbase } = useHeadbase()
+	const { headbase, currentDatabaseId } = useHeadbase()
 	const [result, setResult] = useState<LiveQueryResult<ContentTypeDto[]>>(LIVE_QUERY_LOADING_STATE)
 
 	useEffect(() => {
-		if (!headbase) return
+		if (!headbase || !currentDatabaseId) return
 		const observable = headbase.db.liveQueryTypes(options)
 
 		const subscription = observable.subscribe((query) => {
 			if (query.status === LiveQueryStatus.SUCCESS) {
 				Logger.debug(`[useContentQuery] Received new data`, query.result)
 			}
+			if (query.status === LiveQueryStatus.ERROR) {
+				console.error(query.errors)
+			}
+
 			setResult(query)
 		})
 
 		return () => {
 			subscription.unsubscribe()
 		}
-	}, [headbase])
+	}, [headbase, currentDatabaseId])
 
 	return result
 }

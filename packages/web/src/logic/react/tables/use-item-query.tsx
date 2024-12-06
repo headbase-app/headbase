@@ -7,11 +7,11 @@ import {ContentItemDto} from "../../schemas/content-items/dtos.ts";
 
 
 export function useContentItemQuery(options?: GlobalListingOptions) {
-	const { headbase } = useHeadbase()
+	const { headbase, currentDatabaseId } = useHeadbase()
 	const [result, setResult] = useState<LiveQueryResult<ContentItemDto[]>>(LIVE_QUERY_LOADING_STATE)
 
 	useEffect(() => {
-		if (!headbase) return
+		if (!headbase || !currentDatabaseId) return
 		const observable = headbase.db.liveQueryItems(options)
 
 		const subscription = observable.subscribe((query) => {

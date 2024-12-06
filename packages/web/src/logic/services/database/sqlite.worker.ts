@@ -1,6 +1,7 @@
 import sqlite3InitModule, {SQLite3, SQLite3Database} from "../../../lib/sqlite/sqlite3"
 
 import {ClientMessages, WorkerMessages} from "./messages.ts";
+import {ErrorTypes} from "../../control-flow.ts";
 
 const DatabaseStore = new Map<string, SQLite3Database>();
 
@@ -35,37 +36,46 @@ function getSqliteFactory() {
 (function (self: DedicatedWorkerGlobalScope) {
 	console.debug('[worker] init')
 
-	console.debug('[worker] onmessage register')
 	self.onmessage = async function (messageEvent: MessageEvent<ClientMessages>) {
 		const getSqlite3 = getSqliteFactory()
 		const sqlite3 = await getSqlite3()
 
 		if (messageEvent.data.type === 'open') {
-			const db = new sqlite3.oo1.OpfsDb({
-				filename: `/headbase-v1/${messageEvent.data.detail.databaseId}.sqlite3`,
-				vfs: 'multipleciphers-opfs'
-			});
+			const db = new sqlite3.oo1.DB(
+				`/headbase-v1/${messageEvent.data.detail.databaseId}.sqlite3`,
+				'c',
+				'multipleciphers-opfs'
+			);
 
 			try {
+				console.debug(`opening '${messageEvent.data.detail.databaseId}' with key '${messageEvent.data.detail.encryptionKey}'`)
+				db.exec({
+					sql: `PRAGMA key = 'raw:${messageEvent.data.detail.encryptionKey}';`
+				})
+
+				// Attempt to fetch from database to ensure key was accepted.
 				db.exec({
 					sql: 'select * from sqlite_master;',
 					returnValue: 'resultRows'
 				})
 			}
-			catch(e) {
-				console.debug('[worker] error starting')
+			catch (e) {
 				console.error(e)
+				db.close()
+
 				return self.postMessage({
-					type: messageEvent.data.type,
+					type: 'error',
 					targetMessageId: messageEvent.data.messageId,
 					detail: {
-						success: false,
-						error: e
+						cause: {
+							type: ErrorTypes.INVALID_PASSWORD_OR_KEY,
+							devMessage: 'An invalid key was supplied when attempting to open the database'
+						}
 					}
 				} as WorkerMessages);
 			}
-			DatabaseStore.set(messageEvent.data.detail.databaseId, db)
 
+			DatabaseStore.set(messageEvent.data.detail.databaseId, db)
 			return self.postMessage({
 				type: messageEvent.data.type,
 				targetMessageId: messageEvent.data.messageId,
@@ -75,8 +85,6 @@ function getSqliteFactory() {
 			} as WorkerMessages);
 		}
 		else if (messageEvent.data.type === 'exec') {
-			console.debug('[worker] running query')
-			console.debug(messageEvent.data)
 			const db = DatabaseStore.get(messageEvent.data.detail.databaseId);
 			if (!db) {
 				return self.postMessage({

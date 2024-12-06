@@ -22,7 +22,7 @@ export function CustomField(props: FieldProps) {
 			<ScaleField field={props.field} value={props.value} onChange={props.onChange} />
 		)
 	}
-	else if (props.field.type === 'select') {
+	else if (props.field.type === 'selectOne') {
 		return (
 			<JSelect
 				label={props.field.name}
