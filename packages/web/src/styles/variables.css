@@ -91,6 +91,17 @@ Base Variables
     --j-c-navy-800: #191B23;
     --j-c-navy-900: #121419;
 
+    --j-c-atom-50: #3D4053;
+    --j-c-atom-100: #383B4C;
+    --j-c-atom-200: #333545;
+    --j-c-atom-300: #2D303E;
+    --j-c-atom-400: #282A37;
+    --j-c-atom-500: #232530;
+    --j-c-atom-600: #20222C;
+    --j-c-atom-700: #1D1F28;
+    --j-c-atom-800: #191B23;
+    --j-c-atom-900: #121419;
+
     --j-c-blueGrey-50: #9CA7B8;
     --j-c-blueGrey-100: #919CAD;
     --j-c-blueGrey-200: #8690A1;
@@ -247,9 +258,9 @@ Default Theme
     --j-c-text-emphasis: var(--j-c-mono-100);
     --j-c-text-heading: var(--j-c-mono-100);
 
-    --j-c-destructive: var(--j-c-red-500);
+    --j-c-destructive: #c82d2d;
     --j-c-destructive-text: var(--j-c-mono-50);
-    --j-c-destructive-interaction: var(--j-c-red-700);
+    --j-c-destructive-interaction: #a02828;
     --j-c-destructive-text-interaction: var(--j-c-mono-50);
 
     --j-c-info: var(--j-c-blue-500);
