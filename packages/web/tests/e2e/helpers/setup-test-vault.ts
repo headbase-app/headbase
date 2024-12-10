@@ -4,7 +4,7 @@ export async function setupTestVault(page: Page): Promise<void> {
 	await page.goto('/');
 
 	// Expect that the database popup has automatically opened
-	await expect(page.getByRole('heading', { name: 'Database Manager' })).toBeVisible()
+	await expect(page.getByRole('heading', { name: 'Manage databases' })).toBeVisible()
 
 	await page.getByRole('button', { name: 'Create' }).click()
 

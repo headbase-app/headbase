@@ -9,7 +9,7 @@ test('can setup and open initial vault via keyboard', async ({ page }) => {
 	await page.goto('/');
 
 	// Expect that the database popup has automatically opened
-	await expect(page.getByRole('heading', { name: 'Database Manager' })).toBeVisible()
+	await expect(page.getByRole('heading', { name: 'Manage databases' })).toBeVisible()
 
 	// The create database button should have initial focus, so just click it
 	await page.keyboard.press("Enter")
@@ -24,9 +24,7 @@ test('can setup and open initial vault via keyboard', async ({ page }) => {
 	await page.keyboard.press("Tab")
 
 	// Open "Sync Enabled?" and select no
-	await page.keyboard.press("Space")
-	await page.keyboard.press("ArrowDown")
-	await page.keyboard.press("Enter")
+	await page.locator('*:focus').selectOption({label: "No"})
 
 	// To next step
 	await page.keyboard.press("Tab")
