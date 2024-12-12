@@ -87,6 +87,24 @@ export interface ExportResponseMessage extends BaseResponseMessage {
 	}
 }
 
+export interface DeleteMessage extends BaseMessage {
+	type: 'delete',
+	detail: {
+		context: DeviceContext
+		databaseId: string
+	}
+}
+
+export interface DeleteResponseMessage extends BaseResponseMessage {
+	type: 'delete',
+	detail: {
+		success: true
+	} | {
+		success: false,
+		error: string
+	}
+}
+
 export interface ErrorMessage {
 	type: 'error'
 	targetMessageId?: string
@@ -95,5 +113,5 @@ export interface ErrorMessage {
 	}
 }
 
-export type ClientMessages = OpenMessage | QueryMessage | CloseMessage | ExportMessage
-export type WorkerMessages = OpenResponseMessage | QueryResponseMessage | CloseResponseMessage | ExportResponseMessage | ErrorMessage
+export type ClientMessages = OpenMessage | QueryMessage | CloseMessage | ExportMessage | DeleteMessage
+export type WorkerMessages = OpenResponseMessage | QueryResponseMessage | CloseResponseMessage | ExportResponseMessage | DeleteResponseMessage | ErrorMessage

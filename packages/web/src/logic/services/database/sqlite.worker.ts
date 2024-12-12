@@ -160,6 +160,32 @@ function getSqliteFactory() {
 				}
 			});
 		}
+		else if (messageEvent.data.type === "delete") {
+			try {
+				const root = await navigator.storage.getDirectory()
+				const dbFolder = await root.getDirectoryHandle('headbase-v1')
+				await dbFolder.removeEntry(`${messageEvent.data.detail.databaseId}.sqlite3`)
+
+				return self.postMessage({
+					type: messageEvent.data.type,
+					targetMessageId: messageEvent.data.messageId,
+					detail: {
+						success: true
+					}
+				} as WorkerMessages);
+			}
+			catch (e) {
+				return self.postMessage({
+					type: messageEvent.data.type,
+					targetMessageId: messageEvent.data.messageId,
+					detail: {
+						success: false,
+						// @todo: should be different type?
+						error: e
+					}
+				});
+			}
+		}
 		else {
 			console.error(messageEvent)
 			throw new Error(`Unrecognised event sent to worker`)
