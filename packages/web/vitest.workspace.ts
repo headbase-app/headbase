@@ -9,6 +9,7 @@ export default defineWorkspace([
       browser: {
         enabled: true,
         headless: true,
+        screenshotFailures: false,
         name: 'firefox',
         provider: 'playwright',
         // https://playwright.dev

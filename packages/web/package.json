@@ -13,7 +13,7 @@
     "sb:start": "storybook dev -p 6006 --no-open",
     "sb:build": "storybook build -o build",
     "test": "npm run test:unit && npm run test:e2e",
-    "test:unit": "vitest run --reporter basic",
+    "test:unit": "vitest run --reporter basic --no-file-parallelism --inspect-brk",
     "test:unit:ui": "vitest --ui",
     "test:unit:watch": "vitest",
     "test:e2e": "npx playwright test --reporter list",

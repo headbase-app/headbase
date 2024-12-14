@@ -34,7 +34,8 @@ export function UserManager() {
 	return (
 		<div>
 			<JProse>
-				<p>Logged in as <b>{userQuery.result.email} ({userQuery.result.displayName})</b> to server <b>{userQuery.result.serverUrl}</b></p>
+				<p>Hello <b>{userQuery.result.displayName}</b>!</p>
+				<p>You are logged in with <b>{userQuery.result.email}</b> to server <b>{userQuery.result.serverUrl}</b></p>
 			</JProse>
 			<JButton
 				// todo: logout isn't clearing local data correctly?

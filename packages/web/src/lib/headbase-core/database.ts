@@ -1538,7 +1538,7 @@ export class Database {
 			)
 		}
 
-		const order: SQL = desc(contentItemsVersions.createdAt)
+		const order: SQL = desc(viewsVersions.createdAt)
 
 		return this.#database
 			.select({

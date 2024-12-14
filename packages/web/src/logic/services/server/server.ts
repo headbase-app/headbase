@@ -234,7 +234,7 @@ export class ServerAPI {
 	}
 
 	// Users
-	async fetchUser(userId: string) {
+	async getUser(userId: string) {
 		const serverUrl = await this.#getServerUrl()
 		// todo: should not rely on current user server?
 
@@ -305,5 +305,26 @@ export class ServerAPI {
 				this.#platformAdapter.events.subscribe(EventTypes.USER_LOGOUT, handleEvent)
 			}
 		})
+	}
+
+	// Databases
+	async getDatabase(databaseId: string) {
+		const serverUrl = await this.#getServerUrl()
+
+		return this.query<UserDto>({
+			serverUrl,
+			method: 'GET',
+			path: `/v1/vaults/${databaseId}`
+		});
+	}
+
+	async getDatabaseSnapshot(databaseId: string) {
+		const serverUrl = await this.#getServerUrl()
+
+		return this.query<UserDto>({
+			serverUrl,
+			method: 'GET',
+			path: `/v1/vaults/${databaseId}/snapshot`
+		});
 	}
 }

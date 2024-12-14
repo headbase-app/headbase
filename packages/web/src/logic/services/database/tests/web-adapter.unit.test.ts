@@ -11,15 +11,11 @@ const webPlatformAdapter = new WebPlatformAdapter({context: testContext})
 const database = new Database({context: testContext, platformAdapter: webPlatformAdapter})
 
 beforeAll(async () => {
-	await webPlatformAdapter.database.exec(testDatabaseId)
+	await webPlatformAdapter.database.open(testDatabaseId)
 })
 
 beforeEach(async () => {
-	webPlatformAdapter.database.open('')
-})
-
-afterEach(async () => {
-
+	// todo: reset all test content?
 })
 
 test('should set up fine', async ({expect}) => {
