@@ -35,9 +35,9 @@ function getSqliteFactory() {
 
 (function (self: DedicatedWorkerGlobalScope) {
 	console.debug('[worker] init')
+	const getSqlite3 = getSqliteFactory()
 
 	self.onmessage = async function (messageEvent: MessageEvent<ClientMessages>) {
-		const getSqlite3 = getSqliteFactory()
 		const sqlite3 = await getSqlite3()
 
 		if (messageEvent.data.type === 'open') {

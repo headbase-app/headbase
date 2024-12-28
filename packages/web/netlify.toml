@@ -1,5 +1,22 @@
+# Serve site with COOP/COEP headers so the SQLite OPFS VFS works (https://sqlite.org/wasm/doc/trunk/persistence.md#coop-coep)
 [[headers]]
   for = "/*"
   [headers.values]
     Cross-Origin-Opener-Policy = "same-origin"
     Cross-Origin-Embedder-Policy = "require-corp"
+
+# Ensure manifest is served with valid mime type (https://vite-pwa-org.netlify.app/deployment/netlify.html#configure-manifest-webmanifest-mime-type)
+[[headers]]
+  for = "/manifest.webmanifest"
+  [headers.values]
+    Content-Type = "application/manifest+json"
+
+# Cache build assets as these will be hashed when built so shouldn't change (https://vite-pwa-org.netlify.app/deployment/netlify.html#cache-control)
+# todo: could this break future deployments? for example, sqlite3.wasm and sqlite3-opfs-async-proxy.js are hardcoded in /assets/.
+[[headers]]
+  for = "/assets/*"
+  [headers.values]
+    cache-control = '''
+    max-age=31536000,
+    immutable
+    '''

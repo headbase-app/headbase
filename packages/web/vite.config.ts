@@ -5,6 +5,24 @@ import react from "@vitejs/plugin-react";
 import { VitePWA } from "vite-plugin-pwa";
 import tsconfigPaths from "vite-tsconfig-paths";
 
+/**
+ * A Workbox plugin to add COOP/COEP headers to all assets when served via the service worker cache.
+ * Copied from https://github.com/GoogleChrome/workbox/issues/2963.
+ */
+const headersPlugin = {
+	handlerWillRespond: async ({response}) => {
+		const headers = new Headers(response.headers);
+		headers.set("Cross-Origin-Embedder-Policy", "require-corp");
+		headers.set("Cross-Origin-Opener-Policy", "same-origin");
+
+		return new Response(response.body, {
+			headers,
+			status: response.status,
+			statusText: response.statusText,
+		});
+	},
+};
+
 // https://vitejs.dev/config/
 export default defineConfig({
 	server: {
@@ -44,6 +62,17 @@ export default defineConfig({
 					},
 				],
 			},
+			workbox: {
+				runtimeCaching: [
+					{
+						urlPattern: ({request}) => ['document', 'iframe', 'worker'].includes(request.destination),
+						handler: 'NetworkOnly',
+						options: {
+							plugins: [headersPlugin],
+						},
+					},
+				],
+			}
 		}),
 	],
 	test: {
