@@ -1,12 +1,12 @@
 import {
 	DatabaseAdapter,
-	DeviceContext, EventsAdapter,
+	DeviceContext, EventsAdapter, EventsAdapterConfig,
 	PlatformAdapter,
 	PlatformAdapterConfig,
 	SqlDataType,
 	SqlQueryResponse
-} from "../../../lib/headbase-core/adapter.ts";
-import {EventMap, EventTypes, HeadbaseEvent} from "../events/events.ts";
+} from "../adapter.ts";
+import {EventMap, EventTypes, HeadbaseEvent} from "../../events/events.ts";
 import {ClientMessages, QueryResponseMessage, WorkerMessages} from "./messages.ts";
 
 export class WebDatabaseAdapter implements DatabaseAdapter {
@@ -132,7 +132,7 @@ export class WebEventsAdapter implements EventsAdapter {
 	readonly #eventTarget: EventTarget
 	readonly #localBroadcastChannel: BroadcastChannel | undefined
 
-	constructor(config: PlatformAdapterConfig) {
+	constructor(config: EventsAdapterConfig) {
 		this.#context = config.context;
 
 		// todo: separate broadcast channel for different databases?

@@ -5,10 +5,10 @@ import {EventTypes} from "./services/events/events";
 import {LIVE_QUERY_LOADING_STATE, LiveQueryResult, LiveQueryStatus} from "./control-flow";
 import {GeneralStorageService} from "./services/general-storage.service";
 import {ServerAPI} from "./services/server/server.ts";
-import {WebPlatformAdapter} from "./services/database/web-adapter.ts";
-import {DeviceContext} from "../lib/headbase-core/adapter.ts";
+import {WebPlatformAdapter} from "./services/database/web-adapter/web-adapter.ts";
+import {DeviceContext} from "./services/database/adapter.ts";
 import {EncryptionService} from "./services/encryption/encryption.ts";
-import {Database} from "../lib/headbase-core/database.ts";
+import {Database} from "./services/database/database.ts";
 
 export const HEADBASE_VERSION = '1.0'
 export const HEADBASE_INDEXDB_DATABASE_VERSION = 1

@@ -2,29 +2,29 @@ import {drizzle, SqliteRemoteDatabase} from 'drizzle-orm/sqlite-proxy';
 import {and, desc, eq, SQL, sql} from "drizzle-orm";
 import {Observable} from "rxjs";
 
-import migration1 from "../../logic/services/database/migrations/00-setup.sql?raw"
+import migration1 from "./migrations/00-setup.sql?raw"
 
-import {fields, fieldsVersions} from "../../logic/services/database/tables/fields.ts";
-import {contentTypes, contentTypesVersions} from '../../logic/services/database/tables/content-types.ts';
-import {contentItems, contentItemsVersions} from '../../logic/services/database/tables/content-items.ts';
-import {views, viewsVersions} from '../../logic/services/database/tables/views.ts';
+import {fields, fieldsVersions} from "./tables/fields.ts";
+import {contentTypes, contentTypesVersions} from './tables/content-types.ts';
+import {contentItems, contentItemsVersions} from './tables/content-items.ts';
+import {views, viewsVersions} from './tables/views.ts';
 
 import {DeviceContext, PlatformAdapter} from "./adapter.ts";
-import {DataChangeEvent, EventTypes} from "../../logic/services/events/events.ts";
-import {ErrorTypes, HeadbaseError, LiveQueryResult} from "../../logic/control-flow.ts";
+import {DataChangeEvent, EventTypes} from "../events/events.ts";
+import {ErrorTypes, HeadbaseError, LiveQueryResult} from "../../control-flow.ts";
 
-import {CreateFieldDto, FieldDto, FieldVersionDto, UpdateFieldDto} from "../../logic/schemas/fields/dtos.ts";
+import {CreateFieldDto, FieldDto, FieldVersionDto, UpdateFieldDto} from "../../schemas/fields/dtos.ts";
 import {
 	ContentTypeDto, ContentTypeVersionDto,
 	CreateContentTypeDto,
 	UpdateContentTypeDto
-} from "../../logic/schemas/content-types/dtos.ts";
+} from "../../schemas/content-types/dtos.ts";
 import {
 	ContentItemDto, ContentItemVersionDto,
 	CreateContentItemDto,
 	UpdateContentItemDto
-} from "../../logic/schemas/content-items/dtos.ts";
-import {CreateViewDto, UpdateViewDto, ViewDto, ViewVersionDto} from "../../logic/schemas/views/dtos.ts";
+} from "../../schemas/content-items/dtos.ts";
+import {CreateViewDto, UpdateViewDto, ViewDto, ViewVersionDto} from "../../schemas/views/dtos.ts";
 
 /**
  * todo: this file and the Database class are insanely big, and contain very repetitive CRUD code.
@@ -48,13 +48,19 @@ export interface DatabaseConfig {
 	platformAdapter: PlatformAdapter
 }
 
-export interface EntitySnapshot {
-	[entityId: string]: {
-		isDeleted: boolean
-		versions: {
-			[versionId: string]: boolean
-		}
-	}
+export interface TableSnapshot {
+	[id: string]: boolean
+}
+
+export interface DatabaseSnapshot {
+	fields: TableSnapshot
+	fieldsVersions: TableSnapshot
+	contentTypes: TableSnapshot
+	contentTypesVersions: TableSnapshot
+	contentItems: TableSnapshot
+	contentItemsVersions: TableSnapshot
+	views: TableSnapshot
+	viewsVersions: TableSnapshot
 }
 
 export interface GlobalListingOptions {
@@ -326,7 +332,7 @@ export class Database {
 			.orderBy(order) as unknown as FieldDto[];
 	}
 
-	async queryFieldsSnapshot(): Promise<EntitySnapshot> {
+	async getFieldsSnapshot(): Promise<TableSnapshot> {
 		await this.#ensureInit()
 
 		const entities = await this.#database
@@ -344,7 +350,7 @@ export class Database {
 			})
 			.from(fieldsVersions)
 
-		const snapshot: EntitySnapshot = {}
+		const snapshot: TableSnapshot = {}
 
 		for (const entity of entities) {
 			snapshot[entity.id] = {isDeleted: entity.isDeleted, versions: {}}
@@ -740,7 +746,7 @@ export class Database {
 			.orderBy(order) as unknown as ContentTypeDto[];
 	}
 
-	async queryTypesSnapshot(): Promise<EntitySnapshot> {
+	async getTypesSnapshot(): Promise<TableSnapshot> {
 		await this.#ensureInit()
 
 		const entities = await this.#database
@@ -758,7 +764,7 @@ export class Database {
 			})
 			.from(contentTypesVersions)
 
-		const snapshot: EntitySnapshot = {}
+		const snapshot: TableSnapshot = {}
 
 		for (const entity of entities) {
 			snapshot[entity.id] = {isDeleted: entity.isDeleted, versions: {}}
@@ -1152,7 +1158,7 @@ export class Database {
 			.orderBy(order) as unknown as ContentItemDto[];
 	}
 
-	async queryItemsSnapshot(): Promise<EntitySnapshot> {
+	async getItemsSnapshot(): Promise<TableSnapshot> {
 		await this.#ensureInit()
 
 		const entities = await this.#database
@@ -1170,7 +1176,7 @@ export class Database {
 			})
 			.from(contentItemsVersions)
 
-		const snapshot: EntitySnapshot = {}
+		const snapshot: TableSnapshot = {}
 
 		for (const entity of entities) {
 			snapshot[entity.id] = {isDeleted: entity.isDeleted, versions: {}}
@@ -1564,7 +1570,7 @@ export class Database {
 			.orderBy(order) as unknown as ViewDto[];
 	}
 
-	async queryViewsSnapshot(): Promise<EntitySnapshot> {
+	async getViewsSnapshot(): Promise<TableSnapshot> {
 		await this.#ensureInit()
 
 		const entities = await this.#database
@@ -1582,7 +1588,7 @@ export class Database {
 			})
 			.from(viewsVersions)
 
-		const snapshot: EntitySnapshot = {}
+		const snapshot: TableSnapshot = {}
 
 		for (const entity of entities) {
 			snapshot[entity.id] = {isDeleted: entity.isDeleted, versions: {}}
@@ -1773,5 +1779,19 @@ export class Database {
 				this.#platformAdapter.events.unsubscribe(EventTypes.DATA_CHANGE, handleEvent)
 			}
 		})
+	}
+
+	async getSnapshot(): Promise<DatabaseSnapshot> {
+	 	const fieldsSnapshot = await this.getFieldsSnapshot()
+		const typesSnapshot = await this.getTypesSnapshot()
+		const itemsSnapshot = await this.getItemsSnapshot()
+		const viewsSnapshot = await this.getViewsSnapshot()
+
+		return {
+			fields: fieldsSnapshot,
+			contentTypes: typesSnapshot,
+			contentItems: itemsSnapshot,
+			views: viewsSnapshot,
+		}
 	}
 }

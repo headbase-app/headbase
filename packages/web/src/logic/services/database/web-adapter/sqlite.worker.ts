@@ -1,7 +1,7 @@
-import sqlite3InitModule, {SQLite3, SQLite3Database} from "../../../lib/sqlite/sqlite3"
+import sqlite3InitModule, {SQLite3, SQLite3Database} from "../../../../lib/sqlite/sqlite3"
 
 import {ClientMessages, WorkerMessages} from "./messages.ts";
-import {ErrorTypes} from "../../control-flow.ts";
+import {ErrorTypes} from "../../../control-flow.ts";
 
 const DatabaseStore = new Map<string, SQLite3Database>();
 
@@ -41,6 +41,8 @@ function getSqliteFactory() {
 		const sqlite3 = await getSqlite3()
 
 		if (messageEvent.data.type === 'open') {
+			// todo: should throw error or just return if database is already open? (same for mock adapter?)
+
 			const db = new sqlite3.oo1.DB(
 				`/headbase-v1/${messageEvent.data.detail.databaseId}.sqlite3`,
 				'c',

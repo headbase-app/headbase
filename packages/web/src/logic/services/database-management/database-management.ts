@@ -24,7 +24,7 @@ import {
 	LocalDatabaseEntity,
 	UpdateDatabaseDto
 } from "../../schemas/database.ts";
-import {DeviceContext, PlatformAdapter} from "../../../lib/headbase-core/adapter.ts";
+import {DeviceContext, PlatformAdapter} from "../database/adapter.ts";
 
 export interface DatabasesManagementAPIConfig {
 	context: DeviceContext

@@ -1,4 +1,4 @@
-import {EventMap, HeadbaseEvent} from "../../logic/services/events/events.ts";
+import {EventMap, HeadbaseEvent} from "../events/events.ts";
 
 export type SqlDataType = string | number | boolean | null
 

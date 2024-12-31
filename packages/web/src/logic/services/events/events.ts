@@ -1,5 +1,5 @@
 import {UserDto} from "@headbase-app/common";
-import {DeviceContext} from "../../../lib/headbase-core/adapter.ts";
+import {DeviceContext} from "../database/adapter.ts";
 
 export const EventTypes = {
 	// Data Events

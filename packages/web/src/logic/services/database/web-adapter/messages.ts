@@ -1,5 +1,5 @@
-import {DeviceContext, SqlQueryResponse} from "../../../lib/headbase-core/adapter.ts";
-import {HeadbaseError, HeadbaseErrorCause} from "../../control-flow.ts";
+import {DeviceContext, SqlQueryResponse} from "../adapter.ts";
+import {HeadbaseError, HeadbaseErrorCause} from "../../../control-flow.ts";
 
 export interface BaseMessage {
 	messageId: string

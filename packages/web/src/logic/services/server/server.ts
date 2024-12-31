@@ -13,7 +13,7 @@ import {z} from "zod";
 import {Observable} from "rxjs";
 import {AnyHeadbaseEvent, EventTypes} from "../events/events.ts";
 import {LocalUserDto} from "../../schemas/user.ts";
-import {DeviceContext, PlatformAdapter} from "../../../lib/headbase-core/adapter.ts";
+import {DeviceContext, PlatformAdapter} from "../database/adapter.ts";
 
 export type SyncStatus = 'synced' | 'queued' | 'running' | 'error' | 'disabled'
 
