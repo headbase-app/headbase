@@ -15,21 +15,17 @@
  * how will sync service work when the user is not logged in? needs to handle this gracefully
  *
  */
-import {PlatformAdapter} from "../database/adapter.ts";
-import {WebPlatformAdapter} from "../database/web-adapter/web-adapter.ts";
-import {DatabaseSnapshot} from "../database/database.ts";
-import {SyncAction, TABLE_KEYS, TableKey} from "./sync-actions.ts";
+import {IEventsService} from "../database/interfaces.ts";
+import {DatabaseSnapshot} from "../database/database-transactions.ts";
+import {SyncAction, TABLE_KEYS} from "./sync-actions.ts";
 
-export interface SyncServiceConfig {
-	platformAdapter: PlatformAdapter
-}
+export type SyncStatus = 'synced' | 'queued' | 'running' | 'error' | 'disabled'
 
 export class SyncService {
-	readonly #platformAdapter: WebPlatformAdapter
 
-	constructor(config: SyncServiceConfig) {
-		this.#platformAdapter = config.platformAdapter
-	}
+	constructor(
+		private eventsService: IEventsService
+	) {}
 
 	/**
 	 * Compare two snapshots and return the actions required to sync them into the same state.
@@ -44,7 +40,7 @@ export class SyncService {
 			const localTableSnapshot = localSnapshot[tableKey]
 			const localTableIds = Object.keys(localTableSnapshot)
 			const serverTableSnapshot = serverSnapshot[tableKey]
-			const serverTableIds = Object.keys(localTableSnapshot)
+			const serverTableIds = Object.keys(serverTableSnapshot)
 
 			// Upload to server if not deleted and if the server doesn't already have the data.
 			const toUpload = localTableIds.filter(id => !localTableSnapshot[id] && !serverTableIds.includes(id))

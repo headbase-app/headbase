@@ -9,7 +9,7 @@ import {contentTypes, contentTypesVersions} from './tables/content-types.ts';
 import {contentItems, contentItemsVersions} from './tables/content-items.ts';
 import {views, viewsVersions} from './tables/views.ts';
 
-import {DeviceContext, PlatformAdapter} from "./adapter.ts";
+import {DeviceContext, IDatabaseService, IEventsService} from "./interfaces.ts";
 import {DataChangeEvent, EventTypes} from "../events/events.ts";
 import {ErrorTypes, HeadbaseError, LiveQueryResult} from "../../control-flow.ts";
 
@@ -45,7 +45,6 @@ const SCHEMA = {
 
 export interface DatabaseConfig {
 	context: DeviceContext
-	platformAdapter: PlatformAdapter
 }
 
 export interface TableSnapshot {
@@ -70,77 +69,79 @@ export interface GlobalListingOptions {
 }
 
 
-export class Database {
-	readonly #context: DeviceContext;
-	#databaseId: string | null;
+export class DatabaseTransactions {
+	readonly context: DeviceContext;
 	
-	readonly #platformAdapter: PlatformAdapter;
-	#hasInit: boolean
-	
-	readonly #database: SqliteRemoteDatabase<typeof SCHEMA>
+	// todo: support concurrent database connections?
+	private databaseId: string | null;
+	private hasInit: boolean
+	private readonly drizzleDatabase: SqliteRemoteDatabase<typeof SCHEMA>
 
-	constructor(config: DatabaseConfig) {
-		this.#context = config.context
-		this.#databaseId = null
+	constructor(
+		config: DatabaseConfig,
+		private eventsService: IEventsService,
+		private databaseService: IDatabaseService,
+	) {
+		this.context = config.context
+		this.databaseId = null
+		this.hasInit = false;
 
-		this.#platformAdapter = config.platformAdapter;
-		this.#database = drizzle(
+		this.drizzleDatabase = drizzle(
 			async (sql, params) => {
-				if (!this.#databaseId) {
+				if (!this.databaseId) {
 					throw new HeadbaseError({type: ErrorTypes.NO_CURRENT_DATABASE, devMessage: "Attempted to perform transaction when database isn't open"})
 				}
-				return this.#platformAdapter.database.exec(this.#databaseId, sql, params)
+				return this.databaseService.exec(this.databaseId, sql, params)
 			},
 			(queries) => {
 				throw new Error(`[database] Batch queries are not supported yet. Attempted query: ${queries}`)
 			},
 			{casing: 'snake_case', schema: SCHEMA}
 		);
-		this.#hasInit = false;
 	}
 
-	async #ensureInit(): Promise<string> {
-		if (!this.#databaseId) {
+	async ensureInit(): Promise<string> {
+		if (!this.databaseId) {
 			throw new HeadbaseError({type: ErrorTypes.NO_CURRENT_DATABASE, devMessage: "Attempted to perform transaction when database isn't open"})
 		}
 
-		if (!this.#hasInit) {
-			console.debug(`[database] running migrations for '${this.#databaseId}'`);
-			await this.#database.run(sql.raw(migration1))
-			this.#hasInit = true
+		if (!this.hasInit) {
+			console.debug(`[database] running migrations for '${this.databaseId}'`);
+			await this.drizzleDatabase.run(sql.raw(migration1))
+			this.hasInit = true
 		}
 
-		return this.#databaseId
+		return this.databaseId
 	}
 
 	async open(databaseId: string, encryptionKey: string): Promise<void> {
 		const [_version, rawEncryptionKey] = encryptionKey.split('.');
-		await this.#platformAdapter.database.open(databaseId, rawEncryptionKey)
-		this.#databaseId = databaseId
+		await this.databaseService.open(databaseId, rawEncryptionKey)
+		this.databaseId = databaseId
 	}
 
 	async close() {
-		if (!this.#databaseId) {
+		if (!this.databaseId) {
 			throw new HeadbaseError({type: ErrorTypes.NO_CURRENT_DATABASE, devMessage: "Attempted to close database when nothing is open"})
 		}
 
-		await this.#platformAdapter.database.close(this.#databaseId)
-		this.#databaseId = null;
-		console.debug(`[database] closed database '${this.#databaseId}' from context '${this.#context.id}'`)
+		await this.databaseService.close(this.databaseId)
+		this.databaseId = null;
+		console.debug(`[database] closed database '${this.databaseId}' from context '${this.context.id}'`)
 	}
 
 	/**
 	 * Fields
 	 */
 	async createField(createDto: CreateFieldDto): Promise<FieldDto> {
-		const databaseId = await this.#ensureInit()
+		const databaseId = await this.ensureInit()
 		console.debug(`[database] running create field`)
 
 		const entityId = self.crypto.randomUUID()
 		const versionId = self.crypto.randomUUID()
 		const createdAt = new Date().toISOString()
 
-		await this.#database
+		await this.drizzleDatabase
 			.insert(fields)
 			.values({
 				id: entityId,
@@ -150,7 +151,7 @@ export class Database {
 				currentVersionId: versionId
 			})
 
-		await this.#database
+		await this.drizzleDatabase
 			.insert(fieldsVersions)
 			.values({
 				id: versionId,
@@ -167,8 +168,8 @@ export class Database {
 				settings: 'settings' in createDto ? createDto.settings : null,
 			})
 
-		this.#platformAdapter.events.dispatch(EventTypes.DATA_CHANGE, {
-			context: this.#context,
+		this.eventsService.dispatch(EventTypes.DATA_CHANGE, {
+			context: this.context,
 			data: {
 				databaseId,
 				tableKey: 'fields',
@@ -181,7 +182,7 @@ export class Database {
 	}
 
 	async updateField(entityId: string, updateDto: UpdateFieldDto): Promise<FieldDto> {
-		const databaseId = await this.#ensureInit()
+		const databaseId = await this.ensureInit()
 		console.debug(`[database] running update field`)
 
 		const currentEntity = await this.getField(entityId)
@@ -193,14 +194,14 @@ export class Database {
 		const versionId = self.crypto.randomUUID()
 		const updatedAt = new Date().toISOString()
 
-		await this.#database
+		await this.drizzleDatabase
 			.update(fields)
 			.set({
 				currentVersionId: versionId,
 			})
 			.where(eq(fields.id, entityId))
 
-		await this.#database
+		await this.drizzleDatabase
 			.insert(fieldsVersions)
 			.values({
 				id: versionId,
@@ -217,8 +218,8 @@ export class Database {
 				settings: 'settings' in updateDto ? updateDto.settings : null,
 			})
 
-		this.#platformAdapter.events.dispatch(EventTypes.DATA_CHANGE, {
-			context: this.#context,
+		this.eventsService.dispatch(EventTypes.DATA_CHANGE, {
+			context: this.context,
 			data: {
 				databaseId,
 				tableKey: 'fields',
@@ -233,24 +234,24 @@ export class Database {
 	}
 
 	async deleteField(entityId: string): Promise<void> {
-		const databaseId = await this.#ensureInit()
+		const databaseId = await this.ensureInit()
 		console.debug(`[database] running delete field: ${entityId}`)
 
 		// todo: throw error on?
 
-		await this.#database
+		await this.drizzleDatabase
 			.update(fields)
 			.set({
 				isDeleted: true,
 			})
 			.where(eq(fields.id, entityId))
 
-		await this.#database
+		await this.drizzleDatabase
 			.delete(fieldsVersions)
 			.where(eq(fieldsVersions.entityId, entityId))
 
-		this.#platformAdapter.events.dispatch(EventTypes.DATA_CHANGE, {
-			context: this.#context,
+		this.eventsService.dispatch(EventTypes.DATA_CHANGE, {
+			context: this.context,
 			data: {
 				databaseId,
 				tableKey: 'fields',
@@ -261,10 +262,10 @@ export class Database {
 	}
 
 	async getField(entityId: string): Promise<FieldDto> {
-		await this.#ensureInit()
+		await this.ensureInit()
 		console.debug(`[database] running get field: ${entityId}`)
 
-		const results = await this.#database
+		const results = await this.drizzleDatabase
 			.select({
 				id: fields.id,
 				createdAt: fields.createdAt,
@@ -297,7 +298,7 @@ export class Database {
 	}
 
 	async queryFields(options?: GlobalListingOptions): Promise<FieldDto[]> {
-		await this.#ensureInit()
+		await this.ensureInit()
 		console.debug(`[database] running get fields`)
 
 		const filters: SQL[] = [
@@ -311,7 +312,7 @@ export class Database {
 
 		const order: SQL = desc(fieldsVersions.createdAt)
 
-		return this.#database
+		return this.drizzleDatabase
 			.select({
 				id: fields.id,
 				createdAt: fields.createdAt,
@@ -333,16 +334,16 @@ export class Database {
 	}
 
 	async getFieldsSnapshot(): Promise<TableSnapshot> {
-		await this.#ensureInit()
+		await this.ensureInit()
 
-		const entities = await this.#database
+		const entities = await this.drizzleDatabase
 			.select({
 				id: fields.id,
 				isDeleted: fields.isDeleted,
 			})
 			.from(fields)
 
-		const versions = await this.#database
+		const versions = await this.drizzleDatabase
 			.select({
 				id: fieldsVersions.id,
 				entityId: fieldsVersions.entityId,
@@ -381,7 +382,7 @@ export class Database {
 
 			const handleEvent = (e: CustomEvent<DataChangeEvent['detail']>) => {
 				if (
-					e.detail.data.databaseId === this.#databaseId &&
+					e.detail.data.databaseId === this.databaseId &&
 					e.detail.data.tableKey === 'fields' &&
 					e.detail.data.id === entityId
 				) {
@@ -390,12 +391,12 @@ export class Database {
 				}
 			}
 
-			this.#platformAdapter.events.subscribe(EventTypes.DATA_CHANGE, handleEvent)
+			this.eventsService.subscribe(EventTypes.DATA_CHANGE, handleEvent)
 
 			runQuery()
 
 			return () => {
-				this.#platformAdapter.events.unsubscribe(EventTypes.DATA_CHANGE, handleEvent)
+				this.eventsService.unsubscribe(EventTypes.DATA_CHANGE, handleEvent)
 			}
 		})
 	}
@@ -412,7 +413,7 @@ export class Database {
 
 			const handleEvent = (e: CustomEvent<DataChangeEvent['detail']>) => {
 				if (
-					e.detail.data.databaseId === this.#databaseId &&
+					e.detail.data.databaseId === this.databaseId &&
 					e.detail.data.tableKey === 'fields'
 				) {
 					console.debug(`[observableGet] Received event that requires re-query`)
@@ -420,21 +421,21 @@ export class Database {
 				}
 			}
 
-			this.#platformAdapter.events.subscribe(EventTypes.DATA_CHANGE, handleEvent)
+			this.eventsService.subscribe(EventTypes.DATA_CHANGE, handleEvent)
 
 			runQuery()
 
 			return () => {
-				this.#platformAdapter.events.unsubscribe(EventTypes.DATA_CHANGE, handleEvent)
+				this.eventsService.unsubscribe(EventTypes.DATA_CHANGE, handleEvent)
 			}
 		})
 	}
 
 	async getFieldVersion(versionId: string) {
-		await this.#ensureInit()
+		await this.ensureInit()
 		console.debug(`[database] running getFieldVersion: ${versionId}`)
 
-		return this.#database
+		return this.drizzleDatabase
 			.select({
 				id: fieldsVersions.id,
 				createdAt: fieldsVersions.createdAt,
@@ -453,10 +454,10 @@ export class Database {
 	}
 
 	async getFieldVersions(entityId: string) {
-		await this.#ensureInit()
+		await this.ensureInit()
 		console.debug(`[database] running getFieldVersions: ${entityId}`)
 
-		return this.#database
+		return this.drizzleDatabase
 			.select({
 				id: fieldsVersions.id,
 				createdAt: fieldsVersions.createdAt,
@@ -476,9 +477,9 @@ export class Database {
 	}
 
 	async deleteFieldVersion(versionId: string): Promise<void> {
-		const databaseId = await this.#ensureInit()
+		const databaseId = await this.ensureInit()
 
-		const version = await this.#database
+		const version = await this.drizzleDatabase
 			.select({id: fieldsVersions.id, entityId: fieldsVersions.entityId})
 			.from(fieldsVersions)
 			.where(eq(fieldsVersions.id, versionId))
@@ -486,7 +487,7 @@ export class Database {
 			throw new Error('Version not found')
 		}
 
-		const currentEntity = await this.#database
+		const currentEntity = await this.drizzleDatabase
 			.select({id: fields.id, currentVersionId: fields.currentVersionId})
 			.from(fields)
 			.where(eq(fields.id, version[0].entityId))
@@ -498,12 +499,12 @@ export class Database {
 			throw new Error('Attempted to delete current version')
 		}
 
-		await this.#database
+		await this.drizzleDatabase
 			.delete(fieldsVersions)
 			.where(eq(fieldsVersions.id, versionId))
 
-		this.#platformAdapter.events.dispatch(EventTypes.DATA_CHANGE, {
-			context: this.#context,
+		this.eventsService.dispatch(EventTypes.DATA_CHANGE, {
+			context: this.context,
 			data: {
 				databaseId,
 				tableKey: 'fields',
@@ -525,7 +526,7 @@ export class Database {
 
 			const handleEvent = (e: CustomEvent<DataChangeEvent['detail']>) => {
 				if (
-					e.detail.data.databaseId === this.#databaseId &&
+					e.detail.data.databaseId === this.databaseId &&
 					e.detail.data.tableKey === 'fields' &&
 					e.detail.data.id === entityId
 				) {
@@ -534,10 +535,10 @@ export class Database {
 				}
 			}
 
-			this.#platformAdapter.events.subscribe(EventTypes.DATA_CHANGE, handleEvent)
+			this.eventsService.subscribe(EventTypes.DATA_CHANGE, handleEvent)
 
 			return () => {
-				this.#platformAdapter.events.unsubscribe(EventTypes.DATA_CHANGE, handleEvent)
+				this.eventsService.unsubscribe(EventTypes.DATA_CHANGE, handleEvent)
 			}
 		})
 	}
@@ -546,13 +547,13 @@ export class Database {
 	 * Content types
 	 */
 	async createType(createDto: CreateContentTypeDto): Promise<ContentTypeDto> {
-		const databaseId = await this.#ensureInit()
+		const databaseId = await this.ensureInit()
 
 		const entityId = self.crypto.randomUUID()
 		const versionId = self.crypto.randomUUID()
 		const createdAt = new Date().toISOString()
 
-		await this.#database
+		await this.drizzleDatabase
 			.insert(contentTypes)
 			.values({
 				id: entityId,
@@ -562,7 +563,7 @@ export class Database {
 				currentVersionId: versionId
 			})
 
-		await this.#database
+		await this.drizzleDatabase
 			.insert(contentTypesVersions)
 			.values({
 				id: versionId,
@@ -581,8 +582,8 @@ export class Database {
 				templateFields: createDto.templateFields,
 			})
 
-		this.#platformAdapter.events.dispatch(EventTypes.DATA_CHANGE, {
-			context: this.#context,
+		this.eventsService.dispatch(EventTypes.DATA_CHANGE, {
+			context: this.context,
 			data: {
 				databaseId,
 				tableKey: 'content_types',
@@ -595,21 +596,21 @@ export class Database {
 	}
 
 	async updateType(entityId: string, updateDto: UpdateContentTypeDto): Promise<ContentTypeDto> {
-		const databaseId = await this.#ensureInit()
+		const databaseId = await this.ensureInit()
 
 		const currentEntity = await this.getType(entityId)
 
 		const versionId = self.crypto.randomUUID()
 		const updatedAt = new Date().toISOString()
 
-		await this.#database
+		await this.drizzleDatabase
 			.update(contentTypes)
 			.set({
 				currentVersionId: versionId,
 			})
 			.where(eq(contentTypes.id, entityId))
 
-		await this.#database
+		await this.drizzleDatabase
 			.insert(contentTypesVersions)
 			.values({
 				id: versionId,
@@ -628,8 +629,8 @@ export class Database {
 				templateFields: updateDto.templateFields,
 			})
 
-		this.#platformAdapter.events.dispatch(EventTypes.DATA_CHANGE, {
-			context: this.#context,
+		this.eventsService.dispatch(EventTypes.DATA_CHANGE, {
+			context: this.context,
 			data: {
 				databaseId,
 				tableKey: 'content_types',
@@ -644,12 +645,12 @@ export class Database {
 	}
 
 	async deleteType(entityId: string): Promise<void> {
-		const databaseId = await this.#ensureInit()
+		const databaseId = await this.ensureInit()
 		console.debug(`[database] running delete field: ${entityId}`)
 
 		// todo: throw error on?
 
-		await this.#database
+		await this.drizzleDatabase
 			.update(contentTypes)
 			.set({
 				isDeleted: true,
@@ -657,12 +658,12 @@ export class Database {
 			.where(eq(contentTypes.id, entityId))
 
 		// todo: should retain latest version just in case?
-		await this.#database
+		await this.drizzleDatabase
 			.delete(contentTypesVersions)
 			.where(eq(contentTypesVersions.entityId, entityId))
 
-		this.#platformAdapter.events.dispatch(EventTypes.DATA_CHANGE, {
-			context: this.#context,
+		this.eventsService.dispatch(EventTypes.DATA_CHANGE, {
+			context: this.context,
 			data: {
 				databaseId,
 				tableKey: 'content_types',
@@ -673,9 +674,9 @@ export class Database {
 	}
 
 	async getType(entityId: string): Promise<ContentTypeDto> {
-		await this.#ensureInit()
+		await this.ensureInit()
 
-		const results = await this.#database
+		const results = await this.drizzleDatabase
 			.select({
 				id: contentTypes.id,
 				createdAt: contentTypes.createdAt,
@@ -710,7 +711,7 @@ export class Database {
 	}
 
 	async queryTypes(options?: GlobalListingOptions): Promise<ContentTypeDto[]> {
-		await this.#ensureInit()
+		await this.ensureInit()
 
 		const filters: SQL[] = [
 			eq(contentTypes.currentVersionId, contentTypesVersions.id)
@@ -723,7 +724,7 @@ export class Database {
 
 		const order: SQL = desc(contentTypesVersions.createdAt)
 
-		return this.#database
+		return this.drizzleDatabase
 			.select({
 				id: contentTypes.id,
 				createdAt: contentTypes.createdAt,
@@ -747,16 +748,16 @@ export class Database {
 	}
 
 	async getTypesSnapshot(): Promise<TableSnapshot> {
-		await this.#ensureInit()
+		await this.ensureInit()
 
-		const entities = await this.#database
+		const entities = await this.drizzleDatabase
 			.select({
 				id: contentTypes.id,
 				isDeleted: contentTypes.isDeleted,
 			})
 			.from(contentTypes)
 
-		const versions = await this.#database
+		const versions = await this.drizzleDatabase
 			.select({
 				id: contentTypesVersions.id,
 				entityId: contentTypesVersions.entityId,
@@ -795,7 +796,7 @@ export class Database {
 
 			const handleEvent = (e: CustomEvent<DataChangeEvent['detail']>) => {
 				if (
-					e.detail.data.databaseId === this.#databaseId &&
+					e.detail.data.databaseId === this.databaseId &&
 					e.detail.data.tableKey === 'content_types' &&
 					e.detail.data.id === entityId
 				) {
@@ -803,12 +804,12 @@ export class Database {
 				}
 			}
 
-			this.#platformAdapter.events.subscribe(EventTypes.DATA_CHANGE, handleEvent)
+			this.eventsService.subscribe(EventTypes.DATA_CHANGE, handleEvent)
 
 			runQuery()
 
 			return () => {
-				this.#platformAdapter.events.unsubscribe(EventTypes.DATA_CHANGE, handleEvent)
+				this.eventsService.unsubscribe(EventTypes.DATA_CHANGE, handleEvent)
 			}
 		})
 	}
@@ -831,27 +832,27 @@ export class Database {
 
 			const handleEvent = (e: CustomEvent<DataChangeEvent['detail']>) => {
 				if (
-					e.detail.data.databaseId === this.#databaseId &&
+					e.detail.data.databaseId === this.databaseId &&
 					e.detail.data.tableKey === 'content_types'
 				) {
 					runQuery()
 				}
 			}
 
-			this.#platformAdapter.events.subscribe(EventTypes.DATA_CHANGE, handleEvent)
+			this.eventsService.subscribe(EventTypes.DATA_CHANGE, handleEvent)
 
 			runQuery()
 
 			return () => {
-				this.#platformAdapter.events.unsubscribe(EventTypes.DATA_CHANGE, handleEvent)
+				this.eventsService.unsubscribe(EventTypes.DATA_CHANGE, handleEvent)
 			}
 		})
 	}
 
 	async getTypeVersion(versionId: string) {
-		await this.#ensureInit()
+		await this.ensureInit()
 
-		return this.#database
+		return this.drizzleDatabase
 			.select({
 				id: contentTypesVersions.id,
 				createdAt: contentTypesVersions.createdAt,
@@ -872,9 +873,9 @@ export class Database {
 	}
 
 	async getTypeVersions(entityId: string) {
-		await this.#ensureInit()
+		await this.ensureInit()
 
-		return this.#database
+		return this.drizzleDatabase
 			.select({
 				id: contentTypesVersions.id,
 				createdAt: contentTypesVersions.createdAt,
@@ -896,9 +897,9 @@ export class Database {
 	}
 
 	async deleteTypeVersion(versionId: string): Promise<void> {
-		const databaseId = await this.#ensureInit()
+		const databaseId = await this.ensureInit()
 
-		const version = await this.#database
+		const version = await this.drizzleDatabase
 			.select({id: contentTypesVersions.id, entityId: contentTypesVersions.entityId})
 			.from(contentTypesVersions)
 			.where(eq(contentTypesVersions.id, versionId))
@@ -906,7 +907,7 @@ export class Database {
 			throw new Error('Version not found')
 		}
 
-		const currentEntity = await this.#database
+		const currentEntity = await this.drizzleDatabase
 			.select({id: contentTypes.id, currentVersionId: contentTypes.currentVersionId})
 			.from(contentTypes)
 			.where(eq(contentTypes.id, version[0].entityId))
@@ -918,12 +919,12 @@ export class Database {
 			throw new Error('Attempted to delete current version')
 		}
 
-		await this.#database
+		await this.drizzleDatabase
 			.delete(fieldsVersions)
 			.where(eq(fieldsVersions.id, versionId))
 
-		this.#platformAdapter.events.dispatch(EventTypes.DATA_CHANGE, {
-			context: this.#context,
+		this.eventsService.dispatch(EventTypes.DATA_CHANGE, {
+			context: this.context,
 			data: {
 				databaseId,
 				tableKey: 'fields',
@@ -945,7 +946,7 @@ export class Database {
 
 			const handleEvent = (e: CustomEvent<DataChangeEvent['detail']>) => {
 				if (
-					e.detail.data.databaseId === this.#databaseId &&
+					e.detail.data.databaseId === this.databaseId &&
 					e.detail.data.tableKey === 'content_types' &&
 					e.detail.data.id === entityId
 				) {
@@ -953,10 +954,10 @@ export class Database {
 				}
 			}
 
-			this.#platformAdapter.events.subscribe(EventTypes.DATA_CHANGE, handleEvent)
+			this.eventsService.subscribe(EventTypes.DATA_CHANGE, handleEvent)
 
 			return () => {
-				this.#platformAdapter.events.unsubscribe(EventTypes.DATA_CHANGE, handleEvent)
+				this.eventsService.unsubscribe(EventTypes.DATA_CHANGE, handleEvent)
 			}
 		})
 	}
@@ -966,13 +967,13 @@ export class Database {
 	 * Content items
 	 */
 	async createItem(createDto: CreateContentItemDto): Promise<ContentItemDto> {
-		const databaseId = await this.#ensureInit()
+		const databaseId = await this.ensureInit()
 
 		const entityId = self.crypto.randomUUID()
 		const versionId = self.crypto.randomUUID()
 		const createdAt = new Date().toISOString()
 
-		await this.#database
+		await this.drizzleDatabase
 			.insert(contentItems)
 			.values({
 				id: entityId,
@@ -982,7 +983,7 @@ export class Database {
 				currentVersionId: versionId
 			})
 
-		await this.#database
+		await this.drizzleDatabase
 			.insert(contentItemsVersions)
 			.values({
 				id: versionId,
@@ -999,8 +1000,8 @@ export class Database {
 				fields: createDto.fields,
 			})
 
-		this.#platformAdapter.events.dispatch(EventTypes.DATA_CHANGE, {
-			context: this.#context,
+		this.eventsService.dispatch(EventTypes.DATA_CHANGE, {
+			context: this.context,
 			data: {
 				databaseId,
 				tableKey: 'content_items',
@@ -1013,21 +1014,21 @@ export class Database {
 	}
 
 	async updateItem(entityId: string, updateDto: UpdateContentItemDto): Promise<ContentItemDto> {
-		const databaseId = await this.#ensureInit()
+		const databaseId = await this.ensureInit()
 
 		const currentEntity = await this.getItem(entityId)
 
 		const versionId = self.crypto.randomUUID()
 		const updatedAt = new Date().toISOString()
 
-		await this.#database
+		await this.drizzleDatabase
 			.update(contentItems)
 			.set({
 				currentVersionId: versionId,
 			})
 			.where(eq(contentItems.id, entityId))
 
-		await this.#database
+		await this.drizzleDatabase
 			.insert(contentItemsVersions)
 			.values({
 				id: versionId,
@@ -1044,8 +1045,8 @@ export class Database {
 				fields: updateDto.fields,
 			})
 
-		this.#platformAdapter.events.dispatch(EventTypes.DATA_CHANGE, {
-			context: this.#context,
+		this.eventsService.dispatch(EventTypes.DATA_CHANGE, {
+			context: this.context,
 			data: {
 				databaseId,
 				tableKey: 'content_items',
@@ -1060,12 +1061,12 @@ export class Database {
 	}
 
 	async deleteItem(entityId: string): Promise<void> {
-		const databaseId = await this.#ensureInit()
+		const databaseId = await this.ensureInit()
 		console.debug(`[database] running delete field: ${entityId}`)
 
 		// todo: throw error on?
 
-		await this.#database
+		await this.drizzleDatabase
 			.update(contentItems)
 			.set({
 				isDeleted: true,
@@ -1073,12 +1074,12 @@ export class Database {
 			.where(eq(contentItems.id, entityId))
 
 		// todo: should retain latest version just in case?
-		await this.#database
+		await this.drizzleDatabase
 			.delete(contentItemsVersions)
 			.where(eq(contentItemsVersions.entityId, entityId))
 
-		this.#platformAdapter.events.dispatch(EventTypes.DATA_CHANGE, {
-			context: this.#context,
+		this.eventsService.dispatch(EventTypes.DATA_CHANGE, {
+			context: this.context,
 			data: {
 				databaseId,
 				tableKey: 'content_items',
@@ -1089,9 +1090,9 @@ export class Database {
 	}
 
 	async getItem(entityId: string): Promise<ContentItemDto> {
-		await this.#ensureInit()
+		await this.ensureInit()
 
-		const results = await this.#database
+		const results = await this.drizzleDatabase
 			.select({
 				id: contentItems.id,
 				createdAt: contentItems.createdAt,
@@ -1124,7 +1125,7 @@ export class Database {
 	}
 
 	async queryItems(options?: GlobalListingOptions): Promise<ContentItemDto[]> {
-		await this.#ensureInit()
+		await this.ensureInit()
 
 		const filters: SQL[] = [
 			eq(contentItems.currentVersionId, contentItemsVersions.id)
@@ -1137,7 +1138,7 @@ export class Database {
 
 		const order: SQL = desc(contentItemsVersions.createdAt)
 
-		return this.#database
+		return this.drizzleDatabase
 			.select({
 				id: contentItems.id,
 				createdAt: contentItems.createdAt,
@@ -1159,16 +1160,16 @@ export class Database {
 	}
 
 	async getItemsSnapshot(): Promise<TableSnapshot> {
-		await this.#ensureInit()
+		await this.ensureInit()
 
-		const entities = await this.#database
+		const entities = await this.drizzleDatabase
 			.select({
 				id: contentItems.id,
 				isDeleted: contentItems.isDeleted,
 			})
 			.from(contentItems)
 
-		const versions = await this.#database
+		const versions = await this.drizzleDatabase
 			.select({
 				id: contentItemsVersions.id,
 				entityId: contentItemsVersions.entityId,
@@ -1207,7 +1208,7 @@ export class Database {
 
 			const handleEvent = (e: CustomEvent<DataChangeEvent['detail']>) => {
 				if (
-					e.detail.data.databaseId === this.#databaseId &&
+					e.detail.data.databaseId === this.databaseId &&
 					e.detail.data.tableKey === 'content_items' &&
 					e.detail.data.id === entityId
 				) {
@@ -1215,12 +1216,12 @@ export class Database {
 				}
 			}
 
-			this.#platformAdapter.events.subscribe(EventTypes.DATA_CHANGE, handleEvent)
+			this.eventsService.subscribe(EventTypes.DATA_CHANGE, handleEvent)
 
 			runQuery()
 
 			return () => {
-				this.#platformAdapter.events.unsubscribe(EventTypes.DATA_CHANGE, handleEvent)
+				this.eventsService.unsubscribe(EventTypes.DATA_CHANGE, handleEvent)
 			}
 		})
 	}
@@ -1237,27 +1238,27 @@ export class Database {
 
 			const handleEvent = (e: CustomEvent<DataChangeEvent['detail']>) => {
 				if (
-					e.detail.data.databaseId === this.#databaseId &&
+					e.detail.data.databaseId === this.databaseId &&
 					e.detail.data.tableKey === 'content_items'
 				) {
 					runQuery()
 				}
 			}
 
-			this.#platformAdapter.events.subscribe(EventTypes.DATA_CHANGE, handleEvent)
+			this.eventsService.subscribe(EventTypes.DATA_CHANGE, handleEvent)
 
 			runQuery()
 
 			return () => {
-				this.#platformAdapter.events.unsubscribe(EventTypes.DATA_CHANGE, handleEvent)
+				this.eventsService.unsubscribe(EventTypes.DATA_CHANGE, handleEvent)
 			}
 		})
 	}
 
 	async getItemVersion(versionId: string) {
-		await this.#ensureInit()
+		await this.ensureInit()
 
-		return this.#database
+		return this.drizzleDatabase
 			.select({
 				id: contentItemsVersions.id,
 				createdAt: contentItemsVersions.createdAt,
@@ -1276,9 +1277,9 @@ export class Database {
 	}
 
 	async getItemVersions(entityId: string) {
-		await this.#ensureInit()
+		await this.ensureInit()
 
-		return this.#database
+		return this.drizzleDatabase
 			.select({
 				id: contentItemsVersions.id,
 				createdAt: contentItemsVersions.createdAt,
@@ -1298,9 +1299,9 @@ export class Database {
 	}
 
 	async deleteItemVersion(versionId: string): Promise<void> {
-		const databaseId = await this.#ensureInit()
+		const databaseId = await this.ensureInit()
 
-		const version = await this.#database
+		const version = await this.drizzleDatabase
 			.select({id: contentItemsVersions.id, entityId: contentItemsVersions.entityId})
 			.from(contentItemsVersions)
 			.where(eq(contentItemsVersions.id, versionId))
@@ -1308,7 +1309,7 @@ export class Database {
 			throw new Error('Version not found')
 		}
 
-		const currentEntity = await this.#database
+		const currentEntity = await this.drizzleDatabase
 			.select({id: contentItems.id, currentVersionId: contentItems.currentVersionId})
 			.from(contentItems)
 			.where(eq(contentItems.id, version[0].entityId))
@@ -1320,12 +1321,12 @@ export class Database {
 			throw new Error('Attempted to delete current version')
 		}
 
-		await this.#database
+		await this.drizzleDatabase
 			.delete(contentItemsVersions)
 			.where(eq(contentItemsVersions.id, versionId))
 
-		this.#platformAdapter.events.dispatch(EventTypes.DATA_CHANGE, {
-			context: this.#context,
+		this.eventsService.dispatch(EventTypes.DATA_CHANGE, {
+			context: this.context,
 			data: {
 				databaseId,
 				tableKey: 'content_items',
@@ -1347,7 +1348,7 @@ export class Database {
 
 			const handleEvent = (e: CustomEvent<DataChangeEvent['detail']>) => {
 				if (
-					e.detail.data.databaseId === this.#databaseId &&
+					e.detail.data.databaseId === this.databaseId &&
 					e.detail.data.tableKey === 'content_items' &&
 					e.detail.data.id === entityId
 				) {
@@ -1355,10 +1356,10 @@ export class Database {
 				}
 			}
 
-			this.#platformAdapter.events.subscribe(EventTypes.DATA_CHANGE, handleEvent)
+			this.eventsService.subscribe(EventTypes.DATA_CHANGE, handleEvent)
 
 			return () => {
-				this.#platformAdapter.events.unsubscribe(EventTypes.DATA_CHANGE, handleEvent)
+				this.eventsService.unsubscribe(EventTypes.DATA_CHANGE, handleEvent)
 			}
 		})
 	}
@@ -1367,14 +1368,14 @@ export class Database {
 	 * Views
 	 */
 	async createView(createDto: CreateViewDto): Promise<ViewDto> {
-		const databaseId = await this.#ensureInit()
-		await this.#ensureInit()
+		const databaseId = await this.ensureInit()
+		await this.ensureInit()
 
 		const entityId = self.crypto.randomUUID()
 		const versionId = self.crypto.randomUUID()
 		const createdAt = new Date().toISOString()
 
-		await this.#database
+		await this.drizzleDatabase
 			.insert(views)
 			.values({
 				id: entityId,
@@ -1384,7 +1385,7 @@ export class Database {
 				currentVersionId: versionId
 			})
 
-		await this.#database
+		await this.drizzleDatabase
 			.insert(viewsVersions)
 			.values({
 				id: versionId,
@@ -1404,8 +1405,8 @@ export class Database {
 				settings: createDto.settings,
 			})
 
-		this.#platformAdapter.events.dispatch(EventTypes.DATA_CHANGE, {
-			context: this.#context,
+		this.eventsService.dispatch(EventTypes.DATA_CHANGE, {
+			context: this.context,
 			data: {
 				databaseId,
 				tableKey: 'views',
@@ -1418,21 +1419,21 @@ export class Database {
 	}
 
 	async updateView(entityId: string, updateDto: UpdateViewDto): Promise<ViewDto> {
-		const databaseId = await this.#ensureInit()
+		const databaseId = await this.ensureInit()
 
 		const currentEntity = await this.getView(entityId)
 
 		const versionId = self.crypto.randomUUID()
 		const updatedAt = new Date().toISOString()
 
-		await this.#database
+		await this.drizzleDatabase
 			.update(views)
 			.set({
 				currentVersionId: versionId,
 			})
 			.where(eq(views.id, entityId))
 
-		await this.#database
+		await this.drizzleDatabase
 			.insert(viewsVersions)
 			.values({
 				id: versionId,
@@ -1452,8 +1453,8 @@ export class Database {
 				settings: updateDto.settings,
 			})
 
-		this.#platformAdapter.events.dispatch(EventTypes.DATA_CHANGE, {
-			context: this.#context,
+		this.eventsService.dispatch(EventTypes.DATA_CHANGE, {
+			context: this.context,
 			data: {
 				databaseId,
 				tableKey: 'views',
@@ -1468,10 +1469,10 @@ export class Database {
 	}
 
 	async deleteView(entityId: string): Promise<void> {
-		const databaseId = await this.#ensureInit()
+		const databaseId = await this.ensureInit()
 		// todo: throw error on not existing?
 
-		await this.#database
+		await this.drizzleDatabase
 			.update(views)
 			.set({
 				isDeleted: true,
@@ -1479,12 +1480,12 @@ export class Database {
 			.where(eq(views.id, entityId))
 
 		// todo: should retain latest version just in case?
-		await this.#database
+		await this.drizzleDatabase
 			.delete(viewsVersions)
 			.where(eq(viewsVersions.entityId, entityId))
 
-		this.#platformAdapter.events.dispatch(EventTypes.DATA_CHANGE, {
-			context: this.#context,
+		this.eventsService.dispatch(EventTypes.DATA_CHANGE, {
+			context: this.context,
 			data: {
 				databaseId,
 				tableKey: 'views',
@@ -1495,9 +1496,9 @@ export class Database {
 	}
 
 	async getView(entityId: string): Promise<ViewDto> {
-		await this.#ensureInit()
+		await this.ensureInit()
 
-		const results = await this.#database
+		const results = await this.drizzleDatabase
 			.select({
 				id: views.id,
 				createdAt: views.createdAt,
@@ -1533,7 +1534,7 @@ export class Database {
 	}
 
 	async queryViews(options?: GlobalListingOptions): Promise<ViewDto[]> {
-		await this.#ensureInit()
+		await this.ensureInit()
 
 		const filters: SQL[] = [
 			eq(views.currentVersionId, viewsVersions.id)
@@ -1546,7 +1547,7 @@ export class Database {
 
 		const order: SQL = desc(viewsVersions.createdAt)
 
-		return this.#database
+		return this.drizzleDatabase
 			.select({
 				id: views.id,
 				createdAt: views.createdAt,
@@ -1571,16 +1572,16 @@ export class Database {
 	}
 
 	async getViewsSnapshot(): Promise<TableSnapshot> {
-		await this.#ensureInit()
+		await this.ensureInit()
 
-		const entities = await this.#database
+		const entities = await this.drizzleDatabase
 			.select({
 				id: views.id,
 				isDeleted: views.isDeleted,
 			})
 			.from(views)
 
-		const versions = await this.#database
+		const versions = await this.drizzleDatabase
 			.select({
 				id: viewsVersions.id,
 				entityId: viewsVersions.entityId,
@@ -1619,7 +1620,7 @@ export class Database {
 
 			const handleEvent = (e: CustomEvent<DataChangeEvent['detail']>) => {
 				if (
-					e.detail.data.databaseId === this.#databaseId &&
+					e.detail.data.databaseId === this.databaseId &&
 					e.detail.data.tableKey === 'views' &&
 					e.detail.data.id === entityId
 				) {
@@ -1627,12 +1628,12 @@ export class Database {
 				}
 			}
 
-			this.#platformAdapter.events.subscribe(EventTypes.DATA_CHANGE, handleEvent)
+			this.eventsService.subscribe(EventTypes.DATA_CHANGE, handleEvent)
 
 			runQuery()
 
 			return () => {
-				this.#platformAdapter.events.unsubscribe(EventTypes.DATA_CHANGE, handleEvent)
+				this.eventsService.unsubscribe(EventTypes.DATA_CHANGE, handleEvent)
 			}
 		})
 	}
@@ -1649,27 +1650,27 @@ export class Database {
 
 			const handleEvent = (e: CustomEvent<DataChangeEvent['detail']>) => {
 				if (
-					e.detail.data.databaseId === this.#databaseId &&
+					e.detail.data.databaseId === this.databaseId &&
 					e.detail.data.tableKey === 'views'
 				) {
 					runQuery()
 				}
 			}
 
-			this.#platformAdapter.events.subscribe(EventTypes.DATA_CHANGE, handleEvent)
+			this.eventsService.subscribe(EventTypes.DATA_CHANGE, handleEvent)
 
 			runQuery()
 
 			return () => {
-				this.#platformAdapter.events.unsubscribe(EventTypes.DATA_CHANGE, handleEvent)
+				this.eventsService.unsubscribe(EventTypes.DATA_CHANGE, handleEvent)
 			}
 		})
 	}
 
 	async getViewVersion(versionId: string) {
-		await this.#ensureInit()
+		await this.ensureInit()
 
-		return this.#database
+		return this.drizzleDatabase
 			.select({
 				id: viewsVersions.id,
 				createdAt: viewsVersions.createdAt,
@@ -1691,9 +1692,9 @@ export class Database {
 	}
 
 	async getViewVersions(entityId: string) {
-		await this.#ensureInit()
+		await this.ensureInit()
 
-		return this.#database
+		return this.drizzleDatabase
 			.select({
 				id: viewsVersions.id,
 				createdAt: viewsVersions.createdAt,
@@ -1716,9 +1717,9 @@ export class Database {
 	}
 
 	async deleteViewVersion(versionId: string): Promise<void> {
-		const databaseId = await this.#ensureInit()
+		const databaseId = await this.ensureInit()
 
-		const version = await this.#database
+		const version = await this.drizzleDatabase
 			.select({id: viewsVersions.id, entityId: viewsVersions.entityId})
 			.from(viewsVersions)
 			.where(eq(viewsVersions.id, versionId))
@@ -1726,7 +1727,7 @@ export class Database {
 			throw new Error('Version not found')
 		}
 
-		const currentEntity = await this.#database
+		const currentEntity = await this.drizzleDatabase
 			.select({id: views.id, currentVersionId: views.currentVersionId})
 			.from(views)
 			.where(eq(views.id, version[0].entityId))
@@ -1738,12 +1739,12 @@ export class Database {
 			throw new Error('Attempted to delete current version')
 		}
 
-		await this.#database
+		await this.drizzleDatabase
 			.delete(viewsVersions)
 			.where(eq(viewsVersions.id, versionId))
 
-		this.#platformAdapter.events.dispatch(EventTypes.DATA_CHANGE, {
-			context: this.#context,
+		this.eventsService.dispatch(EventTypes.DATA_CHANGE, {
+			context: this.context,
 			data: {
 				databaseId,
 				tableKey: 'views',
@@ -1765,7 +1766,7 @@ export class Database {
 
 			const handleEvent = (e: CustomEvent<DataChangeEvent['detail']>) => {
 				if (
-					e.detail.data.databaseId === this.#databaseId &&
+					e.detail.data.databaseId === this.databaseId &&
 					e.detail.data.tableKey === 'views' &&
 					e.detail.data.id === entityId
 				) {
@@ -1773,10 +1774,10 @@ export class Database {
 				}
 			}
 
-			this.#platformAdapter.events.subscribe(EventTypes.DATA_CHANGE, handleEvent)
+			this.eventsService.subscribe(EventTypes.DATA_CHANGE, handleEvent)
 
 			return () => {
-				this.#platformAdapter.events.unsubscribe(EventTypes.DATA_CHANGE, handleEvent)
+				this.eventsService.unsubscribe(EventTypes.DATA_CHANGE, handleEvent)
 			}
 		})
 	}

@@ -7,7 +7,11 @@ These files were copied from https://github.com/utelle/SQLite3MultipleCiphers/re
 SQLite WASM is [released into the public domain](https://www.sqlite.org/copyright.html) and SQLite3MultipleCiphers (and these files) is [licensed under the MIT license](https://github.com/utelle/SQLite3MultipleCiphers/blob/main/LICENSE).
 
 ## WASM loading
-The actual `sqlite3.wasm` file is located at `public/assets/sqlite3.wasm` and is copied into the build as-is.  
-The `/assets/` folder is used to match the build output folder of Vite, and the WASM file is placed directly in the public
-folder to bypass all build optimizations.  
-When the WASM file was places in this source directory, it was getting transformed during build and I couldn't get any configuration working to prevent this.
+The `sqlite3.wasm` and `sqlite3-opfs-async-proxy.js` files have also been copied to `public/assets/`!  
+
+These files are loaded as expected during dev mode, however when the app is built SQLite
+requests these files from the `/assets/` public folder (the Vite build itself).
+At that point they have been transformed and renamed by the Vite build tooling and so can't be found.  
+
+Copying the file directly into the public assets fixes this issue, however long-term it would be better to find 
+a way to stop these files being transformed, or find a way for SQLite to load the files with the Vite build hash.

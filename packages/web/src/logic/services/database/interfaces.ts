@@ -12,12 +12,12 @@ export interface DeviceContext {
 }
 
 
-export interface DatabaseAdapterConfig {
+export interface DatabaseServiceConfig {
 	context: DeviceContext
 }
 
-export abstract class DatabaseAdapter {
-	constructor(config: DatabaseAdapterConfig) {}
+export abstract class IDatabaseService {
+	constructor(config: DatabaseServiceConfig) {}
 	async open(databaseId: string, encryptionKey: string) {}
 	async close(databaseId: string) {}
 	async exec(databaseId: string, sql: string, params: SqlDataType[]): Promise<SqlQueryResponse> {
@@ -27,28 +27,16 @@ export abstract class DatabaseAdapter {
 }
 
 
-export interface EventsAdapterConfig {
+export interface EventsServiceConfig {
 	context: DeviceContext
 }
 
-export abstract class EventsAdapter {
-	constructor(config: EventsAdapterConfig) {}
+export abstract class IEventsService {
+	constructor(config: EventsServiceConfig) {}
 	dispatch<Event extends keyof EventMap>(type: Event, data: EventMap[Event]['detail'], context?: DeviceContext): void {}
 	subscribe<Event extends keyof EventMap>(type: Event, listener: (e: CustomEvent<EventMap[Event]['detail']>) => void): void {}
 	unsubscribe<Event extends keyof EventMap>(type: Event, listener: (e: CustomEvent<EventMap[Event]['detail']>) => void): void {}
 	subscribeAll(listener: (e: CustomEvent<HeadbaseEvent>) => void): void {}
 	unsubscribeAll(listener: (e: CustomEvent<HeadbaseEvent>) => void): void {}
 	async destroy() {}
-}
-
-
-export interface PlatformAdapterConfig {
-	context: DeviceContext
-}
-
-export abstract class PlatformAdapter {
-	constructor(config: PlatformAdapterConfig) {}
-	async destroy() {}
-	database!: DatabaseAdapter
-	events!: EventsAdapter
 }

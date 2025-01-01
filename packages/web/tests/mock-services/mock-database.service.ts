@@ -1,15 +1,15 @@
 import {
-	DatabaseAdapter,
-	DatabaseAdapterConfig,
+	IDatabaseService,
 	DeviceContext,
-	SqlDataType, SqlQueryResponse
-} from "../../src/logic/services/database/adapter";
+	SqlDataType, SqlQueryResponse,
+	DatabaseServiceConfig
+} from "../../src/logic/services/database/interfaces";
 
-export class MockDatabaseAdapter implements DatabaseAdapter {
-	readonly #context: DeviceContext
+export class MockDatabaseService implements IDatabaseService {
+	private readonly context: DeviceContext
 
-	constructor(config: DatabaseAdapterConfig) {
-		this.#context = config.context
+	constructor(config: DatabaseServiceConfig) {
+		this.context = config.context
 	}
 
 	async close(databaseId: string): Promise<void> {}

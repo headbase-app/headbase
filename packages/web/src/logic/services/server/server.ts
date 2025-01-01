@@ -13,9 +13,7 @@ import {z} from "zod";
 import {Observable} from "rxjs";
 import {AnyHeadbaseEvent, EventTypes} from "../events/events.ts";
 import {LocalUserDto} from "../../schemas/user.ts";
-import {DeviceContext, PlatformAdapter} from "../database/adapter.ts";
-
-export type SyncStatus = 'synced' | 'queued' | 'running' | 'error' | 'disabled'
+import {DeviceContext, IEventsService} from "../database/interfaces.ts";
 
 export interface QueryOptions {
 	serverUrl: string,
@@ -35,24 +33,22 @@ export type LocalLoginRequest = z.infer<typeof LocalLoginRequest>
 
 export interface ServerAPIConfig {
 	context: DeviceContext
-	generalStorage: GeneralStorageService
-	platformAdapter: PlatformAdapter
 }
 
 
 export class ServerAPI {
-	readonly #context: DeviceContext
-	readonly #generalStorage: GeneralStorageService
-	readonly #platformAdapter: PlatformAdapter
+	private readonly context: DeviceContext
 
-	constructor(config: ServerAPIConfig) {
-		this.#context = config.context
-		this.#generalStorage = config.generalStorage
-		this.#platformAdapter = config.platformAdapter
+	constructor(
+		config: ServerAPIConfig,
+		private readonly eventsService: IEventsService,
+		private readonly generalStorageService: GeneralStorageService,
+	) {
+		this.context = config.context
 	}
 
-	async #getServerUrl(): Promise<string> {
-		const currentUser = await this.#generalStorage.loadCurrentUser()
+	private async getServerUrl(): Promise<string> {
+		const currentUser = await this.generalStorageService.loadCurrentUser()
 		if (!currentUser) {
 			throw new Error("no current user found while attempting to make request.")
 		}
@@ -65,7 +61,7 @@ export class ServerAPI {
 		const headers: Headers = new Headers({"Content-Type": "application/json"})
 
 		if (!options.noAuthRequired) {
-			const accessToken = await this.#generalStorage.loadAccessToken();
+			const accessToken = await this.generalStorageService.loadAccessToken();
 
 			// This might be the first request of this session, so refresh auth to fetch a new access token and retry the request.
 			if (!accessToken && !options.disableAuthRetry) {
@@ -134,12 +130,12 @@ export class ServerAPI {
 			...loginResult.user
 		}
 
-		await this.#generalStorage.saveCurrentUser(localUser)
-		await this.#generalStorage.saveRefreshToken(loginResult.tokens.refreshToken)
-		await this.#generalStorage.saveAccessToken(loginResult.tokens.accessToken)
+		await this.generalStorageService.saveCurrentUser(localUser)
+		await this.generalStorageService.saveRefreshToken(loginResult.tokens.refreshToken)
+		await this.generalStorageService.saveAccessToken(loginResult.tokens.accessToken)
 
-		this.#platformAdapter.events.dispatch(EventTypes.USER_LOGIN, {
-			context: this.#context,
+		this.eventsService.dispatch(EventTypes.USER_LOGIN, {
+			context: this.context,
 			data: {
 				serverUrl: loginDetails.serverUrl,
 				user: localUser
@@ -160,12 +156,12 @@ export class ServerAPI {
 	}
 
 	public async logout() {
-		const currentUser = await this.#generalStorage.loadCurrentUser()
+		const currentUser = await this.generalStorageService.loadCurrentUser()
 		if (!currentUser) {
 			throw new Error('No current user found to logout')
 		}
 
-		const refreshToken = await this.#generalStorage.loadRefreshToken()
+		const refreshToken = await this.generalStorageService.loadRefreshToken()
 		if (!refreshToken) {
 			throw new HeadbaseError({type: ErrorTypes.INVALID_OR_CORRUPTED_DATA, devMessage: "No refreshToken found during logout"})
 		}
@@ -180,21 +176,21 @@ export class ServerAPI {
 			}
 		});
 
-		await this.#generalStorage.deleteCurrentUser()
-		await this.#generalStorage.deleteAccessToken()
-		await this.#generalStorage.deleteRefreshToken()
+		await this.generalStorageService.deleteCurrentUser()
+		await this.generalStorageService.deleteAccessToken()
+		await this.generalStorageService.deleteRefreshToken()
 
-		this.#platformAdapter.events.dispatch(EventTypes.USER_LOGOUT, {
-			context: this.#context,
+		this.eventsService.dispatch(EventTypes.USER_LOGOUT, {
+			context: this.context,
 		})
 	}
 
 	public async refresh() {
-		const refreshToken = await this.#generalStorage.loadRefreshToken()
+		const refreshToken = await this.generalStorageService.loadRefreshToken()
 		if (!refreshToken) {
 			throw new HeadbaseError({type: ErrorTypes.INVALID_OR_CORRUPTED_DATA, devMessage: "No refreshToken found during auth refresh"})
 		}
-		const serverUrl = await this.#getServerUrl()
+		const serverUrl = await this.getServerUrl()
 
 		let tokens: TokenPair;
 		try {
@@ -208,15 +204,15 @@ export class ServerAPI {
 				}
 			});
 
-			await this.#generalStorage.saveAccessToken(tokens.accessToken)
-			await this.#generalStorage.saveRefreshToken(tokens.refreshToken)
+			await this.generalStorageService.saveAccessToken(tokens.accessToken)
+			await this.generalStorageService.saveRefreshToken(tokens.refreshToken)
 		}
 		catch(e: unknown) {
 			// Delete all user data if the session is no longer valid
 			// @ts-expect-error -- todo: improve typing of errors?
 			if (e.response?.data?.identifier === ErrorIdentifiers.ACCESS_UNAUTHORIZED) {
-				await this.#generalStorage.deleteRefreshToken()
-				await this.#generalStorage.deleteAccessToken()
+				await this.generalStorageService.deleteRefreshToken()
+				await this.generalStorageService.deleteAccessToken()
 			}
 
 			throw e;
@@ -235,7 +231,7 @@ export class ServerAPI {
 
 	// Users
 	async getUser(userId: string) {
-		const serverUrl = await this.#getServerUrl()
+		const serverUrl = await this.getServerUrl()
 		// todo: should not rely on current user server?
 
 		return this.query<UserDto>({
@@ -246,7 +242,7 @@ export class ServerAPI {
 	}
 
 	async deleteUser(userId: string) {
-		const serverUrl = await this.#getServerUrl()
+		const serverUrl = await this.getServerUrl()
 		// todo: should not rely on current user server?
 
 		return this.query<void>({
@@ -257,7 +253,7 @@ export class ServerAPI {
 	}
 
 	async updateUser(userId: string, update: UpdateUserDto) {
-		const serverUrl = await this.#getServerUrl()
+		const serverUrl = await this.getServerUrl()
 		// todo: should not rely on current user server?
 
 		return this.query<UserDto>({
@@ -269,7 +265,7 @@ export class ServerAPI {
 	}
 
 	getCurrentUser(): Promise<LocalUserDto|null> {
-		return this.#generalStorage.loadCurrentUser()
+		return this.generalStorageService.loadCurrentUser()
 	}
 
 	liveGetCurrentUser() {
@@ -294,22 +290,22 @@ export class ServerAPI {
 				}
 			}
 
-			this.#platformAdapter.events.subscribe(EventTypes.USER_LOGIN, handleEvent)
-			this.#platformAdapter.events.subscribe(EventTypes.USER_LOGOUT, handleEvent)
+			this.eventsService.subscribe(EventTypes.USER_LOGIN, handleEvent)
+			this.eventsService.subscribe(EventTypes.USER_LOGOUT, handleEvent)
 
 			// Run initial query
 			runQuery()
 
 			return () => {
-				this.#platformAdapter.events.unsubscribe(EventTypes.USER_LOGIN, handleEvent)
-				this.#platformAdapter.events.subscribe(EventTypes.USER_LOGOUT, handleEvent)
+				this.eventsService.unsubscribe(EventTypes.USER_LOGIN, handleEvent)
+				this.eventsService.subscribe(EventTypes.USER_LOGOUT, handleEvent)
 			}
 		})
 	}
 
 	// Databases
 	async getDatabase(databaseId: string) {
-		const serverUrl = await this.#getServerUrl()
+		const serverUrl = await this.getServerUrl()
 
 		return this.query<UserDto>({
 			serverUrl,
@@ -319,7 +315,7 @@ export class ServerAPI {
 	}
 
 	async getDatabaseSnapshot(databaseId: string) {
-		const serverUrl = await this.#getServerUrl()
+		const serverUrl = await this.getServerUrl()
 
 		return this.query<UserDto>({
 			serverUrl,

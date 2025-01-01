@@ -1,7 +1,8 @@
 import {test} from "vitest";
-import {WebPlatformAdapter} from "../web-adapter/web-adapter.ts";
-import {DeviceContext} from "../adapter.ts";
-import {Database} from "../database.ts";
+import {WebDatabaseService} from "../services/web-database.service.ts";
+import {DeviceContext} from "../interfaces.ts";
+import {DatabaseTransactions} from "../database-transactions.ts";
+import {WebEventsService} from "../services/web-events.service.ts";
 
 
 test("should set up fine", async ({expect}) => {
@@ -9,8 +10,9 @@ test("should set up fine", async ({expect}) => {
 	const testDatabaseId = "40d68de2-884a-4ddc-bdb8-f5bdf9737a5e"
 	const testEncryptionKey = 'v1.abde2e79b4fe8323e277b1b3375f414452440bee1d94233ba003935b3bf1b63c'
 
-	const webPlatformAdapter = new WebPlatformAdapter({context: testContext})
-	const database = new Database({context: testContext, platformAdapter: webPlatformAdapter})
+	const eventService = new WebEventsService({context: testContext})
+	const databaseService = new WebDatabaseService({context: testContext})
+	const database = new DatabaseTransactions({context: testContext}, eventService, databaseService)
 	await database.open(testDatabaseId, testEncryptionKey)
 
 	const newField = await database.createField({
@@ -25,9 +27,16 @@ test("should set up fine", async ({expect}) => {
 
 	expect(fetchedField).toEqual(expect.objectContaining({
 		id: expect.any(String),
+		createdAt: expect.any(String),
+		updatedAt: expect.any(String),
+		versionId: expect.any(String),
+		versionCreatedBy: "test-setup",
+		previousVersionId: null,
+		isDeleted: false,
 		type: "markdown",
 		name: "testing",
-		createdBy: "test-setup",
+		icon: null,
+		description: null,
 		settings: expect.objectContaining({
 			defaultLines: 5,
 		})

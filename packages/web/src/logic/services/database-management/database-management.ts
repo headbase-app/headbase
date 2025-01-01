@@ -24,11 +24,10 @@ import {
 	LocalDatabaseEntity,
 	UpdateDatabaseDto
 } from "../../schemas/database.ts";
-import {DeviceContext, PlatformAdapter} from "../database/adapter.ts";
+import {DeviceContext, IEventsService} from "../database/interfaces.ts";
 
 export interface DatabasesManagementAPIConfig {
 	context: DeviceContext
-	platformAdapter: PlatformAdapter
 }
 
 // todo: define somewhere else?
@@ -39,23 +38,22 @@ type AnyDatabaseEvent =
 
 
 export class DatabasesManagementAPI {
-	readonly #context: DeviceContext
-	#appStorageDatabase?: IDBPDatabase
-	readonly #platformAdapter: PlatformAdapter
+	private readonly context: DeviceContext
+	private appStorageDatabase?: IDBPDatabase
 
 	constructor(
-		config: DatabasesManagementAPIConfig
+		config: DatabasesManagementAPIConfig,
+		private eventsService: IEventsService
 	) {
-		this.#context = config.context
-		this.#platformAdapter = config.platformAdapter
+		this.context = config.context
 	}
 
 	private async getAppStorageDatabase() {
-		if (this.#appStorageDatabase) {
-			return this.#appStorageDatabase
+		if (this.appStorageDatabase) {
+			return this.appStorageDatabase
 		}
 
-		this.#appStorageDatabase = await openDB('headbase', HEADBASE_INDEXDB_DATABASE_VERSION, {
+		this.appStorageDatabase = await openDB('headbase', HEADBASE_INDEXDB_DATABASE_VERSION, {
 			// todo: handle upgrades to existing database versions
 			upgrade: (db) => {
 				// Create database store
@@ -68,7 +66,7 @@ export class DatabasesManagementAPI {
 			},
 		})
 
-		return this.#appStorageDatabase
+		return this.appStorageDatabase
 	}
 
 	private async _createDto(entity: LocalDatabaseEntity): Promise<LocalDatabaseDto> {
@@ -92,8 +90,8 @@ export class DatabasesManagementAPI {
 		}
 
 		await KeyStorageService.set(database.id, encryptionKey)
-		this.#platformAdapter.events.dispatch(EventTypes.DATABASE_UNLOCK, {
-			context: this.#context,
+		this.eventsService.dispatch(EventTypes.DATABASE_UNLOCK, {
+			context: this.context,
 			data: {
 				id
 			}
@@ -102,8 +100,8 @@ export class DatabasesManagementAPI {
 
 	async lock(id: string): Promise<void> {
 		await KeyStorageService.delete(id)
-		this.#platformAdapter.events.dispatch(EventTypes.DATABASE_LOCK, {
-			context: this.#context,
+		this.eventsService.dispatch(EventTypes.DATABASE_LOCK, {
+			context: this.context,
 			data: {
 				id
 			}
@@ -133,8 +131,8 @@ export class DatabasesManagementAPI {
 
 		await tx.done
 
-		this.#platformAdapter.events.dispatch(EventTypes.DATABASE_CHANGE, {
-			context: this.#context,
+		this.eventsService.dispatch(EventTypes.DATABASE_CHANGE, {
+			context: this.context,
 			data: {
 				id: databaseId,
 				action: 'change-password',
@@ -185,17 +183,17 @@ export class DatabasesManagementAPI {
 				}
 			}
 
-			this.#platformAdapter.events.subscribe(EventTypes.DATABASE_CHANGE, handleEvent)
-			this.#platformAdapter.events.subscribe(EventTypes.DATABASE_UNLOCK, handleEvent)
-			this.#platformAdapter.events.subscribe(EventTypes.DATABASE_LOCK, handleEvent)
+			this.eventsService.subscribe(EventTypes.DATABASE_CHANGE, handleEvent)
+			this.eventsService.subscribe(EventTypes.DATABASE_UNLOCK, handleEvent)
+			this.eventsService.subscribe(EventTypes.DATABASE_LOCK, handleEvent)
 
 			// Run initial query
 			runQuery()
 
 			return () => {
-				this.#platformAdapter.events.unsubscribe(EventTypes.DATABASE_CHANGE, handleEvent)
-				this.#platformAdapter.events.unsubscribe(EventTypes.DATABASE_UNLOCK, handleEvent)
-				this.#platformAdapter.events.unsubscribe(EventTypes.DATABASE_LOCK, handleEvent)
+				this.eventsService.unsubscribe(EventTypes.DATABASE_CHANGE, handleEvent)
+				this.eventsService.unsubscribe(EventTypes.DATABASE_UNLOCK, handleEvent)
+				this.eventsService.unsubscribe(EventTypes.DATABASE_LOCK, handleEvent)
 			}
 		})
 	}
@@ -231,8 +229,8 @@ export class DatabasesManagementAPI {
 
 		await tx.done
 
-		this.#platformAdapter.events.dispatch(EventTypes.DATABASE_CHANGE, {
-			context: this.#context,
+		this.eventsService.dispatch(EventTypes.DATABASE_CHANGE, {
+			context: this.context,
 			data: {
 				id,
 				action: 'create',
@@ -278,8 +276,8 @@ export class DatabasesManagementAPI {
 		await tx.done
 
 		if (!preventEventDispatch) {
-			this.#platformAdapter.events.dispatch(EventTypes.DATABASE_CHANGE, {
-				context: this.#context,
+			this.eventsService.dispatch(EventTypes.DATABASE_CHANGE, {
+				context: this.context,
 				data: {
 					id,
 					action: 'update',
@@ -305,8 +303,8 @@ export class DatabasesManagementAPI {
 
 		// todo: delete sqlite database from OPFS?
 
-		this.#platformAdapter.events.dispatch(EventTypes.DATABASE_CHANGE, {
-			context: this.#context,
+		this.eventsService.dispatch(EventTypes.DATABASE_CHANGE, {
+			context: this.context,
 			data: {
 				id,
 				action: 'delete',
@@ -360,17 +358,17 @@ export class DatabasesManagementAPI {
 				runQuery()
 			}
 
-			this.#platformAdapter.events.subscribe(EventTypes.DATABASE_CHANGE, handleEvent)
-			this.#platformAdapter.events.subscribe(EventTypes.DATABASE_UNLOCK, handleEvent)
-			this.#platformAdapter.events.subscribe(EventTypes.DATABASE_LOCK, handleEvent)
+			this.eventsService.subscribe(EventTypes.DATABASE_CHANGE, handleEvent)
+			this.eventsService.subscribe(EventTypes.DATABASE_UNLOCK, handleEvent)
+			this.eventsService.subscribe(EventTypes.DATABASE_LOCK, handleEvent)
 
 			// Run initial query
 			runQuery()
 
 			return () => {
-				this.#platformAdapter.events.unsubscribe(EventTypes.DATABASE_CHANGE, handleEvent)
-				this.#platformAdapter.events.unsubscribe(EventTypes.DATABASE_UNLOCK, handleEvent)
-				this.#platformAdapter.events.unsubscribe(EventTypes.DATABASE_LOCK, handleEvent)
+				this.eventsService.unsubscribe(EventTypes.DATABASE_CHANGE, handleEvent)
+				this.eventsService.unsubscribe(EventTypes.DATABASE_UNLOCK, handleEvent)
+				this.eventsService.unsubscribe(EventTypes.DATABASE_LOCK, handleEvent)
 			}
 		})
 	}

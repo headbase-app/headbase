@@ -2,7 +2,7 @@ import { LIVE_QUERY_LOADING_STATE, LiveQueryResult, LiveQueryStatus } from "../.
 import { useEffect, useState } from "react";
 import {Logger} from "../../../utils/logger.ts";
 import {useHeadbase} from "../use-headbase.tsx";
-import {GlobalListingOptions} from "../../services/database/database.ts";
+import {GlobalListingOptions} from "../../services/database/database-transactions.ts";
 import {ViewDto} from "../../schemas/views/dtos.ts";
 
 
