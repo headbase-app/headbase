@@ -15,7 +15,7 @@
  * how will sync service work when the user is not logged in? needs to handle this gracefully
  *
  */
-import {IEventsService} from "../database/interfaces.ts";
+import {IEventsService} from "../interfaces.ts";
 import {DatabaseSnapshot} from "../database/database-transactions.ts";
 import {SyncAction, TABLE_KEYS} from "./sync-actions.ts";
 

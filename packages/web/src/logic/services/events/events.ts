@@ -1,7 +1,6 @@
 import {UserDto} from "@headbase-app/common";
-import {DeviceContext} from "../database/interfaces.ts";
+import {DeviceContext} from "../interfaces.ts";
 
-// todo: move to be with events service
 
 export const EventTypes = {
 	// Data Events

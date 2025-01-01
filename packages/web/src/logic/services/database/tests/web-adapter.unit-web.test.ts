@@ -1,8 +1,8 @@
 import {test} from "vitest";
-import {WebDatabaseService} from "../services/web-database.service.ts";
-import {DeviceContext} from "../interfaces.ts";
+import {WebDatabaseService} from "../web-database.service.ts";
+import {DeviceContext} from "../../interfaces.ts";
 import {DatabaseTransactions} from "../database-transactions.ts";
-import {WebEventsService} from "../services/web-events.service.ts";
+import {WebEventsService} from "../../events/web-events.service.ts";
 
 
 test("should set up fine", async ({expect}) => {

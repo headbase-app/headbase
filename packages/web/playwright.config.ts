@@ -44,10 +44,13 @@ export default defineConfig({
 			use: { ...devices['Desktop Firefox'] },
 		},
 
-		{
-			name: 'webkit',
-			use: { ...devices['Desktop Safari'] },
-		},
+		// Webkit doesn't enable tab navigation by default (Settings > Advanced > Accessibility > Press tab to highlight each item on a web page),
+		// and as the playwright tests include keyboard navigation tests webkit is not a supported browser right now.
+		// todo: consider if webkit could be supported somehow?
+		// {
+		// 	name: 'webkit',
+		// 	use: { ...devices['Desktop Safari'] },
+		// },
 
 		/* Test against mobile viewports. */
 		// {

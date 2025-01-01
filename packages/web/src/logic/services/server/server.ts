@@ -8,12 +8,12 @@ import {
 	UserDto, LoginRequest,
 } from "@headbase-app/common";
 import {ErrorTypes, HeadbaseError, LIVE_QUERY_LOADING_STATE, LiveQueryResult, LiveQueryStatus} from "../../control-flow.ts";
-import {GeneralStorageService} from "../general-storage.service.ts";
+import {GeneralStorageService} from "../general-storage/general-storage.service.ts";
 import {z} from "zod";
 import {Observable} from "rxjs";
 import {AnyHeadbaseEvent, EventTypes} from "../events/events.ts";
 import {LocalUserDto} from "../../schemas/user.ts";
-import {DeviceContext, IEventsService} from "../database/interfaces.ts";
+import {DeviceContext, IEventsService} from "../interfaces.ts";
 
 export interface QueryOptions {
 	serverUrl: string,

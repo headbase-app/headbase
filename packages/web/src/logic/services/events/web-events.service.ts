@@ -1,7 +1,6 @@
 import {DeviceContext, IEventsService, EventsServiceConfig} from "../interfaces.ts";
-import {EventMap, EventTypes, HeadbaseEvent} from "../../events/events.ts";
+import {EventMap, EventTypes, HeadbaseEvent} from "./events.ts";
 
-// todo: move to be separate from database and with event types
 
 export class WebEventsService implements IEventsService {
 	private readonly context: DeviceContext

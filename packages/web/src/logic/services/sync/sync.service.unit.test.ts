@@ -1,6 +1,6 @@
 import {test, describe} from "vitest";
 import {SyncService} from "./sync.service.ts";
-import {DeviceContext} from "../database/interfaces.ts";
+import {DeviceContext} from "../interfaces.ts";
 import {MockEventsService} from "../../../../tests/mock-services/mock-events.service.ts";
 
 

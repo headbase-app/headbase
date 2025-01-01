@@ -1,7 +1,7 @@
-import sqlite3InitModule, {SQLite3, SQLite3Database} from "../../../../../lib/sqlite/sqlite3"
+import sqlite3InitModule, {SQLite3, SQLite3Database} from "../../../../lib/sqlite/sqlite3"
 
 import {ClientMessages, WorkerMessages} from "./messages.ts";
-import {ErrorTypes} from "../../../../control-flow.ts";
+import {ErrorTypes} from "../../../control-flow.ts";
 
 const DatabaseStore = new Map<string, SQLite3Database>();
 

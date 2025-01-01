@@ -3,13 +3,13 @@ import {Observable} from "rxjs";
 import {DatabasesManagementAPI} from "./services/database-management/database-management.ts";
 import {EventTypes} from "./services/events/events";
 import {LIVE_QUERY_LOADING_STATE, LiveQueryResult, LiveQueryStatus} from "./control-flow";
-import {GeneralStorageService} from "./services/general-storage.service";
+import {GeneralStorageService} from "./services/general-storage/general-storage.service.ts";
 import {ServerAPI} from "./services/server/server.ts";
-import {WebDatabaseService} from "./services/database/services/web-database.service.ts";
-import {DeviceContext} from "./services/database/interfaces.ts";
+import {WebDatabaseService} from "./services/database/web-database.service.ts";
+import {DeviceContext} from "./services/interfaces.ts";
 import {EncryptionService} from "./services/encryption/encryption.ts";
 import {DatabaseTransactions} from "./services/database/database-transactions.ts";
-import {WebEventsService} from "./services/database/services/web-events.service.ts";
+import {WebEventsService} from "./services/events/web-events.service.ts";
 
 export const HEADBASE_VERSION = '1.0'
 export const HEADBASE_INDEXDB_DATABASE_VERSION = 1

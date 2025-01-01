@@ -1,7 +1,7 @@
 import {
 	DeviceContext, EventsServiceConfig,
 	IEventsService,
-} from "../../src/logic/services/database/interfaces";
+} from "../../src/logic/services/interfaces.ts";
 import {EventMap, EventTypes, HeadbaseEvent} from "../../src/logic/services/events/events";
 
 

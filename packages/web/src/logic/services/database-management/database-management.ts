@@ -16,7 +16,7 @@ import {
 import {IDBPDatabase, openDB} from "idb";
 import {Logger} from "../../../utils/logger.ts";
 import {HEADBASE_INDEXDB_DATABASE_VERSION, HEADBASE_VERSION} from "../../headbase-web.ts";
-import {KeyStorageService} from "../key-storage.service.ts";
+import {KeyStorageService} from "../key-storage/key-storage.service.ts";
 import {EncryptionService} from "../encryption/encryption.ts"
 import {
 	CreateDatabaseDto,
@@ -24,7 +24,7 @@ import {
 	LocalDatabaseEntity,
 	UpdateDatabaseDto
 } from "../../schemas/database.ts";
-import {DeviceContext, IEventsService} from "../database/interfaces.ts";
+import {DeviceContext, IEventsService} from "../interfaces.ts";
 
 export interface DatabasesManagementAPIConfig {
 	context: DeviceContext

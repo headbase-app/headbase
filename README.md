@@ -45,6 +45,14 @@ Headbase is a local-first progressive web app (PWA), meaning that by default all
 If you wish to enable features like cloud backups and cross-device synchronisation, you can do this by **[self-hosting your own server](/docs/self-hosting/docker.md)**.  
 Headbase uses client-side encryption to encrypt content on your device, which means that the server is unable to decrypt and access your content.
 
+## Supported devices
+Headbase aims to support desktop and mobile devices using Firefox, Google Chrome or other Chromium-based browsers like Brave etc.
+
+Safari on MacOS and iPhone is not officially supported right now because Headbase is built by one developer who doesn't use Safari or own an iPhone!  
+Support for Safari also has several unique challenges such as [intelligent tracking prevention](https://webkit.org/blog/9521/intelligent-tracking-prevention-2-3/) deleting a websites data after 7 days of inactivity,
+Safari [not enabling tab navigation by default](https://www.a11yproject.com/posts/macos-browser-keyboard-navigation/), and Apple's historic [hostility towards progressive web apps](https://open-web-advocacy.org/blog/apple-backs-off-killing-web-apps/).  
+Safari might still work for you, however please bear in mind that it is mostly untested and issues are unlikely to be prioritised and may not be fixed at all.
+
 ## Development
 If you want to understand how Headbase is built and poke around the code then you can view the **[developer documentation](/docs/development/index.md)**.  
 This documentation is currently incomplete and possibly outdated in places due to ongoing development and changes. Here are few key points:

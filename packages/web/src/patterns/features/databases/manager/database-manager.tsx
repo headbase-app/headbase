@@ -9,7 +9,7 @@ import {useWorkspaceContext} from "../../workspace/workspace-context";
 import {DatabaseChangePasswordScreen} from "../screens/database-change-password";
 import {useHeadbase} from "../../../../logic/react/use-headbase.tsx";
 import {EncryptionService} from "../../../../logic/services/encryption/encryption.ts";
-import {KeyStorageService} from "../../../../logic/services/key-storage.service.ts";
+import {KeyStorageService} from "../../../../logic/services/key-storage/key-storage.service.ts";
 
 export function DatabaseManagerDialogProvider(props: PropsWithChildren) {
 	const [openTab, _setOpenTab] = useState<DatabaseManagerTabs|undefined>(undefined)

@@ -3,7 +3,7 @@ import {
 	DeviceContext,
 	SqlDataType, SqlQueryResponse,
 	DatabaseServiceConfig
-} from "../../src/logic/services/database/interfaces";
+} from "../../src/logic/services/interfaces";
 
 export class MockDatabaseService implements IDatabaseService {
 	private readonly context: DeviceContext

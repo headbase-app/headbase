@@ -9,7 +9,7 @@ import {contentTypes, contentTypesVersions} from './tables/content-types.ts';
 import {contentItems, contentItemsVersions} from './tables/content-items.ts';
 import {views, viewsVersions} from './tables/views.ts';
 
-import {DeviceContext, IDatabaseService, IEventsService} from "./interfaces.ts";
+import {DeviceContext, IDatabaseService, IEventsService} from "../interfaces.ts";
 import {DataChangeEvent, EventTypes} from "../events/events.ts";
 import {ErrorTypes, HeadbaseError, LiveQueryResult} from "../../control-flow.ts";
 
