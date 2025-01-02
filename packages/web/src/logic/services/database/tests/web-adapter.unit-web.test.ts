@@ -1,7 +1,7 @@
 import {test} from "vitest";
 import {WebDatabaseService} from "../web-database.service.ts";
 import {DeviceContext} from "../../interfaces.ts";
-import {DatabaseTransactions} from "../database-transactions.ts";
+import {DatabaseTransactions} from "../db.ts";
 import {WebEventsService} from "../../events/web-events.service.ts";
 
 
@@ -15,7 +15,7 @@ test("should set up fine", async ({expect}) => {
 	const database = new DatabaseTransactions({context: testContext}, eventService, databaseService)
 	await database.open(testDatabaseId, testEncryptionKey)
 
-	const newField = await database.createField({
+	const newField = await database.fields.create({
 		type: "markdown",
 		name: "testing",
 		createdBy: "test-setup",
@@ -23,7 +23,7 @@ test("should set up fine", async ({expect}) => {
 			defaultLines: 5,
 		},
 	})
-	const fetchedField = await database.getField(newField.id)
+	const fetchedField = await database.fields.get(newField.id)
 
 	expect(fetchedField).toEqual(expect.objectContaining({
 		id: expect.any(String),

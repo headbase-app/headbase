@@ -2,7 +2,7 @@ import { LIVE_QUERY_LOADING_STATE, LiveQueryResult, LiveQueryStatus } from "../.
 import { useEffect, useState } from "react";
 import {Logger} from "../../../utils/logger.ts";
 import {useHeadbase} from "../use-headbase.tsx";
-import {GlobalListingOptions} from "../../services/database/database-transactions.ts";
+import {GlobalListingOptions} from "../../services/database/db.ts";
 import {ContentTypeDto} from "../../schemas/content-types/dtos.ts";
 
 
@@ -12,7 +12,7 @@ export function useContentTypeQuery(options?: GlobalListingOptions) {
 
 	useEffect(() => {
 		if (!headbase || !currentDatabaseId) return
-		const observable = headbase.db.liveQueryTypes(options)
+		const observable = headbase.db.contentTypes.liveQuery(options)
 
 		const subscription = observable.subscribe((query) => {
 			if (query.status === LiveQueryStatus.SUCCESS) {

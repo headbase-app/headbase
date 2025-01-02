@@ -17,7 +17,7 @@ export function EditContentTypeScreen(props: GenericManagerContentScreenProps) {
 		if (!currentDatabaseId || !headbase) return setErrors([{type: ErrorTypes.NO_CURRENT_DATABASE}])
 
 		try {
-			await headbase.db.updateType(props.id, {
+			await headbase.db.contentTypes.update(props.id, {
 				...updatedData,
 				createdBy: 'todo',
 			})
@@ -32,7 +32,7 @@ export function EditContentTypeScreen(props: GenericManagerContentScreenProps) {
 		if (!currentDatabaseId || !headbase) return setErrors([{type: ErrorTypes.NO_CURRENT_DATABASE}])
 
 		try {
-			await headbase.db.deleteType(props.id)
+			await headbase.db.contentTypes.delete(props.id)
 			props.navigate({screen: "list"})
 		}
 		catch (e) {
@@ -48,7 +48,6 @@ export function EditContentTypeScreen(props: GenericManagerContentScreenProps) {
 			)}
 			{contentTypeQuery.status === LiveQueryStatus.SUCCESS &&
         <ContentTypeForm
-        	title={`Edit Content Type '${contentTypeQuery.result.name}'`}
         	data={contentTypeQuery.result}
         	onSave={onSave}
         	onDelete={onDelete}

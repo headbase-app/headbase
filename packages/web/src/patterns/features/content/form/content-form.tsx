@@ -34,7 +34,7 @@ export function ContentForm(props: ContentFormProps) {
 	useEffect(() => {
 		if (!headbase || !currentDatabaseId || !props.fields) return
 
-		const contentQuery = headbase.db.liveQueryFields()
+		const contentQuery = headbase.db.fields.liveQuery()
 		const subscription = contentQuery.subscribe((liveQuery) => {
 			if (liveQuery.status === 'success') {
 				const fields: ContentFormFields = {}

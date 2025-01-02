@@ -45,7 +45,7 @@ export function useViewFormData(options: ViewFormOptions) {
 		if (!headbase || !currentDatabaseId) throw new Error("Headbase or currentDatabaseId not set")
 
 		if (options.viewId) {
-			const viewQuery = headbase.db.liveGetView(options.viewId)
+			const viewQuery = headbase.db.views.liveGet(options.viewId)
 			const subscription = viewQuery.subscribe((liveQuery) => {
 				if (liveQuery.status === LiveQueryStatus.SUCCESS) {
 

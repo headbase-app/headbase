@@ -2,7 +2,7 @@ import { LIVE_QUERY_LOADING_STATE, LiveQueryResult, LiveQueryStatus } from "../.
 import { useEffect, useState } from "react";
 import {Logger} from "../../../utils/logger.ts";
 import {useHeadbase} from "../use-headbase.tsx";
-import {GlobalListingOptions} from "../../services/database/database-transactions.ts";
+import {GlobalListingOptions} from "../../services/database/db.ts";
 import {ContentItemDto} from "../../schemas/content-items/dtos.ts";
 
 
@@ -12,7 +12,7 @@ export function useContentItemQuery(options?: GlobalListingOptions) {
 
 	useEffect(() => {
 		if (!headbase || !currentDatabaseId) return
-		const observable = headbase.db.liveQueryItems(options)
+		const observable = headbase.db.contentItems.liveQuery(options)
 
 		const subscription = observable.subscribe((query) => {
 			if (query.status === LiveQueryStatus.SUCCESS) {

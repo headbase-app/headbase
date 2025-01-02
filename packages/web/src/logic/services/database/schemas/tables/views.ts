@@ -1,6 +1,6 @@
 import {customType, int, sqliteTable, text} from "drizzle-orm/sqlite-core";
 import {commonEntityFields, commonFields, commonVersionFields} from "./common.ts";
-import {ViewTypes} from "../../../schemas/views/types.ts";
+import {ViewTypes} from "../../../../schemas/views/types.ts";
 
 export const views = sqliteTable('views', {
 	...commonFields,

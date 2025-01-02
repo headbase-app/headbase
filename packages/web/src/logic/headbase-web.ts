@@ -8,7 +8,7 @@ import {ServerAPI} from "./services/server/server.ts";
 import {WebDatabaseService} from "./services/database/web-database.service.ts";
 import {DeviceContext} from "./services/interfaces.ts";
 import {EncryptionService} from "./services/encryption/encryption.ts";
-import {DatabaseTransactions} from "./services/database/database-transactions.ts";
+import {DatabaseTransactions} from "./services/database/db.ts";
 import {WebEventsService} from "./services/events/web-events.service.ts";
 
 export const HEADBASE_VERSION = '1.0'

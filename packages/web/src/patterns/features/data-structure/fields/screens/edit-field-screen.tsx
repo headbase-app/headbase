@@ -23,7 +23,7 @@ export function EditFieldScreen(props: GenericManagerContentScreenProps) {
 		if (!currentDatabaseId || !headbase) return setErrors([{type: ErrorTypes.NO_CURRENT_DATABASE}])
 
 		try {
-			await headbase.db.updateField(props.id, {...updatedData, createdBy: 'todo'})
+			await headbase.db.fields.update(props.id, {...updatedData, createdBy: 'todo'})
 			props.navigate({screen: "list"})
 		}
 		catch (e) {
@@ -35,7 +35,7 @@ export function EditFieldScreen(props: GenericManagerContentScreenProps) {
 		if (!currentDatabaseId || !headbase) return setErrors([{type: ErrorTypes.NO_CURRENT_DATABASE}])
 
 		try {
-			await headbase.db.deleteField(props.id)
+			await headbase.db.fields.delete(props.id)
 			props.navigate({screen: "list"})
 		}
 		catch (e) {

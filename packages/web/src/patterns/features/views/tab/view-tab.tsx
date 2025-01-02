@@ -38,7 +38,7 @@ export function ViewTab(props: ViewTabProps) {
 			setResults([])
 		}
 
-		const resultsQuery = headbase.db.liveQueryItems({filter: {isDeleted: false}})
+		const resultsQuery = headbase.db.contentItems.liveQuery({filter: {isDeleted: false}})
 
 		const resultQuerySubscription = resultsQuery.subscribe((liveQuery) => {
 			if (liveQuery.status === LiveQueryStatus.SUCCESS) {

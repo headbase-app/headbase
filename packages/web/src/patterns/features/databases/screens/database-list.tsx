@@ -10,7 +10,7 @@ import {ErrorCallout} from "../../../components/error-callout/error-callout.tsx"
 
 export function DatabaseListScreen() {
 	const { setOpenTab, close } = useDatabaseManagerDialogContext()
-	const { headbase, setCurrentDatabaseId } = useHeadbase()
+	const { headbase, setCurrentDatabaseId, currentDatabaseId } = useHeadbase()
 	const databasesQuery = useDatabases()
 
 	const { tabs } = useWorkspaceContext()
@@ -48,7 +48,7 @@ export function DatabaseListScreen() {
 					)}
 					{databasesQuery.result.map(database => (
 						<div key={database.id}>
-							<h2>{database.name}</h2>
+							<h2>{database.name}{currentDatabaseId === database.id && <span> [currently open]</span>}</h2>
 							<JButton
 								variant='tertiary'
 								onClick={() => {
@@ -64,12 +64,14 @@ export function DatabaseListScreen() {
 									}}
 								>Lock</JButton>
 							)}
-							<JButton
-								variant='tertiary'
-								onClick={() => {
-									attemptOpenDatabase(database)
-								}}
-							>Open</JButton>
+							{currentDatabaseId !== database.id && (
+								<JButton
+									variant='tertiary'
+									onClick={() => {
+										attemptOpenDatabase(database)
+									}}
+								>Open</JButton>
+							)}
 						</div>
 					))}
 				</div>

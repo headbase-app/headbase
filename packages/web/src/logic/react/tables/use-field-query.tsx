@@ -2,7 +2,7 @@ import { LIVE_QUERY_LOADING_STATE, LiveQueryResult, LiveQueryStatus } from "../.
 import { useEffect, useState } from "react";
 import {Logger} from "../../../utils/logger.ts";
 import {useHeadbase} from "../use-headbase.tsx";
-import {GlobalListingOptions} from "../../services/database/database-transactions.ts";
+import {GlobalListingOptions} from "../../services/database/db.ts";
 import {FieldDto} from "../../schemas/fields/dtos.ts";
 
 
@@ -12,7 +12,7 @@ export function useFieldQuery(options?: GlobalListingOptions) {
 
 	useEffect(() => {
 		if (!headbase || !currentDatabaseId) return
-		const observable = headbase.db.liveQueryFields(options)
+		const observable = headbase.db.fields.liveQuery(options)
 
 		const subscription = observable.subscribe((query) => {
 			if (query.status === LiveQueryStatus.SUCCESS) {

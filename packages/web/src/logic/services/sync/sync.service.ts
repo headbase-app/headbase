@@ -16,7 +16,7 @@
  *
  */
 import {IEventsService} from "../interfaces.ts";
-import {DatabaseSnapshot} from "../database/database-transactions.ts";
+import {DatabaseSnapshot} from "../database/db.ts";
 import {SyncAction, TABLE_KEYS} from "./sync-actions.ts";
 
 export type SyncStatus = 'synced' | 'queued' | 'running' | 'error' | 'disabled'

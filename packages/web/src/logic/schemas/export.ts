@@ -1,7 +1,7 @@
-import {FieldDto} from "../services/database/tables/fields/dtos.ts";
-import {ContentTypeDto} from "../services/database/tables/content-types/dtos.ts";
-import {ContentItemDto} from "../services/database/tables/content-items/dtos.ts";
-import {ViewDto} from "../services/database/tables/views/dtos.ts";
+import {FieldDto} from "../services/database/schemas/tables/fields/dtos.ts";
+import {ContentTypeDto} from "../services/database/schemas/tables/content-types/dtos.ts";
+import {ContentItemDto} from "../services/database/schemas/tables/content-items/dtos.ts";
+import {ViewDto} from "../services/database/schemas/tables/views/dtos.ts";
 
 
 export interface ExportData {

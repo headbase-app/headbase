@@ -1,6 +1,6 @@
 import {customType, sqliteTable, text} from "drizzle-orm/sqlite-core";
 import {commonEntityFields, commonFields, commonVersionFields} from "./common.ts";
-import {FieldTypes} from "../../../schemas/fields/types.ts";
+import {FieldTypes} from "../../../../schemas/fields/types.ts";
 
 export const fields = sqliteTable('fields', {
 	...commonFields,

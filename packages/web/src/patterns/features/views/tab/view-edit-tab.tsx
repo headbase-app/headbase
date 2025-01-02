@@ -26,7 +26,7 @@ export function ViewEditTab(props: ViewEditTabProps) {
 
 		if (props.viewId) {
 			try {
-				await headbase.db.updateView(props.viewId, {
+				await headbase.db.views.update(props.viewId, {
 					type: 'list',
 					createdBy: 'todo',
 					icon: null,
@@ -44,7 +44,7 @@ export function ViewEditTab(props: ViewEditTabProps) {
 		}
 		else {
 			try {
-				const newView = await headbase.db.createView({
+				const newView = await headbase.db.views.create({
 					type: 'list',
 					createdBy: 'todo',
 					icon: null,
@@ -78,7 +78,7 @@ export function ViewEditTab(props: ViewEditTabProps) {
 		}
 
 		try {
-			await headbase.db.deleteView(props.viewId)
+			await headbase.db.views.delete(props.viewId)
 			closeTab(props.tabIndex)
 		}
 		catch (e) {

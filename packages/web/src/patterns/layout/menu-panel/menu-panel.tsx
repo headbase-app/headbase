@@ -78,7 +78,7 @@ export function MenuPanel(props: WithMenuPanelProps) {
 						className="menu-panel__database-edit"
 						onClick={() => {
 							if (currentDatabase.status === LiveQueryStatus.SUCCESS) {
-								setDatabaseManagerDialogTab({type: 'edit', databaseId: currentDatabase.result.id})
+								setDatabaseManagerDialogTab({type: 'list'})
 							}
 						}}
 					>

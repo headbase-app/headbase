@@ -12,7 +12,7 @@ export function useContentItem(id: string) {
 	useEffect(() => {
 		if (!headbase || !currentDatabaseId) return
 
-		const observable = headbase.db.liveGetItem(id)
+		const observable = headbase.db.contentItems.liveGet(id)
 
 		const subscription = observable.subscribe((query) => {
 			if (query.status === LiveQueryStatus.SUCCESS) {
