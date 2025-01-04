@@ -1,14 +1,10 @@
 import {CreateFieldDto, FieldDto, FieldVersionDto, UpdateFieldDto} from "../../../schemas/fields/dtos.ts";
-import {fields, fieldsVersions} from "../schemas/tables/fields.ts";
 import {DataChangeEvent, EventTypes} from "../../events/events.ts";
-import {and, desc, eq, SQL} from "drizzle-orm";
 import {ErrorTypes, HeadbaseError, LiveQueryResult} from "../../../control-flow.ts";
 import {Observable} from "rxjs";
 import {GlobalListingOptions} from "../db.ts";
-import {DeviceContext, IEventsService} from "../../interfaces.ts";
+import {DeviceContext, IDatabaseService, IEventsService} from "../../interfaces.ts";
 import {HEADBASE_VERSION} from "../../../headbase-web.ts";
-import {SqliteRemoteDatabase} from "drizzle-orm/sqlite-proxy";
-import {DatabaseSchema} from "../schemas/schema.ts";
 
 export interface EntityTransactionsConfig {
 	context: DeviceContext;
@@ -23,7 +19,7 @@ export class FieldTransactions {
 	constructor(
 		config: EntityTransactionsConfig,
 		private readonly eventsService: IEventsService,
-		private readonly drizzleDatabase: SqliteRemoteDatabase<typeof DatabaseSchema>
+		private readonly databaseService: IDatabaseService
 	) {
 		this.databaseId = config.databaseId
 		this.context = config.context
@@ -49,32 +45,21 @@ export class FieldTransactions {
 		const versionId = self.crypto.randomUUID()
 		const createdAt = new Date().toISOString()
 
-		await this.drizzleDatabase
-			.insert(fields)
-			.values({
-				id: entityId,
-				createdAt,
-				isDeleted: false,
-				hbv: HEADBASE_VERSION,
-				currentVersionId: versionId
-			})
+		await this.databaseService.exec(
+			databaseId,
+			`insert into fields(id, created_at, is_deleted, hbv, current_version_id) values (?, ?, ?, ?, ?)`,
+			[entityId, createdAt, 0, HEADBASE_VERSION, versionId]
+		)
 
-		await this.drizzleDatabase
-			.insert(fieldsVersions)
-			.values({
-				id: versionId,
-				createdAt,
-				isDeleted: false,
-				hbv: HEADBASE_VERSION,
-				entityId: entityId,
-				previousVersionId: null,
-				createdBy: createDto.createdBy,
-				type: createDto.type,
-				name: createDto.name,
-				description: createDto.description,
-				icon: createDto.icon,
-				settings: 'settings' in createDto ? createDto.settings : null,
-			})
+		await this.databaseService.exec(
+			databaseId,
+			`insert into fields_versions(id, created_at, is_deleted, hbv, entity_id, previous_version_id, created_by, type, name, description, icon, settings) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+			[
+				versionId, createdAt, 0, HEADBASE_VERSION, entityId, null, createDto.createdBy,
+				createDto.type, createDto.name, createDto.description || null, createDto.icon || null,
+				'settings' in createDto ? JSON.stringify(createDto.settings) : null,
+			]
+		)
 
 		this.eventsService.dispatch(EventTypes.DATA_CHANGE, {
 			context: this.context,
@@ -102,29 +87,21 @@ export class FieldTransactions {
 		const versionId = self.crypto.randomUUID()
 		const updatedAt = new Date().toISOString()
 
-		await this.drizzleDatabase
-			.update(fields)
-			.set({
-				currentVersionId: versionId,
-			})
-			.where(eq(fields.id, entityId))
+		await this.databaseService.exec(
+			databaseId,
+			`update fields set current_version_id = ? where id = ?`,
+			[versionId, entityId]
+		)
 
-		await this.drizzleDatabase
-			.insert(fieldsVersions)
-			.values({
-				id: versionId,
-				createdAt: updatedAt,
-				isDeleted: false,
-				hbv: HEADBASE_VERSION,
-				entityId,
-				previousVersionId: currentEntity.versionId,
-				createdBy: updateDto.createdBy,
-				type: updateDto.type,
-				name: updateDto.name,
-				description: updateDto.description,
-				icon: updateDto.icon,
-				settings: 'settings' in updateDto ? updateDto.settings : null,
-			})
+		await this.databaseService.exec(
+			databaseId,
+			`insert into fields_versions(id, created_at, is_deleted, hbv, entity_id, previous_version_id, created_by, type, name, description, icon, settings) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+			[
+				versionId, updatedAt, 0, HEADBASE_VERSION, entityId, currentEntity.versionId, updateDto.createdBy,
+				updateDto.type, updateDto.name, updateDto.description || null, updateDto.icon || null,
+				'settings' in updateDto ? JSON.stringify(updateDto.settings) : null,
+			]
+		)
 
 		this.eventsService.dispatch(EventTypes.DATA_CHANGE, {
 			context: this.context,
@@ -145,18 +122,19 @@ export class FieldTransactions {
 		console.debug(`[database] running delete field: ${entityId}`)
 		const databaseId = this.getDatabaseId();
 
-		// todo: throw error on?
+		// todo: throw error if not found?
 
-		await this.drizzleDatabase
-			.update(fields)
-			.set({
-				isDeleted: true,
-			})
-			.where(eq(fields.id, entityId))
+		await this.databaseService.exec(
+			databaseId,
+			`update fields set is_deleted = 1 where id = ?`,
+			[entityId]
+		)
 
-		await this.drizzleDatabase
-			.delete(fieldsVersions)
-			.where(eq(fieldsVersions.entityId, entityId))
+		await this.databaseService.exec(
+			databaseId,
+			`delete from fields_versions where entity_id = ?`,
+			[entityId]
+		)
 
 		this.eventsService.dispatch(EventTypes.DATA_CHANGE, {
 			context: this.context,
@@ -171,72 +149,78 @@ export class FieldTransactions {
 
 	async get(entityId: string): Promise<FieldDto> {
 		console.debug(`[database] running get field: ${entityId}`)
+		const databaseId = this.getDatabaseId();
 
-		const results = await this.drizzleDatabase
-			.select({
-				id: fields.id,
-				createdAt: fields.createdAt,
-				updatedAt: fieldsVersions.createdAt,
-				isDeleted: fields.isDeleted,
-				versionId: fieldsVersions.id,
-				previousVersionId: fieldsVersions.previousVersionId,
-				versionCreatedBy: fieldsVersions.createdBy,
-				type: fieldsVersions.type,
-				name: fieldsVersions.name,
-				description: fieldsVersions.description,
-				icon: fieldsVersions.icon,
-				settings: fieldsVersions.settings,
-			})
-			.from(fields)
-			.innerJoin(fieldsVersions, eq(fields.id, fieldsVersions.entityId))
-			.where(
-				and(
-					eq(fields.id, entityId),
-					eq(fields.currentVersionId, fieldsVersions.id)
-				)
-			)
-			.orderBy(desc(fieldsVersions.createdAt));
+		const results = await this.databaseService.exec(
+			databaseId,
+			`select
+					e.id as id,
+					e.created_at as createdAt,
+					v.created_at as updatedAt,
+					e.is_deleted as isDeleted,
+					v.id as versionId,
+					v.previous_version_id as previousVersionId,
+					v.created_by as createdBy,
+					v.type as type,
+					v.name as name,
+					v.description as description,
+					v.icon as icon,
+					v.settings as settings
+				from fields e
+				inner join fields_versions v on e.id = v.entity_id
+				where e.id = ? and v.id = e.current_version_id
+				order by v.created_at;
+			`,
+			[entityId],
+			'object'
+		) as unknown as FieldDto[];
 
+		console.debug(results)
 		if (!results[0]) {
 			throw new HeadbaseError({type: ErrorTypes.ENTITY_NOT_FOUND})
 		}
 
-		return results[0] as unknown as FieldDto
+		return {
+			...results[0],
+			settings: 'settings' in results[0] ? JSON.parse(results[0].settings) : undefined,
+		}
 	}
 
 	async query(options?: GlobalListingOptions): Promise<FieldDto[]> {
 		console.debug(`[database] running get fields`)
+		const databaseId = this.getDatabaseId();
 
-		const filters: SQL[] = [
-			eq(fields.currentVersionId, fieldsVersions.id)
-		]
-		if (typeof options?.filter?.isDeleted === 'boolean') {
-			filters.push(
-				eq(fields.isDeleted, options?.filter.isDeleted)
-			)
-		}
+		const results = await this.databaseService.exec(
+			databaseId,
+			`
+				select
+					e.id as id,
+					e.created_at as createdAt,
+					v.created_at as updatedAt,
+					e.is_deleted as isDeleted,
+					v.id as versionId,
+					v.previous_version_id as previousVersionId,
+					v.created_by as createdBy,
+					v.type as type,
+					v.name as name,
+					v.description as description,
+					v.icon as icon,
+					v.settings as settings
+				from fields e
+				inner join fields_versions v on e.id = v.entity_id
+				where e.is_deleted = ? and v.id = e.current_version_id
+				order by v.created_at;
+			`,
+			[options?.filter?.isDeleted ? 1 : 0],
+			'object'
+		) as unknown as FieldDto[];
 
-		const order: SQL = desc(fieldsVersions.createdAt)
-
-		return this.drizzleDatabase
-			.select({
-				id: fields.id,
-				createdAt: fields.createdAt,
-				updatedAt: fieldsVersions.createdAt,
-				isDeleted: fields.isDeleted,
-				versionId: fieldsVersions.id,
-				previousVersionId: fieldsVersions.previousVersionId,
-				versionCreatedBy: fieldsVersions.createdBy,
-				type: fieldsVersions.type,
-				name: fieldsVersions.name,
-				description: fieldsVersions.description,
-				icon: fieldsVersions.icon,
-				settings: fieldsVersions.settings,
-			})
-			.from(fields)
-			.innerJoin(fieldsVersions, eq(fields.id, fieldsVersions.entityId))
-			.where(and(...filters))
-			.orderBy(order) as unknown as FieldDto[];
+		return results.map(result => {
+			return {
+				...result,
+				settings: 'settings' in result ? JSON.parse(result.settings) : undefined,
+			}
+		})
 	}
 
 	liveGet(entityId: string) {
@@ -302,80 +286,89 @@ export class FieldTransactions {
 
 	async getVersion(versionId: string) {
 		console.debug(`[database] running getFieldVersion: ${versionId}`)
+		const databaseId = this.getDatabaseId()
 
-		return this.drizzleDatabase
-			.select({
-				id: fieldsVersions.id,
-				createdAt: fieldsVersions.createdAt,
-				isDeleted: fieldsVersions.isDeleted,
-				entityId: fieldsVersions.id,
-				previousVersionId: fieldsVersions.previousVersionId,
-				versionCreatedBy: fieldsVersions.createdBy,
-				type: fieldsVersions.type,
-				name: fieldsVersions.name,
-				description: fieldsVersions.description,
-				icon: fieldsVersions.icon,
-				settings: fieldsVersions.settings,
-			})
-			.from(fieldsVersions)
-			.where(eq(fieldsVersions.id, versionId)) as unknown as FieldVersionDto;
+		const results =  await this.databaseService.exec(
+			databaseId,
+			`
+				select
+					v.id as id,
+					v.created_at as createdAt,
+					v.is_deleted as isDeleted,
+					v.entity_id as entityId,
+					v.previous_version_id as previousVersionId,
+					v.created_by as createdBy,
+					v.type as type,
+					v.name as name,
+					v.description as description,
+					v.icon as icon,
+					v.settings as settings
+				from fields_versions v
+				where v.id = ?
+			`,
+			[versionId],
+			'object'
+		) as unknown as FieldVersionDto[];
+
+		if (!results[0]) {
+			throw new HeadbaseError({type: ErrorTypes.VERSION_NOT_FOUND})
+		}
+
+		return results[0]
 	}
 
 	async getVersions(entityId: string) {
 		console.debug(`[database] running getFieldVersions: ${entityId}`)
+		const databaseId = this.getDatabaseId()
 
-		return this.drizzleDatabase
-			.select({
-				id: fieldsVersions.id,
-				createdAt: fieldsVersions.createdAt,
-				isDeleted: fieldsVersions.isDeleted,
-				entityId: fieldsVersions.id,
-				previousVersionId: fieldsVersions.previousVersionId,
-				versionCreatedBy: fieldsVersions.createdBy,
-				type: fieldsVersions.type,
-				name: fieldsVersions.name,
-				description: fieldsVersions.description,
-				icon: fieldsVersions.icon,
-				settings: fieldsVersions.settings,
-			})
-			.from(fieldsVersions)
-			.where(eq(fieldsVersions.entityId, entityId))
-			.orderBy(desc(fieldsVersions.createdAt)) as unknown as FieldVersionDto[];
+		return await this.databaseService.exec(
+			databaseId,
+			`
+				select
+					v.id as id,
+					v.created_at as createdAt,
+					v.is_deleted as isDeleted,
+					v.entity_id as entityId,
+					v.previous_version_id as previousVersionId,
+					v.created_by as createdBy,
+					v.type as type,
+					v.name as name,
+					v.description as description,
+					v.icon as icon,
+					v.settings as settings
+				from fields_versions v
+				where v.entity_id = ?
+				order by v.created_at,
+			`,
+			[entityId],
+			'object'
+		) as unknown as FieldVersionDto[];
 	}
 
 	async deleteVersion(versionId: string): Promise<void> {
 		const databaseId = this.getDatabaseId();
 
-		const version = await this.drizzleDatabase
-			.select({id: fieldsVersions.id, entityId: fieldsVersions.entityId})
-			.from(fieldsVersions)
-			.where(eq(fieldsVersions.id, versionId))
-		if (!version) {
-			throw new Error('Version not found')
+		const version = await this.getVersion(versionId);
+		const currentEntity = await this.get(version.entityId);
+
+		if (currentEntity.versionId === versionId) {
+			// todo: need error type, or generic user input error type?
+			throw new HeadbaseError({type: ErrorTypes.SYSTEM_ERROR, devMessage: 'Attempted to delete current version'})
 		}
 
-		const currentEntity = await this.drizzleDatabase
-			.select({id: fields.id, currentVersionId: fields.currentVersionId})
-			.from(fields)
-			.where(eq(fields.id, version[0].entityId))
-		if (!currentEntity) {
-			throw new Error('Entity for version not found')
-		}
-
-		if (currentEntity[0].currentVersionId === versionId) {
-			throw new Error('Attempted to delete current version')
-		}
-
-		await this.drizzleDatabase
-			.delete(fieldsVersions)
-			.where(eq(fieldsVersions.id, versionId))
+		await this.databaseService.exec(
+			databaseId,
+			`delete from fields_versions where id = ?`,
+			[versionId]
+		)
 
 		this.eventsService.dispatch(EventTypes.DATA_CHANGE, {
 			context: this.context,
 			data: {
 				databaseId,
 				tableKey: 'fields',
-				id: currentEntity[0].id,
+				id: currentEntity.id,
+				// todo: should include version id in event?
 				action: 'delete-version'
 			}
 		})

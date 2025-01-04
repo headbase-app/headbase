@@ -16,7 +16,7 @@ export function useContentTypeQuery(options?: GlobalListingOptions) {
 
 		const subscription = observable.subscribe((query) => {
 			if (query.status === LiveQueryStatus.SUCCESS) {
-				Logger.debug(`[useContentQuery] Received new data`, query.result)
+				Logger.debug(`[useContentTypeQuery] Received new data`, query.result)
 			}
 			if (query.status === LiveQueryStatus.ERROR) {
 				console.error(query.errors)

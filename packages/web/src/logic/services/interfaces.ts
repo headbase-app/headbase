@@ -21,7 +21,7 @@ export abstract class IDatabaseService {
 	constructor(config: DatabaseServiceConfig) {}
 	async open(databaseId: string, encryptionKey: string) {}
 	async close(databaseId: string) {}
-	async exec(databaseId: string, sql: string, params: SqlDataType[]): Promise<SqlQueryResponse> {
+	async exec(databaseId: string, sql: string, params: SqlDataType[], rowMode?: 'array' | 'object'): Promise<SqlQueryResponse> {
 		return new Promise<SqlQueryResponse>((r) => r({rows: []}))
 	}
 	async destroy() {}

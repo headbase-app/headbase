@@ -32,7 +32,7 @@ export function HeadbaseContextProvider(props: HeadbaseContextProviderProps) {
 			const instance = new HeadbaseWeb()
 			setHeadbase(instance)
 			// @ts-expect-error -- adding custom to window so fine
-			window.hb = headbase
+			window.hb = instance
 
 			return () => {
 				console.debug('HeadbaseWeb hook cleanup')

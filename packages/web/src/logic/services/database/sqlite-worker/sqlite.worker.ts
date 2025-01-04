@@ -102,7 +102,8 @@ function getSqliteFactory() {
 			const result = db.exec({
 				sql: messageEvent.data.detail.sql,
 				bind: messageEvent.data.detail.params,
-				returnValue: 'resultRows'
+				returnValue: 'resultRows',
+				rowMode: messageEvent.data.detail.rowMode
 			})
 
 			return self.postMessage({
@@ -110,7 +111,7 @@ function getSqliteFactory() {
 				targetMessageId: messageEvent.data.messageId,
 				detail: {
 					success: true,
-					result: {rows: result}
+					result: messageEvent.data.detail.rowMode === 'object' ? result : {rows: result}
 				}
 			});
 		}

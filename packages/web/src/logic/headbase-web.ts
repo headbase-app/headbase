@@ -28,12 +28,14 @@ export class HeadbaseWeb {
 	private readonly logMessages: string[]
 
 	constructor() {
+
 		this.context = {
 			id: EncryptionService.generateUUID()
 		}
 
 		this.eventsService = new WebEventsService({context: this.context})
 		this.databaseService = new WebDatabaseService({context: this.context})
+		window.dbs = this.databaseService
 
 		this.db = new DatabaseTransactions(
 			{context: this.context},

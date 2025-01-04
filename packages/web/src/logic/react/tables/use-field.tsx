@@ -16,7 +16,7 @@ export function useField(id: string) {
 
 		const subscription = observable.subscribe((query) => {
 			if (query.status === LiveQueryStatus.SUCCESS) {
-				Logger.debug(`[useContent] Received new data`, query.result)
+				Logger.debug(`[useField] Received new data`, query.result)
 			}
 
 			setResult(query)
@@ -25,7 +25,7 @@ export function useField(id: string) {
 		return () => {
 			subscription.unsubscribe()
 		}
-	}, [headbase, currentDatabaseId])
+	}, [headbase, currentDatabaseId, id])
 
 	return result
 }

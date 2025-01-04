@@ -108,7 +108,7 @@ export class SnapshotTransactions {
 			})
 			.from(contentItemsVersions)
 		for (const version of contentItemVersions) {
-			snapshot.contentTypesVersions[version.id] = version.isDeleted
+			snapshot.contentItemsVersions[version.id] = version.isDeleted
 		}
 
 		const viewEntities = await this.drizzleDatabase

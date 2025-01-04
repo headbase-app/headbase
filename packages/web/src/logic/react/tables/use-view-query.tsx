@@ -16,7 +16,7 @@ export function useViewQuery(options?: GlobalListingOptions) {
 
 		const subscription = observable.subscribe((query) => {
 			if (query.status === LiveQueryStatus.SUCCESS) {
-				Logger.debug(`[useContentQuery] Received new data`, query.result)
+				Logger.debug(`[useViewQuery] Received new data`, query.result)
 			}
 			setResult(query)
 		})
@@ -24,7 +24,7 @@ export function useViewQuery(options?: GlobalListingOptions) {
 		return () => {
 			subscription.unsubscribe()
 		}
-	}, [headbase])
+	}, [headbase, currentDatabaseId])
 
 	return result
 }

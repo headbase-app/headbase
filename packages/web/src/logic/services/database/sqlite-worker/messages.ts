@@ -34,7 +34,9 @@ export interface QueryMessage extends BaseMessage {
 		context: DeviceContext
 		databaseId: string
 		sql: string
-		params: unknown[]
+		params: unknown[],
+		// todo: remove after migration away from drizzle
+		rowMode?: 'array' | 'object'
 	}
 }
 

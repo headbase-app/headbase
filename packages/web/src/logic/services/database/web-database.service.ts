@@ -93,7 +93,7 @@ export class WebDatabaseService implements IDatabaseService {
 		//this.databaseLockAbort.abort()
 	}
 
-	async exec(databaseId: string, sql: string, params: SqlDataType[]): Promise<SqlQueryResponse> {
+	async exec(databaseId: string, sql: string, params: SqlDataType[], rowMode?: 'array' | 'object'): Promise<SqlQueryResponse> {
 		const workerResponse = await this.sendWorkerRequest<QueryResponseMessage>({
 			type: 'exec',
 			messageId: self.crypto.randomUUID(),
@@ -101,7 +101,8 @@ export class WebDatabaseService implements IDatabaseService {
 				databaseId,
 				context: this.context,
 				sql,
-				params
+				params,
+				rowMode,
 			}
 		})
 

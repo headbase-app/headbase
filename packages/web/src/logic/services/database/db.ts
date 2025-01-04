@@ -1,15 +1,15 @@
-import {drizzle, SqliteRemoteDatabase} from 'drizzle-orm/sqlite-proxy';
-import {sql} from "drizzle-orm";
-
 import migration1 from "./migrations/00-setup.sql?raw"
 import {DeviceContext, IDatabaseService, IEventsService} from "../interfaces.ts";
-import {ErrorTypes, HeadbaseError} from "../../control-flow.ts";
-import {DatabaseSchema} from "./schemas/schema.ts";
 import {FieldTransactions} from "./transactions/fields.db.ts";
 import {ContentTypeTransactions} from "./transactions/types.db.ts";
 import {ContentItemTransactions} from "./transactions/items.db.ts";
 import {ViewTransactions} from "./transactions/views.db.ts";
 import {MigrationTransactions} from "./transactions/migration.db.ts";
+import {SnapshotTransactions} from "./transactions/snapshot.db.ts";
+import {SqliteRemoteDatabase, drizzle} from "drizzle-orm/sqlite-proxy";
+import {DatabaseSchema} from "./schemas/schema.ts";
+import {ErrorTypes, HeadbaseError} from "../../control-flow.ts";
+import {sql} from "drizzle-orm";
 
 /**
  * todo: update live queries to ensure errors are handled and passed via observers
@@ -43,7 +43,7 @@ export interface GlobalListingOptions {
 
 export class DatabaseTransactions {
 	readonly context: DeviceContext;
-	
+
 	// todo: support concurrent database connections?
 	private databaseId: string | null;
 	private hasInit: boolean
@@ -53,6 +53,7 @@ export class DatabaseTransactions {
 	readonly contentTypes: ContentTypeTransactions
 	readonly contentItems: ContentItemTransactions
 	readonly views: ViewTransactions
+	readonly snapshot: SnapshotTransactions
 	readonly migration: MigrationTransactions
 
 	constructor(
@@ -80,7 +81,7 @@ export class DatabaseTransactions {
 		this.fields = new FieldTransactions(
 			{context: this.context, databaseId: this.databaseId},
 			this.eventsService,
-			this.drizzleDatabase
+			this.databaseService
 		)
 		this.contentTypes = new ContentTypeTransactions(
 			{context: this.context, databaseId: this.databaseId},
@@ -93,6 +94,11 @@ export class DatabaseTransactions {
 			this.drizzleDatabase
 		)
 		this.views = new ViewTransactions(
+			{context: this.context, databaseId: this.databaseId},
+			this.eventsService,
+			this.drizzleDatabase
+		)
+		this.snapshot = new SnapshotTransactions(
 			{context: this.context, databaseId: this.databaseId},
 			this.eventsService,
 			this.drizzleDatabase
