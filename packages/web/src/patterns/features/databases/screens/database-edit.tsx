@@ -84,6 +84,21 @@ export function DatabaseEditScreen(props: DatabaseEditScreenProps) {
 			<h2>Edit Database {databaseQuery.result.name}</h2>
 			<JButton
 				variant='secondary'
+				disabled={!databaseQuery.result.isUnlocked}
+				onClick={() => {
+					setOpenTab({type: 'import', databaseId: props.databaseId})
+				}}
+			>Import</JButton>
+			<JButton
+				variant='secondary'
+				disabled={!databaseQuery.result.isUnlocked}
+				onClick={() => {
+					setOpenTab({type: 'export', databaseId: props.databaseId})
+				}}
+			>Export</JButton>
+			{!databaseQuery.result.isUnlocked && <p>Unable to import/export database until it is unlocked.</p>}
+			<JButton
+				variant='secondary'
 				onClick={() => {
 					setOpenTab({type: 'change-password', databaseId: props.databaseId})
 				}}

@@ -8,8 +8,10 @@ import {_DatabaseDialogContext, DatabaseManagerTabs, useDatabaseManagerDialogCon
 import {useWorkspaceContext} from "../../workspace/workspace-context";
 import {DatabaseChangePasswordScreen} from "../screens/database-change-password";
 import {useHeadbase} from "../../../../logic/react/use-headbase.tsx";
-import {EncryptionService} from "../../../../logic/services/encryption/encryption.ts";
 import {KeyStorageService} from "../../../../logic/services/key-storage/key-storage.service.ts";
+import {DatabaseImportScreen} from "../screens/database-import.tsx";
+import {DatabaseExportScreen} from "../screens/database-export.tsx";
+
 
 export function DatabaseManagerDialogProvider(props: PropsWithChildren) {
 	const [openTab, _setOpenTab] = useState<DatabaseManagerTabs|undefined>(undefined)
@@ -62,6 +64,14 @@ export function DatabaseManagerDialog() {
 		}
 		case "unlock": {
 			dialogContent = <DatabaseUnlockScreen databaseId={openTab.databaseId} />
+			break;
+		}
+		case "import": {
+			dialogContent = <DatabaseImportScreen databaseId={openTab.databaseId} />
+			break;
+		}
+		case "export": {
+			dialogContent = <DatabaseExportScreen databaseId={openTab.databaseId} />
 			break;
 		}
 		default: (
@@ -120,7 +130,7 @@ export function DatabaseManagerDialog() {
 				}
 			}}
 			role={openTab ? 'dialog' : 'alertdialog'}
-			disableOutsideClose={!currentDatabaseId}
+			disableOutsideClose={true}
 			title="Manage databases"
 			description="Manage your current database"
 			content={dialogContent}

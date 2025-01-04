@@ -1,17 +1,21 @@
-import {FieldDto} from "../services/database/schemas/tables/fields/dtos.ts";
-import {ContentTypeDto} from "../services/database/schemas/tables/content-types/dtos.ts";
-import {ContentItemDto} from "../services/database/schemas/tables/content-items/dtos.ts";
-import {ViewDto} from "../services/database/schemas/tables/views/dtos.ts";
+import {FieldDto} from "./fields/dtos.ts";
+import {ContentTypeDto} from "./content-types/dtos.ts";
+import {ContentItemDto} from "./content-items/dtos.ts";
+import {ViewDto} from "./views/dtos.ts";
+import {z} from "zod";
+import {HEADBASE_VERSION} from "../headbase-web.ts";
 
 
-export interface ExportData {
-	exportVersion: "v1";
-	hbv: string;
-	createdAt: string
-	data: {
-		fields: FieldDto[]
-		contentTypes: ContentTypeDto[]
-		contentItems: ContentItemDto[]
-		views: ViewDto[]
-	}
-}
+export const DatabaseExport = z.object({
+	exportVersion: z.literal("v1"),
+	hbv: z.literal(HEADBASE_VERSION),
+	createdAt: z.string().datetime(),
+	data: z.object({
+		fields: z.array(FieldDto),
+		contentTypes: z.array(ContentTypeDto),
+		contentItems: z.array(ContentItemDto),
+		views: z.array(ViewDto)
+	})
+})
+
+export type DatabaseExport = z.infer<typeof DatabaseExport>

@@ -9,6 +9,7 @@ import {FieldTransactions} from "./transactions/fields.db.ts";
 import {ContentTypeTransactions} from "./transactions/types.db.ts";
 import {ContentItemTransactions} from "./transactions/items.db.ts";
 import {ViewTransactions} from "./transactions/views.db.ts";
+import {MigrationTransactions} from "./transactions/migration.db.ts";
 
 /**
  * todo: update live queries to ensure errors are handled and passed via observers
@@ -52,6 +53,7 @@ export class DatabaseTransactions {
 	readonly contentTypes: ContentTypeTransactions
 	readonly contentItems: ContentItemTransactions
 	readonly views: ViewTransactions
+	readonly migration: MigrationTransactions
 
 	constructor(
 		config: DatabaseConfig,
@@ -94,6 +96,13 @@ export class DatabaseTransactions {
 			{context: this.context, databaseId: this.databaseId},
 			this.eventsService,
 			this.drizzleDatabase
+		)
+		this.migration = new MigrationTransactions(
+			{context: this.context, databaseId: this.databaseId},
+			this.fields,
+			this.contentTypes,
+			this.contentItems,
+			this.views,
 		)
 	}
 

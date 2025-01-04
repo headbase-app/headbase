@@ -13,6 +13,12 @@ export type DatabaseManagerTabs = {
 } | {
 	type: 'unlock'
 	databaseId: string
+} | {
+	type: 'import'
+	databaseId: string
+} | {
+	type: 'export'
+	databaseId: string
 }
 
 export interface DatabaseManagerDialogContext {

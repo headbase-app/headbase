@@ -47,7 +47,7 @@ export class ContentTypeTransactions {
 	async create(createDto: CreateContentTypeDto): Promise<ContentTypeDto> {
 		const databaseId = this.getDatabaseId()
 
-		const entityId = self.crypto.randomUUID()
+		const entityId = createDto.id || self.crypto.randomUUID()
 		const versionId = self.crypto.randomUUID()
 		const createdAt = new Date().toISOString()
 
@@ -206,7 +206,7 @@ export class ContentTypeTransactions {
 		return results[0] as unknown as ContentTypeDto;
 	}
 
-	async queryTypes(options?: GlobalListingOptions): Promise<ContentTypeDto[]> {
+	async query(options?: GlobalListingOptions): Promise<ContentTypeDto[]> {
 		const filters: SQL[] = [
 			eq(contentTypes.currentVersionId, contentTypesVersions.id)
 		]
@@ -279,7 +279,7 @@ export class ContentTypeTransactions {
 				subscriber.next({status: 'loading'})
 
 				try {
-					const results = await this.queryTypes(options)
+					const results = await this.query(options)
 					subscriber.next({status: 'success', result: results})
 				}
 				catch(e) {

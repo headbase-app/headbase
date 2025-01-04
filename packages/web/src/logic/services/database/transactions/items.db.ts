@@ -45,7 +45,7 @@ export class ContentItemTransactions {
 	async create(createDto: CreateContentItemDto): Promise<ContentItemDto> {
 		const databaseId = this.getDatabaseId()
 
-		const entityId = self.crypto.randomUUID()
+		const entityId = createDto.id || self.crypto.randomUUID()
 		const versionId = self.crypto.randomUUID()
 		const createdAt = new Date().toISOString()
 

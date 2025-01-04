@@ -24,6 +24,7 @@ export const BaseVersionDto = z.object({
 export type BaseVersionDto = z.infer<typeof BaseEntityDto>
 
 export const BaseCreateDto = z.object({
+	id: z.string().uuid().optional(),
 	createdBy: z.string(),
 }).strict()
 export type BaseCreateDto = z.infer<typeof BaseEntityDto>
