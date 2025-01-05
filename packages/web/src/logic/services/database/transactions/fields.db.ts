@@ -8,58 +8,46 @@ import {HEADBASE_VERSION} from "../../../headbase-web.ts";
 
 export interface EntityTransactionsConfig {
 	context: DeviceContext;
-	databaseId: string | null;
 }
 
 
 export class FieldTransactions {
 	private readonly context: DeviceContext;
-	private databaseId: string | null;
 
 	constructor(
 		config: EntityTransactionsConfig,
 		private readonly eventsService: IEventsService,
 		private readonly databaseService: IDatabaseService
 	) {
-		this.databaseId = config.databaseId
 		this.context = config.context
 	}
-
-	setDatabaseId(databaseId: string | null): void {
-		this.databaseId = databaseId;
-	}
-
-	getDatabaseId(): string {
-		if (!this.databaseId) {
-			throw new Error("Attempted to run database query with no open database")
-		}
-
-		return this.databaseId;
-	}
 	
-	async create(createDto: CreateFieldDto): Promise<FieldDto> {
+	async create(databaseId: string, createDto: CreateFieldDto): Promise<FieldDto> {
 		console.debug(`[database] running create field`)
-		const databaseId = this.getDatabaseId();
 
 		const entityId = createDto.id || self.crypto.randomUUID()
 		const versionId = self.crypto.randomUUID()
 		const createdAt = new Date().toISOString()
 
-		await this.databaseService.exec(
+		await this.databaseService.exec({
 			databaseId,
-			`insert into fields(id, created_at, is_deleted, hbv, current_version_id) values (?, ?, ?, ?, ?)`,
-			[entityId, createdAt, 0, HEADBASE_VERSION, versionId]
-		)
+			sql: `insert into fields(id, created_at, is_deleted, hbv, current_version_id) values (?, ?, ?, ?, ?)`,
+			params: [entityId, createdAt, 0, HEADBASE_VERSION, versionId]
+		})
 
-		await this.databaseService.exec(
+		await this.databaseService.exec({
 			databaseId,
-			`insert into fields_versions(id, created_at, is_deleted, hbv, entity_id, previous_version_id, created_by, type, name, description, icon, settings) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-			[
+			sql: `
+				insert into fields_versions(
+					id, created_at, is_deleted, hbv, entity_id, previous_version_id, created_by,
+					type, name, icon, description, settings
+				) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+			params: [
 				versionId, createdAt, 0, HEADBASE_VERSION, entityId, null, createDto.createdBy,
-				createDto.type, createDto.name, createDto.description || null, createDto.icon || null,
+				createDto.type, createDto.name, createDto.icon || null, createDto.description || null,
 				'settings' in createDto ? JSON.stringify(createDto.settings) : null,
 			]
-		)
+		})
 
 		this.eventsService.dispatch(EventTypes.DATA_CHANGE, {
 			context: this.context,
@@ -71,14 +59,13 @@ export class FieldTransactions {
 			}
 		})
 
-		return this.get(entityId)
+		return this.get(databaseId, entityId)
 	}
 
-	async update(entityId: string, updateDto: UpdateFieldDto): Promise<FieldDto> {
+	async update(databaseId: string, entityId: string, updateDto: UpdateFieldDto): Promise<FieldDto> {
 		console.debug(`[database] running update field`)
-		const databaseId = this.getDatabaseId();
 
-		const currentEntity = await this.get(entityId)
+		const currentEntity = await this.get(databaseId, entityId)
 
 		if (currentEntity.type !== updateDto.type) {
 			throw new Error('Attempted to change type of field')
@@ -87,21 +74,25 @@ export class FieldTransactions {
 		const versionId = self.crypto.randomUUID()
 		const updatedAt = new Date().toISOString()
 
-		await this.databaseService.exec(
+		await this.databaseService.exec({
 			databaseId,
-			`update fields set current_version_id = ? where id = ?`,
-			[versionId, entityId]
-		)
+			sql: `update fields set current_version_id = ? where id = ?`,
+			params: [versionId, entityId]
+		})
 
-		await this.databaseService.exec(
+		await this.databaseService.exec({
 			databaseId,
-			`insert into fields_versions(id, created_at, is_deleted, hbv, entity_id, previous_version_id, created_by, type, name, description, icon, settings) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-			[
+			sql: `
+				insert into fields_versions(
+					id, created_at, is_deleted, hbv, entity_id, previous_version_id, created_by,
+          type, name, icon, description, settings
+				) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+			params: [
 				versionId, updatedAt, 0, HEADBASE_VERSION, entityId, currentEntity.versionId, updateDto.createdBy,
-				updateDto.type, updateDto.name, updateDto.description || null, updateDto.icon || null,
+				updateDto.type, updateDto.name, updateDto.icon || null, updateDto.description || null,
 				'settings' in updateDto ? JSON.stringify(updateDto.settings) : null,
 			]
-		)
+		})
 
 		this.eventsService.dispatch(EventTypes.DATA_CHANGE, {
 			context: this.context,
@@ -113,28 +104,27 @@ export class FieldTransactions {
 			}
 		})
 
-		// Return the updated field
-		// todo: do this via "returning" in version insert?
-		return this.get(entityId)
+		// todo: do this via "return" sql instead?
+		return this.get(databaseId, entityId)
 	}
 
-	async delete(entityId: string): Promise<void> {
+	async delete(databaseId: string, entityId: string): Promise<void> {
 		console.debug(`[database] running delete field: ${entityId}`)
-		const databaseId = this.getDatabaseId();
 
-		// todo: throw error if not found?
+		// Will cause error if entity can't be found.
+		await this.get(databaseId, entityId)
 
-		await this.databaseService.exec(
+		await this.databaseService.exec({
 			databaseId,
-			`update fields set is_deleted = 1 where id = ?`,
-			[entityId]
-		)
+			sql: `update fields set is_deleted = 1 where id = ?`,
+			params: [entityId]
+		})
 
-		await this.databaseService.exec(
+		await this.databaseService.exec({
 			databaseId,
-			`delete from fields_versions where entity_id = ?`,
-			[entityId]
-		)
+			sql: `delete from fields_versions where entity_id = ?`,
+			params: [entityId]
+		})
 
 		this.eventsService.dispatch(EventTypes.DATA_CHANGE, {
 			context: this.context,
@@ -147,33 +137,32 @@ export class FieldTransactions {
 		})
 	}
 
-	async get(entityId: string): Promise<FieldDto> {
+	async get(databaseId: string, entityId: string): Promise<FieldDto> {
 		console.debug(`[database] running get field: ${entityId}`)
-		const databaseId = this.getDatabaseId();
 
-		const results = await this.databaseService.exec(
+		const results = await this.databaseService.exec({
 			databaseId,
-			`select
+			sql: `
+				select
 					e.id as id,
 					e.created_at as createdAt,
 					v.created_at as updatedAt,
 					e.is_deleted as isDeleted,
 					v.id as versionId,
 					v.previous_version_id as previousVersionId,
-					v.created_by as createdBy,
+					v.created_by as versionCreatedBy,
 					v.type as type,
 					v.name as name,
-					v.description as description,
 					v.icon as icon,
+          v.description as description,
 					v.settings as settings
 				from fields e
 				inner join fields_versions v on e.id = v.entity_id
-				where e.id = ? and v.id = e.current_version_id
-				order by v.created_at;
-			`,
-			[entityId],
-			'object'
-		) as unknown as FieldDto[];
+				where e.id = ? and e.is_deleted = 0 and v.id = e.current_version_id
+				order by v.created_at;`,
+			params: [entityId],
+			rowMode: 'object'
+		}) as unknown as FieldDto[];
 
 		console.debug(results)
 		if (!results[0]) {
@@ -182,17 +171,18 @@ export class FieldTransactions {
 
 		return {
 			...results[0],
-			settings: 'settings' in results[0] ? JSON.parse(results[0].settings) : undefined,
+			// todo: have separate database dto type with settings as string, or parse directly in db call?
+			settings: results[0].settings !== null ? JSON.parse(results[0].settings as unknown as string) : null,
+			isDeleted: results[0].isDeleted as unknown as number === 1
 		}
 	}
 
-	async query(options?: GlobalListingOptions): Promise<FieldDto[]> {
+	async query(databaseId: string, options?: GlobalListingOptions): Promise<FieldDto[]> {
 		console.debug(`[database] running get fields`)
-		const databaseId = this.getDatabaseId();
 
-		const results = await this.databaseService.exec(
+		const results = await this.databaseService.exec({
 			databaseId,
-			`
+			sql: `
 				select
 					e.id as id,
 					e.created_at as createdAt,
@@ -200,42 +190,43 @@ export class FieldTransactions {
 					e.is_deleted as isDeleted,
 					v.id as versionId,
 					v.previous_version_id as previousVersionId,
-					v.created_by as createdBy,
+					v.created_by as versionCreatedBy,
 					v.type as type,
 					v.name as name,
+          v.icon as icon,
 					v.description as description,
-					v.icon as icon,
 					v.settings as settings
 				from fields e
 				inner join fields_versions v on e.id = v.entity_id
-				where e.is_deleted = ? and v.id = e.current_version_id
-				order by v.created_at;
-			`,
-			[options?.filter?.isDeleted ? 1 : 0],
-			'object'
-		) as unknown as FieldDto[];
+				where e.is_deleted = 0 and v.id = e.current_version_id
+				order by v.created_at;`,
+			params: [],
+			rowMode: 'object'
+		}) as unknown as FieldDto[];
 
 		return results.map(result => {
 			return {
 				...result,
-				settings: 'settings' in result ? JSON.parse(result.settings) : undefined,
+				// todo: have separate database dto type with settings as string, or parse directly in db call?
+				settings: result.settings !== null ? JSON.parse(result.settings as unknown as string) : null,
+				isDeleted: results[0].isDeleted as unknown as number === 1
 			}
 		})
 	}
 
-	liveGet(entityId: string) {
+	liveGet(databaseId: string, entityId: string) {
 		return new Observable<LiveQueryResult<FieldDto>>((subscriber) => {
 			subscriber.next({status: 'loading'})
 
 			const runQuery = async () => {
 				subscriber.next({status: 'loading'})
-				const results = await this.get(entityId);
+				const results = await this.get(databaseId, entityId);
 				subscriber.next({status: 'success', result: results})
 			}
 
 			const handleEvent = (e: CustomEvent<DataChangeEvent['detail']>) => {
 				if (
-					e.detail.data.databaseId === this.databaseId &&
+					e.detail.data.databaseId === databaseId &&
 					e.detail.data.tableKey === 'fields' &&
 					e.detail.data.id === entityId
 				) {
@@ -254,19 +245,19 @@ export class FieldTransactions {
 		})
 	}
 
-	liveQuery(options?: GlobalListingOptions) {
+	liveQuery(databaseId: string, options?: GlobalListingOptions) {
 		return new Observable<LiveQueryResult<FieldDto[]>>((subscriber) => {
 			subscriber.next({status: 'loading'})
 
 			const runQuery = async () => {
 				subscriber.next({status: 'loading'})
-				const results = await this.query(options);
+				const results = await this.query(databaseId, options);
 				subscriber.next({status: 'success', result: results})
 			}
 
 			const handleEvent = (e: CustomEvent<DataChangeEvent['detail']>) => {
 				if (
-					e.detail.data.databaseId === this.databaseId &&
+					e.detail.data.databaseId === databaseId &&
 					e.detail.data.tableKey === 'fields'
 				) {
 					console.debug(`[observableGet] Received event that requires re-query`)
@@ -284,13 +275,13 @@ export class FieldTransactions {
 		})
 	}
 
-	async getVersion(versionId: string) {
+	async getVersion(databaseId: string, versionId: string) {
 		console.debug(`[database] running getFieldVersion: ${versionId}`)
-		const databaseId = this.getDatabaseId()
 
-		const results =  await this.databaseService.exec(
+		// todo: convert to dto for settings and isDeleted
+		const results =  await this.databaseService.exec({
 			databaseId,
-			`
+			sql: `
 				select
 					v.id as id,
 					v.created_at as createdAt,
@@ -300,15 +291,14 @@ export class FieldTransactions {
 					v.created_by as createdBy,
 					v.type as type,
 					v.name as name,
+          v.icon as icon,
 					v.description as description,
-					v.icon as icon,
 					v.settings as settings
 				from fields_versions v
-				where v.id = ?
-			`,
-			[versionId],
-			'object'
-		) as unknown as FieldVersionDto[];
+				where v.id = ? and v.is_deleted = 0`,
+			params: [versionId],
+			rowMode: 'object'
+		}) as unknown as FieldVersionDto[];
 
 		if (!results[0]) {
 			throw new HeadbaseError({type: ErrorTypes.VERSION_NOT_FOUND})
@@ -317,13 +307,13 @@ export class FieldTransactions {
 		return results[0]
 	}
 
-	async getVersions(entityId: string) {
+	async getVersions(databaseId: string, entityId: string) {
 		console.debug(`[database] running getFieldVersions: ${entityId}`)
-		const databaseId = this.getDatabaseId()
 
-		return await this.databaseService.exec(
+		// todo: convert to dto for settings and isDeleted
+		return await this.databaseService.exec({
 			databaseId,
-			`
+			sql: `
 				select
 					v.id as id,
 					v.created_at as createdAt,
@@ -333,34 +323,31 @@ export class FieldTransactions {
 					v.created_by as createdBy,
 					v.type as type,
 					v.name as name,
+          v.icon as icon,
 					v.description as description,
-					v.icon as icon,
 					v.settings as settings
 				from fields_versions v
-				where v.entity_id = ?
-				order by v.created_at,
-			`,
-			[entityId],
-			'object'
-		) as unknown as FieldVersionDto[];
+				where v.entity_id = ? and v.is_deleted = 0
+				order by v.created_at`,
+			params: [entityId],
+			rowMode: 'object'
+		}) as unknown as FieldVersionDto[];
 	}
 
-	async deleteVersion(versionId: string): Promise<void> {
-		const databaseId = this.getDatabaseId();
-
-		const version = await this.getVersion(versionId);
-		const currentEntity = await this.get(version.entityId);
+	async deleteVersion(databaseId: string, versionId: string): Promise<void> {
+		const version = await this.getVersion(databaseId, versionId);
+		const currentEntity = await this.get(databaseId, version.entityId);
 
 		if (currentEntity.versionId === versionId) {
 			// todo: need error type, or generic user input error type?
 			throw new HeadbaseError({type: ErrorTypes.SYSTEM_ERROR, devMessage: 'Attempted to delete current version'})
 		}
 
-		await this.databaseService.exec(
+		await this.databaseService.exec({
 			databaseId,
-			`delete from fields_versions where id = ?`,
-			[versionId]
-		)
+			sql: `delete from fields_versions where id = ?`,
+			params: [versionId]
+		})
 
 		this.eventsService.dispatch(EventTypes.DATA_CHANGE, {
 			context: this.context,
@@ -374,19 +361,19 @@ export class FieldTransactions {
 		})
 	}
 
-	liveGetVersions(entityId: string) {
+	liveGetVersions(databaseId: string, entityId: string) {
 		return new Observable<LiveQueryResult<FieldVersionDto[]>>((subscriber) => {
 			subscriber.next({status: 'loading'})
 
 			const runQuery = async () => {
 				subscriber.next({status: 'loading'})
-				const results = await this.getVersions(entityId);
+				const results = await this.getVersions(databaseId, entityId);
 				subscriber.next({status: 'success', result: results})
 			}
 
 			const handleEvent = (e: CustomEvent<DataChangeEvent['detail']>) => {
 				if (
-					e.detail.data.databaseId === this.databaseId &&
+					e.detail.data.databaseId === databaseId &&
 					e.detail.data.tableKey === 'fields' &&
 					e.detail.data.id === entityId
 				) {

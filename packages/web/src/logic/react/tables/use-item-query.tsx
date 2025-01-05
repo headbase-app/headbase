@@ -12,7 +12,7 @@ export function useContentItemQuery(options?: GlobalListingOptions) {
 
 	useEffect(() => {
 		if (!headbase || !currentDatabaseId) return
-		const observable = headbase.db.contentItems.liveQuery(options)
+		const observable = headbase.db.contentItems.liveQuery(currentDatabaseId, options)
 
 		const subscription = observable.subscribe((query) => {
 			if (query.status === LiveQueryStatus.SUCCESS) {

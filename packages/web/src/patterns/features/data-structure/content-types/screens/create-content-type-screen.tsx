@@ -14,7 +14,7 @@ export function CreateContentTypeScreen(props: GenericManagerScreenProps) {
 		if (!currentDatabaseId || !headbase) return setErrors([{type: ErrorTypes.NO_CURRENT_DATABASE}])
 
 		try {
-			await headbase.db.contentTypes.create({
+			await headbase.db.contentTypes.create(currentDatabaseId, {
 				...data,
 				createdBy: 'todo'
 			})

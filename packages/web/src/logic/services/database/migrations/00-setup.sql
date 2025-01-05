@@ -31,8 +31,8 @@ create table if not exists fields_versions (
     -- Custom
     type text not null,
     name text not null,
-    description text,
     icon text,
+    description text,
     settings json
 );
 

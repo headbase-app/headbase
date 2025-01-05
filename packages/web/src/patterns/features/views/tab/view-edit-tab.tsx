@@ -26,7 +26,7 @@ export function ViewEditTab(props: ViewEditTabProps) {
 
 		if (props.viewId) {
 			try {
-				await headbase.db.views.update(props.viewId, {
+				await headbase.db.views.update(currentDatabaseId, props.viewId, {
 					type: 'list',
 					createdBy: 'todo',
 					icon: null,
@@ -44,16 +44,19 @@ export function ViewEditTab(props: ViewEditTabProps) {
 		}
 		else {
 			try {
-				const newView = await headbase.db.views.create({
-					type: 'list',
-					createdBy: 'todo',
-					icon: null,
-					colour: null,
-					name: name,
-					description: description,
-					isFavourite: isFavourite,
-					settings: null
-				})
+				const newView = await headbase.db.views.create(
+					currentDatabaseId,
+					{
+						type: 'list',
+						createdBy: 'todo',
+						icon: null,
+						colour: null,
+						name: name,
+						description: description,
+						isFavourite: isFavourite,
+						settings: null
+					}
+				)
 				replaceTab(props.tabIndex, {type: 'view', viewId: newView.id})
 			}
 			catch (e) {
@@ -78,7 +81,7 @@ export function ViewEditTab(props: ViewEditTabProps) {
 		}
 
 		try {
-			await headbase.db.views.delete(props.viewId)
+			await headbase.db.views.delete(currentDatabaseId, props.viewId)
 			closeTab(props.tabIndex)
 		}
 		catch (e) {

@@ -22,7 +22,7 @@ export function CreateFieldScreen(props: GenericManagerScreenProps) {
 		if (!currentDatabaseId || !headbase) return setErrors([{type: ErrorTypes.NO_CURRENT_DATABASE}])
 
 		try {
-			await headbase.db.fields.create({
+			await headbase.db.fields.create(currentDatabaseId, {
 				...data,
 				createdBy: 'todo',
 			})

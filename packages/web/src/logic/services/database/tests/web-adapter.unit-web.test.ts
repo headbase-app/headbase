@@ -15,7 +15,7 @@ test("should set up fine", async ({expect}) => {
 	const database = new DatabaseTransactions({context: testContext}, eventService, databaseService)
 	await database.open(testDatabaseId, testEncryptionKey)
 
-	const newField = await database.fields.create({
+	const newField = await database.fields.create(testDatabaseId, {
 		type: "markdown",
 		name: "testing",
 		createdBy: "test-setup",
@@ -23,7 +23,7 @@ test("should set up fine", async ({expect}) => {
 			defaultLines: 5,
 		},
 	})
-	const fetchedField = await database.fields.get(newField.id)
+	const fetchedField = await database.fields.get(testDatabaseId, newField.id)
 
 	expect(fetchedField).toEqual(expect.objectContaining({
 		id: expect.any(String),

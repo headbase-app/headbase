@@ -12,7 +12,7 @@ export function useViewQuery(options?: GlobalListingOptions) {
 
 	useEffect(() => {
 		if (!headbase || !currentDatabaseId) return
-		const observable = headbase.db.views.liveQuery(options)
+		const observable = headbase.db.views.liveQuery(currentDatabaseId, options)
 
 		const subscription = observable.subscribe((query) => {
 			if (query.status === LiveQueryStatus.SUCCESS) {

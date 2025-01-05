@@ -12,7 +12,7 @@ export function useContentType(id: string) {
 	useEffect(() => {
 		if (!headbase || !currentDatabaseId) return
 
-		const observable = headbase.db.contentTypes.liveGet(id)
+		const observable = headbase.db.contentTypes.liveGet(currentDatabaseId, id)
 
 		const subscription = observable.subscribe((query) => {
 			if (query.status === LiveQueryStatus.SUCCESS) {

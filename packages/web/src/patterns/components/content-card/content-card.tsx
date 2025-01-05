@@ -3,7 +3,7 @@ import "./content-card.scss";
 export interface ContentCardProps {
 	id: string;
 	name: string;
-	description: string | null;
+	description?: string | null;
 	onSelect: () => void
 }
 

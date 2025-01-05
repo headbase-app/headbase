@@ -17,11 +17,19 @@ export interface DatabaseServiceConfig {
 	context: DeviceContext
 }
 
+export interface ExecutableData {
+	databaseId: string,
+	sql: string,
+	// todo: make params optional?
+	params: SqlDataType[],
+	rowMode?: 'array' | 'object'
+}
+
 export abstract class IDatabaseService {
 	constructor(config: DatabaseServiceConfig) {}
 	async open(databaseId: string, encryptionKey: string) {}
 	async close(databaseId: string) {}
-	async exec(databaseId: string, sql: string, params: SqlDataType[], rowMode?: 'array' | 'object'): Promise<SqlQueryResponse> {
+	async exec(data: ExecutableData): Promise<SqlQueryResponse> {
 		return new Promise<SqlQueryResponse>((r) => r({rows: []}))
 	}
 	async destroy() {}

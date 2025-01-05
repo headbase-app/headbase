@@ -5,6 +5,7 @@ import {BaseFieldData} from "./base.ts";
 
 export const TextShortFieldData = BaseFieldData.extend({
 	type: z.literal(FIELDS.textShort.id),
+	settings: z.null()
 }).strict()
 export type TextShortFieldData = z.infer<typeof TextShortFieldData>
 
@@ -14,6 +15,7 @@ export type TextShortValue = z.infer<typeof TextShortValue>
 
 export const TextLongFieldData = BaseFieldData.extend({
 	type: z.literal(FIELDS.textLong.id),
+	settings: z.null()
 }).strict()
 export type TextLongFieldData = z.infer<typeof TextLongFieldData>
 
@@ -35,6 +37,7 @@ export type MarkdownValue = z.infer<typeof MarkdownValue>
 
 export const URLFieldData = BaseFieldData.extend({
 	type: z.literal(FIELDS.url.id),
+	settings: z.null()
 }).strict()
 export type URLFieldData = z.infer<typeof URLFieldData>
 
@@ -44,6 +47,7 @@ export type URLValue = z.infer<typeof URLValue>
 
 export const EmailFieldData = BaseFieldData.extend({
 	type: z.literal(FIELDS.email.id),
+	settings: z.null()
 }).strict()
 export type EmailFieldData = z.infer<typeof EmailFieldData>
 
@@ -53,6 +57,7 @@ export type EmailValue = z.infer<typeof EmailValue>
 
 export const ColourFieldData = BaseFieldData.extend({
 	type: z.literal(FIELDS.colour.id),
+	settings: z.null()
 }).strict()
 export type ColourFieldData = z.infer<typeof ColourFieldData>
 
@@ -63,6 +68,7 @@ export type ColourValue = z.infer<typeof ColourValue>
 
 export const PhoneFieldData = BaseFieldData.extend({
 	type: z.literal(FIELDS.phone.id),
+	settings: z.null()
 }).strict()
 export type PhoneFieldData = z.infer<typeof PhoneFieldData>
 
@@ -73,6 +79,7 @@ export type PhoneValue = z.infer<typeof PhoneValue>
 
 export const BooleanFieldData = BaseFieldData.extend({
 	type: z.literal(FIELDS.boolean.id),
+	settings: z.null()
 }).strict()
 export type BooleanFieldData = z.infer<typeof BooleanFieldData>
 
@@ -82,6 +89,7 @@ export type BooleanValue = z.infer<typeof BooleanValue>
 
 export const NumberFieldData = BaseFieldData.extend({
 	type: z.literal(FIELDS.number.id),
+	settings: z.null()
 }).strict()
 export type NumberFieldData = z.infer<typeof NumberFieldData>
 
@@ -91,6 +99,7 @@ export type NumberValue = z.infer<typeof NumberValue>
 
 export const DateFieldData = BaseFieldData.extend({
 	type: z.literal(FIELDS.date.id),
+	settings: z.null()
 }).strict()
 export type DateFieldData = z.infer<typeof DateFieldData>
 
@@ -100,6 +109,7 @@ export type DateValue = z.infer<typeof BooleanValue>
 
 export const TimestampFieldData = BaseFieldData.extend({
 	type: z.literal(FIELDS.timestamp.id),
+	settings: z.null()
 }).strict()
 export type TimestampFieldData = z.infer<typeof TimestampFieldData>
 

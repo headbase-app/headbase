@@ -12,7 +12,7 @@ export function useFieldQuery(options?: GlobalListingOptions) {
 
 	useEffect(() => {
 		if (!headbase || !currentDatabaseId) return
-		const observable = headbase.db.fields.liveQuery(options)
+		const observable = headbase.db.fields.liveQuery(currentDatabaseId, options)
 
 		const subscription = observable.subscribe((query) => {
 			if (query.status === LiveQueryStatus.SUCCESS) {

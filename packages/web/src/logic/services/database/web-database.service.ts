@@ -1,9 +1,8 @@
 import {
 	IDatabaseService,
 	DeviceContext,
-	SqlDataType,
 	SqlQueryResponse,
-    DatabaseServiceConfig
+	DatabaseServiceConfig, ExecutableData
 } from "../interfaces.ts";
 import {ClientMessages, QueryResponseMessage, WorkerMessages} from "./sqlite-worker/messages.ts";
 
@@ -93,16 +92,16 @@ export class WebDatabaseService implements IDatabaseService {
 		//this.databaseLockAbort.abort()
 	}
 
-	async exec(databaseId: string, sql: string, params: SqlDataType[], rowMode?: 'array' | 'object'): Promise<SqlQueryResponse> {
+	async exec(data: ExecutableData): Promise<SqlQueryResponse> {
 		const workerResponse = await this.sendWorkerRequest<QueryResponseMessage>({
 			type: 'exec',
 			messageId: self.crypto.randomUUID(),
 			detail: {
-				databaseId,
+				databaseId: data.databaseId,
 				context: this.context,
-				sql,
-				params,
-				rowMode,
+				sql: data.sql,
+				params: data.params,
+				rowMode: data.rowMode,
 			}
 		})
 

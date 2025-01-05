@@ -32,13 +32,13 @@ export function ViewTab(props: ViewTabProps) {
 	 * A hook to set and load the content based on the viewQuery result
 	 */
 	useEffect(() => {
-		if (!headbase) return
+		if (!headbase || !currentDatabaseId) return
 
 		if (viewQuery.status === 'loading' || viewQuery.status === 'error') {
 			setResults([])
 		}
 
-		const resultsQuery = headbase.db.contentItems.liveQuery({filter: {isDeleted: false}})
+		const resultsQuery = headbase.db.contentItems.liveQuery(currentDatabaseId, {filter: {isDeleted: false}})
 
 		const resultQuerySubscription = resultsQuery.subscribe((liveQuery) => {
 			if (liveQuery.status === LiveQueryStatus.SUCCESS) {

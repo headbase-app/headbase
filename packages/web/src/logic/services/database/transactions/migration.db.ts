@@ -1,8 +1,8 @@
 import {DeviceContext} from "../../interfaces.ts";
 import {EntityTransactionsConfig, FieldTransactions} from "./fields.db.ts";
 import {DatabaseExport} from "../../../schemas/export.ts";
-import {ContentTypeTransactions} from "./types.db.ts";
-import {ContentItemTransactions} from "./items.db.ts";
+import {ContentTypeTransactions} from "./content-types.db.ts";
+import {ContentItemTransactions} from "./content-items.db.ts";
 import {ViewTransactions} from "./views.db.ts";
 import {HEADBASE_VERSION} from "../../../headbase-web.ts";
 import {ErrorTypes, HeadbaseError} from "../../../control-flow.ts";
@@ -25,11 +25,11 @@ export class MigrationTransactions {
 		this.context = config.context
 	}
 
-	async export(): Promise<DatabaseExport> {
-		const fields = await this.fields.query({filter: {isDeleted: false}});
-		const contentTypes = await this.contentTypes.query({filter: {isDeleted: false}});
-		const contentItems = await this.contentItems.query({filter: {isDeleted: false}});
-		const views = await this.views.query({filter: {isDeleted: false}});
+	async export(databaseId: string): Promise<DatabaseExport> {
+		const fields = await this.fields.query(databaseId, {filter: {isDeleted: false}});
+		const contentTypes = await this.contentTypes.query(databaseId, {filter: {isDeleted: false}});
+		const contentItems = await this.contentItems.query(databaseId, {filter: {isDeleted: false}});
+		const views = await this.views.query(databaseId, {filter: {isDeleted: false}});
 
 		return {
 			exportVersion: "v1",
@@ -44,11 +44,11 @@ export class MigrationTransactions {
 		}
 	}
 
-	async import(importData: DatabaseExport): Promise<void> {
+	async import(databaseId: string, importData: DatabaseExport): Promise<void> {
 		for (const field of importData.data.fields) {
 			let existingEntity: FieldDto | null = null
 			try {
-				existingEntity = await this.fields.get(field.id)
+				existingEntity = await this.fields.get(databaseId, field.id)
 			}
 			catch (e) {
 				if (e instanceof HeadbaseError && e.cause.type === ErrorTypes.ENTITY_NOT_FOUND) {
@@ -60,7 +60,7 @@ export class MigrationTransactions {
 			}
 
 			if (!existingEntity) {
-				await this.fields.create({
+				await this.fields.create(databaseId, {
 					id: field.id,
 					createdBy: field.versionCreatedBy,
 					type: field.type,
@@ -73,7 +73,7 @@ export class MigrationTransactions {
 			else if (existingEntity.updatedAt < field.updatedAt) {
 				console.debug(`[import] Found existing field '${field.name}' (${field.id}) with older version, updating.`)
 
-				await this.fields.update(field.id, {
+				await this.fields.update(databaseId, field.id, {
 					createdBy: field.versionCreatedBy,
 					type: field.type,
 					name: field.name,
@@ -81,7 +81,8 @@ export class MigrationTransactions {
 					description: field.description,
 					settings: field.settings
 				})
-			} else {
+			}
+			else {
 				console.debug(`[import] Found existing field '${field.name}' (${field.id}), not updating.`)
 			}
 		}
@@ -89,7 +90,7 @@ export class MigrationTransactions {
 		for (const contentType of importData.data.contentTypes) {
 			let existingEntity: ContentTypeDto | null = null
 			try {
-				existingEntity = await this.contentTypes.get(contentType.id)
+				existingEntity = await this.contentTypes.get(databaseId, contentType.id)
 			}
 			catch (e) {
 				if (e instanceof HeadbaseError && e.cause.type === ErrorTypes.ENTITY_NOT_FOUND) {
@@ -101,7 +102,7 @@ export class MigrationTransactions {
 			}
 
 			if (!existingEntity) {
-				await this.contentTypes.create({
+				await this.contentTypes.create(databaseId, {
 					id: contentType.id,
 					createdBy: contentType.versionCreatedBy,
 					name: contentType.name,
@@ -115,7 +116,7 @@ export class MigrationTransactions {
 			else if (existingEntity.updatedAt < contentType.updatedAt) {
 				console.debug(`[import] Found existing content type '${contentType.name}' (${contentType.id}) with older version, updating.`)
 
-				await this.contentTypes.update(contentType.id, {
+				await this.contentTypes.update(databaseId, contentType.id, {
 					createdBy: contentType.versionCreatedBy,
 					name: contentType.name,
 					description: contentType.description,
@@ -133,7 +134,7 @@ export class MigrationTransactions {
 		for (const contentItem of importData.data.contentItems) {
 			let existingEntity: ContentItemDto | null = null
 			try {
-				existingEntity = await this.contentItems.get(contentItem.id)
+				existingEntity = await this.contentItems.get(databaseId, contentItem.id)
 			}
 			catch (e) {
 				if (e instanceof HeadbaseError && e.cause.type === ErrorTypes.ENTITY_NOT_FOUND) {
@@ -145,7 +146,7 @@ export class MigrationTransactions {
 			}
 
 			if (!existingEntity) {
-				await this.contentItems.create({
+				await this.contentItems.create(databaseId, {
 					id: contentItem.id,
 					createdBy: contentItem.versionCreatedBy,
 					type: contentItem.type,
@@ -157,7 +158,7 @@ export class MigrationTransactions {
 			else if (existingEntity.updatedAt < contentItem.updatedAt) {
 				console.debug(`[import] Found existing content item '${contentItem.name}' (${contentItem.id}) with older version, updating.`)
 
-				await this.contentItems.update(contentItem.id, {
+				await this.contentItems.update(databaseId, contentItem.id, {
 					createdBy: contentItem.versionCreatedBy,
 					type: contentItem.type,
 					name: contentItem.name,
@@ -173,7 +174,7 @@ export class MigrationTransactions {
 		for (const view of importData.data.views) {
 			let existingEntity: ViewDto | null = null
 			try {
-				existingEntity = await this.views.get(view.id)
+				existingEntity = await this.views.get(databaseId, view.id)
 			}
 			catch (e) {
 				if (e instanceof HeadbaseError && e.cause.type === ErrorTypes.ENTITY_NOT_FOUND) {
@@ -185,7 +186,7 @@ export class MigrationTransactions {
 			}
 
 			if (!existingEntity) {
-				await this.views.create({
+				await this.views.create(databaseId, {
 					id: view.id,
 					createdBy: view.versionCreatedBy,
 					type: view.type,
@@ -197,7 +198,7 @@ export class MigrationTransactions {
 			else if (existingEntity.updatedAt < view.updatedAt) {
 				console.debug(`[import] Found existing view '${view.name}' (${view.id}) with older version, updating.`)
 
-				await this.views.update(view.id, {
+				await this.views.update(databaseId, view.id, {
 					createdBy: view.versionCreatedBy,
 					type: view.type,
 					name: view.name,

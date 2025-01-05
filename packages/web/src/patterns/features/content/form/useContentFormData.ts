@@ -55,7 +55,7 @@ export function useContentFormData(options: ContentFormOptions) {
 
 		const queryContentTypeId = options.contentTypeId || contentTypeId
 		if (queryContentTypeId) {
-			const contentTypeQuery = headbase.db.contentTypes.liveGet(queryContentTypeId)
+			const contentTypeQuery = headbase.db.contentTypes.liveGet(currentDatabaseId, queryContentTypeId)
 			const subscription = contentTypeQuery.subscribe((liveQuery) => {
 				if (liveQuery.status === 'success') {
 					setContentType(liveQuery.result)
@@ -77,7 +77,7 @@ export function useContentFormData(options: ContentFormOptions) {
 		if (!headbase || !currentDatabaseId) return
 
 		if (options.contentId) {
-			const contentQuery = headbase.db.contentItems.liveGet(options.contentId)
+			const contentQuery = headbase.db.contentItems.liveGet(currentDatabaseId, options.contentId)
 			const subscription = contentQuery.subscribe((liveQuery) => {
 				if (liveQuery.status === 'success') {
 					/**

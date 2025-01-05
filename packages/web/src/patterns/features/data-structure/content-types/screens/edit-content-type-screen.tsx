@@ -17,7 +17,7 @@ export function EditContentTypeScreen(props: GenericManagerContentScreenProps) {
 		if (!currentDatabaseId || !headbase) return setErrors([{type: ErrorTypes.NO_CURRENT_DATABASE}])
 
 		try {
-			await headbase.db.contentTypes.update(props.id, {
+			await headbase.db.contentTypes.update(currentDatabaseId, props.id, {
 				...updatedData,
 				createdBy: 'todo',
 			})
@@ -32,7 +32,7 @@ export function EditContentTypeScreen(props: GenericManagerContentScreenProps) {
 		if (!currentDatabaseId || !headbase) return setErrors([{type: ErrorTypes.NO_CURRENT_DATABASE}])
 
 		try {
-			await headbase.db.contentTypes.delete(props.id)
+			await headbase.db.contentTypes.delete(currentDatabaseId, props.id)
 			props.navigate({screen: "list"})
 		}
 		catch (e) {

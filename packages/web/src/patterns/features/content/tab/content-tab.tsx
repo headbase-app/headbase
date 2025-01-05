@@ -38,6 +38,7 @@ export function ContentTab(props: ContentTabProps) {
 		if (props.contentId) {
 			try {
 				await headbase.db.contentItems.update(
+					currentDatabaseId,
 					props.contentId,
 					{
 						createdBy: 'todo',
@@ -55,13 +56,16 @@ export function ContentTab(props: ContentTabProps) {
 		}
 		else {
 			try {
-				const newContent = await headbase.db.contentItems.create({
-					createdBy: 'todo',
-					type: contentTypeId,
-					name: name,
-					fields: fieldStorage,
-					isFavourite: isFavourite
-				})
+				const newContent = await headbase.db.contentItems.create(
+					currentDatabaseId,
+					{
+						createdBy: 'todo',
+						type: contentTypeId,
+						name: name,
+						fields: fieldStorage,
+						isFavourite: isFavourite
+					}
+				)
 				replaceTab(props.tabIndex, {type: 'content', contentId: newContent.id})
 			}
 			catch (e) {
@@ -87,7 +91,7 @@ export function ContentTab(props: ContentTabProps) {
 		}
 
 		try {
-			await headbase.db.contentItems.delete(props.contentId)
+			await headbase.db.contentItems.delete(currentDatabaseId, props.contentId)
 			closeTab(props.tabIndex)
 		}
 		catch (e) {

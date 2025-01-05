@@ -12,7 +12,7 @@ export function useView(id: string) {
 	useEffect(() => {
 		if (!headbase || !currentDatabaseId) return
 
-		const observable = headbase.db.views.liveGet(id)
+		const observable = headbase.db.views.liveGet(currentDatabaseId, id)
 
 		const subscription = observable.subscribe((query) => {
 			if (query.status === LiveQueryStatus.SUCCESS) {

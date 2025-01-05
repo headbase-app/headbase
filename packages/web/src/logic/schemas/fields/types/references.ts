@@ -5,6 +5,7 @@ import {BaseFieldData} from "./base.ts";
 
 export const ReferenceOneFieldData = BaseFieldData.extend({
 	type: z.literal(FIELDS.referenceOne.id),
+	settings: z.null()
 }).strict()
 export type ReferenceOneFieldData = z.infer<typeof ReferenceOneFieldData>
 
@@ -16,6 +17,7 @@ export type ReferenceOneValue = z.infer<typeof ReferenceOneValue>
 
 export const ReferenceManyFieldData = BaseFieldData.extend({
 	type: z.literal(FIELDS.referenceMany.id),
+	settings: z.null()
 }).strict()
 export type ReferenceManyFieldData = z.infer<typeof ReferenceManyFieldData>
 

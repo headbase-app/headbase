@@ -26,6 +26,7 @@ export type ScaleValue = z.infer<typeof ScaleValue>
 
 export const PointFieldData = BaseFieldData.extend({
 	type: z.literal(FIELDS.point.id),
+	settings: z.null()
 }).strict()
 export type PointFieldData = z.infer<typeof PointFieldData>
 
@@ -38,6 +39,7 @@ export type PointValue = z.infer<typeof PointValue>
 
 export const FilesFieldData = BaseFieldData.extend({
 	type: z.literal(FIELDS.files.id),
+	settings: z.null()
 }).strict()
 export type FilesFieldData = z.infer<typeof FilesFieldData>
 
@@ -46,6 +48,7 @@ export type FilesValue = z.infer<typeof FilesValue>
 
 export const ImagesFieldData = BaseFieldData.extend({
 	type: z.literal(FIELDS.images.id),
+	settings: z.null()
 }).strict()
 export type ImagesFieldData = z.infer<typeof ImagesFieldData>
 

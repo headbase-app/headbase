@@ -7,6 +7,7 @@ import {useDatabases} from "../../../../logic/react/databases/use-databases.tsx"
 import {LocalDatabaseDto} from "../../../../logic/schemas/database.ts";
 import {LiveQueryStatus} from "../../../../logic/control-flow.ts";
 import {ErrorCallout} from "../../../components/error-callout/error-callout.tsx";
+import {KeyStorageService} from "../../../../logic/services/key-storage/key-storage.service.ts";
 
 export function DatabaseListScreen() {
 	const { setOpenTab, close } = useDatabaseManagerDialogContext()
@@ -17,14 +18,20 @@ export function DatabaseListScreen() {
 	const workspaceHasUnsavedChanges = tabs.filter(tab => tab.isUnsaved).length > 0
 
 	const attemptOpenDatabase = useCallback(async (database: LocalDatabaseDto) => {
+		if (!headbase) return
+
 		if (!database.isUnlocked) {
 			setOpenTab({type: 'unlock', databaseId: database.id})
 			return
 		}
 
 		try {
-			setCurrentDatabaseId(database.id)
-			close()
+			const encryptionKey = await KeyStorageService.get(database.id)
+			if (encryptionKey) {
+				await headbase.db.open(database.id, encryptionKey)
+				setCurrentDatabaseId(database.id)
+				close()
+			}
 		}
 		catch (e) {
 			console.error(e)
