@@ -28,15 +28,13 @@ export function HeadbaseContextProvider(props: HeadbaseContextProviderProps) {
 
 	useEffect(() => {
 		if (!headbase) {
-			console.debug('HeadbaseWeb init in hook')
 			const instance = new HeadbaseWeb()
 			setHeadbase(instance)
 			// @ts-expect-error -- adding custom to window so fine
 			window.hb = instance
 
 			return () => {
-				console.debug('HeadbaseWeb hook cleanup')
-				instance.close()
+				instance.destroy()
 			}
 		}
 	}, []);

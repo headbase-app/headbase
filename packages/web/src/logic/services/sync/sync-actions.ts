@@ -3,44 +3,56 @@
 export const TABLE_KEYS = ["fields", "fieldsVersions", "contentTypes", "contentTypesVersions", "contentItems", "contentItemsVersions", "views", "viewsVersions"] as const
 export type TableKey = "fields" | "fieldsVersions" | "contentTypes" | "contentTypesVersions" | "contentItems" | "contentItemsVersions" | "views" | "viewsVersions"
 
-export interface UploadAction {
-	type: "upload",
+export interface SyncDatabaseAction {
+	type: "sync-database",
 	detail: {
+		databaseId: string
+	}
+}
+
+export interface UploadItemAction {
+	type: "item-upload",
+	detail: {
+		databaseId: string,
 		tableKey: TableKey,
 		id: string,
 	}
 }
 
-export interface DownloadAction {
-	type: "download",
+export interface DownloadItemAction {
+	type: "item-download",
 	detail: {
+		databaseId: string,
 		tableKey: TableKey,
 		id: string,
 	}
 }
 
-export interface DeleteLocalAction {
-	type: "delete-local",
+export interface DeleteLocalItemAction {
+	type: "item-delete-local",
 	detail: {
+		databaseId: string,
 		tableKey: TableKey,
 		id: string,
 	}
 }
 
-export interface DeleteServerAction {
-	type: "delete-server",
+export interface DeleteServerItemAction {
+	type: "item-delete-server",
 	detail: {
+		databaseId: string,
 		tableKey: TableKey,
 		id: string,
 	}
 }
 
-export interface PurgeAction {
-	type: "purge",
+export interface PurgeItemAction {
+	type: "item-purge",
 	detail: {
+		databaseId: string,
 		tableKey: TableKey,
 		id: string,
 	}
 }
 
-export type SyncAction = UploadAction | DownloadAction | DeleteLocalAction | DeleteServerAction | PurgeAction;
+export type SyncAction = SyncDatabaseAction | UploadItemAction | DownloadItemAction | DeleteLocalItemAction | DeleteServerItemAction | PurgeItemAction;

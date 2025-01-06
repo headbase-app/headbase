@@ -1,6 +1,7 @@
 import React from "react";
-import {JDialog} from "@ben-ryder/jigsaw-react";
+import {JButton, JDialog} from "@ben-ryder/jigsaw-react";
 import {createModalContext} from "../common/dialog/generic-dialog.tsx";
+import {useHeadbase} from "../../../logic/react/use-headbase.tsx";
 
 export const {
 	context: StatusDialogContext,
@@ -10,6 +11,12 @@ export const {
 
 export function StatusDialog() {
 	const {isOpen, setIsOpen} = useStatusDialog()
+	const { headbase, currentDatabaseId } = useHeadbase()
+
+	async function onRequestSync() {
+		if (!headbase || !currentDatabaseId) return
+		headbase.sync.requestSync(currentDatabaseId)
+	}
 
 	return (
 		<JDialog
@@ -18,7 +25,10 @@ export function StatusDialog() {
 			title="Application Status"
 			description="View the application status"
 			content={
-				<p>Status info here</p>
+				<>
+					<JButton onClick={onRequestSync}>Request sync</JButton>
+					<p>Status info here</p>
+				</>
 			}
 		/>
 	)

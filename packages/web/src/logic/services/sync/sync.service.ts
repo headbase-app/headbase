@@ -15,25 +15,83 @@
  * how will sync service work when the user is not logged in? needs to handle this gracefully
  *
  */
-import {IEventsService} from "../interfaces.ts";
+import {DeviceContext, IEventsService} from "../interfaces.ts";
 import {DatabaseSnapshot} from "../database/db.ts";
 import {SyncAction, TABLE_KEYS} from "./sync-actions.ts";
+import {ServerAPI} from "../server/server.ts";
+import {HeadbaseEvent} from "../events/events.ts";
+import {HeadbaseError} from "../../control-flow.ts";
+import {ErrorIdentifiers} from "@headbase-app/common";
 
-export type SyncStatus = 'synced' | 'queued' | 'running' | 'error' | 'disabled'
+export type SyncStatus = 'idle' | 'running' | 'error' | 'disabled'
+
+export interface SyncServiceConfig {
+	context: DeviceContext
+}
 
 export class SyncService {
+	private context: DeviceContext
+
+	private status: SyncStatus
+	_handleEventBound: (event: CustomEvent<HeadbaseEvent>) => Promise<void>
 
 	constructor(
-		private eventsService: IEventsService
-	) {}
+		config: SyncServiceConfig,
+		private eventsService: IEventsService,
+		private server: ServerAPI
+	) {
+		this.context = config.context
+		this.status = "idle"
+		this._handleEventBound = this.handleEvent.bind(this)
+	}
+
+	async start() {
+		console.debug('[sync] starting sync service');
+		this.eventsService.subscribeAll(this._handleEventBound)
+	}
+
+	async end() {
+		console.debug('[sync] ending sync service');
+		this.eventsService.unsubscribeAll(this._handleEventBound)
+	}
+
+	async handleEvent(event: CustomEvent<HeadbaseEvent>) {
+		console.debug(`[sync] event received from context ${this.context.id}`)
+		console.debug(event)
+	}
+
+	async destroy() {
+		await this.end()
+	}
+
+	requestSync(databaseId: string) {
+		console.debug(`[sync] requesting sync for ${databaseId}`);
+		if (this.status === "idle") {
+			this.runSync(databaseId)
+		}
+	}
+
+	async runSync(databaseId: string) {
+		console.debug(`[sync] run sync for ${databaseId}`);
+		let serverDatabase
+		try {
+			serverDatabase = await this.server.getDatabase(databaseId);
+		}
+		catch (error) {
+			if (error instanceof HeadbaseError && error.cause.originalError?.identifier === ErrorIdentifiers.VAULT_NOT_FOUND) {
+				const result = await this.server.createDatabase(databaseId);
+			}
+		}
+	}
 
 	/**
 	 * Compare two snapshots and return the actions required to sync them into the same state.
 	 *
+	 * @param databaseId
 	 * @param localSnapshot
 	 * @param serverSnapshot
 	 */
-	compareSnapshots(localSnapshot: DatabaseSnapshot, serverSnapshot: DatabaseSnapshot): SyncAction[] {
+	compareSnapshots(databaseId: string, localSnapshot: DatabaseSnapshot, serverSnapshot: DatabaseSnapshot): SyncAction[] {
 		const syncActions: SyncAction[] = []
 
 		for (const tableKey of TABLE_KEYS) {
@@ -46,10 +104,11 @@ export class SyncService {
 			const toUpload = localTableIds.filter(id => !localTableSnapshot[id] && !serverTableIds.includes(id))
 			for (const id of toUpload) {
 				syncActions.push({
-					type: "upload",
+					type: "item-upload",
 					detail: {
+						databaseId,
+						tableKey,
 						id: id,
-						tableKey
 					}
 				})
 			}
@@ -58,10 +117,11 @@ export class SyncService {
 			const toDownload = serverTableIds.filter(id => !serverTableSnapshot[id] && !localTableIds.includes(id))
 			for (const id of toDownload) {
 				syncActions.push({
-					type: "download",
+					type: "item-download",
 					detail: {
-						id: id,
-						tableKey
+						databaseId,
+						tableKey,
+						id: id
 					}
 				})
 			}
@@ -70,10 +130,11 @@ export class SyncService {
 			const toServerDelete = localTableIds.filter(id => localTableSnapshot[id] && serverTableSnapshot[id] === false)
 			for (const id of toServerDelete) {
 				syncActions.push({
-					type: "delete-server",
+					type: "item-delete-server",
 					detail: {
-						id: id,
-						tableKey
+						databaseId,
+						tableKey,
+						id: id
 					}
 				})
 			}
@@ -82,10 +143,11 @@ export class SyncService {
 			const toLocalDelete = serverTableIds.filter(id => serverTableSnapshot[id] && localTableSnapshot[id] === false)
 			for (const id of toLocalDelete) {
 				syncActions.push({
-					type: "delete-local",
+					type: "item-delete-local",
 					detail: {
-						id: id,
-						tableKey
+						databaseId,
+						tableKey,
+						id: id
 					}
 				})
 			}
@@ -94,10 +156,11 @@ export class SyncService {
 			const toPurge = serverTableIds.filter(id => serverTableSnapshot[id] && localTableSnapshot[id])
 			for (const id of toPurge) {
 				syncActions.push({
-					type: "purge",
+					type: "item-purge",
 					detail: {
-						id: id,
-						tableKey
+						databaseId,
+						tableKey,
+						id: id
 					}
 				})
 			}
