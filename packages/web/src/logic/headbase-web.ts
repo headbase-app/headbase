@@ -63,6 +63,7 @@ export class HeadbaseWeb {
 			{context: this.context},
 			this.eventsService,
 			this.server,
+			this.databases
 		)
 		
 		this.logMessages = []

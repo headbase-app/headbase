@@ -20,8 +20,9 @@ import {DatabaseSnapshot} from "../database/db.ts";
 import {SyncAction, TABLE_KEYS} from "./sync-actions.ts";
 import {ServerAPI} from "../server/server.ts";
 import {HeadbaseEvent} from "../events/events.ts";
-import {HeadbaseError} from "../../control-flow.ts";
-import {ErrorIdentifiers} from "@headbase-app/common";
+import {ErrorTypes, HeadbaseError} from "../../control-flow.ts";
+import {ErrorIdentifiers, VaultDto} from "@headbase-app/common";
+import {DatabasesManagementAPI} from "../database-management/database-management.ts";
 
 export type SyncStatus = 'idle' | 'running' | 'error' | 'disabled'
 
@@ -38,7 +39,8 @@ export class SyncService {
 	constructor(
 		config: SyncServiceConfig,
 		private eventsService: IEventsService,
-		private server: ServerAPI
+		private server: ServerAPI,
+		private databasesService: DatabasesManagementAPI
 	) {
 		this.context = config.context
 		this.status = "idle"
@@ -66,22 +68,96 @@ export class SyncService {
 
 	requestSync(databaseId: string) {
 		console.debug(`[sync] requesting sync for ${databaseId}`);
-		if (this.status === "idle") {
+		if (this.status !== "running") {
+			this.status = 'running'
 			this.runSync(databaseId)
+				.catch(e => {
+					this.status = 'error'
+					throw e
+				})
+				.then(() => {
+					this.status = 'idle'
+				})
 		}
 	}
 
-	async runSync(databaseId: string) {
-		console.debug(`[sync] run sync for ${databaseId}`);
-		let serverDatabase
+	async syncDatabase(databaseId: string) {
+		console.debug(`[sync] starting database sync of '${databaseId}'.`)
+
+		const user = await this.server.getCurrentUser()
+		if (!user) {
+			throw new HeadbaseError({type: ErrorTypes.SYSTEM_ERROR, devMessage: "Could not load current user during sync"})
+		}
+
+		const localDatabase = await this.databasesService.get(databaseId)
+		let serverDatabase: VaultDto | null
 		try {
-			serverDatabase = await this.server.getDatabase(databaseId);
+			serverDatabase = await this.server.getVault(databaseId);
 		}
 		catch (error) {
-			if (error instanceof HeadbaseError && error.cause.originalError?.identifier === ErrorIdentifiers.VAULT_NOT_FOUND) {
-				const result = await this.server.createDatabase(databaseId);
+			serverDatabase = null;
+			console.debug("[sync] found missing database during sync")
+			if (!(error instanceof HeadbaseError) || error?.cause?.originalError?.identifier !== ErrorIdentifiers.VAULT_NOT_FOUND) {
+				throw error
 			}
 		}
+
+		if (!serverDatabase) {
+			console.debug(`[sync] creating new database '${localDatabase.id}' during sync`)
+			await this.server.createVault({
+				ownerId: user.id,
+				id: localDatabase.id,
+				name: localDatabase.name,
+				createdAt: localDatabase.createdAt,
+				updatedAt: localDatabase.updatedAt,
+				deletedAt: null,
+				protectedEncryptionKey: localDatabase.protectedEncryptionKey,
+			});
+		}
+		else if (localDatabase.updatedAt !== serverDatabase.updatedAt) {
+			if (localDatabase.updatedAt > serverDatabase.updatedAt) {
+				console.debug(`[sync] local database  '${localDatabase.id}' is ahead of server, updating now.`)
+				await this.server.updateVault(localDatabase.id, {
+					name: localDatabase.name,
+					protectedEncryptionKey: localDatabase.protectedEncryptionKey,
+					protectedData: localDatabase.protectedData,
+				});
+			}
+			else {
+				console.debug(`[sync] server database  '${localDatabase.id}' is ahead of local, updating now.`)
+				await this.databasesService.replace(localDatabase.id, {
+					...serverDatabase,
+					// todo: is this needed, and if so why is i
+					headbaseVersion: localDatabase.headbaseVersion,
+					isUnlocked: localDatabase.isUnlocked,
+					syncEnabled: localDatabase.syncEnabled,
+				})
+			}
+		}
+	}
+
+	private async runSync(databaseId: string) {
+		console.debug(`[sync] run sync for ${databaseId}`);
+
+		let serverSnapshot
+		try {
+			serverSnapshot = await this.server.getVaultSnapshot(databaseId)
+		}
+		catch (error) {
+			if (error instanceof HeadbaseError && error?.cause?.originalError?.identifier === ErrorIdentifiers.VAULT_NOT_FOUND) {
+				await this.syncDatabase(databaseId)
+				serverSnapshot = await this.server.getVaultSnapshot(databaseId)
+			}
+			else {
+				throw error
+			}
+		}
+
+		if (!serverSnapshot) {
+			throw new HeadbaseError({type: ErrorTypes.SYSTEM_ERROR, devMessage: "Could not fetch server snapshot"})
+		}
+
+		console.debug(serverSnapshot)
 	}
 
 	/**

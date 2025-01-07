@@ -25,6 +25,8 @@ import {
 	UpdateDatabaseDto
 } from "../../schemas/database.ts";
 import {DeviceContext, IEventsService} from "../interfaces.ts";
+import {VaultDto} from "@headbase-app/common";
+import {i} from "vite/dist/node/types.d-aGj9QkWt";
 
 export interface DatabasesManagementAPIConfig {
 	context: DeviceContext
@@ -272,6 +274,35 @@ export class DatabasesManagementAPI {
 			headbaseVersion: currentDb.headbaseVersion,
 		}
 		await tx.objectStore('databases').put(newDatabase)
+
+		await tx.done
+
+		if (!preventEventDispatch) {
+			this.eventsService.dispatch(EventTypes.DATABASE_CHANGE, {
+				context: this.context,
+				data: {
+					id,
+					action: 'update',
+				}
+			})
+		}
+	}
+
+	/**
+	 * Replace the given database, useful when updating the
+	 *
+	 * @param id
+	 * @param database
+	 * @param preventEventDispatch - Useful in situations like data migrations, where an update is done while fetching data so an event shouldn't be triggered.
+	 */
+	async replace(id: string, database: Omit<LocalDatabaseDto, 'id'>, preventEventDispatch?: boolean): Promise<void> {
+		const db = await this.getAppStorageDatabase()
+		const tx = db.transaction(['databases'], 'readwrite')
+
+		await tx.objectStore('databases').put({
+			id: id,
+			...database
+		})
 
 		await tx.done
 

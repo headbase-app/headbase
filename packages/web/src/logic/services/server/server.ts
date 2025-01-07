@@ -5,7 +5,7 @@ import {
 	ServerInfoDto,
 	TokenPair,
 	UpdateUserDto,
-	UserDto, LoginRequest,
+	UserDto, LoginRequest, VaultDto, UpdateVaultDto, CreateVaultDto,
 } from "@headbase-app/common";
 import {ErrorTypes, HeadbaseError, LIVE_QUERY_LOADING_STATE, LiveQueryResult, LiveQueryStatus} from "../../control-flow.ts";
 import {GeneralStorageService} from "../general-storage/general-storage.service.ts";
@@ -211,6 +211,7 @@ export class ServerAPI {
 			// Delete all user data if the session is no longer valid
 			// @ts-expect-error -- todo: improve typing of errors?
 			if (e.response?.data?.identifier === ErrorIdentifiers.ACCESS_UNAUTHORIZED) {
+				await this.generalStorageService.deleteCurrentUser()
 				await this.generalStorageService.deleteRefreshToken()
 				await this.generalStorageService.deleteAccessToken()
 			}
@@ -303,24 +304,66 @@ export class ServerAPI {
 		})
 	}
 
-	// Databases
-	async getDatabase(databaseId: string) {
+	// Vaults
+	async getVault(id: string) {
 		const serverUrl = await this.getServerUrl()
 
-		return this.query<UserDto>({
+		return this.query<VaultDto>({
 			serverUrl,
 			method: 'GET',
-			path: `/v1/vaults/${databaseId}`
+			path: `/v1/vaults/${id}`
 		});
 	}
 
-	async getDatabaseSnapshot(databaseId: string) {
+	async getVaultSnapshot(id: string) {
 		const serverUrl = await this.getServerUrl()
 
 		return this.query<UserDto>({
 			serverUrl,
 			method: 'GET',
-			path: `/v1/vaults/${databaseId}/snapshot`
+			path: `/v1/vaults/${id}/snapshot`
+		});
+	}
+
+	async createVault(createVaultDto: CreateVaultDto) {
+		const serverUrl = await this.getServerUrl()
+
+		return this.query<VaultDto>({
+			serverUrl,
+			method: 'POST',
+			path: `/v1/vaults`,
+			data: createVaultDto
+		});
+	}
+
+	async updateVault(id: string, updateVaultDto: UpdateVaultDto) {
+		const serverUrl = await this.getServerUrl()
+
+		return this.query<VaultDto>({
+			serverUrl,
+			method: 'PATCH',
+			path: `/v1/vaults/${id}`,
+			data: updateVaultDto
+		});
+	}
+
+	async deleteVault(id: string) {
+		const serverUrl = await this.getServerUrl()
+
+		return this.query({
+			serverUrl,
+			method: 'DELETE',
+			path: `/v1/vaults/${id}`
+		});
+	}
+
+	async getVaults() {
+		const serverUrl = await this.getServerUrl()
+
+		return this.query({
+			serverUrl,
+			method: 'GET',
+			path: `/v1/vaults}`
 		});
 	}
 }

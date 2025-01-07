@@ -7,7 +7,7 @@ export const VaultFields = z.object({
 		.max(100, "name can't be over 100 characters."),
 	protectedEncryptionKey: z.string()
 		.min(1, "protectedEncryptionKey must be at least 1 character.")
-		.max(255, "protectedEncryptionKey can't be over 255 characters."),
+		.max(500, "protectedEncryptionKey can't be over 500 characters."), // todo: should there be a max length at all?
 	protectedData: ProtectedDataField.nullish(),
 	ownerId: createIdField('ownerId'),
 }).strict()
