@@ -1,7 +1,7 @@
 import {UserContext} from "@common/request-context.js";
 import {VaultsService} from "@modules/vaults/vaults.service.js";
 import {ItemsService} from "@modules/items/items.service.js";
-import {ItemSnapshot, VaultSnapshot, VersionSnapshot} from "@headbase-app/common";
+import {ItemSnapshot, VaultSnapshot} from "@headbase-app/common";
 
 
 export class SnapshotService {
@@ -10,53 +10,45 @@ export class SnapshotService {
 		private readonly itemsService: ItemsService,
 	) {}
 
-	async getSnapshot(userContext: UserContext, vaultId: string) {
+	async getSnapshot(userContext: UserContext, vaultId: string): Promise<VaultSnapshot> {
 		// Fetch the vault to ensure the user has permissions to access the given vault.
 		// todo: add separate permission for fetching vault snapshot?
-		await this.vaultsService.get(userContext, vaultId);
-
-		const items = await this.itemsService._getAllItems(vaultId)
+		const vault = await this.vaultsService.get(userContext, vaultId);
 
 		const snapshot: VaultSnapshot = {
-			meta: {
-				items: 0,
-				itemsDeleted: 0,
+			vault: {
+				updatedAt: vault.updatedAt
 			},
-			results: []
+			items: []
 		}
 
+		// todo: only fetch required fields not all item content
+		const items = await this.itemsService._getAllItems(vaultId)
 		for (const item of items) {
-			const versions = await this.itemsService._getAllVersions(item.id)
-
 			const itemSnapshot: ItemSnapshot = {
 				id: item.id,
 				type: item.type,
+				// todo: consistent use of null vs undefined?
+				deletedAt: item.deletedAt || undefined,
+				versions: []
 			}
 
-			if (item.deletedAt) {
-				itemSnapshot.deletedAt = item.deletedAt
-				snapshot.meta.itemsDeleted += 1
-			}
-			else {
-				snapshot.meta.items += 1
-			}
-
-
+			// todo: only fetch required fields not all version content
+			const versions = await this.itemsService._getAllVersions(item.id)
 			if (versions.length) {
+				// todo: is this needed?
 				itemSnapshot.latestVersion = versions[0].id
-				itemSnapshot.versions = versions.map((version) => {
-					const versionSnapshot: VersionSnapshot = {
-						id: version.id,
-					}
-					if (version.deletedAt) {
-						versionSnapshot.deletedAt = version.deletedAt
-					}
 
-					return versionSnapshot
+				itemSnapshot.versions = versions.map((version) => {
+					return {
+						id: version.id,
+						// todo: consistent use of null vs undefined?
+						deletedAt: version.deletedAt || undefined
+					}
 				})
 			}
 
-			snapshot.results.push(itemSnapshot)
+			snapshot.items.push(itemSnapshot)
 		}
 
 		return snapshot

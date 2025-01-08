@@ -67,7 +67,7 @@ CREATE TRIGGER update_user_timestamps BEFORE UPDATE ON users FOR EACH ROW EXECUT
 CREATE TABLE IF NOT EXISTS vaults (
     id UUID NOT NULL,
     name VARCHAR(100) NOT NULL,
-    protected_encryption_key VARCHAR(255) NOT NULL,
+    protected_encryption_key VARCHAR(500) NOT NULL,
     protected_data TEXT,
     created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),

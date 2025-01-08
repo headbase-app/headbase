@@ -5,7 +5,7 @@ import {
 	ServerInfoDto,
 	TokenPair,
 	UpdateUserDto,
-	UserDto, LoginRequest, VaultDto, UpdateVaultDto, CreateVaultDto,
+	UserDto, LoginRequest, VaultDto, UpdateVaultDto, CreateVaultDto, VaultSnapshot,
 } from "@headbase-app/common";
 import {ErrorTypes, HeadbaseError, LIVE_QUERY_LOADING_STATE, LiveQueryResult, LiveQueryStatus} from "../../control-flow.ts";
 import {GeneralStorageService} from "../general-storage/general-storage.service.ts";
@@ -210,6 +210,7 @@ export class ServerAPI {
 		catch(e: unknown) {
 			// Delete all user data if the session is no longer valid
 			// @ts-expect-error -- todo: improve typing of errors?
+			// todo: logout on any 4xx error, error message on 5xx?
 			if (e.response?.data?.identifier === ErrorIdentifiers.ACCESS_UNAUTHORIZED) {
 				await this.generalStorageService.deleteCurrentUser()
 				await this.generalStorageService.deleteRefreshToken()
@@ -318,7 +319,7 @@ export class ServerAPI {
 	async getVaultSnapshot(id: string) {
 		const serverUrl = await this.getServerUrl()
 
-		return this.query<UserDto>({
+		return this.query<VaultSnapshot>({
 			serverUrl,
 			method: 'GET',
 			path: `/v1/vaults/${id}/snapshot`

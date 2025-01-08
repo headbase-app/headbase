@@ -16,13 +16,14 @@
  *
  */
 import {DeviceContext, IEventsService} from "../interfaces.ts";
-import {DatabaseSnapshot} from "../database/db.ts";
-import {SyncAction, TABLE_KEYS} from "./sync-actions.ts";
+import {DatabaseTransactions} from "../database/db.ts";
+import {SyncAction} from "./sync-actions.ts";
 import {ServerAPI} from "../server/server.ts";
 import {HeadbaseEvent} from "../events/events.ts";
 import {ErrorTypes, HeadbaseError} from "../../control-flow.ts";
 import {ErrorIdentifiers, VaultDto} from "@headbase-app/common";
 import {DatabasesManagementAPI} from "../database-management/database-management.ts";
+import {compareSnapshots, convertServerSnapshot} from "./sync-logic.ts";
 
 export type SyncStatus = 'idle' | 'running' | 'error' | 'disabled'
 
@@ -32,6 +33,7 @@ export interface SyncServiceConfig {
 
 export class SyncService {
 	private context: DeviceContext
+	private actions: SyncAction[]
 
 	private status: SyncStatus
 	_handleEventBound: (event: CustomEvent<HeadbaseEvent>) => Promise<void>
@@ -40,10 +42,14 @@ export class SyncService {
 		config: SyncServiceConfig,
 		private eventsService: IEventsService,
 		private server: ServerAPI,
-		private databasesService: DatabasesManagementAPI
+		private databasesManagementAPI: DatabasesManagementAPI,
+		private databaseTransactions: DatabaseTransactions
 	) {
 		this.context = config.context
+
 		this.status = "idle"
+		this.actions = []
+
 		this._handleEventBound = this.handleEvent.bind(this)
 	}
 
@@ -89,7 +95,7 @@ export class SyncService {
 			throw new HeadbaseError({type: ErrorTypes.SYSTEM_ERROR, devMessage: "Could not load current user during sync"})
 		}
 
-		const localDatabase = await this.databasesService.get(databaseId)
+		const localDatabase = await this.databasesManagementAPI.get(databaseId)
 		let serverDatabase: VaultDto | null
 		try {
 			serverDatabase = await this.server.getVault(databaseId);
@@ -125,7 +131,7 @@ export class SyncService {
 			}
 			else {
 				console.debug(`[sync] server database  '${localDatabase.id}' is ahead of local, updating now.`)
-				await this.databasesService.replace(localDatabase.id, {
+				await this.databasesManagementAPI.replace(localDatabase.id, {
 					...serverDatabase,
 					// todo: is this needed, and if so why is i
 					headbaseVersion: localDatabase.headbaseVersion,
@@ -157,91 +163,12 @@ export class SyncService {
 			throw new HeadbaseError({type: ErrorTypes.SYSTEM_ERROR, devMessage: "Could not fetch server snapshot"})
 		}
 
-		console.debug(serverSnapshot)
-	}
+		// todo: call server snapshot something different?
+		const serverDataSnapshot = convertServerSnapshot(serverSnapshot)
+		const localSnapshot = await this.databaseTransactions.snapshot.getSnapshot(databaseId)
+		const syncActions = compareSnapshots(databaseId, localSnapshot, serverDataSnapshot)
 
-	/**
-	 * Compare two snapshots and return the actions required to sync them into the same state.
-	 *
-	 * @param databaseId
-	 * @param localSnapshot
-	 * @param serverSnapshot
-	 */
-	compareSnapshots(databaseId: string, localSnapshot: DatabaseSnapshot, serverSnapshot: DatabaseSnapshot): SyncAction[] {
-		const syncActions: SyncAction[] = []
-
-		for (const tableKey of TABLE_KEYS) {
-			const localTableSnapshot = localSnapshot[tableKey]
-			const localTableIds = Object.keys(localTableSnapshot)
-			const serverTableSnapshot = serverSnapshot[tableKey]
-			const serverTableIds = Object.keys(serverTableSnapshot)
-
-			// Upload to server if not deleted and if the server doesn't already have the data.
-			const toUpload = localTableIds.filter(id => !localTableSnapshot[id] && !serverTableIds.includes(id))
-			for (const id of toUpload) {
-				syncActions.push({
-					type: "item-upload",
-					detail: {
-						databaseId,
-						tableKey,
-						id: id,
-					}
-				})
-			}
-
-			// Download from server if not deleted and if local doesn't already have the data.
-			const toDownload = serverTableIds.filter(id => !serverTableSnapshot[id] && !localTableIds.includes(id))
-			for (const id of toDownload) {
-				syncActions.push({
-					type: "item-download",
-					detail: {
-						databaseId,
-						tableKey,
-						id: id
-					}
-				})
-			}
-
-			// Delete from server if deleted locally, and if the server has not yet deleted the data.
-			const toServerDelete = localTableIds.filter(id => localTableSnapshot[id] && serverTableSnapshot[id] === false)
-			for (const id of toServerDelete) {
-				syncActions.push({
-					type: "item-delete-server",
-					detail: {
-						databaseId,
-						tableKey,
-						id: id
-					}
-				})
-			}
-
-			// Delete locally if the server has deleted but local hasn't yet.
-			const toLocalDelete = serverTableIds.filter(id => serverTableSnapshot[id] && localTableSnapshot[id] === false)
-			for (const id of toLocalDelete) {
-				syncActions.push({
-					type: "item-delete-local",
-					detail: {
-						databaseId,
-						tableKey,
-						id: id
-					}
-				})
-			}
-
-			// Purge locally if the item is already deleted on both the server and locally
-			const toPurge = serverTableIds.filter(id => serverTableSnapshot[id] && localTableSnapshot[id])
-			for (const id of toPurge) {
-				syncActions.push({
-					type: "item-purge",
-					detail: {
-						databaseId,
-						tableKey,
-						id: id
-					}
-				})
-			}
-		}
-
-		return syncActions;
+		this.actions.push(...syncActions)
+		console.debug(syncActions)
 	}
 }

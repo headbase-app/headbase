@@ -8,13 +8,12 @@ export interface ItemSnapshot {
 	type: string
 	deletedAt?: string
 	latestVersion?: string
-	versions?: VersionSnapshot[]
+	versions: VersionSnapshot[]
 }
 
-export type VaultSnapshot = {
-	meta: {
-		items: number;
-		itemsDeleted: number
+export interface VaultSnapshot {
+	vault: {
+		updatedAt: string
 	}
-	results: ItemSnapshot[]
+	items: ItemSnapshot[]
 }

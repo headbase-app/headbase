@@ -2,16 +2,12 @@ import {test, describe} from "vitest";
 import {SyncService} from "./sync.service.ts";
 import {DeviceContext} from "../interfaces.ts";
 import {MockEventsService} from "../../../../tests/mock-services/mock-events.service.ts";
+import {compareSnapshots} from "./sync-logic.ts";
 
 
 describe("compareSnapshots should return the correct sync actions", async () => {
 	test("empty snapshots should return no sync actions", async ({expect}) => {
-		const deviceContext: DeviceContext = {id: "5f95f173-572c-4b67-a697-b4474f880ae9"}
-		const eventService = new MockEventsService({context: deviceContext});
-		const syncService = new SyncService(eventService);
-		// todo: setup and cleanup sync service outside of individual tests?
-
-		const result = syncService.compareSnapshots({
+		const result = compareSnapshots("4b564b07-038c-4984-9961-224325526230", {
 			fields: {},
 			fieldsVersions: {},
 			contentTypes: {},
@@ -35,12 +31,7 @@ describe("compareSnapshots should return the correct sync actions", async () => 
 	})
 
 	test("identical snapshots with deletions should result in purge actions", async ({expect}) => {
-		const deviceContext: DeviceContext = {id: "5f95f173-572c-4b67-a697-b4474f880ae9"}
-		const eventService = new MockEventsService({context: deviceContext});
-		const syncService = new SyncService(eventService);
-		// todo: setup and cleanup sync service outside of individual tests?
-
-		const result = syncService.compareSnapshots({
+		const result = compareSnapshots('7aae325a-d16d-4e0c-b18c-a3988533bc62', {
 			fields: {
 				"1": false,
 				"2": false,
@@ -80,12 +71,7 @@ describe("compareSnapshots should return the correct sync actions", async () => 
 	})
 
 	test("different snapshots should result in the correct sync actions", async ({expect}) => {
-		const deviceContext: DeviceContext = {id: "5f95f173-572c-4b67-a697-b4474f880ae9"}
-		const eventService = new MockEventsService({context: deviceContext});
-		const syncService = new SyncService(eventService);
-		// todo: setup and cleanup sync service outside of individual tests?
-
-		const result = syncService.compareSnapshots({
+		const result = compareSnapshots("b9578635-47c3-454d-9371-a68cbdefaac0", {
 			fields: {
 				"local-only-1": false,
 				"local-only-2": false,
