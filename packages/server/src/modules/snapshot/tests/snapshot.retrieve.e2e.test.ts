@@ -40,11 +40,10 @@ describe("Retrieve Snapshot - /v1/vaults/:vaultId/snapshot [GET]", () => {
 
       expect(statusCode).toEqual(HttpStatusCodes.OK);
       expect(body).toEqual(expect.objectContaining({
-        meta: {
-          items: expect.any(Number),
-          itemsDeleted: expect.any(Number)
-        },
-        results: expect.anything()
+				vault: expect.objectContaining({
+					updatedAt: expect.any(String),
+				}),
+				items: expect.any(Array)
       }))
     });
 
@@ -70,11 +69,10 @@ describe("Retrieve Snapshot - /v1/vaults/:vaultId/snapshot [GET]", () => {
 
       expect(statusCode).toEqual(HttpStatusCodes.OK);
 			expect(body).toEqual(expect.objectContaining({
-				meta: {
-					items: expect.any(Number),
-					itemsDeleted: expect.any(Number)
-				},
-				results: expect.anything()
+				vault: expect.objectContaining({
+					updatedAt: expect.any(String),
+				}),
+				items: expect.any(Array)
 			}))
     });
 
@@ -88,11 +86,10 @@ describe("Retrieve Snapshot - /v1/vaults/:vaultId/snapshot [GET]", () => {
 
       expect(statusCode).toEqual(HttpStatusCodes.OK);
 			expect(body).toEqual(expect.objectContaining({
-				meta: {
-					items: expect.any(Number),
-					itemsDeleted: expect.any(Number)
-				},
-				results: expect.anything()
+				vault: expect.objectContaining({
+					updatedAt: expect.any(String),
+				}),
+				items: expect.any(Array)
 			}))
     });
   })
