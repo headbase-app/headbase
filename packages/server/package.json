@@ -1,6 +1,6 @@
 {
   "name": "@headbase-app/server",
-  "version": "0.3.1",
+  "version": "0.4.0",
   "description": "A generic backend for local-first applications including content backup, cross-device sync and multi-user support.",
   "private": true,
   "author": "ben-ryder <dev@benryder.me> (https://www.benryder.me)",
@@ -19,7 +19,7 @@
     "dev:common-rebuild": "(cd ../common && npm run build) && npm i"
   },
   "dependencies": {
-    "@headbase-app/common": "^0.3.0",
+    "@headbase-app/common": "^0.4.0",
     "bcrypt": "^5.1.1",
     "cors": "^2.8.5",
     "dotenv": "^16.3.1",
