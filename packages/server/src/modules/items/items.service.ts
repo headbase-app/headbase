@@ -1,11 +1,11 @@
-import {ItemDto, ItemsQueryByFiltersParams, VersionDto, VersionsQueryByFiltersParams} from "@headbase-app/common";
+import {ItemDto, ItemsQueryByFiltersParams} from "@headbase-app/common";
 import {UserContext} from "@common/request-context.js";
 import {AccessControlService} from "@modules/auth/access-control.service.js";
 import {EventsService} from "@services/events/events.service.js";
 import {EventIdentifiers} from "@services/events/events.js";
 import {VaultsService} from "@modules/vaults/vaults.service.js";
 import {ItemsDatabaseService} from "@modules/items/database/items.database.service.js";
-import {ItemDtoWithOwner, VersionDtoWithOwner} from "@modules/items/database/database-item.js";
+import {ItemDtoWithOwner} from "@modules/items/database/database-item.js";
 import {ResourceListingResult} from "@headbase-app/common";
 
 
@@ -16,7 +16,7 @@ export class ItemsService {
        private readonly itemsDatabaseService: ItemsDatabaseService,
        private readonly vaultsService: VaultsService,
     ) {
-        // todo: set up a cron job to purge deleted items and versions
+        // todo: set up a cron job to purge deleted items
     }
 
     convertDatabaseItemDto(itemDtoWithOwner: ItemDtoWithOwner): ItemDto {
@@ -70,8 +70,8 @@ export class ItemsService {
         const item = await this._getItemWithOwner(userContext, itemId)
 
         await this.accessControlService.validateAccessControlRules({
-            userScopedPermissions: ["item-version:delete"],
-            unscopedPermissions: ["item-version:delete:all"],
+            userScopedPermissions: ["item:delete"],
+            unscopedPermissions: ["item:delete:all"],
             requestingUserContext: userContext,
             targetUserId: item.ownerId,
         })
@@ -113,95 +113,5 @@ export class ItemsService {
 
     async _getAllItems(vaultId: string): Promise<ItemDto[]> {
         return this.itemsDatabaseService.getAllItems(vaultId)
-    }
-
-    convertDatabaseItemVersionDto(itemVersionDtoWithOwner: VersionDtoWithOwner): VersionDto {
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        const { ownerId, ...itemVersionDto } = itemVersionDtoWithOwner;
-        return itemVersionDto;
-    }
-
-    async getVersion(userContext: UserContext, versionId: string) {
-        const versionDtoWithOwner = await this._getVersionWithOwner(userContext, versionId);
-
-        return this.convertDatabaseItemVersionDto(versionDtoWithOwner)
-    }
-
-    async _getVersionWithOwner(userContext: UserContext, versionId: string) {
-        const versionDtoWithOwner = await this.itemsDatabaseService.getVersion(versionId)
-
-        await this.accessControlService.validateAccessControlRules({
-            userScopedPermissions: ["item-version:retrieve"],
-            unscopedPermissions: ["item-version:retrieve:all"],
-            requestingUserContext: userContext,
-            targetUserId: versionDtoWithOwner.ownerId
-        })
-
-        return versionDtoWithOwner
-    }
-
-    async createVersion(userContext: UserContext, versionDto: VersionDto) {
-        const itemDto = await this._getItemWithOwner(userContext, versionDto.itemId)
-
-        await this.accessControlService.validateAccessControlRules({
-            userScopedPermissions: ["item-version:create"],
-            unscopedPermissions: ["item-version:create:all"],
-            requestingUserContext: userContext,
-            targetUserId: itemDto.ownerId,
-        })
-
-        const createdVersion = await this.itemsDatabaseService.createVersion(versionDto)
-        await this.eventsService.dispatch({
-            type: EventIdentifiers.ITEM_VERSION_CREATE,
-            detail: {
-                sessionId: userContext.sessionId,
-                version: versionDto
-            }
-        })
-
-        return createdVersion
-    }
-
-    async deleteVersion(userContext: UserContext, versionId: string) {
-        const versionDto = await this._getVersionWithOwner(userContext, versionId)
-
-        // todo: maybe refactor version fetching to also include vaultId?
-        const itemDto = await this.getItem(userContext, versionId)
-
-        await this.accessControlService.validateAccessControlRules({
-            userScopedPermissions: ["item-version:delete"],
-            unscopedPermissions: ["item-version:delete:all"],
-            requestingUserContext: userContext,
-            targetUserId: versionDto.ownerId,
-        })
-
-        await this.itemsDatabaseService.deleteVersion(versionId);
-        await this.eventsService.dispatch({
-            type: EventIdentifiers.ITEM_VERSION_DELETE,
-            detail: {
-                sessionId: userContext.sessionId,
-                vaultId: itemDto.vaultId,
-                versionId: versionId
-            }
-        })
-    }
-
-    async getVersionsById(userContext: UserContext, ids: string[]): Promise<VersionDto[]> {
-        const versions: VersionDto[] = []
-        for (const id of ids) {
-            const version = await this.getVersion(userContext, id)
-            versions.push(version)
-        }
-        return versions
-    }
-
-    async getVersionsByFilters(userContext: UserContext, filters: VersionsQueryByFiltersParams): Promise<ResourceListingResult<VersionDto>> {
-        // Fetch all items to ensure the user has permissions to access these items, and ensure they all exist.
-        await this.queryItemsById(userContext, filters.itemId)
-        return this.itemsDatabaseService.getVersionsByFilters(filters)
-    }
-
-    async _getAllVersions(itemId: string): Promise<VersionDto[]> {
-        return this.itemsDatabaseService.getAllVersions(itemId)
     }
 }

@@ -27,27 +27,11 @@ export class SnapshotService {
 		for (const item of items) {
 			const itemSnapshot: ItemSnapshot = {
 				id: item.id,
+				group_id: item.groupId,
+				previous_version_id: item.previousVersionId,
 				type: item.type,
-				// todo: consistent use of null vs undefined?
-				deletedAt: item.deletedAt || undefined,
-				versions: []
+				deletedAt: item.deletedAt
 			}
-
-			// todo: only fetch required fields not all version content
-			const versions = await this.itemsService._getAllVersions(item.id)
-			if (versions.length) {
-				// todo: is this needed?
-				itemSnapshot.latestVersion = versions[0].id
-
-				itemSnapshot.versions = versions.map((version) => {
-					return {
-						id: version.id,
-						// todo: consistent use of null vs undefined?
-						deletedAt: version.deletedAt || undefined
-					}
-				})
-			}
-
 			snapshot.items.push(itemSnapshot)
 		}
 

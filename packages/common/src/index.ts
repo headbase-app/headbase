@@ -22,7 +22,5 @@ export * from "./schemas/vaults/vaults-params"
 
 export * from "./schemas/items/items"
 export * from "./schemas/items/items-params"
-export * from "./schemas/items/versions"
-export * from "./schemas/items/versions-params"
 
 export * from "./schemas/snapshot/snapshot"

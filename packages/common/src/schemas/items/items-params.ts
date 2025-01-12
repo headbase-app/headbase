@@ -1,7 +1,6 @@
 import {z} from "zod";
 import {ResourceListingParams} from "../common/listings";
-import {ItemDto} from "./items";
-import {createIdField} from "../common/fields";
+import {BaseItemDto} from "./items";
 
 export const ItemsURLParams = z.object({
 	itemId: z.string().uuid("itemId must be a uuid"),
@@ -9,13 +8,14 @@ export const ItemsURLParams = z.object({
 export type ItemsURLParams = z.infer<typeof ItemsURLParams>;
 
 export const ItemsQueryByIdsParams = z.object({
-	ids: z.array(ItemDto.shape.id)
+	ids: z.array(BaseItemDto.shape.id)
 }).strict()
 export type ItemsQueryByIdsParams = z.infer<typeof ItemsQueryByIdsParams>;
 
 export const ItemsQueryByFiltersParams = ResourceListingParams.extend({
-	vaultId: createIdField('vaultId'),
-	types: z.array(ItemDto.shape.type).optional(),
+	vaultId: BaseItemDto.shape.vaultId,
+	groupIds: z.array(BaseItemDto.shape.groupId).optional(),
+	types: z.array(BaseItemDto.shape.type).optional(),
 }).strict()
 export type ItemsQueryByFiltersParams = z.infer<typeof ItemsQueryByFiltersParams>;
 

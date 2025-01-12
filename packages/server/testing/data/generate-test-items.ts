@@ -1,37 +1,10 @@
-import {ItemDto, VersionDto} from "@headbase-app/common";
+import {DeletedItemDto, ItemDto} from "@headbase-app/common";
 import {testAdminUser1Vault1, testUser1Vault1, testUser1Vault2} from "@testing/data/vaults.js";
 import {randomUUID} from "node:crypto";
 import {testAdminUser1} from "@testing/data/users.js";
 import { writeFile } from "node:fs/promises"
 
-export interface TestItemDto extends ItemDto {
-	versions: {
-		active: VersionDto[],
-		deleted: VersionDto[]
-	};
-}
-
-interface GetTestVersionsOptions {
-	itemId: string
-	deviceName: string,
-	total: number
-	isDeleted?: boolean
-}
-
-function getTestVersions(options: GetTestVersionsOptions): VersionDto[] {
-	const versions: VersionDto[] = [];
-	for (let index = 0; index < options.total; index++) {
-		versions.push({
-			itemId: options.itemId,
-			id: randomUUID(),
-			deviceName: options.deviceName,
-			protectedData: `data${index}`,
-			createdAt: new Date().toISOString(),
-			deletedAt: options.isDeleted ? new Date().toISOString() : null,
-		})
-	}
-	return versions
-}
+export type TestItemDto = ItemDto | DeletedItemDto
 
 interface GetTestItemsOptions {
 	vaultId: string
@@ -49,19 +22,7 @@ function getTestItems(options: GetTestItemsOptions): TestItemDto[] {
 			id: itemId,
 			type: options.type,
 			createdAt: new Date().toISOString(),
-			deletedAt: options.isDeleted ? new Date().toISOString() : null,
-			versions: options.isDeleted ? {
-				active: [],
-				deleted: [],
-			} : {
-				active: [
-					...getTestVersions({itemId, total: 10, deviceName: "device1"}),
-					...getTestVersions({itemId, total: 10, deviceName: "device2"}),
-				],
-				deleted: [
-					...getTestVersions({itemId, total: 5, deviceName: "device3", isDeleted: true}),
-				]
-			},
+			deletedAt: options.isDeleted ? new Date().toISOString() : null
 		})
 	}
 	return items

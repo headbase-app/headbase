@@ -189,11 +189,6 @@ export class Application {
         app.get("/v1/items/:itemId", itemsHttpController.getItem.bind(itemsHttpController))
         app.delete("/v1/items/:itemId", itemsHttpController.deleteItem.bind(itemsHttpController))
 
-        app.post("/v1/versions", itemsHttpController.createVersion.bind(itemsHttpController))
-        app.get("/v1/versions", itemsHttpController.getVersions.bind(itemsHttpController))
-        app.get("/v1/versions/:versionId", itemsHttpController.getVersion.bind(itemsHttpController))
-        app.delete("/v1/versions/:versionId", itemsHttpController.deleteVersion.bind(itemsHttpController))
-
         // Sync module routes and websocket server
         const syncHttpController = this.container.resolve<SyncHttpController>(SyncHttpController)
         app.get("/v1/sync/ticket", syncHttpController.getConnectionTicket.bind(syncHttpController))

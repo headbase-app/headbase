@@ -26,10 +26,6 @@ export const Permissions = z.enum([
 	"item:retrieve",
 	"item:delete",
 
-	"item-version:create",
-	"item-version:retrieve",
-	"item-version:delete",
-
 	"users:create",
 	"users:retrieve",
 	"users:update",
@@ -44,10 +40,6 @@ export const Permissions = z.enum([
 	"item:create:all",
 	"item:retrieve:all",
 	"item:delete:all",
-
-	"item-version:create:all",
-	"item-version:retrieve:all",
-	"item-version:delete:all",
 
 	"users:create:all",
 	"users:retrieve:all",
@@ -95,10 +87,6 @@ export const RolePermissions: RolePermissions = {
 			"item:retrieve",
 			"item:delete",
 
-			"item-version:create",
-			"item-version:retrieve",
-			"item-version:delete",
-
 			"users:create",
 			"users:retrieve",
 			"users:update",
@@ -116,10 +104,6 @@ export const RolePermissions: RolePermissions = {
 			"item:create:all",
 			"item:retrieve:all",
 			"item:delete:all",
-
-			"item-version:create:all",
-			"item-version:retrieve:all",
-			"item-version:delete:all",
 
 			"users:create:all",
 			"users:retrieve:all",

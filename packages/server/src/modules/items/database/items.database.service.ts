@@ -3,8 +3,7 @@ import {
 	ErrorIdentifiers,
 	ItemDto,
 	ItemsQueryByFiltersParams,
-	ResourceListingResult,
-	VersionDto, VersionsQueryByFiltersParams
+	ResourceListingResult
 } from "@headbase-app/common";
 import Postgres from "postgres";
 import {PG_FOREIGN_KEY_VIOLATION, PG_UNIQUE_VIOLATION} from "@services/database/database-error-codes.js";
@@ -12,11 +11,9 @@ import {ResourceRelationshipError} from "@services/errors/resource/resource-rela
 import {SystemError} from "@services/errors/base/system.error.js";
 import {ResourceNotFoundError} from "@services/errors/resource/resource-not-found.error.js";
 import {
-	ItemDtoWithOwner,
-	VersionDtoWithOwner,
+	ItemDtoWithOwner
 } from "@modules/items/database/database-item.js";
 import {EnvironmentService} from "@services/environment/environment.service.js";
-import {UserRequestError} from "@services/errors/base/user-request.error.js";
 
 
 export class ItemsDatabaseService {
@@ -34,12 +31,6 @@ export class ItemsDatabaseService {
 						applicationMessage: "Attempted to add item referencing vault that doesn't exist."
 					})
 				}
-				if (e.constraint_name === "item_versions_item") {
-					return new ResourceRelationshipError({
-						identifier: ErrorIdentifiers.RESOURCE_NOT_FOUND, // todo: add unique item/version identifiers
-						applicationMessage: "Attempted to add version referencing item that doesn't exist."
-					})
-				}
 			}
 			if (e.code === PG_UNIQUE_VIOLATION) {
 				if (e.constraint_name === "items_pk") {
@@ -48,17 +39,11 @@ export class ItemsDatabaseService {
 						applicationMessage: "Item with given id already exists."
 					})
 				}
-				if (e.constraint_name === "item_versions_pk") {
-					return new ResourceRelationshipError({
-						identifier: ErrorIdentifiers.RESOURCE_NOT_UNIQUE,
-						applicationMessage: "Item version with given id already exists."
-					})
-				}
 			}
 		}
 
 		return new SystemError({
-			message: "Unexpected error while executing item/version query",
+			message: "Unexpected error while executing item query",
 			originalError: e
 		})
 	}
@@ -121,9 +106,6 @@ export class ItemsDatabaseService {
           where id = ${itemId}
           returning *;
 			`;
-
-			// Delete all versions as they aren't needed anymore.
-			await sql`delete from item_versions where item_id = ${itemId}`;
 		}
 		catch (e: any) {
 			throw ItemsDatabaseService.getDatabaseError(e);
@@ -223,169 +205,5 @@ export class ItemsDatabaseService {
 		}
 
 		return items
-	}
-
-	async getVersion(versionId: string): Promise<VersionDtoWithOwner> {
-		const sql = await this.databaseService.getSQL();
-
-		let result: VersionDtoWithOwner[] = [];
-		try {
-			result = await sql<VersionDtoWithOwner[]>`
-				select item_versions.*, vaults.owner_id from item_versions
-				join items on item_versions.item_id = item_versions.item_id
-				join vaults on items.vault_id = vaults.id
-				where item_versions.id = ${versionId}
-			`;
-		}
-		catch (e: any) {
-			throw ItemsDatabaseService.getDatabaseError(e);
-		}
-
-		if (result.length === 1) {
-			return result[0]
-		}
-		else {
-			throw new ResourceNotFoundError({
-				identifier: ErrorIdentifiers.RESOURCE_NOT_FOUND,
-				applicationMessage: "The requested version could not be found."
-			})
-		}
-	}
-
-	async createVersion(itemVersionDto: VersionDto): Promise<VersionDto> {
-		const sql = await this.databaseService.getSQL();
-
-		let result: VersionDtoWithOwner[] = [];
-		try {
-			result = await sql<VersionDtoWithOwner[]>`insert into item_versions ${sql([itemVersionDto])} returning *;`;
-		}
-		catch (e: any) {
-			throw ItemsDatabaseService.getDatabaseError(e);
-		}
-
-		if (result.length === 1) {
-			return result[0]
-		}
-		else {
-			throw new SystemError({
-				message: "Unexpected error returning item after creation",
-			})
-		}
-	}
-
-	async deleteVersion(versionId: string): Promise<void> {
-		const sql = await this.databaseService.getSQL();
-
-		let deleteResult: Postgres.RowList<Postgres.Row[]>;
-		try {
-			deleteResult = await sql`
-          update item_versions
-          set (deleted_at, protected_data) = (now(), null)
-          where id = ${versionId}
-          returning *;
-			`;
-		}
-		catch (e: any) {
-			throw ItemsDatabaseService.getDatabaseError(e);
-		}
-
-		// If there's a count then rows were affected and the deletion was a success
-		// If there's no count but an error wasn't thrown then the entity must not exist
-		if (deleteResult && deleteResult.count) {
-			return;
-		}
-		else {
-			throw new ResourceNotFoundError({
-				identifier: ErrorIdentifiers.RESOURCE_NOT_FOUND,
-				applicationMessage: "The requested version could not be found."
-			})
-		}
-	}
-
-	async purgeVersion(versionId: string): Promise<void> {
-		const sql = await this.databaseService.getSQL();
-
-		let result: Postgres.RowList<Postgres.Row[]>;
-		try {
-			result = await sql`delete from item_versions where id = ${versionId}`;
-		}
-		catch (e: any) {
-			throw ItemsDatabaseService.getDatabaseError(e);
-		}
-
-		// If there's a count then rows were affected and the deletion was a success
-		// If there's no count but an error wasn't thrown then the entity must not exist
-		if (result?.count) {
-			return;
-		}
-		else {
-			throw new ResourceNotFoundError({
-				identifier: ErrorIdentifiers.RESOURCE_NOT_FOUND,
-				applicationMessage: "The requested version could not be found."
-			})
-		}
-	}
-
-	async getAllVersions(itemId: string): Promise<VersionDto[]> {
-		const sql = await this.databaseService.getSQL();
-
-		let versions: VersionDto[] = [];
-		try {
-			versions = await sql<VersionDto[]>`select * from item_versions where item_id = ${itemId} order by created_at desc`;
-		}
-		catch (e: any) {
-			throw ItemsDatabaseService.getDatabaseError(e);
-		}
-
-		return versions
-	}
-
-	async getVersionsByFilters(filters: VersionsQueryByFiltersParams): Promise<ResourceListingResult<VersionDto>> {
-		const sql = await this.databaseService.getSQL();
-
-		const offset = filters.offset || 0
-		const limit = filters.limit
-			? Math.min(filters.limit, this.environmentService.vars.versions.maxPageLimit)
-			: this.environmentService.vars.versions.defaultPageLimit
-
-		let results: VersionDto[] = [];
-		let totalCount: number = 0
-		try {
-			const where = sql`
-				where item_id in ${sql(filters.itemId)}
-				${filters.deviceName
-					? sql`and device_name in ${sql(filters.deviceName)}`
-					: sql``
-				}
-				${filters.notDeviceName
-					? sql`and device_name not in ${sql(filters.notDeviceName)}`
-					: sql``
-				}
-			`;
-			const paging = sql`order by created_at offset ${offset} limit ${limit}`
-
-			results = await sql<VersionDto[]>`select * from item_versions ${where} ${paging}`;
-
-			const countResult = await sql<{count: number}[]>`select count(*) from item_versions ${where}`
-			if (countResult[0]?.count) {
-				totalCount = parseInt(String(countResult[0].count))
-			}
-			else {
-				throw new SystemError({message: "Failed to fetch query count"})
-			}
-		}
-		catch (e: any) {
-			throw ItemsDatabaseService.getDatabaseError(e);
-		}
-
-		return {
-			meta: {
-				results: results.length,
-				total: totalCount,
-				limit,
-				offset,
-			},
-			results
-		}
 	}
 }

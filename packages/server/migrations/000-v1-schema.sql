@@ -65,6 +65,7 @@ CREATE TRIGGER update_user_timestamps BEFORE UPDATE ON users FOR EACH ROW EXECUT
     Used to store vaults.
 */
 CREATE TABLE IF NOT EXISTS vaults (
+    owner_id UUID NOT NULL,
     id UUID NOT NULL,
     name VARCHAR(100) NOT NULL,
     protected_encryption_key VARCHAR(500) NOT NULL,
@@ -72,7 +73,6 @@ CREATE TABLE IF NOT EXISTS vaults (
     created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
     deleted_at TIMESTAMPTZ,
-    owner_id UUID NOT NULL,
     CONSTRAINT vault_name_unique UNIQUE (owner_id, name),
     CONSTRAINT vaults_pk PRIMARY KEY (id),
     CONSTRAINT vault_owner FOREIGN KEY (owner_id) REFERENCES users(id) ON DELETE CASCADE
@@ -82,30 +82,18 @@ CREATE TRIGGER update_vault_timestamps BEFORE UPDATE ON vaults FOR EACH ROW EXEC
 /**
     Items Table
     -----------
-    Used to store content items.
+    Used to store vault items.
 */
 CREATE TABLE IF NOT EXISTS items (
+    vault_id UUID NOT NULL,
     id UUID NOT NULL,
+    group_id UUID NOT NULL,
+    previous_version_id UUID,
     type VARCHAR(20) NOT NULL,
+    protected_data TEXT,
+    created_by VARCHAR(50) NOT NULL,
     created_at TIMESTAMPTZ NOT NULL,
     deleted_at TIMESTAMPTZ,
-    vault_id UUID NOT NULL,
     CONSTRAINT items_pk PRIMARY KEY (id),
     CONSTRAINT items_vault FOREIGN KEY (vault_id) REFERENCES vaults(id) ON DELETE CASCADE
-);
-
-/**
-    Item Versions Table
-    -----------
-    Used to store content item versions.
-*/
-CREATE TABLE IF NOT EXISTS item_versions (
-    id UUID NOT NULL,
-    item_id UUID NOT NULL,
-    protected_data TEXT,
-    device_name VARCHAR(50) NOT NULL,
-    created_at TIMESTAMPTZ NOT NULL,
-    deleted_at TIMESTAMPTZ,
-    CONSTRAINT item_versions_pk PRIMARY KEY (id),
-    CONSTRAINT item_versions_item FOREIGN KEY (item_id) REFERENCES items(id) ON DELETE CASCADE
 );

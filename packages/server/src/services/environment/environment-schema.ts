@@ -57,10 +57,6 @@ export const EnvironmentSchema = z.object({
     defaultPageLimit: z.number().int(),
     maxPageLimit: z.number().int(),
   }),
-  versions: z.object({
-    defaultPageLimit: z.number().int(),
-    maxPageLimit: z.number().int(),
-  }),
 });
 
 export type EnvironmentSchema = z.infer<typeof EnvironmentSchema>;

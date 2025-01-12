@@ -96,8 +96,6 @@ Data events are for the synchronisation of vault content and a device must subsc
 
 - `item-create`
 - `item-delete`
-- `version-create`
-- `version-delete`
 
 #### Event Subscription
 In order to receive data events the device must subscribe to specific vaults, which is done by sending the `subscribe` event to the server, for example:

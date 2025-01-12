@@ -1,4 +1,4 @@
-import {ItemDto, VersionDto, UserDto, VaultDto} from "@headbase-app/common";
+import {ItemDto, UserDto, VaultDto} from "@headbase-app/common";
 
 export const EventIdentifiers = {
     // Auth Events
@@ -14,10 +14,7 @@ export const EventIdentifiers = {
     VAULT_DELETE: "vault-delete",
     // Item Events
     ITEM_CREATE: "item-create",
-    ITEM_DELETE: "item-delete",
-    // Version Events
-    ITEM_VERSION_CREATE: "item-version-create",
-    ITEM_VERSION_DELETE: "item-version-delete",
+    ITEM_DELETE: "item-delete"
 } as const
 
 export interface AuthLoginEvent {
@@ -97,23 +94,6 @@ export interface ItemDeleteEvent {
     }
 }
 
-export interface ItemVersionCreateEvent {
-    type: typeof EventIdentifiers.ITEM_VERSION_CREATE,
-    detail: {
-        sessionId: string
-        version: VersionDto
-    }
-}
-export interface ItemVersionDeleteEvent {
-    type: typeof EventIdentifiers.ITEM_VERSION_DELETE,
-    detail: {
-        sessionId: string
-        // This is required to allow consumers to know what vault this event occurred in
-        vaultId: string
-        versionId: string
-    }
-}
-
 
 export interface EventMap {
     // Auth events
@@ -130,18 +110,16 @@ export interface EventMap {
     // Item events
     [EventIdentifiers.ITEM_CREATE]: ItemCreateEvent,
     [EventIdentifiers.ITEM_DELETE]: ItemDeleteEvent,
-    [EventIdentifiers.ITEM_VERSION_CREATE]: ItemVersionCreateEvent,
-    [EventIdentifiers.ITEM_VERSION_DELETE]: ItemVersionDeleteEvent,
 }
 
 export type ServerEvent =
   AuthLoginEvent | AuthLogoutEvent |
   UserCreateEvent | UserUpdateEvent | UserDeleteEvent |
   VaultCreateEvent | VaultUpdateEvent | VaultDeleteEvent |
-  ItemCreateEvent | ItemDeleteEvent | ItemVersionCreateEvent | ItemVersionDeleteEvent;
+  ItemCreateEvent | ItemDeleteEvent
 export type EventIdentifiers = keyof EventMap
 
 export type ExternalServerEvent =
   UserUpdateEvent | UserDeleteEvent |
   VaultCreateEvent | VaultUpdateEvent | VaultDeleteEvent |
-  ItemCreateEvent | ItemDeleteEvent | ItemVersionCreateEvent | ItemVersionDeleteEvent;
+  ItemCreateEvent | ItemDeleteEvent

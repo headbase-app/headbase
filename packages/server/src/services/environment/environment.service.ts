@@ -65,14 +65,6 @@ export class EnvironmentService {
       maxPageLimit: process.env.ITEMS_LISTING_MAX_PAGE_LIMIT
         ? parseInt(process.env.ITEMS_LISTING_MAX_PAGE_LIMIT as string)
         : 100,
-    },
-    versions: {
-      defaultPageLimit: process.env.ITEMS_LISTING_DEFAULT_PAGE_LIMIT
-        ? parseInt(process.env.ITEMS_LISTING_DEFAULT_PAGE_LIMIT as string)
-        : 50,
-      maxPageLimit: process.env.VERSIONS_LISTING_MAX_PAGE_LIMIT
-        ? parseInt(process.env.VERSIONS_LISTING_MAX_PAGE_LIMIT as string)
-        : 50,
     }
   });
 }

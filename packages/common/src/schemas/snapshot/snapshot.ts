@@ -1,14 +1,9 @@
-export interface VersionSnapshot {
-	id: string
-	deletedAt?: string
-}
-
 export interface ItemSnapshot {
 	id: string
+	groupId: string
+	previousVersionId: string | null
 	type: string
-	deletedAt?: string
-	latestVersion?: string
-	versions: VersionSnapshot[]
+	deletedAt: string | null
 }
 
 export interface VaultSnapshot {

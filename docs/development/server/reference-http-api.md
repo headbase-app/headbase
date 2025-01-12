@@ -45,5 +45,3 @@ Any errors will be returned with the appropriate status code and the following J
 ### Items
 - `/v1/items [GET, POST]`
 - `/v1/items/:itemId [GET, DELETE]`
-- `/v1/versions [GET, POST]`
-- `/v1/versions/:versionId [GET, DELETE]`

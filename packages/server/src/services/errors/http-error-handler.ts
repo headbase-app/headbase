@@ -19,6 +19,7 @@ function isBodyParserError(error: any): boolean {
     "parameters.too.many",
     "charset.unsupported",
     "entity.too.large",
+    "entity.parse.failed"
   ];
 
   return bodyParserCommonErrorsTypes.includes(error.type);
@@ -51,9 +52,7 @@ export async function httpErrorHandler(err: Error, req: Request, res: Response, 
   else if (isBodyParserError(err)) {
     httpCode = errorHttpMapping["UserRequestError"].statusCode
     identifier = errorHttpMapping["UserRequestError"].identifier
-    if (errorHttpMapping[errorName]?.defaultMessage) {
-      message = errorHttpMapping[errorName].defaultMessage;
-    }
+    message = errorHttpMapping["UserRequestError"].defaultMessage;
   }
 
   // todo: add more advanced logging/alerting on server errors?
