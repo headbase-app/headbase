@@ -15,6 +15,7 @@ export type ContentItemData = z.infer<typeof ContentItemData>
 export const CreateContentItemDto = BaseCreateDto.merge(ContentItemData)
 export type CreateContentItemDto = z.infer<typeof CreateContentItemDto>
 
+// todo: should be different than create now, using partial fields and updatedBy to be consistent
 export const UpdateContentItemDto = CreateContentItemDto
 export type UpdateContentItemDto = CreateContentItemDto
 

@@ -9,8 +9,16 @@ import {ErrorTypes, HeadbaseError, LiveQueryResult} from "../../../control-flow.
 import {Observable} from "rxjs";
 import {GlobalListingOptions} from "../db.ts";
 import {DeviceContext, IDatabaseService, IEventsService} from "../../interfaces.ts";
-import {HEADBASE_VERSION} from "../../../headbase-web.ts";
 import {EntityTransactionsConfig} from "./fields.db.ts";
+import {sqlBuilder} from "./drizzle/sql-builder.ts";
+import {
+	contentItems,
+	contentItemsVersions,
+	DatabaseContentItem,
+	DatabaseContentItemVersion
+} from "./drizzle/tables/content-items.ts";
+import {and, eq} from "drizzle-orm";
+import {HEADBASE_VERSION} from "../../../headbase-web.ts";
 
 
 export class ContentItemTransactions {
@@ -23,6 +31,43 @@ export class ContentItemTransactions {
 	) {
 		this.context = config.context
 	}
+
+	static mapDatabaseEntityToDto(result: DatabaseContentItem): ContentItemDto {
+		return {
+			id: result.id,
+			versionId: result.version_id,
+			previousVersionId: result.previous_version_id,
+			createdAt: result.created_at,
+			createdBy: result.created_by,
+			updatedAt: result.updated_at,
+			updatedBy: result.updated_by,
+			isDeleted: result.is_deleted === 1,
+			hbv: result.hbv,
+			name: result.name,
+			type: result.type,
+			isFavourite: result.is_favourite === 1,
+			fields: JSON.parse(result.fields as string),
+		}
+	}
+
+	static mapDatabaseVersionToDto(result: DatabaseContentItemVersion): ContentItemVersionDto {
+		return {
+			...result,
+			id: result.id,
+			entityId: result.entity_id,
+			previousVersionId: result.previous_version_id,
+			createdAt: result.created_at,
+			createdBy: result.created_by,
+			updatedAt: result.updated_at,
+			updatedBy: result.updated_by,
+			isDeleted: result.is_deleted === 1,
+			hbv: result.hbv,
+			name: result.name,
+			type: result.type,
+			isFavourite: result.is_favourite === 1,
+			fields: JSON.parse(result.fields as string),
+		}
+	}
 	
 	async create(databaseId: string, createDto: CreateContentItemDto): Promise<ContentItemDto> {
 		console.debug(`[database] running create content item`)
@@ -31,24 +76,24 @@ export class ContentItemTransactions {
 		const versionId = self.crypto.randomUUID()
 		const createdAt = new Date().toISOString()
 
-		await this.databaseService.exec({
-			databaseId,
-			sql: `insert into content_items(id, created_at, is_deleted, hbv, current_version_id) values (?, ?, ?, ?, ?)`,
-			params: [entityId, createdAt, 0, HEADBASE_VERSION, versionId]
-		})
-
-		await this.databaseService.exec({
-			databaseId,
-			sql: `
-				insert into content_items_versions(
-					id, created_at, is_deleted, hbv, entity_id, previous_version_id, created_by,
-				 	type, name, is_favourite, fields
-				) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-			params: [
-				versionId, createdAt, 0, HEADBASE_VERSION, entityId, null, createDto.createdBy,
-				createDto.type, createDto.name, createDto.isFavourite, JSON.stringify(createDto.fields)
-			]
-		})
+		const createQuery = sqlBuilder
+			.insert(contentItems)
+			.values({
+				id: createDto.id || entityId,
+				version_id: versionId,
+				created_at: createdAt,
+				created_by: createDto.createdBy,
+				updated_at: createdAt,
+				updated_by: createDto.createdBy,
+				is_deleted: 0,
+				hbv: HEADBASE_VERSION,
+				type: createDto.type,
+				name: createDto.name,
+				is_favourite: createDto.isFavourite ? 1 : 0,
+				fields: createDto.fields,
+			})
+			.toSQL()
+		await this.databaseService.exec({databaseId, ...createQuery})
 
 		this.eventsService.dispatch(EventTypes.DATA_CHANGE, {
 			context: this.context,
@@ -63,6 +108,7 @@ export class ContentItemTransactions {
 		return this.get(databaseId, entityId)
 	}
 
+	// todo: should allow partial updates?
 	async update(databaseId: string, entityId: string, updateDto: UpdateContentItemDto): Promise<ContentItemDto> {
 		console.debug(`[database] running update content item`)
 
@@ -75,24 +121,20 @@ export class ContentItemTransactions {
 		const versionId = self.crypto.randomUUID()
 		const updatedAt = new Date().toISOString()
 
-		await this.databaseService.exec({
-			databaseId,
-			sql: `update content_items set current_version_id = ? where id = ?`,
-			params: [versionId, entityId]
-		})
-
-		await this.databaseService.exec({
-			databaseId,
-			sql: `
-          insert into content_items_versions(
-              id, created_at, is_deleted, hbv, entity_id, previous_version_id, created_by,
-              type, name, is_favourite, fields
-          ) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-			params: [
-				versionId, updatedAt, 0, HEADBASE_VERSION, entityId, currentEntity.versionId, updateDto.createdBy,
-				updateDto.type, updateDto.name, updateDto.isFavourite, JSON.stringify(updateDto.fields)
-			]
-		})
+		const updateQuery = sqlBuilder
+			.update(contentItems)
+			.set({
+				version_id: versionId,
+				previous_version_id: currentEntity.versionId,
+				updated_at: updatedAt,
+				updated_by: updateDto.createdBy, // todo: should be updatedBy to be consistent
+				name: updateDto.name,
+				is_favourite: updateDto.isFavourite ? 1 : 0,
+				fields: updateDto.fields,
+			})
+			.where(eq(contentItems.id, entityId))
+			.toSQL()
+		await this.databaseService.exec({databaseId, ...updateQuery})
 
 		this.eventsService.dispatch(EventTypes.DATA_CHANGE, {
 			context: this.context,
@@ -114,17 +156,14 @@ export class ContentItemTransactions {
 		// Will cause error if entity can't be found.
 		await this.get(databaseId, entityId)
 
-		await this.databaseService.exec({
-			databaseId,
-			sql: `update content_items set is_deleted = 1 where id = ?`,
-			params: [entityId]
-		})
-
-		await this.databaseService.exec({
-			databaseId,
-			sql: `delete from content_items_versions where entity_id = ?`,
-			params: [entityId]
-		})
+		const deleteQuery = sqlBuilder
+			.update(contentItems)
+			.set({
+				is_deleted: 1,
+			})
+			.where(eq(contentItems.id, entityId))
+			.toSQL()
+		await this.databaseService.exec({databaseId, ...deleteQuery})
 
 		this.eventsService.dispatch(EventTypes.DATA_CHANGE, {
 			context: this.context,
@@ -140,73 +179,32 @@ export class ContentItemTransactions {
 	async get(databaseId: string, entityId: string): Promise<ContentItemDto> {
 		console.debug(`[database] running get content item: ${entityId}`)
 
-		const results = await this.databaseService.exec({
-			databaseId,
-			sql: `
-				select
-					e.id as id,
-					e.created_at as createdAt,
-					v.created_at as updatedAt,
-					e.is_deleted as isDeleted,
-					v.id as versionId,
-					v.previous_version_id as previousVersionId,
-					v.created_by as createdBy,
-          v.type as type,
-					v.name as name,
-          v.is_favourite as isFavourite,
-					v.fields as fields
-				from content_items e
-				inner join content_items_versions v on e.id = v.entity_id
-				where e.id = ? and e.is_deleted = 0 and v.id = e.current_version_id
-				order by v.created_at;`,
-			params: [entityId],
-			rowMode: 'object'
-		}) as unknown as ContentItemDto[];
+		const selectQuery = sqlBuilder
+			.select()
+			.from(contentItems)
+			.where(and(eq(contentItems.id, entityId), eq(contentItems.is_deleted, 0)))
+			.toSQL()
+		const results = await this.databaseService.exec({databaseId, ...selectQuery, rowMode: 'object'}) as unknown as DatabaseContentItem[];
 
 		if (!results[0]) {
 			throw new HeadbaseError({type: ErrorTypes.ENTITY_NOT_FOUND})
 		}
 
-		return {
-			...results[0],
-			// todo: have separate database dto type with fields as string, or parse directly in db call?
-			fields: JSON.parse(results[0].fields as unknown as string),
-		}
+		return ContentItemTransactions.mapDatabaseEntityToDto(results[0])
 	}
 
 	async query(databaseId: string, options?: GlobalListingOptions): Promise<ContentItemDto[]> {
 		console.debug(`[database] running get content items`)
 
-		const results = await this.databaseService.exec({
-			databaseId,
-			sql: `
-				select
-					e.id as id,
-					e.created_at as createdAt,
-					v.created_at as updatedAt,
-					e.is_deleted as isDeleted,
-					v.id as versionId,
-					v.previous_version_id as previousVersionId,
-					v.created_by as createdBy,
-          v.type as type,
-          v.name as name,
-          v.is_favourite as isFavourite,
-          v.fields as fields
-				from content_items e
-				inner join content_items_versions v on e.id = v.entity_id
-				where e.is_deleted = 0 and v.id = e.current_version_id
-				order by v.created_at;`,
-			params: [],
-			rowMode: 'object'
-		}) as unknown as ContentItemDto[];
+		const selectQuery = sqlBuilder
+			.select()
+			.from(contentItems)
+			.where(eq(contentItems.is_deleted, 0))
+			.orderBy(contentItems.updated_at)
+			.toSQL()
+		const results = await this.databaseService.exec({databaseId, ...selectQuery, rowMode: 'object'}) as unknown as DatabaseContentItem[];
 
-		return results.map(result => {
-			return {
-				...result,
-				// todo: have separate database dto type with templateFields as string, or parse directly in db call?
-				fields: JSON.parse(result.fields as unknown as string),
-			}
-		})
+		return results.map(ContentItemTransactions.mapDatabaseEntityToDto)
 	}
 
 	liveGet(databaseId: string, entityId: string) {
@@ -273,56 +271,32 @@ export class ContentItemTransactions {
 	async getVersion(databaseId: string, versionId: string) {
 		console.debug(`[database] running getFieldVersion: ${versionId}`)
 
-		const results =  await this.databaseService.exec({
-			databaseId,
-			sql: `
-				select
-					v.id as id,
-					v.created_at as createdAt,
-					v.is_deleted as isDeleted,
-					v.entity_id as entityId,
-					v.previous_version_id as previousVersionId,
-					v.created_by as createdBy,
-          v.type as type,
-          v.name as name,
-          v.is_favourite as isFavourite,
-          v.fields as fields
-				from content_items_versions v
-				where v.id = ? and v.is_deleted = 0`,
-			params: [versionId],
-			rowMode: 'object'
-		}) as unknown as ContentItemVersionDto[];
+		const selectQuery = sqlBuilder
+			.select()
+			.from(contentItemsVersions)
+			.where(and(eq(contentItemsVersions.id, versionId), eq(contentItemsVersions.is_deleted, 0)))
+			.toSQL()
+		const results = await this.databaseService.exec({databaseId, ...selectQuery, rowMode: 'object'}) as unknown as DatabaseContentItemVersion[];
 
 		if (!results[0]) {
 			throw new HeadbaseError({type: ErrorTypes.VERSION_NOT_FOUND})
 		}
 
-		return results[0]
+		return ContentItemTransactions.mapDatabaseVersionToDto(results[0])
 	}
 
 	async getVersions(databaseId: string, entityId: string) {
 		console.debug(`[database] running getFieldVersions: ${entityId}`)
 
-		return await this.databaseService.exec({
-			databaseId,
-			sql: `
-				select
-					v.id as id,
-					v.created_at as createdAt,
-					v.is_deleted as isDeleted,
-					v.entity_id as entityId,
-					v.previous_version_id as previousVersionId,
-					v.created_by as createdBy,
-          v.type as type,
-          v.name as name,
-          v.is_favourite as isFavourite,
-          v.fields as fields
-				from content_items_versions v
-				where v.entity_id = ? and v.is_deleted = 0
-				order by v.created_at`,
-			params: [entityId],
-			rowMode: 'object'
-		}) as unknown as ContentItemVersionDto[];
+		const selectQuery = sqlBuilder
+			.select()
+			.from(contentItemsVersions)
+			.where(and(eq(contentItemsVersions.entity_id, entityId), eq(contentItemsVersions.is_deleted, 0)))
+			.orderBy(contentItemsVersions.updated_at)
+			.toSQL()
+		const results = await this.databaseService.exec({databaseId, ...selectQuery, rowMode: 'object'}) as unknown as DatabaseContentItemVersion[];
+
+		return results.map(ContentItemTransactions.mapDatabaseVersionToDto)
 	}
 
 	async deleteVersion(databaseId: string, versionId: string): Promise<void> {
@@ -334,11 +308,14 @@ export class ContentItemTransactions {
 			throw new HeadbaseError({type: ErrorTypes.SYSTEM_ERROR, devMessage: 'Attempted to delete current version'})
 		}
 
-		await this.databaseService.exec({
-			databaseId,
-			sql: `delete from content_items_versions where id = ?`,
-			params: [versionId]
-		})
+		const deleteQuery = sqlBuilder
+			.update(contentItemsVersions)
+			.set({
+				is_deleted: 1,
+			})
+			.where(eq(contentItemsVersions.id, versionId))
+			.toSQL()
+		await this.databaseService.exec({databaseId, ...deleteQuery})
 
 		this.eventsService.dispatch(EventTypes.DATA_CHANGE, {
 			context: this.context,

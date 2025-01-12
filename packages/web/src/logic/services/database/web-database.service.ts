@@ -8,14 +8,12 @@ import {ClientMessages, QueryResponseMessage, WorkerMessages} from "./sqlite-wor
 
 
 export class WebDatabaseService implements IDatabaseService {
-	// private readonly databaseLockAbort: AbortController
 	private readonly context: DeviceContext
 	private readonly worker: Worker
 
 	constructor(config: DatabaseServiceConfig) {
 		this.context = config.context;
 		this.worker = new Worker(new URL("./sqlite-worker/sqlite.worker.ts", import.meta.url), {type: 'module'});
-		// this.databaseLockAbort = new AbortController()
 	}
 
 	async destroy() {
@@ -111,17 +109,4 @@ export class WebDatabaseService implements IDatabaseService {
 
 		return workerResponse.detail.result
 	}
-
-	// private async setupDatabaseLock(lock: Lock | null) {
-	// 	console.debug(`[database] acquired lock on '${lock?.name || this.databaseId}' using context '${this.contextId}'`);
-	//
-	// 	// Indefinitely maintain this lock by returning a promise.
-	// 	// When the tab or database class is closed, the lock will be released and then another context can claim the lock if required.
-	// 	return new Promise<void>((resolve) => {
-	// 		this.databaseLockAbort.signal.addEventListener('abort', () => {
-	// 			console.debug(`[database] aborting lock '${lock?.name || this.databaseId}' from context '${this.contextId}'`);
-	// 			resolve()
-	// 		})
-	// 	})
-	// }
 }

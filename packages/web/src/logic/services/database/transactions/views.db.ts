@@ -4,6 +4,9 @@ import {ErrorTypes, HeadbaseError, LiveQueryResult} from "../../../control-flow.
 import {Observable} from "rxjs";
 import {GlobalListingOptions} from "../db.ts";
 import {DeviceContext, IDatabaseService, IEventsService} from "../../interfaces.ts";
+import {DatabaseView, DatabaseViewVersion, views, viewsVersions} from "./drizzle/tables/views.ts";
+import {sqlBuilder} from "./drizzle/sql-builder.ts";
+import {and, eq} from "drizzle-orm";
 import {HEADBASE_VERSION} from "../../../headbase-web.ts";
 
 export interface EntityTransactionsConfig {
@@ -21,6 +24,49 @@ export class ViewTransactions {
 	) {
 		this.context = config.context
 	}
+
+	static mapDatabaseEntityToDto(result: DatabaseView): ViewDto {
+		return {
+			id: result.id,
+			versionId: result.version_id,
+			previousVersionId: result.previous_version_id,
+			createdAt: result.created_at,
+			createdBy: result.created_by,
+			updatedAt: result.updated_at,
+			updatedBy: result.updated_by,
+			isDeleted: result.is_deleted === 1,
+			hbv: result.hbv,
+			type: result.type,
+			name: result.name,
+			icon: result.icon,
+			colour: result.colour,
+			description: result.description,
+			isFavourite: result.is_favourite === 1,
+			settings: JSON.parse(result.settings as string),
+		}
+	}
+
+	static mapDatabaseVersionToDto(result: DatabaseViewVersion): ViewVersionDto {
+		return {
+			...result,
+			id: result.id,
+			entityId: result.entity_id,
+			previousVersionId: result.previous_version_id,
+			createdAt: result.created_at,
+			createdBy: result.created_by,
+			updatedAt: result.updated_at,
+			updatedBy: result.updated_by,
+			isDeleted: result.is_deleted === 1,
+			hbv: result.hbv,
+			type: result.type,
+			name: result.name,
+			icon: result.icon,
+			colour: result.colour,
+			description: result.description,
+			isFavourite: result.is_favourite === 1,
+			settings: JSON.parse(result.settings as string),
+		}
+	}
 	
 	async create(databaseId: string, createDto: CreateViewDto): Promise<ViewDto> {
 		console.debug(`[database] running create view`)
@@ -29,25 +75,27 @@ export class ViewTransactions {
 		const versionId = self.crypto.randomUUID()
 		const createdAt = new Date().toISOString()
 
-		await this.databaseService.exec({
-			databaseId,
-			sql: `insert into views(id, created_at, is_deleted, hbv, current_version_id) values (?, ?, ?, ?, ?)`,
-			params: [entityId, createdAt, 0, HEADBASE_VERSION, versionId]
-		})
-
-		await this.databaseService.exec({
-			databaseId,
-			sql: `
-				insert into views_versions(
-					id, created_at, is_deleted, hbv, entity_id, previous_version_id, created_by,
-					type, name, icon, colour, description, is_favourite, settings
-				) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-			params: [
-				versionId, createdAt, 0, HEADBASE_VERSION, entityId, null, createDto.createdBy,
-				createDto.type, createDto.name, createDto.icon || null, createDto.colour || null, createDto.description || null, createDto.isFavourite,
-				'settings' in createDto ? JSON.stringify(createDto.settings) : null,
-			]
-		})
+		const createQuery = sqlBuilder
+			.insert(views)
+			.values({
+				id: createDto.id || entityId,
+				version_id: versionId,
+				created_at: createdAt,
+				created_by: createDto.createdBy,
+				updated_at: createdAt,
+				updated_by: createDto.createdBy,
+				is_deleted: 0,
+				hbv: HEADBASE_VERSION,
+				type: createDto.type,
+				name: createDto.name,
+				icon: createDto.icon,
+				colour: createDto.colour,
+				description: createDto.description,
+				is_favourite: createDto.isFavourite ? 1 : 0,
+				settings: createDto.settings
+			})
+			.toSQL()
+		await this.databaseService.exec({databaseId, ...createQuery})
 
 		this.eventsService.dispatch(EventTypes.DATA_CHANGE, {
 			context: this.context,
@@ -74,25 +122,23 @@ export class ViewTransactions {
 		const versionId = self.crypto.randomUUID()
 		const updatedAt = new Date().toISOString()
 
-		await this.databaseService.exec({
-			databaseId,
-			sql: `update views set current_version_id = ? where id = ?`,
-			params: [versionId, entityId]
-		})
-
-		await this.databaseService.exec({
-			databaseId,
-			sql: `
-				insert into views_versions(
-					id, created_at, is_deleted, hbv, entity_id, previous_version_id, created_by,
-					type, name, icon, colour, description, is_favourite, settings
-				) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-			params: [
-				versionId, updatedAt, 0, HEADBASE_VERSION, entityId, null, updateDto.createdBy,
-				updateDto.type, updateDto.name, updateDto.icon || null, updateDto.colour || null, updateDto.description || null, updateDto.isFavourite,
-				'settings' in updateDto ? JSON.stringify(updateDto.settings) : null,
-			]
-		})
+		const updateQuery = sqlBuilder
+			.update(views)
+			.set({
+				version_id: versionId,
+				previous_version_id: currentEntity.previousVersionId,
+				updated_at: updatedAt,
+				updated_by: updateDto.createdBy,
+				type: updateDto.type,
+				name: updateDto.name,
+				icon: updateDto.icon,
+				colour: updateDto.colour,
+				description: updateDto.description,
+				is_favourite: updateDto.isFavourite ? 1 : 0,
+				settings: updateDto.settings
+			})
+			.toSQL()
+		await this.databaseService.exec({databaseId, ...updateQuery})
 
 		this.eventsService.dispatch(EventTypes.DATA_CHANGE, {
 			context: this.context,
@@ -114,17 +160,14 @@ export class ViewTransactions {
 		// Will cause error if entity can't be found.
 		await this.get(databaseId, entityId)
 
-		await this.databaseService.exec({
-			databaseId,
-			sql: `update views set is_deleted = 1 where id = ?`,
-			params: [entityId]
-		})
-
-		await this.databaseService.exec({
-			databaseId,
-			sql: `delete from views_versions where entity_id = ?`,
-			params: [entityId]
-		})
+		const deleteQuery = sqlBuilder
+			.update(views)
+			.set({
+				is_deleted: 1,
+			})
+			.where(eq(views.id, entityId))
+			.toSQL()
+		await this.databaseService.exec({databaseId, ...deleteQuery})
 
 		this.eventsService.dispatch(EventTypes.DATA_CHANGE, {
 			context: this.context,
@@ -140,79 +183,31 @@ export class ViewTransactions {
 	async get(databaseId: string, entityId: string): Promise<ViewDto> {
 		console.debug(`[database] running get view: ${entityId}`)
 
-		const results = await this.databaseService.exec({
-			databaseId,
-			sql: `
-				select
-					e.id as id,
-					e.created_at as createdAt,
-					v.created_at as updatedAt,
-					e.is_deleted as isDeleted,
-					v.id as versionId,
-					v.previous_version_id as previousVersionId,
-					v.created_by as createdBy,
-					v.type as type,
-					v.name as name,
-          v.icon as icon,
-          v.colour as colour,
-					v.description as description,
-          v.is_favourite as isFavourite,
-					v.settings as settings
-				from views e
-				inner join views_versions v on e.id = v.entity_id
-				where e.id = ? and e.is_deleted = 0 and v.id = e.current_version_id
-				order by v.created_at;`,
-			params: [entityId],
-			rowMode: 'object'
-		}) as unknown as ViewDto[];
+		const selectQuery = sqlBuilder
+			.select()
+			.from(views)
+			.where(and(eq(views.id, entityId), eq(views.is_deleted, 0)))
+			.toSQL()
+		const results = await this.databaseService.exec({databaseId, ...selectQuery, rowMode: 'object'}) as unknown as DatabaseView[];
 
 		if (!results[0]) {
 			throw new HeadbaseError({type: ErrorTypes.ENTITY_NOT_FOUND})
 		}
 
-		return {
-			...results[0],
-			// todo: have separate database dto type with settings as string, or parse directly in db call?
-			settings: results[0].settings !== null ? JSON.parse(results[0].settings as unknown as string) : null,
-		}
+		return ViewTransactions.mapDatabaseEntityToDto(results[0])
 	}
 
 	async query(databaseId: string, options?: GlobalListingOptions): Promise<ViewDto[]> {
 		console.debug(`[database] running get views`)
 
-		const results = await this.databaseService.exec({
-			databaseId,
-			sql: `
-				select
-					e.id as id,
-					e.created_at as createdAt,
-					v.created_at as updatedAt,
-					e.is_deleted as isDeleted,
-					v.id as versionId,
-					v.previous_version_id as previousVersionId,
-					v.created_by as createdBy,
-          v.type as type,
-          v.name as name,
-          v.icon as icon,
-          v.colour as colour,
-          v.description as description,
-          v.is_favourite as isFavourite,
-          v.settings as settings
-				from views e
-				inner join views_versions v on e.id = v.entity_id
-				where e.is_deleted = 0 and v.id = e.current_version_id
-				order by v.created_at;`,
-			params: [],
-			rowMode: 'object'
-		}) as unknown as ViewDto[];
+		const selectQuery = sqlBuilder
+			.select()
+			.from(views)
+			.where(eq(views.is_deleted, 0))
+			.toSQL()
+		const results = await this.databaseService.exec({databaseId, ...selectQuery, rowMode: 'object'}) as unknown as DatabaseView[];
 
-		return results.map(result => {
-			return {
-				...result,
-				// todo: have separate database dto type with settings as string, or parse directly in db call?
-				settings: result.settings !== null ? JSON.parse(result.settings as unknown as string) : null,
-			}
-		})
+		return results.map(ViewTransactions.mapDatabaseEntityToDto)
 	}
 
 	liveGet(databaseId: string, entityId: string) {
@@ -279,60 +274,31 @@ export class ViewTransactions {
 	async getVersion(databaseId: string, versionId: string) {
 		console.debug(`[database] running getViewVersion: ${versionId}`)
 
-		const results =  await this.databaseService.exec({
-			databaseId,
-			sql: `
-				select
-					v.id as id,
-					v.created_at as createdAt,
-					v.is_deleted as isDeleted,
-					v.entity_id as entityId,
-					v.previous_version_id as previousVersionId,
-					v.created_by as createdBy,
-					v.type as type,
-					v.name as name,
-					v.description as description,
-					v.icon as icon,
-					v.settings as settings
-				from views_versions v
-				where v.id = ? and v.is_deleted = 0`,
-			params: [versionId],
-			rowMode: 'object'
-		}) as unknown as ViewVersionDto[];
+		const selectQuery = sqlBuilder
+			.select()
+			.from(viewsVersions)
+			.where(and(eq(viewsVersions.id, versionId), eq(viewsVersions.is_deleted, 0)))
+			.toSQL()
+		const results = await this.databaseService.exec({databaseId, ...selectQuery, rowMode: 'object'}) as unknown as DatabaseViewVersion[];
 
 		if (!results[0]) {
 			throw new HeadbaseError({type: ErrorTypes.VERSION_NOT_FOUND})
 		}
 
-		return results[0]
+		return ViewTransactions.mapDatabaseVersionToDto(results[0])
 	}
 
 	async getVersions(databaseId: string, entityId: string) {
 		console.debug(`[database] running getViewVersions: ${entityId}`)
 
-		return await this.databaseService.exec({
-			databaseId,
-			sql: `
-				select
-					v.id as id,
-					v.created_at as createdAt,
-					v.is_deleted as isDeleted,
-					v.entity_id as entityId,
-					v.previous_version_id as previousVersionId,
-					v.created_by as createdBy,
-          v.type as type,
-          v.name as name,
-          v.icon as icon,
-          v.colour as colour,
-          v.description as description,
-          v.is_favourite as isFavourite,
-          v.settings as settings
-				from views_versions v
-				where v.entity_id = ? and v.is_deleted = 0
-				order by v.created_at`,
-			params: [entityId],
-			rowMode: 'object'
-		}) as unknown as ViewVersionDto[];
+		const selectQuery = sqlBuilder
+			.select()
+			.from(viewsVersions)
+			.where(eq(viewsVersions.is_deleted, 0))
+			.toSQL()
+		const results = await this.databaseService.exec({databaseId, ...selectQuery, rowMode: 'object'}) as unknown as DatabaseViewVersion[];
+
+		return results.map(ViewTransactions.mapDatabaseVersionToDto)
 	}
 
 	async deleteVersion(databaseId: string, versionId: string): Promise<void> {
@@ -344,11 +310,14 @@ export class ViewTransactions {
 			throw new HeadbaseError({type: ErrorTypes.SYSTEM_ERROR, devMessage: 'Attempted to delete current version'})
 		}
 
-		await this.databaseService.exec({
-			databaseId,
-			sql: `delete from views_versions where id = ?`,
-			params: [versionId]
-		})
+		const deleteQuery = sqlBuilder
+			.update(viewsVersions)
+			.set({
+				is_deleted: 1,
+			})
+			.where(eq(viewsVersions.id, versionId))
+			.toSQL()
+		await this.databaseService.exec({databaseId, ...deleteQuery})
 
 		this.eventsService.dispatch(EventTypes.DATA_CHANGE, {
 			context: this.context,

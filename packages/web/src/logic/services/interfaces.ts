@@ -1,8 +1,5 @@
 import {EventMap, HeadbaseEvent} from "./events/events.ts";
 
-// todo: basic types should be defined elsewhere?
-export type SqlDataType = string | number | boolean | null
-
 export interface SqlQueryResponse {
 	rows: never[][] | never[]
 }
@@ -21,7 +18,7 @@ export interface ExecutableData {
 	databaseId: string,
 	sql: string,
 	// todo: make params optional?
-	params: SqlDataType[],
+	params: unknown[],
 	rowMode?: 'array' | 'object'
 }
 
