@@ -1,12 +1,13 @@
 import {VaultsDatabaseService} from "@modules/vaults/database/vaults.database.service.js";
 import {UserContext} from "@common/request-context.js";
-import {CreateVaultDto, UpdateVaultDto, VaultDto, VaultsQueryParams} from "@headbase-app/common";
+import {CreateVaultDto, ErrorIdentifiers, UpdateVaultDto, VaultDto, VaultsQueryParams} from "@headbase-app/common";
 import {AccessControlService} from "@modules/auth/access-control.service.js";
 import {EventsService} from "@services/events/events.service.js";
 import {EventIdentifiers} from "@services/events/events.js";
 import {DatabaseService} from "@services/database/database.service.js";
 import {vaults} from "@services/database/schema.js";
 import {inArray} from "drizzle-orm";
+import {SystemError} from "@services/errors/base/system.error.js";
 
 
 export class VaultsService {
@@ -37,17 +38,26 @@ export class VaultsService {
             requestingUserContext: userContext,
             targetUserId: createVaultDto.ownerId
         })
-        
-        const newVault = await this.vaultsDatabaseService.create(createVaultDto);
+
+        const db = this.databaseService.getDatabase()
+        const result = await db
+          .insert(vaults)
+          .values(createVaultDto)
+          .returning()
+
+        if (!result[0]) {
+            throw new SystemError({identifier: ErrorIdentifiers.SYSTEM_UNEXPECTED, message: "Returning vault after creation failed"});
+        }
+
         await this.eventsService.dispatch({
             type: EventIdentifiers.VAULT_CREATE,
             detail: {
                 sessionId: userContext.sessionId,
-                vault: newVault
+                vault: result[0],
             }
         })
 
-        return newVault
+        return result[0]
     }
 
     async update(userContext: UserContext, vaultId: string, updateVaultDto: UpdateVaultDto): Promise<VaultDto> {

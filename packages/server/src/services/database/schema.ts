@@ -1,12 +1,14 @@
 import {pgTable, uuid, varchar, timestamp, pgEnum, text, boolean} from "drizzle-orm/pg-core";
 import {relations} from "drizzle-orm";
 
-const timestampField = timestamp({mode: "string"}).notNull()
+const createdAt = timestamp({mode: "string"}).notNull()
+const updatedAt = timestamp({mode: "string"}).notNull()
+const deletedAt = timestamp({mode: "string"})
 
 export const settings = pgTable("settings", {
 	id: uuid().primaryKey(),
 	registrationEnabled: boolean().notNull(),
-	createdAt: timestampField,
+	createdAt,
 });
 
 
@@ -20,8 +22,8 @@ export const users = pgTable("users", {
 	verifiedAt: timestamp().notNull(),
 	firstVerifiedAt: timestamp().notNull(),
 	role: rolesEnum(),
-	createdAt: timestampField,
-	updatedAt: timestampField,
+	createdAt,
+	updatedAt,
 });
 
 export const usersRelations = relations(users, ({ many }) => ({
@@ -35,9 +37,9 @@ export const vaults = pgTable("vaults", {
 	name: varchar({ length: 100 }).notNull().unique("vault_name_unique"),
 	protectedEncryptionKey: varchar({ length: 500 }).notNull(),
 	protectedData: text(),
-	createdAt: timestampField,
-	updatedAt: timestampField,
-	deletedAt: timestampField,
+	createdAt,
+	updatedAt,
+	deletedAt,
 });
 
 export const vaultsRelations = relations(vaults, ({ one, many }) => ({
@@ -56,8 +58,8 @@ export const items = pgTable("items", {
 	type: varchar({ length: 20 }).notNull(),
 	protectedData: text(),
 	createdBy: varchar({ length: 50 }).notNull(),
-	createdAt: timestampField,
-	deletedAt: timestampField,
+	createdAt,
+	deletedAt,
 });
 
 export const itemsRelations = relations(items, ({ one }) => ({
