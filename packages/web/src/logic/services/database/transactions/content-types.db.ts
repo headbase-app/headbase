@@ -14,6 +14,7 @@ import {
 } from "./drizzle/tables/content-types.ts";
 import {and, eq} from "drizzle-orm";
 import {HEADBASE_VERSION} from "../../../headbase-web.ts";
+import {ColourField} from "../../../schemas/common/fields.ts";
 
 
 export class ContentTypeTransactions {
@@ -37,10 +38,10 @@ export class ContentTypeTransactions {
 			updatedAt: result.updated_at,
 			updatedBy: result.updated_by,
 			isDeleted: result.is_deleted === 1,
-			hbv: result.hbv,
+			hbv: result.hbv as "1.0",
 			name: result.name,
 			icon: result.icon,
-			colour: result.colour,
+			colour: result.colour as ColourField,
 			description: result.description,
 			templateName: result.template_name,
 			templateFields: JSON.parse(result.template_fields as string),
@@ -58,10 +59,10 @@ export class ContentTypeTransactions {
 			updatedAt: result.updated_at,
 			updatedBy: result.updated_by,
 			isDeleted: result.is_deleted === 1,
-			hbv: result.hbv,
+			hbv: result.hbv as "1.0",
 			name: result.name,
 			icon: result.icon,
-			colour: result.colour,
+			colour: result.colour as ColourField,
 			description: result.description,
 			templateName: result.template_name,
 			templateFields: JSON.parse(result.template_fields as string),
@@ -181,7 +182,7 @@ export class ContentTypeTransactions {
 		const selectQuery = sqlBuilder
 			.select()
 			.from(contentTypes)
-			.where(and(eq(contentTypes.id, entityId), eq(contentTypes.is_deleted, false)))
+			.where(and(eq(contentTypes.id, entityId), eq(contentTypes.is_deleted, 0)))
 			.toSQL()
 		const results = await this.databaseService.exec({databaseId, ...selectQuery, rowMode: 'object'}) as unknown as DatabaseContentType[];
 

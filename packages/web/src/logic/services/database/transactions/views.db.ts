@@ -8,6 +8,7 @@ import {DatabaseView, DatabaseViewVersion, views, viewsVersions} from "./drizzle
 import {sqlBuilder} from "./drizzle/sql-builder.ts";
 import {and, eq} from "drizzle-orm";
 import {HEADBASE_VERSION} from "../../../headbase-web.ts";
+import {ColourField} from "../../../schemas/common/fields.ts";
 
 export interface EntityTransactionsConfig {
 	context: DeviceContext;
@@ -35,11 +36,11 @@ export class ViewTransactions {
 			updatedAt: result.updated_at,
 			updatedBy: result.updated_by,
 			isDeleted: result.is_deleted === 1,
-			hbv: result.hbv,
+			hbv: result.hbv as "1.0",
 			type: result.type,
 			name: result.name,
 			icon: result.icon,
-			colour: result.colour,
+			colour: result.colour as ColourField,
 			description: result.description,
 			isFavourite: result.is_favourite === 1,
 			settings: JSON.parse(result.settings as string),
@@ -57,11 +58,11 @@ export class ViewTransactions {
 			updatedAt: result.updated_at,
 			updatedBy: result.updated_by,
 			isDeleted: result.is_deleted === 1,
-			hbv: result.hbv,
+			hbv: result.hbv as "1.0",
 			type: result.type,
 			name: result.name,
 			icon: result.icon,
-			colour: result.colour,
+			colour: result.colour as ColourField,
 			description: result.description,
 			isFavourite: result.is_favourite === 1,
 			settings: JSON.parse(result.settings as string),

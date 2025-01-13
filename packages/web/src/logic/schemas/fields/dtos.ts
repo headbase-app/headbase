@@ -1,6 +1,6 @@
 import {z} from "zod";
 
-import {BaseCreateDto, BaseEntityDto, BaseVersionDto} from "../common/dto.ts";
+import {BaseCreateDto, BaseEntityDto, BaseUpdateDto, BaseVersionDto} from "../common/dto.ts";
 import {
 	BooleanFieldData,
 	ColourFieldData, DateFieldData,
@@ -14,57 +14,7 @@ import {ReferenceManyFieldData, ReferenceOneFieldData} from "./types/references.
 import {SelectFieldData, SelectMultipleFieldData} from "./types/select.ts";
 import {FilesFieldData, ImagesFieldData, PointFieldData, ScaleFieldData} from "./types/special.ts";
 
-export const FieldData = z.union([
-	// Basics
-	TextShortFieldData,
-	TextLongFieldData,
-	MarkdownFieldData,
-	URLFieldData,
-	EmailFieldData,
-	ColourFieldData,
-	PhoneFieldData,
-	BooleanFieldData,
-	NumberFieldData,
-	DateFieldData,
-	TimestampFieldData,
-	// References
-	ReferenceOneFieldData,
-	ReferenceManyFieldData,
-	// Select
-	SelectFieldData,
-	SelectMultipleFieldData,
-	// Special
-	ScaleFieldData,
-	PointFieldData,
-	FilesFieldData,
-	ImagesFieldData
-])
-export type FieldData =
-	// Basics
-	TextShortFieldData |
-	TextLongFieldData |
-	MarkdownFieldData |
-	URLFieldData |
-	EmailFieldData |
-	ColourFieldData |
-	PhoneFieldData |
-	BooleanFieldData |
-	NumberFieldData |
-	DateFieldData |
-	TimestampFieldData |
-	// References
-	ReferenceOneFieldData |
-	ReferenceManyFieldData |
-	// Select
-	SelectFieldData |
-	SelectMultipleFieldData |
-	// Special
-	ScaleFieldData |
-	PointFieldData |
-	FilesFieldData |
-	ImagesFieldData
-
-export const CreateFieldDto = z.union([
+export const CreateFieldDto = z.discriminatedUnion("type", [
 	// Basics
 	BaseCreateDto.merge(TextShortFieldData),
 	BaseCreateDto.merge(TextLongFieldData),
@@ -91,10 +41,34 @@ export const CreateFieldDto = z.union([
 ])
 export type CreateFieldDto = z.infer<typeof CreateFieldDto>
 
-export const UpdateFieldDto = CreateFieldDto
-export type UpdateFieldDto = CreateFieldDto
+export const UpdateFieldDto = z.discriminatedUnion("type", [
+	// Basics
+	BaseUpdateDto.merge(TextShortFieldData),
+	BaseUpdateDto.merge(TextLongFieldData),
+	BaseUpdateDto.merge(MarkdownFieldData),
+	BaseUpdateDto.merge(URLFieldData),
+	BaseUpdateDto.merge(EmailFieldData),
+	BaseUpdateDto.merge(ColourFieldData),
+	BaseUpdateDto.merge(PhoneFieldData),
+	BaseUpdateDto.merge(BooleanFieldData),
+	BaseUpdateDto.merge(NumberFieldData),
+	BaseUpdateDto.merge(DateFieldData),
+	BaseUpdateDto.merge(TimestampFieldData),
+	// References
+	BaseUpdateDto.merge(ReferenceOneFieldData),
+	BaseUpdateDto.merge(ReferenceManyFieldData),
+	// Select
+	BaseUpdateDto.merge(SelectFieldData),
+	BaseUpdateDto.merge(SelectMultipleFieldData),
+	// Special
+	BaseUpdateDto.merge(ScaleFieldData),
+	BaseUpdateDto.merge(PointFieldData),
+	BaseUpdateDto.merge(FilesFieldData),
+	BaseUpdateDto.merge(ImagesFieldData)
+])
+export type UpdateFieldDto = z.infer<typeof UpdateFieldDto>
 
-export const FieldDto = z.union([
+export const FieldDto = z.discriminatedUnion("type", [
 	// Basics
 	BaseEntityDto.merge(TextShortFieldData),
 	BaseEntityDto.merge(TextLongFieldData),
@@ -121,7 +95,7 @@ export const FieldDto = z.union([
 ])
 export type FieldDto = z.infer<typeof FieldDto>
 
-export const FieldVersionDto = z.union([
+export const FieldVersionDto = z.discriminatedUnion("type", [
 	// Basics
 	BaseVersionDto.merge(TextShortFieldData),
 	BaseVersionDto.merge(TextLongFieldData),

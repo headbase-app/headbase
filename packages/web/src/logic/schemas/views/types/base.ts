@@ -1,11 +1,11 @@
 import {z} from "zod";
-import {BooleanField, ColourField, DescriptionField, IconField, NameField} from "../../common/fields.ts";
+import {ColourField, DescriptionField, IconField, NameField} from "../../common/fields.ts";
 
 export const BaseViewData = z.object({
 	name: NameField,
 	icon: IconField,
 	colour: ColourField,
 	description: DescriptionField,
-	isFavourite: BooleanField,
+	isFavourite: z.boolean(),
 })
 export type BaseViewData = z.infer<typeof BaseViewData>

@@ -22,9 +22,13 @@ export interface TableSnapshot {
 
 export interface DatabaseSnapshot {
 	fields: TableSnapshot
+	fieldsVersions: TableSnapshot
 	contentTypes: TableSnapshot
+	contentTypesVersions: TableSnapshot
 	contentItems: TableSnapshot
+	contentItemsVersions: TableSnapshot
 	views: TableSnapshot
+	viewsVersions: TableSnapshot
 }
 
 export interface GlobalListingOptions {

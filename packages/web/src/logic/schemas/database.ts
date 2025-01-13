@@ -1,6 +1,6 @@
 import {z} from "zod"
 import {VaultDto} from "@headbase-app/common";
-import {BooleanField, TimestampField} from "./common/fields.ts";
+import {TimestampField} from "./common/fields.ts";
 
 // todo: refactor common fields out of database folder
 
@@ -11,7 +11,7 @@ export const LocalDatabaseEntity = VaultDto
 		deletedAt: true
 	})
 	.extend({
-		syncEnabled: BooleanField,
+		syncEnabled: z.boolean(),
 		lastSyncedAt: TimestampField.optional(),
 		// Not used right now, but will help allow for migrations in future if required.
 		headbaseVersion: z.string(),

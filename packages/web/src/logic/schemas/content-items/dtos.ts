@@ -1,13 +1,14 @@
 import {z} from "zod";
 
 import {FieldStorage} from "../common/field-storage.ts";
-import {BooleanField, IdField, NameField} from "../common/fields.ts";
-import {BaseCreateDto, BaseEntityDto, BaseVersionDto} from "../common/dto.ts";
+import {NameField} from "../common/fields.ts";
+import {createIdField} from "@headbase-app/common";
+import {BaseCreateDto, BaseEntityDto, BaseUpdateDto, BaseVersionDto} from "../common/dto.ts";
 
 export const ContentItemData = z.object({
-	type: IdField,
+	type: createIdField('type'),
 	name: NameField,
-	isFavourite: BooleanField,
+	isFavourite: z.boolean(),
 	fields: FieldStorage
 })
 export type ContentItemData = z.infer<typeof ContentItemData>
@@ -15,9 +16,8 @@ export type ContentItemData = z.infer<typeof ContentItemData>
 export const CreateContentItemDto = BaseCreateDto.merge(ContentItemData)
 export type CreateContentItemDto = z.infer<typeof CreateContentItemDto>
 
-// todo: should be different than create now, using partial fields and updatedBy to be consistent
-export const UpdateContentItemDto = CreateContentItemDto
-export type UpdateContentItemDto = CreateContentItemDto
+export const UpdateContentItemDto = BaseUpdateDto.merge(ContentItemData)
+export type UpdateContentItemDto = z.infer<typeof UpdateContentItemDto>
 
 export const ContentItemDto = BaseEntityDto.merge(ContentItemData)
 export type ContentItemDto = z.infer<typeof ContentItemDto>

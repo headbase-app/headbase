@@ -20,7 +20,7 @@ import {
 	ReferenceManyValue, ReferenceOneFieldData,
 	ReferenceOneValue
 } from "../fields/types/references.ts";
-import {IdField} from "./fields.ts";
+import {createIdField} from "@headbase-app/common";
 
 export const FieldValues = z.union([
 	TextShortFieldData.pick({type: true}).extend({value: TextShortValue}),
@@ -46,7 +46,7 @@ export const FieldValues = z.union([
 export type FieldValues = z.infer<typeof FieldValues>
 
 export const FieldStorage = z.record(
-	IdField,
+	createIdField(),
 	FieldValues
 )
 export type FieldStorage = z.infer<typeof FieldStorage>

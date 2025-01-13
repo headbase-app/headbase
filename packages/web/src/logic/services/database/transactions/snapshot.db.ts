@@ -1,12 +1,17 @@
 import {DatabaseSnapshot} from "../db.ts";
 import {DeviceContext, IDatabaseService, IEventsService} from "../../interfaces.ts";
 import {EntityTransactionsConfig} from "./fields.db.ts";
+import {sqlBuilder} from "./drizzle/sql-builder.ts";
+import {fields, fieldsVersions} from "./drizzle/tables/fields.ts";
+import {contentTypes, contentTypesVersions} from "./drizzle/tables/content-types.ts";
+import {contentItems, contentItemsVersions} from "./drizzle/tables/content-items.ts";
+import {views, viewsVersions} from "./drizzle/tables/views.ts";
 
 // todo: check if entity exists before including version in snapshot?
 
-interface SnapshotItem {
+interface DatabaseSnapshotItem {
 	id: string
-	isDeleted: boolean
+	is_deleted: 0 | 1
 }
 
 export class SnapshotTransactions {
@@ -25,91 +30,83 @@ export class SnapshotTransactions {
 			fields: {},
 			fieldsVersions: {},
 			contentTypes: {},
-			contentTypesVersions: {},
-			contentItems: {},
 			contentItemsVersions: {},
+			contentItems: {},
+			contentTypesVersions: {},
 			views: {},
 			viewsVersions: {}
 		}
 
-		const fieldEntities = await this.databaseService.exec({
-			databaseId,
-			sql: `select e.id as id, e.is_deleted as isDeleted from fields e`,
-			params: [],
-			rowMode: "object"
-		}) as unknown as SnapshotItem[]
+		const fieldsQuery = sqlBuilder
+			.select({id: fields.id, is_deleted: fields.is_deleted})
+			.from(fields)
+			.toSQL()
+		const fieldEntities = await this.databaseService.exec({databaseId, ...fieldsQuery, rowMode: 'object'}) as unknown as DatabaseSnapshotItem[]
 		for (const entity of fieldEntities) {
-			snapshot.fields[entity.id] = entity.isDeleted
+			snapshot.fields[entity.id] = entity.is_deleted === 1
 		}
 
-		const fieldVersions = await this.databaseService.exec({
-			databaseId,
-			sql: `select v.id as id, v.is_deleted as isDeleted from fields_versions v`,
-			params: [],
-			rowMode: "object"
-		}) as unknown as SnapshotItem[]
+		const fieldsVersionsQuery = sqlBuilder
+			.select({id: fieldsVersions.id, is_deleted: fieldsVersions.is_deleted})
+			.from(fieldsVersions)
+			.toSQL()
+		const fieldVersions = await this.databaseService.exec({databaseId, ...fieldsVersionsQuery, rowMode: 'object'}) as unknown as DatabaseSnapshotItem[]
 		for (const version of fieldVersions) {
-			snapshot.fieldsVersions[version.id] = version.isDeleted
+			snapshot.fieldsVersions[version.id] = version.is_deleted === 1
 		}
 
-		const contentTypeEntities = await this.databaseService.exec({
-			databaseId,
-			sql: `select e.id as id, e.is_deleted as isDeleted from content_types e`,
-			params: [],
-			rowMode: "object"
-		}) as unknown as SnapshotItem[]
+		const contentTypesQuery = sqlBuilder
+			.select({id: contentTypes.id, is_deleted: contentTypes.is_deleted})
+			.from(contentTypes)
+			.toSQL()
+		const contentTypeEntities = await this.databaseService.exec({databaseId, ...contentTypesQuery, rowMode: 'object'}) as unknown as DatabaseSnapshotItem[]
 		for (const entity of contentTypeEntities) {
-			snapshot.contentTypes[entity.id] = entity.isDeleted
+			snapshot.contentTypes[entity.id] = entity.is_deleted === 1
 		}
 
-		const contentTypeVersions = await this.databaseService.exec({
-			databaseId,
-			sql: `select v.id as id, v.is_deleted as isDeleted from content_types_versions v`,
-			params: [],
-			rowMode: "object"
-		}) as unknown as SnapshotItem[]
+		const contentTypesVersionsQuery = sqlBuilder
+			.select({id: contentTypesVersions.id, is_deleted: contentTypesVersions.is_deleted})
+			.from(contentTypesVersions)
+			.toSQL()
+		const contentTypeVersions = await this.databaseService.exec({databaseId, ...contentTypesVersionsQuery, rowMode: 'object'}) as unknown as DatabaseSnapshotItem[]
 		for (const version of contentTypeVersions) {
-			snapshot.contentTypes[version.id] = version.isDeleted
+			snapshot.contentTypes[version.id] = version.is_deleted === 1
 		}
 
-		const contentItemEntities = await this.databaseService.exec({
-			databaseId,
-			sql: `select e.id as id, e.is_deleted as isDeleted from content_items e`,
-			params: [],
-			rowMode: "object"
-		}) as unknown as SnapshotItem[]
+		const contentItemsQuery = sqlBuilder
+			.select({id: contentItems.id, is_deleted: contentItems.is_deleted})
+			.from(contentItems)
+			.toSQL()
+		const contentItemEntities = await this.databaseService.exec({databaseId, ...contentItemsQuery, rowMode: 'object'}) as unknown as DatabaseSnapshotItem[]
 		for (const entity of contentItemEntities) {
-			snapshot.contentItems[entity.id] = entity.isDeleted
+			snapshot.contentItems[entity.id] = entity.is_deleted === 1
 		}
 
-		const contentItemVersions = await this.databaseService.exec({
-			databaseId,
-			sql: `select v.id as id, v.is_deleted as isDeleted from content_items_versions v`,
-			params: [],
-			rowMode: "object"
-		}) as unknown as SnapshotItem[]
+		const contentItemsVersionsQuery = sqlBuilder
+			.select({id: contentItemsVersions.id, is_deleted: contentItemsVersions.is_deleted})
+			.from(contentItemsVersions)
+			.toSQL()
+		const contentItemVersions = await this.databaseService.exec({databaseId, ...contentItemsVersionsQuery, rowMode: 'object'}) as unknown as DatabaseSnapshotItem[]
 		for (const version of contentItemVersions) {
-			snapshot.contentItemsVersions[version.id] = version.isDeleted
+			snapshot.contentItemsVersions[version.id] = version.is_deleted === 1
 		}
 
-		const viewEntities = await this.databaseService.exec({
-			databaseId,
-			sql: `select e.id as id, e.is_deleted as isDeleted from views e`,
-			params: [],
-			rowMode: "object"
-		}) as unknown as SnapshotItem[]
-		for (const entity of viewEntities) {
-			snapshot.views[entity.id] = entity.isDeleted
+		const viewsQuery = sqlBuilder
+			.select({id: views.id, is_deleted: views.is_deleted})
+			.from(views)
+			.toSQL()
+		const viewsEntities = await this.databaseService.exec({databaseId, ...viewsQuery, rowMode: 'object'}) as unknown as DatabaseSnapshotItem[]
+		for (const entity of viewsEntities) {
+			snapshot.views[entity.id] = entity.is_deleted === 1
 		}
 
-		const viewVersions = await this.databaseService.exec({
-			databaseId,
-			sql: `select v.id as id, v.is_deleted as isDeleted from views_versions v`,
-			params: [],
-			rowMode: "object"
-		}) as unknown as SnapshotItem[]
+		const viewsVersionsQuery = sqlBuilder
+			.select({id: viewsVersions.id, is_deleted: viewsVersions.is_deleted})
+			.from(viewsVersions)
+			.toSQL()
+		const viewVersions = await this.databaseService.exec({databaseId, ...viewsVersionsQuery, rowMode: 'object'}) as unknown as DatabaseSnapshotItem[]
 		for (const version of viewVersions) {
-			snapshot.viewsVersions[version.id] = version.isDeleted
+			snapshot.viewsVersions[version.id] = version.is_deleted === 1
 		}
 
 		return snapshot

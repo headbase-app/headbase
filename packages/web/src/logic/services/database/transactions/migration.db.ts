@@ -6,7 +6,7 @@ import {ContentItemTransactions} from "./content-items.db.ts";
 import {ViewTransactions} from "./views.db.ts";
 import {HEADBASE_VERSION} from "../../../headbase-web.ts";
 import {ErrorTypes, HeadbaseError} from "../../../control-flow.ts";
-import {FieldDto} from "../../../schemas/fields/dtos.ts";
+import {CreateFieldDto, FieldDto, UpdateFieldDto} from "../../../schemas/fields/dtos.ts";
 import {ContentTypeDto} from "../../../schemas/content-types/dtos.ts";
 import {ContentItemDto} from "../../../schemas/content-items/dtos.ts";
 import {ViewDto} from "../../../schemas/views/dtos.ts";
@@ -62,25 +62,25 @@ export class MigrationTransactions {
 			if (!existingEntity) {
 				await this.fields.create(databaseId, {
 					id: field.id,
-					createdBy: field.versionCreatedBy,
+					createdBy: field.createdBy,
 					type: field.type,
 					name: field.name,
 					icon: field.icon,
 					description: field.description,
 					settings: field.settings
-				})
+				} as CreateFieldDto)
 			}
 			else if (existingEntity.updatedAt < field.updatedAt) {
 				console.debug(`[import] Found existing field '${field.name}' (${field.id}) with older version, updating.`)
 
 				await this.fields.update(databaseId, field.id, {
-					createdBy: field.versionCreatedBy,
+					updatedBy: field.updatedBy,
 					type: field.type,
 					name: field.name,
 					icon: field.icon,
 					description: field.description,
 					settings: field.settings
-				})
+				} as UpdateFieldDto)
 			}
 			else {
 				console.debug(`[import] Found existing field '${field.name}' (${field.id}), not updating.`)
@@ -104,7 +104,7 @@ export class MigrationTransactions {
 			if (!existingEntity) {
 				await this.contentTypes.create(databaseId, {
 					id: contentType.id,
-					createdBy: contentType.versionCreatedBy,
+					createdBy: contentType.createdBy,
 					name: contentType.name,
 					description: contentType.description,
 					icon: contentType.icon,
@@ -117,7 +117,7 @@ export class MigrationTransactions {
 				console.debug(`[import] Found existing content type '${contentType.name}' (${contentType.id}) with older version, updating.`)
 
 				await this.contentTypes.update(databaseId, contentType.id, {
-					createdBy: contentType.versionCreatedBy,
+					updatedBy: contentType.updatedBy,
 					name: contentType.name,
 					description: contentType.description,
 					icon: contentType.icon,
@@ -148,7 +148,7 @@ export class MigrationTransactions {
 			if (!existingEntity) {
 				await this.contentItems.create(databaseId, {
 					id: contentItem.id,
-					createdBy: contentItem.versionCreatedBy,
+					createdBy: contentItem.createdBy,
 					type: contentItem.type,
 					name: contentItem.name,
 					fields: contentItem.fields,
@@ -159,7 +159,7 @@ export class MigrationTransactions {
 				console.debug(`[import] Found existing content item '${contentItem.name}' (${contentItem.id}) with older version, updating.`)
 
 				await this.contentItems.update(databaseId, contentItem.id, {
-					createdBy: contentItem.versionCreatedBy,
+					updatedBy: contentItem.updatedBy,
 					type: contentItem.type,
 					name: contentItem.name,
 					fields: contentItem.fields,
@@ -188,7 +188,7 @@ export class MigrationTransactions {
 			if (!existingEntity) {
 				await this.views.create(databaseId, {
 					id: view.id,
-					createdBy: view.versionCreatedBy,
+					createdBy: view.createdBy,
 					type: view.type,
 					name: view.name,
 					isFavourite: view.isFavourite,
@@ -199,7 +199,7 @@ export class MigrationTransactions {
 				console.debug(`[import] Found existing view '${view.name}' (${view.id}) with older version, updating.`)
 
 				await this.views.update(databaseId, view.id, {
-					createdBy: view.versionCreatedBy,
+					updatedBy: view.updatedBy,
 					type: view.type,
 					name: view.name,
 					isFavourite: view.isFavourite,

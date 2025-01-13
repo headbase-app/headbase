@@ -1,30 +1,45 @@
 import {z} from "zod";
-import {BooleanField, IdField, TimestampField} from "./fields.ts";
+import {TimestampField} from "./fields.ts";
+import {createIdField} from "@headbase-app/common";
+import {HEADBASE_VERSION} from "../../headbase-web.ts";
 
+export const EntityIdentifiers = z.object({
+	id: createIdField(),
+	versionId: createIdField('versionId'),
+	previousVersionId: createIdField('previousVersionId').nullable(),
+})
+export type EntityIdentifiers = z.infer<typeof EntityIdentifiers>
 
-export const BaseEntityDto = z.object({
-	id: IdField,
+export const VersionIdentifiers = z.object({
+	entityId: createIdField('entityId'),
+	id: createIdField(),
+	previousVersionId: createIdField('previousVersionId').nullable(),
+})
+export type VersionIdentifiers = z.infer<typeof VersionIdentifiers>
+
+export const MetadataFields = z.object({
 	createdAt: TimestampField,
-	updatedAt: TimestampField,
-	isDeleted: BooleanField,
-	versionId: IdField,
-	previousVersionId: IdField.nullable(),
-	versionCreatedBy: z.string(),
-}).strict()
-export type BaseEntityDto = z.infer<typeof BaseEntityDto>
-
-export const BaseVersionDto = z.object({
-	id: IdField,
-	createdAt: TimestampField,
-	isDeleted: BooleanField,
-	entityId: IdField,
-	previousVersionId: IdField.nullable(),
 	createdBy: z.string(),
-}).strict()
-export type BaseVersionDto = z.infer<typeof BaseEntityDto>
+	updatedAt: TimestampField,
+	updatedBy: z.string(),
+	isDeleted: z.boolean(),
+	hbv: z.literal(HEADBASE_VERSION),
+})
+export type MetadataFields = z.infer<typeof MetadataFields>
 
 export const BaseCreateDto = z.object({
-	id: z.string().uuid().optional(),
-	createdBy: z.string(),
-}).strict()
-export type BaseCreateDto = z.infer<typeof BaseEntityDto>
+	id: createIdField().optional(),
+	createdBy: MetadataFields.shape.createdBy
+})
+export type BaseCreateDto = z.infer<typeof BaseCreateDto>
+
+export const BaseUpdateDto = z.object({
+	updatedBy: MetadataFields.shape.updatedBy
+})
+export type BaseUpdateDto = z.infer<typeof BaseUpdateDto>
+
+export const BaseEntityDto = EntityIdentifiers.merge(MetadataFields)
+export type BaseEntityDto = z.infer<typeof BaseEntityDto>
+
+export const BaseVersionDto = VersionIdentifiers.merge(MetadataFields)
+export type BaseVersionDto = z.infer<typeof BaseEntityDto>

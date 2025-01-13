@@ -1,10 +1,6 @@
 import {z} from "zod";
 import { JColourVariantsList } from "@ben-ryder/jigsaw-react";
 
-
-export const IdField = z.string().uuid('id must be a valid uuid');
-export type IdField = z.infer<typeof IdField>
-
 export const TimestampField = z.string().datetime('timestamp field must be in iso format')
 export type TimestampField = z.infer<typeof TimestampField>
 
@@ -28,6 +24,3 @@ export const IconField = z.string()
 	.nullable()
 	.optional()
 export type IconField = z.infer<typeof IconField>;
-
-export const BooleanField = z.boolean()
-export type BooleanField = z.infer<typeof BooleanField>
