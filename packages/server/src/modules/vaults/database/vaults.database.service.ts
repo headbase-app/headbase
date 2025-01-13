@@ -1,15 +1,24 @@
 import {DatabaseService} from "@services/database/database.service.js";
-import {CreateVaultDto, ErrorIdentifiers, UpdateVaultDto, VaultDto} from "@headbase-app/common";
+import {
+  CreateVaultDto,
+  ErrorIdentifiers,
+  ResourceListingResult,
+  UpdateVaultDto,
+  VaultDto,
+  VaultsQueryParams
+} from "@headbase-app/common";
 import Postgres from "postgres";
 import {PG_FOREIGN_KEY_VIOLATION, PG_UNIQUE_VIOLATION} from "@services/database/database-error-codes.js";
 import {ResourceRelationshipError} from "@services/errors/resource/resource-relationship.error.js";
 import {SystemError} from "@services/errors/base/system.error.js";
 import {ResourceNotFoundError} from "@services/errors/resource/resource-not-found.error.js";
+import {EnvironmentService} from "@services/environment/environment.service.js";
 
 
 export class VaultsDatabaseService {
   constructor(
-    private readonly databaseService: DatabaseService
+    private readonly databaseService: DatabaseService,
+    private readonly environmentService: EnvironmentService
   ) {}
 
   private static getDatabaseError(e: any) {
@@ -134,6 +143,28 @@ export class VaultsDatabaseService {
         identifier: ErrorIdentifiers.VAULT_NOT_FOUND,
         applicationMessage: "The requested vault could not be found."
       })
+    }
+  }
+
+  async query(filters: VaultsQueryParams): Promise<ResourceListingResult<VaultDto>> {
+    const sql = await this.databaseService.getSQL();
+
+    let results: VaultDto[] = []
+    try {
+      results = await sql<VaultDto[]>`select * from vaults`;
+    }
+    catch (e: any) {
+      throw VaultsDatabaseService.getDatabaseError(e);
+    }
+
+    return {
+      meta: {
+        results: results.length,
+        total: 0,
+        limit: 0,
+        offset: 0,
+      },
+      results,
     }
   }
 }

@@ -92,7 +92,7 @@ export class Application {
         this.container.bindClass(UsersHttpController, { value: UsersHttpController, inject: [UsersService, TokenService, AccessControlService]}, {scope: "SINGLETON"})
 
         // Vault module
-        this.container.bindClass(VaultsDatabaseService, { value: VaultsDatabaseService, inject: [DatabaseService]}, {scope: "SINGLETON"})
+        this.container.bindClass(VaultsDatabaseService, { value: VaultsDatabaseService, inject: [DatabaseService, EnvironmentService]}, {scope: "SINGLETON"})
         this.container.bindClass(VaultsService, { value: VaultsService, inject: [VaultsDatabaseService, AccessControlService, EventsService]}, {scope: "SINGLETON"})
         this.container.bindClass(VaultsHttpController, { value: VaultsHttpController, inject: [VaultsService, AccessControlService]}, {scope: "SINGLETON"})
 
@@ -174,6 +174,7 @@ export class Application {
         // Vaults module routes
         const vaultsHttpController = this.container.resolve<VaultsHttpController>(VaultsHttpController);
         app.post("/v1/vaults", vaultsHttpController.createVault.bind(vaultsHttpController))
+        app.get("/v1/vaults", vaultsHttpController.queryVaults.bind(vaultsHttpController))
         app.get("/v1/vaults/:vaultId", vaultsHttpController.getVault.bind(vaultsHttpController))
         app.patch("/v1/vaults/:vaultId", vaultsHttpController.updateVault.bind(vaultsHttpController))
         app.delete("/v1/vaults/:vaultId", vaultsHttpController.deleteVault.bind(vaultsHttpController));

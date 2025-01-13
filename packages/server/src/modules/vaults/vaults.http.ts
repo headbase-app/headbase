@@ -1,7 +1,8 @@
 import {
   CreateVaultDto,
   UpdateVaultDto,
-  VaultsURLParams
+  VaultsURLParams,
+  VaultsQueryParams,
 } from "@headbase-app/common";
 import {NextFunction, Request, Response} from "express";
 import {validateSchema} from "@common/schema-validator.js";
@@ -39,6 +40,19 @@ export class VaultsHttpController {
     }
     catch (error) {
       next(error);
+    }
+  }
+
+  async queryVaults(req: Request, res: Response, next: NextFunction) {
+    try {
+      const requestUser = await this.accessControlService.validateAuthentication(req);
+      const query = await validateSchema(req.query, VaultsQueryParams);
+
+      const items = await this.vaultsService.queryVaults(requestUser, query);
+      return res.status(HttpStatusCodes.OK).json(items)
+    }
+    catch (error) {
+      next(error)
     }
   }
 

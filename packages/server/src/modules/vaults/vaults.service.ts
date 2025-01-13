@@ -1,6 +1,6 @@
 import {VaultsDatabaseService} from "@modules/vaults/database/vaults.database.service.js";
 import {UserContext} from "@common/request-context.js";
-import {CreateVaultDto, UpdateVaultDto, VaultDto} from "@headbase-app/common";
+import {CreateVaultDto, UpdateVaultDto, VaultDto, VaultsQueryParams} from "@headbase-app/common";
 import {AccessControlService} from "@modules/auth/access-control.service.js";
 import {EventsService} from "@services/events/events.service.js";
 import {EventIdentifiers} from "@services/events/events.js";
@@ -87,5 +87,20 @@ export class VaultsService {
                 ownerId: vault.ownerId
             }
         })
+    }
+
+    async queryVaults(userContext: UserContext, query: VaultsQueryParams) {
+        const ownerIds = query.ownerIds || [userContext.id]
+
+        for (const ownerId of ownerIds) {
+            await this.accessControlService.validateAccessControlRules({
+                userScopedPermissions: ["vaults:retrieve"],
+                unscopedPermissions: ["vaults:retrieve:all"],
+                requestingUserContext: userContext,
+                targetUserId: ownerId
+            })
+        }
+
+        return this.vaultsDatabaseService.query(query)
     }
 }
