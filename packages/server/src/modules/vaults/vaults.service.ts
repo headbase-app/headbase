@@ -4,13 +4,17 @@ import {CreateVaultDto, UpdateVaultDto, VaultDto, VaultsQueryParams} from "@head
 import {AccessControlService} from "@modules/auth/access-control.service.js";
 import {EventsService} from "@services/events/events.service.js";
 import {EventIdentifiers} from "@services/events/events.js";
+import {DatabaseService} from "@services/database/database.service.js";
+import {vaults} from "@services/database/schema.js";
+import {inArray} from "drizzle-orm";
 
 
 export class VaultsService {
     constructor(
        private readonly vaultsDatabaseService: VaultsDatabaseService,
        private readonly accessControlService: AccessControlService,
-       private readonly eventsService: EventsService
+       private readonly eventsService: EventsService,
+       private readonly databaseService: DatabaseService
     ) {}
 
     async get(userContext: UserContext, vaultId: string) {
@@ -101,6 +105,12 @@ export class VaultsService {
             })
         }
 
-        return this.vaultsDatabaseService.query(query)
+        const db = this.databaseService.getDatabase()
+
+        return db
+          .select()
+          .from(vaults)
+          .where(inArray(vaults.ownerId, ownerIds))
+          .orderBy(vaults.updatedAt)
     }
 }

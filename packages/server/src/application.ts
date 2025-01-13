@@ -93,7 +93,7 @@ export class Application {
 
         // Vault module
         this.container.bindClass(VaultsDatabaseService, { value: VaultsDatabaseService, inject: [DatabaseService, EnvironmentService]}, {scope: "SINGLETON"})
-        this.container.bindClass(VaultsService, { value: VaultsService, inject: [VaultsDatabaseService, AccessControlService, EventsService]}, {scope: "SINGLETON"})
+        this.container.bindClass(VaultsService, { value: VaultsService, inject: [VaultsDatabaseService, AccessControlService, EventsService, DatabaseService]}, {scope: "SINGLETON"})
         this.container.bindClass(VaultsHttpController, { value: VaultsHttpController, inject: [VaultsService, AccessControlService]}, {scope: "SINGLETON"})
 
         // Snapshot module

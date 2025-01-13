@@ -2,10 +2,8 @@ import {DatabaseService} from "@services/database/database.service.js";
 import {
   CreateVaultDto,
   ErrorIdentifiers,
-  ResourceListingResult,
   UpdateVaultDto,
-  VaultDto,
-  VaultsQueryParams
+  VaultDto
 } from "@headbase-app/common";
 import Postgres from "postgres";
 import {PG_FOREIGN_KEY_VIOLATION, PG_UNIQUE_VIOLATION} from "@services/database/database-error-codes.js";
@@ -143,28 +141,6 @@ export class VaultsDatabaseService {
         identifier: ErrorIdentifiers.VAULT_NOT_FOUND,
         applicationMessage: "The requested vault could not be found."
       })
-    }
-  }
-
-  async query(filters: VaultsQueryParams): Promise<ResourceListingResult<VaultDto>> {
-    const sql = await this.databaseService.getSQL();
-
-    let results: VaultDto[] = []
-    try {
-      results = await sql<VaultDto[]>`select * from vaults`;
-    }
-    catch (e: any) {
-      throw VaultsDatabaseService.getDatabaseError(e);
-    }
-
-    return {
-      meta: {
-        results: results.length,
-        total: 0,
-        limit: 0,
-        offset: 0,
-      },
-      results,
     }
   }
 }
