@@ -2,7 +2,7 @@ import postgres, { Sql } from "postgres";
 import {sql} from "drizzle-orm";
 import { drizzle, PostgresJsDatabase } from "drizzle-orm/postgres-js";
 
-import * as schema from "./schema.js";
+import {schema} from "./schema.js";
 import {EnvironmentService} from "@services/environment/environment.service.js";
 import {HealthStatus} from "@modules/server/server.service.js";
 

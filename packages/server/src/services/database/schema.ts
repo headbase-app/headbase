@@ -6,22 +6,22 @@ const updatedAt = timestamp({mode: "string"}).notNull()
 const deletedAt = timestamp({mode: "string"})
 
 export const settings = pgTable("settings", {
-	id: uuid().primaryKey(),
+	id: uuid().primaryKey().defaultRandom(),
 	registrationEnabled: boolean().notNull(),
-	createdAt,
+	createdAt: createdAt.defaultNow(),
 });
 
 
 export const rolesEnum = pgEnum("user_roles", ["user", "admin"]);
 
 export const users = pgTable("users", {
-	id: uuid().primaryKey(),
+	id: uuid().primaryKey().defaultRandom(),
 	email: varchar({ length: 100 }).notNull().unique("email_unique"),
 	displayName: varchar({ length: 50 }).notNull(),
 	passwordHash: varchar({ length: 100 }).notNull(),
-	verifiedAt: timestamp().notNull(),
-	firstVerifiedAt: timestamp().notNull(),
-	role: rolesEnum(),
+	verifiedAt: timestamp(),
+	firstVerifiedAt: timestamp(),
+	role: rolesEnum().default("user"),
 	createdAt,
 	updatedAt,
 });
@@ -68,3 +68,7 @@ export const itemsRelations = relations(items, ({ one }) => ({
 		references: [vaults.id],
 	}),
 }));
+
+export const schema = {
+	settings, users, vaults, items
+} as const;

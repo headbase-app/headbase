@@ -19,7 +19,6 @@ import {AccessControlService} from "@modules/auth/access-control.service.js";
 import {UsersDatabaseService} from "@modules/users/database/users.database.service.js";
 import {AuthHttpController} from "@modules/auth/auth.http.js";
 import {UsersHttpController} from "@modules/users/users.http.js";
-import {VaultsDatabaseService} from "@modules/vaults/database/vaults.database.service.js";
 import {VaultsService} from "@modules/vaults/vaults.service.js";
 import {VaultsHttpController} from "@modules/vaults/vaults.http.js";
 import {httpErrorHandler} from "@services/errors/http-error-handler.js";
@@ -31,7 +30,6 @@ import {SyncService} from "@modules/sync/sync.service.js";
 import {SyncHttpController} from "@modules/sync/sync.http.js";
 import {ServerManagementService} from "@modules/server/server.service.js";
 import {ServerManagementHttpController} from "@modules/server/server.http.js";
-import {ServerManagementDatabaseService} from "@modules/server/database/server.database.service.js";
 import {ItemsService} from "@modules/items/items.service.js";
 import {ItemsHttpController} from "@modules/items/items.http.js";
 import {ItemsDatabaseService} from "@modules/items/database/items.database.service.js";
@@ -74,8 +72,7 @@ export class Application {
         this.container.bindClass(EventsService, { value: EventsService }, {scope: "SINGLETON"})
 
         // Server module
-        this.container.bindClass(ServerManagementDatabaseService, { value: ServerManagementDatabaseService, inject: [DatabaseService] }, {scope: "SINGLETON"})
-        this.container.bindClass(ServerManagementService, { value: ServerManagementService, inject: [DatabaseService, DataStoreService, AccessControlService, ServerManagementDatabaseService] }, {scope: "SINGLETON"})
+        this.container.bindClass(ServerManagementService, { value: ServerManagementService, inject: [DatabaseService, DataStoreService, AccessControlService] }, {scope: "SINGLETON"})
         this.container.bindClass(ServerManagementHttpController, { value: ServerManagementHttpController, inject: [AccessControlService, ServerManagementService] }, {scope: "SINGLETON"})
 
         // Base module
@@ -92,8 +89,7 @@ export class Application {
         this.container.bindClass(UsersHttpController, { value: UsersHttpController, inject: [UsersService, TokenService, AccessControlService]}, {scope: "SINGLETON"})
 
         // Vault module
-        this.container.bindClass(VaultsDatabaseService, { value: VaultsDatabaseService, inject: [DatabaseService, EnvironmentService]}, {scope: "SINGLETON"})
-        this.container.bindClass(VaultsService, { value: VaultsService, inject: [VaultsDatabaseService, AccessControlService, EventsService, DatabaseService]}, {scope: "SINGLETON"})
+        this.container.bindClass(VaultsService, { value: VaultsService, inject: [DatabaseService, EventsService, AccessControlService]}, {scope: "SINGLETON"})
         this.container.bindClass(VaultsHttpController, { value: VaultsHttpController, inject: [VaultsService, AccessControlService]}, {scope: "SINGLETON"})
 
         // Snapshot module
@@ -106,7 +102,7 @@ export class Application {
         this.container.bindClass(ItemsHttpController, {value: ItemsHttpController, inject: [ItemsService, AccessControlService]}, {scope: "SINGLETON"})
 
         // Sync module
-        this.container.bindClass(SyncService, {value: SyncService, inject: [EventsService, DataStoreService, VaultsDatabaseService]}, {scope: "SINGLETON"})
+        this.container.bindClass(SyncService, {value: SyncService, inject: [EventsService, DataStoreService, VaultsService]}, {scope: "SINGLETON"})
         this.container.bindClass(SyncHttpController, {value: SyncHttpController, inject: [AccessControlService, SyncService]}, {scope: "SINGLETON"})
         this.container.bindClass(SyncWebsocketController, { value: SyncWebsocketController, inject: [EnvironmentService, SyncService] }, {scope: "SINGLETON"})
     }

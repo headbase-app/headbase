@@ -10,8 +10,7 @@ import {TokenService} from "@services/token/token.service.js";
 import {DatabaseService} from "@services/database/database.service.js";
 import {DataStoreService} from "@services/data-store/data-store.service.js";
 import {Application} from "../src/application.js";
-import {ServerManagementDatabaseService} from "@modules/server/database/server.database.service.js";
-
+import {ServerManagementService} from "@modules/server/server.service.js";
 
 export class TestHelper {
   private application!: Application;
@@ -81,7 +80,7 @@ export class TestHelper {
     await resetTestData(sql, {
       logging: options?.logging || false,
       // Default to skipping populating items which dramatically increases test performance due to amount of test items
-      skipItemData: typeof options?.skipItemData === "boolean" ? options.skipItemData : true
+      seedItems: !!options?.seedItems
     });
   }
 
@@ -101,9 +100,9 @@ export class TestHelper {
     await this.resetDatabaseData(options);
 
     // Overwrite server settings to ensure tests are consistent
-    // todo: this change will persist after tests. Should this be done via some sort of mocking or override to bypass the database.
-    const serverManagementDatabaseService = this.application.getDependency<ServerManagementDatabaseService>(ServerManagementDatabaseService);
-    await serverManagementDatabaseService.updateSettings({registrationEnabled: true})
+    // todo: this change will persist after tests. Should this be done via some sort of mocking or override to bypass the database?
+    const serverManagementDatabaseService = this.application.getDependency<ServerManagementService>(ServerManagementService);
+    await serverManagementDatabaseService._UNSAFE_updateSettings({registrationEnabled: true})
 
     // Purge the data store to ensure things like refresh/access tokens aren't persisted
     const dataStoreService = this.application.getDependency<DataStoreService>(DataStoreService);

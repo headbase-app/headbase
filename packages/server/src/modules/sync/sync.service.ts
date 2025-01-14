@@ -7,13 +7,13 @@ import {AccessUnauthorizedError} from "@services/errors/access/access-unauthoriz
 import {ErrorIdentifiers} from "@headbase-app/common";
 import {SystemError} from "@services/errors/base/system.error.js";
 import {z} from "zod";
-import {VaultsDatabaseService} from "@modules/vaults/database/vaults.database.service.js";
 import {AccessForbiddenError} from "@services/errors/access/access-forbidden.error.js";
 import {
     EventIdentifiers,
     ExternalServerEvent,
     ServerEvent
 } from "@services/events/events.js";
+import {VaultsService} from "@modules/vaults/vaults.service.js";
 
 // Actions which are sent by the sync service to the websocket controller.
 // The websocket controller stores sockets and rooms, but relies on the service for all logic.
@@ -61,7 +61,7 @@ export class SyncService {
     constructor(
         private readonly eventService: EventsService,
         private readonly dataStoreService: DataStoreService,
-        private readonly vaultsDatabaseService: VaultsDatabaseService,
+        private readonly vaultsService: VaultsService,
     ) {
         // All server events will need to be processed as they will require socket events
         this.eventService.subscribeAll(async (e: CustomEvent<ServerEvent>) => {
@@ -143,7 +143,7 @@ export class SyncService {
         for (const vaultId of vaults) {
             // todo: should this be done via the AccessControlService? can't be right now as doesn't have full RequestUser details
             // this is not checking access permissions for vaults too
-            const vault = await this.vaultsDatabaseService.get(vaultId)
+            const vault = await this.vaultsService.get({id: userId, sessionId: "", verifiedAt: "", permissions: []}, vaultId)
             if (vault.ownerId !== userId) {
                 throw new AccessForbiddenError({
                     applicationMessage: "You do not have the permissions required to perform this action."

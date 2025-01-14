@@ -27,8 +27,8 @@ export class SnapshotService {
 		for (const item of items) {
 			const itemSnapshot: ItemSnapshot = {
 				id: item.id,
-				group_id: item.groupId,
-				previous_version_id: item.previousVersionId,
+				groupId: item.groupId,
+				previousVersionId: item.previousVersionId,
 				type: item.type,
 				deletedAt: item.deletedAt
 			}

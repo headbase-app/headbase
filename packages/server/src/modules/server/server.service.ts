@@ -1,9 +1,10 @@
 import {DatabaseService} from "@services/database/database.service.js";
 import {DataStoreService} from "@services/data-store/data-store.service.js";
 import {z} from "zod";
-import {ServerManagementDatabaseService} from "@modules/server/database/server.database.service.js";
 import {AccessControlService} from "@modules/auth/access-control.service.js";
 import {RequestUser} from "@common/request-context.js";
+import {SystemError} from "@services/errors/base/system.error.js";
+import {settings} from "@services/database/schema.js";
 
 export type HealthStatus = "ok" | "degraded" | "error"
 
@@ -25,12 +26,12 @@ export const UpdateServerSettingsDto = ServerSettingsDto
     .omit({createdAt: true})
 export type UpdateServerSettingsDto = z.infer<typeof UpdateServerSettingsDto>
 
+
 export class ServerManagementService {
     constructor(
         private readonly databaseService: DatabaseService,
         private readonly dataStoreService: DataStoreService,
-        private readonly accessControlService: AccessControlService,
-        private readonly serverManagementDatabaseService: ServerManagementDatabaseService
+        private readonly accessControlService: AccessControlService
     ) {}
 
     async runHealthCheck(): Promise<HealthCheckResult> {
@@ -59,14 +60,44 @@ export class ServerManagementService {
     }
 
     async _UNSAFE_getSettings(): Promise<ServerSettingsDto> {
-        let settings = await this.serverManagementDatabaseService.getSettings()
+        const db = this.databaseService.getDatabase()
 
-        // Populate default settings if they don't already exist.
-        if (!settings) {
-            settings = await this.serverManagementDatabaseService.updateSettings({registrationEnabled: false})
+        let result: ServerSettingsDto[] = [];
+        try {
+            result = await db
+              .select()
+              .from(settings)
+              .orderBy(settings?.createdAt)
+              .limit(1)
+        }
+        catch (e: any) {
+            throw ServerManagementService.getContextualError(e);
+        }
+        if (result[0]) {
+            return result[0]
         }
 
-        return settings
+        return this._UNSAFE_updateSettings({registrationEnabled: false})
+    }
+
+    async _UNSAFE_updateSettings(updateDto: UpdateServerSettingsDto): Promise<ServerSettingsDto> {
+        const db = this.databaseService.getDatabase()
+
+        let result: ServerSettingsDto[] = [];
+        try {
+            result = await db
+              .insert(settings)
+              .values(updateDto)
+              .returning()
+        }
+        catch (e: any) {
+            throw ServerManagementService.getContextualError(e);
+        }
+        if (!result[0]) {
+            throw new SystemError({message: "Unexpected error returning settings after update"})
+        }
+
+        return result[0]
     }
 
     async getSettings(requestUser: RequestUser): Promise<ServerSettingsDto> {
@@ -81,7 +112,7 @@ export class ServerManagementService {
         return this._UNSAFE_getSettings()
     }
 
-    async updateSettings(requestUser: RequestUser, updateServerSettingsDto: UpdateServerSettingsDto): Promise<ServerSettingsDto> {
+    async updateSettings(requestUser: RequestUser, updateDto: UpdateServerSettingsDto): Promise<ServerSettingsDto> {
         await this.accessControlService.validateAccessControlRules({
             requestingUserContext: requestUser,
             unscopedPermissions: ["server-settings:update"],
@@ -90,6 +121,13 @@ export class ServerManagementService {
             userScopedPermissions: [],
         });
 
-        return this.serverManagementDatabaseService.updateSettings(updateServerSettingsDto)
+        return this._UNSAFE_updateSettings(updateDto)
+    }
+
+    private static getContextualError(e: any) {
+        return new SystemError({
+            message: "Unexpected error while creating server settings",
+            originalError: e
+        })
     }
 }
