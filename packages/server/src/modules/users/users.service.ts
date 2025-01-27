@@ -1,24 +1,48 @@
-import {UsersDatabaseService} from "@modules/users/database/users.database.service.js";
 import {CreateUserDto, ErrorIdentifiers, UpdateUserDto, UserDto} from "@headbase-app/common";
 import {UserContext} from "@common/request-context.js";
-import {DatabaseCreateUserDto, DatabaseUpdateUserDto, DatabaseUserDto} from "@modules/users/database/database-user.js";
 import {AccessForbiddenError} from "@services/errors/access/access-forbidden.error.js";
 import {PasswordService} from "@services/password/password.service.js";
 import {AccessControlService} from "@modules/auth/access-control.service.js";
 import {EventsService} from "@services/events/events.service.js";
 import {EventIdentifiers} from "@services/events/events.js";
 import {ServerManagementService} from "@modules/server/server.service.js";
+import {DatabaseService} from "@services/database/database.service.js";
+import {DatabaseUserDto, users} from "@services/database/schema.js";
+import {eq} from "drizzle-orm";
+import {ResourceNotFoundError} from "@services/errors/resource/resource-not-found.error.js";
+import postgres from "postgres";
+import {PG_UNIQUE_VIOLATION} from "@services/database/database-error-codes.js";
+import {ResourceRelationshipError} from "@services/errors/resource/resource-relationship.error.js";
+import {SystemError} from "@services/errors/base/system.error.js";
 
 
 export class UsersService {
     constructor(
-       private readonly usersDatabaseService: UsersDatabaseService,
+       private readonly databaseService: DatabaseService,
        private readonly accessControlService: AccessControlService,
        private readonly eventsService: EventsService,
        private readonly serverManagementService: ServerManagementService,
     ) {}
 
-    convertDatabaseDto(userWithPassword: DatabaseUserDto): UserDto {
+    static getContextualError(e: any) {
+        if (e instanceof postgres.PostgresError) {
+            if (e.code && e.code === PG_UNIQUE_VIOLATION) {
+                if (e.constraint_name == "email_unique") {
+                    return new ResourceRelationshipError({
+                        identifier: ErrorIdentifiers.USER_EMAIL_EXISTS,
+                        applicationMessage: "The supplied email address is already in use."
+                    })
+                }
+            }
+        }
+
+        return new SystemError({
+            message: "Unexpected error while creating user",
+            originalError: e
+        })
+    }
+
+    static convertDatabaseItemToDto(userWithPassword: DatabaseUserDto): UserDto {
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const { passwordHash, ...userDto } = userWithPassword;
         return userDto;
@@ -32,16 +56,54 @@ export class UsersService {
             targetUserId: userId
         })
 
-        const databaseUserDto = await this.usersDatabaseService.get(userId);
-        return this.convertDatabaseDto(databaseUserDto);
+        const result = await this._UNSAFE_getById(userId)
+        return this.convertDatabaseItemToDto(result);
     }
 
-    async _UNSAFE_getByEmail(email: string) {
-        return this.usersDatabaseService.getByEmail(email);
+    async _UNSAFE_getByEmail(email: string): Promise<DatabaseUserDto> {
+        const db = this.databaseService.getDatabase()
+
+        let result: DatabaseUserDto[];
+        try {
+            result = await db
+              .select()
+              .from(users)
+              .where(eq(users.email, email))
+        }
+        catch (e) {
+            throw UsersService.getContextualError(e)
+        }
+        if (!result[0]) {
+            throw new ResourceNotFoundError({
+                identifier: ErrorIdentifiers.USER_NOT_FOUND,
+                applicationMessage: "The requested user could not be found."
+            })
+        }
+
+        return result[0]
     }
 
     async _UNSAFE_getById(id: string) {
-        return this.usersDatabaseService.get(id);
+        const db = this.databaseService.getDatabase()
+
+        let result: DatabaseUserDto[];
+        try {
+            result = await db
+              .select()
+              .from(users)
+              .where(eq(users.id, id))
+        }
+        catch (e) {
+            throw UsersService.getContextualError(e)
+        }
+        if (!result[0]) {
+            throw new ResourceNotFoundError({
+                identifier: ErrorIdentifiers.USER_NOT_FOUND,
+                applicationMessage: "The requested user could not be found."
+            })
+        }
+
+        return result[0]
     }
 
     async create(createUserDto: CreateUserDto): Promise<UserDto> {
@@ -56,23 +118,38 @@ export class UsersService {
         }
 
         const passwordHash = await PasswordService.hashPassword(createUserDto.password);
-        const databaseCreateUserDto: DatabaseCreateUserDto = {
-            displayName: createUserDto.displayName,
-            email: createUserDto.email,
-            passwordHash,
-            role: "user",
+
+        const db = this.databaseService.getDatabase()
+        let result: DatabaseUserDto[]
+        try {
+            result = await db
+              .insert(users)
+              .values({
+                  id: "",
+                  email: createUserDto.email,
+                  displayName: createUserDto.displayName,
+                  passwordHash,
+              })
+              .returning() as unknown as DatabaseUserDto[]
+        }
+        catch (e) {
+            throw UsersService.getContextualError(e);
+        }
+        if (!result[0]) {
+            throw new SystemError({
+                identifier: ErrorIdentifiers.SYSTEM_UNEXPECTED,
+                message: "Returning user after creation failed"
+            })
         }
 
-        const databaseUser = await this.usersDatabaseService.create(databaseCreateUserDto);
-        const userDto = this.convertDatabaseDto(databaseUser);
+        const userDto = this.convertDatabaseItemToDto(result[0]);
         await this.eventsService.dispatch({
             type: EventIdentifiers.USER_CREATE,
             detail: {
                 user: userDto
             }
         })
-
-        return this.convertDatabaseDto(databaseUser);
+        return userDto;
     }
 
     async update(userContext: UserContext, userId: string, updateUserDto: UpdateUserDto): Promise<UserDto> {
@@ -83,27 +160,33 @@ export class UsersService {
             targetUserId: userId
         })
 
-        const databaseUpdateDto: DatabaseUpdateUserDto = {}
-        if (updateUserDto.displayName) {
-            databaseUpdateDto.displayName = updateUserDto.displayName;
+        const db = this.databaseService.getDatabase()
+        let result: DatabaseUserDto[];
+        try {
+            result = await db
+              .update(users)
+              .set(updateUserDto)
+              .where(eq(users.id, userId))
+              .returning()
         }
-        // todo: don't allow email and password updates? Require this to go via verification email?
-        if (updateUserDto.email) {
-            databaseUpdateDto.email = updateUserDto.email;
-            databaseUpdateDto.verifiedAt = null;
+        catch (e) {
+            throw UsersService.getContextualError(e)
+        }
+        if (!result[0]) {
+            throw new SystemError({identifier: ErrorIdentifiers.SYSTEM_UNEXPECTED, message: "Returning user after update failed"});
         }
 
-        const updatedUser = await this.usersDatabaseService.update(userId, databaseUpdateDto);
-        const updatedUserDto = this.convertDatabaseDto(updatedUser);
+        const userDto = this.convertDatabaseItemToDto(result[0]);
+
         await this.eventsService.dispatch({
             type: EventIdentifiers.USER_UPDATE,
             detail: {
                 sessionId: userContext.sessionId,
-                user: updatedUser
+                user: userDto
             }
         })
 
-        return updatedUserDto
+        return userDto
     }
 
     async delete(userContext: UserContext, userId: string): Promise<void> {
@@ -114,7 +197,11 @@ export class UsersService {
             targetUserId: userId
         })
 
-        await this.usersDatabaseService.delete(userId);
+        const db = this.databaseService.getDatabase()
+        await db
+          .delete(users)
+          .where(eq(users.id, userId))
+
         await this.eventsService.dispatch({
             type: EventIdentifiers.USER_DELETE,
             detail: {
@@ -124,17 +211,30 @@ export class UsersService {
         })
     }
 
-    async verifyUser(userDto: UserDto): Promise<UserDto> {
+    // todo: add access control checks?
+    async verifyUser(userId: string): Promise<UserDto> {
         const timestamp = new Date().toISOString();
+        const currentUser = await this._UNSAFE_getById(userId)
 
-        let updatedUser: DatabaseUserDto
-        if (userDto.firstVerifiedAt) {
-            updatedUser = await this.usersDatabaseService.update(userDto.id, {verifiedAt: timestamp })
+        const db = this.databaseService.getDatabase()
+        let result: DatabaseUserDto[];
+        try {
+            result = await db
+              .update(users)
+              .set({
+                  verifiedAt: timestamp,
+                  firstVerifiedAt: currentUser.firstVerifiedAt ? undefined : timestamp
+              })
+              .where(eq(users.id, userId))
+              .returning()
         }
-        else {
-            updatedUser = await this.usersDatabaseService.update(userDto.id, {verifiedAt: timestamp, firstVerifiedAt: timestamp })
+        catch (e) {
+            throw UsersService.getContextualError(e)
+        }
+        if (!result[0]) {
+            throw new SystemError({identifier: ErrorIdentifiers.SYSTEM_UNEXPECTED, message: "Returning user after update failed"});
         }
 
-        return this.convertDatabaseDto(updatedUser)
+        return this.convertDatabaseItemToDto(result[0]);
     }
 }

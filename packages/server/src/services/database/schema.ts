@@ -22,14 +22,16 @@ export const users = pgTable("users", {
 	verifiedAt: timestamp(),
 	firstVerifiedAt: timestamp(),
 	role: rolesEnum().default("user"),
-	createdAt,
-	updatedAt,
+	createdAt: createdAt.defaultNow(),
+	updatedAt: updatedAt.defaultNow(),
 });
 
 export const usersRelations = relations(users, ({ many }) => ({
 	vaults: many(vaults),
 }));
 
+export type DatabaseUserDto = typeof users.$inferSelect;
+export type CreateDatabaseUserDto = typeof users.$inferInsert;
 
 export const vaults = pgTable("vaults", {
 	ownerId: uuid().notNull(),

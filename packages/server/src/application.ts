@@ -79,12 +79,11 @@ export class Application {
 
         // Auth module
         this.container.bindClass(AuthService, { value: AuthService, inject: [UsersService, TokenService, EnvironmentService, EmailService, EventsService]}, {scope: "SINGLETON"})
-        this.container.bindClass(AccessControlService, { value: AccessControlService, inject: [UsersDatabaseService, TokenService] }, {scope: "SINGLETON"})
+        this.container.bindClass(AccessControlService, { value: AccessControlService, inject: [DatabaseService, TokenService] }, {scope: "SINGLETON"})
         this.container.bindClass(AuthHttpController, { value: AuthHttpController, inject: [AuthService, AccessControlService]}, {scope: "SINGLETON"})
 
         // Users module
-        this.container.bindClass(UsersDatabaseService, { value: UsersDatabaseService, inject: [DatabaseService]}, {scope: "SINGLETON"})
-        this.container.bindClass(UsersService, { value: UsersService, inject: [UsersDatabaseService, AccessControlService, EventsService, ServerManagementService]}, {scope: "SINGLETON"})
+        this.container.bindClass(UsersService, { value: UsersService, inject: [DatabaseService, AccessControlService, EventsService, ServerManagementService]}, {scope: "SINGLETON"})
         this.container.bindClass(UsersHttpController, { value: UsersHttpController, inject: [UsersService, TokenService, AccessControlService]}, {scope: "SINGLETON"})
 
         // Vault module

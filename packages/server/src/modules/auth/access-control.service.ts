@@ -7,6 +7,10 @@ import {UserContext} from "@common/request-context.js";
 import {Request} from "express"
 import {AccessUnauthorizedError} from "@services/errors/access/access-unauthorized.error.js";
 import {TokenService} from "@services/token/token.service.js";
+import {DatabaseService} from "@services/database/database.service.js";
+import {DatabaseUserDto, users} from "@services/database/schema.js";
+import {eq} from "drizzle-orm";
+import {UsersService} from "@modules/users/users.service.js";
 
 export interface AccessControlOptions {
     /** A list of valid permissions if the requesting user context matches the target user **/
@@ -28,8 +32,8 @@ export interface AccessControlOptions {
 
 export class AccessControlService {
     constructor(
-        // todo: must depend on UsersDatabaseService not UsersService to prevent circular dependency. Ideally everything should go through main service?
-        private readonly usersDatabaseService: UsersDatabaseService,
+        // todo: must depend on DatabaseService not UsersService to prevent circular dependency. Ideally everything should go through the user service?
+        private readonly databaseService: DatabaseService,
         private readonly tokenService: TokenService
     ) {}
 
@@ -97,7 +101,25 @@ export class AccessControlService {
 
             let targetUser
             try {
-                targetUser = await this.usersDatabaseService.get(options.targetUserId)
+                const db = this.databaseService.getDatabase()
+                let result: DatabaseUserDto[];
+                try {
+                    result = await db
+                      .select()
+                      .from(users)
+                      .where(eq(users.id, options.targetUserId))
+                }
+                catch (e) {
+                    throw UsersService.getContextualError(e)
+                }
+                if (!result[0]) {
+                    throw new ResourceNotFoundError({
+                        identifier: ErrorIdentifiers.USER_NOT_FOUND,
+                        applicationMessage: "The requested user could not be found."
+                    })
+                }
+
+                targetUser = UsersService. result[0]
             }
             catch (e) {
                 // Rethrow a user not found error as a request error

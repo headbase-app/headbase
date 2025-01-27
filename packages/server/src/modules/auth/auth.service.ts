@@ -157,7 +157,7 @@ export class AuthService {
       })
     }
 
-    const updatedUser = await this.usersService.verifyUser(user)
+    const updatedUser = await this.usersService.verifyUser(user.id)
     const result = await this.tokenService.createNewTokenPair(updatedUser)
 
     return {
