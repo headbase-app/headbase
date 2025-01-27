@@ -23,7 +23,7 @@ export class ItemsHttpController {
       const requestUser = await this.accessControlService.validateAuthentication(req);
       const itemDto = await validateSchema(req.body, ItemDto);
 
-      const createdItemDto = await this.itemsService.createItem(requestUser, itemDto);
+      const createdItemDto = await this.itemsService.create(requestUser, itemDto);
       return res.status(HttpStatusCodes.CREATED).json(createdItemDto);
     }
     catch (error) {
@@ -36,7 +36,7 @@ export class ItemsHttpController {
       const requestUser = await this.accessControlService.validateAuthentication(req);
       const params = await validateSchema(req.params, ItemsURLParams);
 
-      const itemDto = await this.itemsService.getItem(requestUser, params.itemId);
+      const itemDto = await this.itemsService.get(requestUser, params.itemId);
       return res.status(HttpStatusCodes.OK).json(itemDto)
     }
     catch (error) {
@@ -50,11 +50,11 @@ export class ItemsHttpController {
       const query = await validateSchema(req.query, ItemsQueryParams);
 
       if ("ids" in query) {
-        const items = await this.itemsService.queryItemsById(requestUser, query.ids);
+        const items = await this.itemsService.getFromIds(requestUser, query.ids);
         return res.status(HttpStatusCodes.OK).json(items)
       }
       else {
-        const result = await this.itemsService.queryItemsByFilters(requestUser, query)
+        const result = await this.itemsService.query(requestUser, query)
         return res.status(HttpStatusCodes.OK).json(result)
       }
     }
@@ -68,7 +68,7 @@ export class ItemsHttpController {
       const params = await validateSchema(req.params, ItemsURLParams);
       const requestUser = await this.accessControlService.validateAuthentication(req);
 
-      await this.itemsService.deleteItem(requestUser, params.itemId);
+      await this.itemsService.delete(requestUser, params.itemId);
       return res.status(HttpStatusCodes.OK).json({statusCode: HttpStatusCodes.OK});
     }
     catch (error) {

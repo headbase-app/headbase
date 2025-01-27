@@ -32,7 +32,6 @@ import {ServerManagementService} from "@modules/server/server.service.js";
 import {ServerManagementHttpController} from "@modules/server/server.http.js";
 import {ItemsService} from "@modules/items/items.service.js";
 import {ItemsHttpController} from "@modules/items/items.http.js";
-import {ItemsDatabaseService} from "@modules/items/database/items.database.service.js";
 import {decodeQueryParameter} from "@common/query-param-decode.js";
 import {SnapshotHttpAdapter} from "@modules/snapshot/snapshot.http.js";
 import {SnapshotService} from "@modules/snapshot/snapshot.service.js";
@@ -97,8 +96,7 @@ export class Application {
         this.container.bindClass(SnapshotHttpAdapter, { value: SnapshotHttpAdapter, inject: [SnapshotService, AccessControlService] }, {scope: "SINGLETON"});
 
         // Items module
-        this.container.bindClass(ItemsDatabaseService, {value: ItemsDatabaseService, inject: [DatabaseService, EnvironmentService]}, {scope: "SINGLETON"})
-        this.container.bindClass(ItemsService, {value: ItemsService, inject: [AccessControlService, EventsService, ItemsDatabaseService, VaultsService]}, {scope: "SINGLETON"})
+        this.container.bindClass(ItemsService, {value: ItemsService, inject: [DatabaseService, EventsService, AccessControlService, VaultsService]}, {scope: "SINGLETON"})
         this.container.bindClass(ItemsHttpController, {value: ItemsHttpController, inject: [ItemsService, AccessControlService]}, {scope: "SINGLETON"})
 
         // Sync module

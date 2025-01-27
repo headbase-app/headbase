@@ -23,8 +23,8 @@ export class SnapshotService {
 		}
 
 		// todo: only fetch required fields not all item content
-		const items = await this.itemsService._getAllItems(vaultId)
-		for (const item of items) {
+		const items = await this.itemsService.query(userContext, {vaultId})
+		for (const item of items.results) {
 			const itemSnapshot: ItemSnapshot = {
 				id: item.id,
 				groupId: item.groupId,

@@ -1,117 +1,232 @@
-import {ItemDto, ItemsQueryByFiltersParams} from "@headbase-app/common";
+import {ActiveItemDto, ErrorIdentifiers, ItemDto, ItemsQueryByFiltersParams} from "@headbase-app/common";
 import {UserContext} from "@common/request-context.js";
 import {AccessControlService} from "@modules/auth/access-control.service.js";
 import {EventsService} from "@services/events/events.service.js";
 import {EventIdentifiers} from "@services/events/events.js";
 import {VaultsService} from "@modules/vaults/vaults.service.js";
-import {ItemsDatabaseService} from "@modules/items/database/items.database.service.js";
-import {ItemDtoWithOwner} from "@modules/items/database/database-item.js";
 import {ResourceListingResult} from "@headbase-app/common";
+import {DatabaseService} from "@services/database/database.service.js";
+import Postgres from "postgres";
+import {PG_FOREIGN_KEY_VIOLATION, PG_UNIQUE_VIOLATION} from "@services/database/database-error-codes.js";
+import {ResourceRelationshipError} from "@services/errors/resource/resource-relationship.error.js";
+import {SystemError} from "@services/errors/base/system.error.js";
+import {items, vaults} from "@services/database/schema.js";
+import {and, eq, inArray} from "drizzle-orm";
+import {ResourceNotFoundError} from "@services/errors/resource/resource-not-found.error.js";
 
+
+export interface ItemDtoWithOwner extends ActiveItemDto {
+	ownerId: string;
+}
 
 export class ItemsService {
-    constructor(
-       private readonly accessControlService: AccessControlService,
-       private readonly eventsService: EventsService,
-       private readonly itemsDatabaseService: ItemsDatabaseService,
-       private readonly vaultsService: VaultsService,
-    ) {
-        // todo: set up a cron job to purge deleted items
-    }
+	constructor(
+		private readonly databaseService: DatabaseService,
+		private readonly eventsService: EventsService,
+		private readonly accessControlService: AccessControlService,
+		private readonly vaultsService: VaultsService,
+	) {
+		// todo: set up a cron job to purge deleted items
+	}
 
-    convertDatabaseItemDto(itemDtoWithOwner: ItemDtoWithOwner): ItemDto {
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        const { ownerId, ...itemDto } = itemDtoWithOwner;
-        return itemDto;
-    }
+	private static getContextualError(e: any) {
+		if (e instanceof Postgres.PostgresError && e.code) {
+			if (e.code === PG_FOREIGN_KEY_VIOLATION) {
+				if (e.constraint_name === "items_vault") {
+					return new ResourceRelationshipError({
+						identifier: ErrorIdentifiers.VAULT_NOT_FOUND,
+						applicationMessage: "Attempted to add item referencing vault that doesn't exist."
+					})
+				}
+			}
+			if (e.code === PG_UNIQUE_VIOLATION) {
+				if (e.constraint_name === "items_pk") {
+					return new ResourceRelationshipError({
+						identifier: ErrorIdentifiers.RESOURCE_NOT_UNIQUE,
+						applicationMessage: "Item with given id already exists."
+					})
+				}
+			}
+		}
 
-    async getItem(userContext: UserContext, itemId: string): Promise<ItemDto> {
-        const itemDtoWithOwner = await this._getItemWithOwner(userContext, itemId);
+		return new SystemError({
+			message: "Unexpected error while executing item query",
+			originalError: e
+		})
+	}
 
-        return this.convertDatabaseItemDto(itemDtoWithOwner)
-    }
+	static convertDatabaseItemToDto(itemDtoWithOwner: ItemDtoWithOwner): ItemDto {
+		const { ownerId: _ownerId, ...itemDto } = itemDtoWithOwner;
+		return itemDto;
+	}
 
-    async _getItemWithOwner(userContext: UserContext, itemId: string): Promise<ItemDtoWithOwner> {
-        const itemDtoWithOwner = await this.itemsDatabaseService.getItem(itemId)
+	async getWithOwner(userContext: UserContext, itemId: string): Promise<ItemDtoWithOwner> {
+		const db = this.databaseService.getDatabase()
 
-        await this.accessControlService.validateAccessControlRules({
-            userScopedPermissions: ["item:retrieve"],
-            unscopedPermissions: ["item:retrieve:all"],
-            requestingUserContext: userContext,
-            targetUserId: itemDtoWithOwner.ownerId
-        })
+		let result: ItemDtoWithOwner[]
+		try {
+			// todo: automatic drizzle types when using joins?
+			result = await db
+				.select()
+				.from(items)
+				.innerJoin(vaults, eq(items.vaultId, vaults.id))
+				.where(eq(items.id, itemId)) as unknown as ItemDtoWithOwner[]
+		}
+		catch (e: any) {
+			throw ItemsService.getContextualError(e);
+		}
+		if (!result[0]) {
+			throw new ResourceNotFoundError({
+				identifier: ErrorIdentifiers.RESOURCE_NOT_FOUND,
+				applicationMessage: "The requested item could not be found."
+			})
+		}
 
-        return itemDtoWithOwner
-    }
+		await this.accessControlService.validateAccessControlRules({
+			userScopedPermissions: ["item:retrieve"],
+			unscopedPermissions: ["item:retrieve:all"],
+			requestingUserContext: userContext,
+			targetUserId: result[0].ownerId
+		})
 
-    async createItem(userContext: UserContext, itemDto: ItemDto): Promise<ItemDto> {
-        const vault = await this.vaultsService.get(userContext, itemDto.vaultId)
+		return result[0]
+	}
 
-        await this.accessControlService.validateAccessControlRules({
-            userScopedPermissions: ["item:create"],
-            unscopedPermissions: ["item:create:all"],
-            requestingUserContext: userContext,
-            targetUserId: vault.ownerId,
-        })
+	async get(userContext: UserContext, itemId: string): Promise<ItemDto> {
+		const item = await this.getWithOwner(userContext, itemId)
+		return ItemsService.convertDatabaseItemToDto(item)
+	}
 
-        const createdItem = await this.itemsDatabaseService.createItem(itemDto)
-        await this.eventsService.dispatch({
-            type: EventIdentifiers.ITEM_CREATE,
-            detail: {
-                sessionId: userContext.sessionId,
-                item: itemDto
-            }
-        })
+	async create(userContext: UserContext, itemDto: ItemDto): Promise<ItemDto> {
+		const vault = await this.vaultsService.get(userContext, itemDto.vaultId)
+		const db = this.databaseService.getDatabase()
 
-        return createdItem
-    }
+		await this.accessControlService.validateAccessControlRules({
+			userScopedPermissions: ["item:create"],
+			unscopedPermissions: ["item:create:all"],
+			requestingUserContext: userContext,
+			targetUserId: vault.ownerId,
+		})
 
-    async deleteItem(userContext: UserContext, itemId: string): Promise<void> {
-        const item = await this._getItemWithOwner(userContext, itemId)
+		let result: ItemDto[]
+		try {
+			result = await db
+				.insert(items)
+				.values(itemDto)
+				.returning() as unknown as ItemDto[]
+		}
+		catch (e) {
+			throw ItemsService.getContextualError(e);
+		}
+		if (!result[0]) {
+			throw new SystemError({
+				identifier: ErrorIdentifiers.SYSTEM_UNEXPECTED,
+				message: "Returning item after creation failed"
+			})
+		}
 
-        await this.accessControlService.validateAccessControlRules({
-            userScopedPermissions: ["item:delete"],
-            unscopedPermissions: ["item:delete:all"],
-            requestingUserContext: userContext,
-            targetUserId: item.ownerId,
-        })
+		await this.eventsService.dispatch({
+			type: EventIdentifiers.ITEM_CREATE,
+			detail: {
+				sessionId: userContext.sessionId,
+				item: itemDto
+			}
+		})
 
-        await this.itemsDatabaseService.deleteItem(itemId);
-        await this.eventsService.dispatch({
-            type: EventIdentifiers.ITEM_DELETE,
-            detail: {
-                sessionId: userContext.sessionId,
-                vaultId: item.vaultId,
-                itemId: itemId
-            }
-        })
-    }
+		return result[0]
+	}
 
-    async queryItemsById(userContext: UserContext, ids: string[]): Promise<ItemDto[]> {
-        const items: ItemDto[] = []
-        for (const id of ids) {
-            // todo: this will run access checks on every fetch, is this ok here?
-            const item = await this.getItem(userContext, id)
-            items.push(item)
-        }
-        return items
-    }
+	async delete(userContext: UserContext, itemId: string): Promise<void> {
+		const item = await this.getWithOwner(userContext, itemId)
 
-    async queryItemsByFilters(userContext: UserContext, filters: ItemsQueryByFiltersParams): Promise<ResourceListingResult<ItemDto>> {
-        const vault = await this.vaultsService.get(userContext, filters.vaultId)
+		await this.accessControlService.validateAccessControlRules({
+			userScopedPermissions: ["item:delete"],
+			unscopedPermissions: ["item:delete:all"],
+			requestingUserContext: userContext,
+			targetUserId: item.ownerId,
+		})
 
-        // Fetching the vault has ensured the user has permissions to access the vault, but we must also check the item permissions.
-        await this.accessControlService.validateAccessControlRules({
-            userScopedPermissions: ["item:retrieve"],
-            unscopedPermissions: ["item:retrieve:all"],
-            requestingUserContext: userContext,
-            targetUserId: vault.ownerId,
-        })
+		const db = this.databaseService.getDatabase()
+		await db
+			.delete(items)
+			.where(eq(items.id, itemId))
 
-        return this.itemsDatabaseService.queryItemsByFilters(filters)
-    }
+		await this.eventsService.dispatch({
+			type: EventIdentifiers.ITEM_DELETE,
+			detail: {
+				sessionId: userContext.sessionId,
+				vaultId: item.vaultId,
+				itemId: itemId
+			}
+		})
+	}
 
-    async _getAllItems(vaultId: string): Promise<ItemDto[]> {
-        return this.itemsDatabaseService.getAllItems(vaultId)
-    }
+	async getFromIds(userContext: UserContext, itemIds: string[]): Promise<ItemDto[]> {
+		const db = this.databaseService.getDatabase()
+
+		let results: ItemDtoWithOwner[]
+		try {
+			// todo: automatic drizzle types when using joins?
+			results = await db
+				.select()
+				.from(items)
+				.innerJoin(vaults, eq(items.vaultId, vaults.id))
+				.where(inArray(items.id, itemIds)) as unknown as ItemDtoWithOwner[]
+		}
+		catch (e: any) {
+			throw ItemsService.getContextualError(e);
+		}
+
+		const itemsWithoutOwner: ItemDto[] = []
+		for (const result of results) {
+			await this.accessControlService.validateAccessControlRules({
+				userScopedPermissions: ["item:retrieve"],
+				unscopedPermissions: ["item:retrieve:all"],
+				requestingUserContext: userContext,
+				targetUserId: result.ownerId
+			})
+
+			itemsWithoutOwner.push(ItemsService.convertDatabaseItemToDto(result))
+		}
+		return itemsWithoutOwner
+	}
+
+	async query(userContext: UserContext, filters: ItemsQueryByFiltersParams): Promise<ResourceListingResult<ItemDto>> {
+		await this.vaultsService.get(userContext, filters.vaultId)
+		const db = this.databaseService.getDatabase()
+
+		let results: ItemDtoWithOwner[]
+		try {
+			// todo: automatic drizzle types when using joins?
+			results = await db
+				.select()
+				.from(items)
+				.innerJoin(vaults, eq(items.vaultId, vaults.id))
+				.where(and(eq(vaults.id, filters.vaultId))) as unknown as ItemDtoWithOwner[]
+		}
+		catch (e: any) {
+			throw ItemsService.getContextualError(e);
+		}
+
+		const itemsWithoutOwner: ItemDto[] = []
+		for (const result of results) {
+			await this.accessControlService.validateAccessControlRules({
+				userScopedPermissions: ["item:retrieve"],
+				unscopedPermissions: ["item:retrieve:all"],
+				requestingUserContext: userContext,
+				targetUserId: result.ownerId
+			})
+
+			itemsWithoutOwner.push(ItemsService.convertDatabaseItemToDto(result))
+		}
+		return {
+			meta: {
+				results: itemsWithoutOwner.length,
+				total: 0,
+				limit: 0,
+				offset: 0
+			},
+			results: itemsWithoutOwner
+		}
+	}
 }

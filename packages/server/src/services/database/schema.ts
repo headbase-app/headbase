@@ -54,7 +54,7 @@ export const items = pgTable("items", {
 	vaultId: uuid().notNull(),
 	id: uuid().primaryKey(),
 	groupId: uuid().notNull(),
-	previousVersionId: uuid().notNull(),
+	previousVersionId: uuid(),
 	type: varchar({ length: 20 }).notNull(),
 	protectedData: text(),
 	createdBy: varchar({ length: 50 }).notNull(),
