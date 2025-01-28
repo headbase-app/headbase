@@ -32,12 +32,12 @@ export class DatabaseService {
     // https://github.com/drizzle-team/drizzle-orm/blob/c8359a16fff4b05aff09445edd63fc65a7430ce9/drizzle-orm/src/postgres-js/driver.ts#L25
     // Maybe https://github.com/drizzle-team/drizzle-orm/issues/1757 & https://github.com/drizzle-team/drizzle-orm/issues/1626?
     // todo: is this an actual issue, or just a symptom of me doing something wrong? it surely must be the second one. I should review once I've fully migrated to Drizzle.
-    for (const type of ["1184", "1082", "1083", "1114"]) {
-      this.driver.options.parsers[type as any] = x => new Date(x);
-      this.driver.options.serializers[type as any] = x => (x instanceof Date ? x : new Date(x)).toISOString()
-    }
-    this.driver.options.serializers["114"] = (x) => JSON.stringify(x);
-    this.driver.options.serializers["3802"] = (x) => JSON.stringify(x);
+    // for (const type of ["1184", "1082", "1083", "1114"]) {
+    //   this.driver.options.parsers[type as any] = x => new Date(x);
+    //   this.driver.options.serializers[type as any] = x => (x instanceof Date ? x : new Date(x)).toISOString()
+    // }
+    // this.driver.options.serializers["114"] = (x) => JSON.stringify(x);
+    // this.driver.options.serializers["3802"] = (x) => JSON.stringify(x);
   }
 
   async getSQL(): Promise<Sql> {

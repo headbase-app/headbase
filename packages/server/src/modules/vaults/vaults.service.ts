@@ -5,12 +5,13 @@ import {EventsService} from "@services/events/events.service.js";
 import {EventIdentifiers} from "@services/events/events.js";
 import {DatabaseService} from "@services/database/database.service.js";
 import {vaults} from "@services/database/schema.js";
-import {eq, inArray} from "drizzle-orm";
+import {eq, getTableColumns, inArray} from "drizzle-orm";
 import {SystemError} from "@services/errors/base/system.error.js";
 import {ResourceRelationshipError} from "@services/errors/resource/resource-relationship.error.js";
 import {PG_FOREIGN_KEY_VIOLATION, PG_UNIQUE_VIOLATION} from "@services/database/database-error-codes.js";
 import Postgres from "postgres";
 import {ResourceNotFoundError} from "@services/errors/resource/resource-not-found.error.js";
+import {isoFormat} from "@services/database/iso-format-date.js";
 
 
 export class VaultsService {
@@ -20,13 +21,49 @@ export class VaultsService {
 		private readonly accessControlService: AccessControlService,
 	) {}
 
+	private static getContextualError(e: any) {
+		if (e instanceof Postgres.PostgresError && e.code) {
+			if (e.code === PG_FOREIGN_KEY_VIOLATION) {
+				if (e.constraint_name === "vault_owner") {
+					return new ResourceRelationshipError({
+						identifier: ErrorIdentifiers.USER_NOT_FOUND,
+						applicationMessage: "Attempted to add a vault with owner that doesn't exist."
+					})
+				}
+			}
+			if (e.code === PG_UNIQUE_VIOLATION) {
+				if (e.constraint_name === "vault_name_unique") {
+					return new ResourceRelationshipError({
+						identifier: ErrorIdentifiers.VAULT_NAME_EXISTS,
+						applicationMessage: "Vault owner already has vault with the given name."
+					})
+				}
+				else if (e.constraint_name === "vaults_pk") {
+					return new ResourceRelationshipError({
+						identifier: ErrorIdentifiers.RESOURCE_NOT_UNIQUE,
+						applicationMessage: "Vault with given id already exists."
+					})
+				}
+			}
+		}
+
+		return new SystemError({
+			message: "Unexpected error while executing vault query",
+			originalError: e
+		})
+	}
+
 	async get(userContext: UserContext, vaultId: string) {
 		const db = this.databaseService.getDatabase()
 
 		let result: VaultDto[];
 		try {
 			result = await db
-				.select()
+				.select({
+					...getTableColumns(vaults),
+					createdAt: isoFormat(vaults.createdAt),
+					updatedAt: isoFormat(vaults.updatedAt),
+				})
 				.from(vaults)
 				.where(eq(vaults.id, vaultId))
 		}
@@ -65,7 +102,11 @@ export class VaultsService {
 			result = await db
 				.insert(vaults)
 				.values(createVaultDto)
-				.returning()
+				.returning({
+					...getTableColumns(vaults),
+					createdAt: isoFormat(vaults.createdAt),
+					updatedAt: isoFormat(vaults.updatedAt),
+				})
 		}
 		catch (e) {
 			throw VaultsService.getContextualError(e)
@@ -103,7 +144,11 @@ export class VaultsService {
 				.update(vaults)
 				.set(updateVaultDto)
 				.where(eq(vaults.id, vaultId))
-				.returning()
+				.returning({
+					...getTableColumns(vaults),
+					createdAt: isoFormat(vaults.createdAt),
+					updatedAt: isoFormat(vaults.updatedAt),
+				})
 		}
 		catch (e) {
 			throw VaultsService.getContextualError(e)
@@ -148,7 +193,7 @@ export class VaultsService {
 		})
 	}
 
-	async queryVaults(userContext: UserContext, query: VaultsQueryParams) {
+	async query(userContext: UserContext, query: VaultsQueryParams) {
 		const ownerIds = query.ownerIds || [userContext.id]
 
 		for (const ownerId of ownerIds) {
@@ -163,41 +208,13 @@ export class VaultsService {
 		const db = this.databaseService.getDatabase()
 
 		return db
-			.select()
+			.select({
+				...getTableColumns(vaults),
+				createdAt: isoFormat(vaults.createdAt),
+				updatedAt: isoFormat(vaults.updatedAt),
+			})
 			.from(vaults)
 			.where(inArray(vaults.ownerId, ownerIds))
 			.orderBy(vaults.updatedAt)
-	}
-
-	private static getContextualError(e: any) {
-		if (e instanceof Postgres.PostgresError && e.code) {
-			if (e.code === PG_FOREIGN_KEY_VIOLATION) {
-				if (e.constraint_name === "vault_owner") {
-					return new ResourceRelationshipError({
-						identifier: ErrorIdentifiers.USER_NOT_FOUND,
-						applicationMessage: "Attempted to add a vault with owner that doesn't exist."
-					})
-				}
-			}
-			if (e.code === PG_UNIQUE_VIOLATION) {
-				if (e.constraint_name === "vault_name_unique") {
-					return new ResourceRelationshipError({
-						identifier: ErrorIdentifiers.VAULT_NAME_EXISTS,
-						applicationMessage: "Vault owner already has vault with the given name."
-					})
-				}
-				else if (e.constraint_name === "vaults_pk") {
-					return new ResourceRelationshipError({
-						identifier: ErrorIdentifiers.RESOURCE_NOT_UNIQUE,
-						applicationMessage: "Vault with given id already exists."
-					})
-				}
-			}
-		}
-
-		return new SystemError({
-			message: "Unexpected error while executing vault query",
-			originalError: e
-		})
 	}
 }

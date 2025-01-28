@@ -8,12 +8,13 @@ import {EventIdentifiers} from "@services/events/events.js";
 import {ServerManagementService} from "@modules/server/server.service.js";
 import {DatabaseService} from "@services/database/database.service.js";
 import {DatabaseUserDto, users} from "@services/database/schema.js";
-import {eq} from "drizzle-orm";
+import {eq, getTableColumns} from "drizzle-orm";
 import {ResourceNotFoundError} from "@services/errors/resource/resource-not-found.error.js";
 import postgres from "postgres";
 import {PG_UNIQUE_VIOLATION} from "@services/database/database-error-codes.js";
 import {ResourceRelationshipError} from "@services/errors/resource/resource-relationship.error.js";
 import {SystemError} from "@services/errors/base/system.error.js";
+import {isoFormat} from "@services/database/iso-format-date.js";
 
 
 export class UsersService {
@@ -57,7 +58,7 @@ export class UsersService {
         })
 
         const result = await this._UNSAFE_getById(userId)
-        return this.convertDatabaseItemToDto(result);
+        return UsersService.convertDatabaseItemToDto(result);
     }
 
     async _UNSAFE_getByEmail(email: string): Promise<DatabaseUserDto> {
@@ -66,7 +67,13 @@ export class UsersService {
         let result: DatabaseUserDto[];
         try {
             result = await db
-              .select()
+              .select({
+                  ...getTableColumns(users),
+                  createdAt: isoFormat(users.createdAt),
+                  updatedAt: isoFormat(users.updatedAt),
+                  verifiedAt: isoFormat(users.verifiedAt),
+                  firstVerifiedAt: isoFormat(users.firstVerifiedAt),
+              })
               .from(users)
               .where(eq(users.email, email))
         }
@@ -83,13 +90,19 @@ export class UsersService {
         return result[0]
     }
 
-    async _UNSAFE_getById(id: string) {
+    async _UNSAFE_getById(id: string): Promise<DatabaseUserDto> {
         const db = this.databaseService.getDatabase()
 
         let result: DatabaseUserDto[];
         try {
             result = await db
-              .select()
+              .select({
+                  ...getTableColumns(users),
+                  createdAt: isoFormat(users.createdAt),
+                  updatedAt: isoFormat(users.updatedAt),
+                  verifiedAt: isoFormat(users.verifiedAt),
+                  firstVerifiedAt: isoFormat(users.firstVerifiedAt),
+              })
               .from(users)
               .where(eq(users.id, id))
         }
@@ -125,7 +138,6 @@ export class UsersService {
             result = await db
               .insert(users)
               .values({
-                  id: "",
                   email: createUserDto.email,
                   displayName: createUserDto.displayName,
                   passwordHash,
@@ -142,7 +154,7 @@ export class UsersService {
             })
         }
 
-        const userDto = this.convertDatabaseItemToDto(result[0]);
+        const userDto = UsersService.convertDatabaseItemToDto(result[0]);
         await this.eventsService.dispatch({
             type: EventIdentifiers.USER_CREATE,
             detail: {
@@ -167,7 +179,13 @@ export class UsersService {
               .update(users)
               .set(updateUserDto)
               .where(eq(users.id, userId))
-              .returning()
+              .returning({
+                  ...getTableColumns(users),
+                  createdAt: isoFormat(users.createdAt),
+                  updatedAt: isoFormat(users.updatedAt),
+                  verifiedAt: isoFormat(users.verifiedAt),
+                  firstVerifiedAt: isoFormat(users.firstVerifiedAt),
+              })
         }
         catch (e) {
             throw UsersService.getContextualError(e)
@@ -176,7 +194,7 @@ export class UsersService {
             throw new SystemError({identifier: ErrorIdentifiers.SYSTEM_UNEXPECTED, message: "Returning user after update failed"});
         }
 
-        const userDto = this.convertDatabaseItemToDto(result[0]);
+        const userDto = UsersService.convertDatabaseItemToDto(result[0]);
 
         await this.eventsService.dispatch({
             type: EventIdentifiers.USER_UPDATE,
@@ -226,7 +244,13 @@ export class UsersService {
                   firstVerifiedAt: currentUser.firstVerifiedAt ? undefined : timestamp
               })
               .where(eq(users.id, userId))
-              .returning()
+              .returning({
+                  ...getTableColumns(users),
+                  createdAt: isoFormat(users.createdAt),
+                  updatedAt: isoFormat(users.updatedAt),
+                  verifiedAt: isoFormat(users.verifiedAt),
+                  firstVerifiedAt: isoFormat(users.firstVerifiedAt),
+              })
         }
         catch (e) {
             throw UsersService.getContextualError(e)
@@ -235,6 +259,6 @@ export class UsersService {
             throw new SystemError({identifier: ErrorIdentifiers.SYSTEM_UNEXPECTED, message: "Returning user after update failed"});
         }
 
-        return this.convertDatabaseItemToDto(result[0]);
+        return UsersService.convertDatabaseItemToDto(result[0]);
     }
 }

@@ -2,7 +2,6 @@ import {AccessForbiddenError} from "@services/errors/access/access-forbidden.err
 import {ErrorIdentifiers, Permissions, RolePermissions, Roles} from "@headbase-app/common";
 import {ResourceNotFoundError} from "@services/errors/resource/resource-not-found.error.js";
 import {UserRequestError} from "@services/errors/base/user-request.error.js";
-import {UsersDatabaseService} from "@modules/users/database/users.database.service.js";
 import {UserContext} from "@common/request-context.js";
 import {Request} from "express"
 import {AccessUnauthorizedError} from "@services/errors/access/access-unauthorized.error.js";
@@ -119,7 +118,7 @@ export class AccessControlService {
                     })
                 }
 
-                targetUser = UsersService. result[0]
+                targetUser = UsersService.convertDatabaseItemToDto(result[0])
             }
             catch (e) {
                 // Rethrow a user not found error as a request error

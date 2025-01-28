@@ -48,7 +48,7 @@ export class VaultsHttpController {
       const requestUser = await this.accessControlService.validateAuthentication(req);
       const query = await validateSchema(req.query, VaultsQueryParams);
 
-      const items = await this.vaultsService.queryVaults(requestUser, query);
+      const items = await this.vaultsService.query(requestUser, query);
       return res.status(HttpStatusCodes.OK).json(items)
     }
     catch (error) {

@@ -11,8 +11,9 @@ import {PG_FOREIGN_KEY_VIOLATION, PG_UNIQUE_VIOLATION} from "@services/database/
 import {ResourceRelationshipError} from "@services/errors/resource/resource-relationship.error.js";
 import {SystemError} from "@services/errors/base/system.error.js";
 import {items, vaults} from "@services/database/schema.js";
-import {and, eq, inArray} from "drizzle-orm";
+import {and, eq, getTableColumns, inArray} from "drizzle-orm";
 import {ResourceNotFoundError} from "@services/errors/resource/resource-not-found.error.js";
+import {isoFormat} from "@services/database/iso-format-date.js";
 
 
 export interface ItemDtoWithOwner extends ActiveItemDto {
@@ -67,7 +68,11 @@ export class ItemsService {
 		try {
 			// todo: automatic drizzle types when using joins?
 			result = await db
-				.select()
+				.select({
+					...getTableColumns(items),
+					createdAt: isoFormat(items.createdAt),
+					updatedAt: isoFormat(items.deletedAt),
+				})
 				.from(items)
 				.innerJoin(vaults, eq(items.vaultId, vaults.id))
 				.where(eq(items.id, itemId)) as unknown as ItemDtoWithOwner[]
@@ -113,7 +118,11 @@ export class ItemsService {
 			result = await db
 				.insert(items)
 				.values(itemDto)
-				.returning() as unknown as ItemDto[]
+				.returning({
+					...getTableColumns(items),
+					createdAt: isoFormat(items.createdAt),
+					updatedAt: isoFormat(items.deletedAt),
+				}) as unknown as ItemDto[]
 		}
 		catch (e) {
 			throw ItemsService.getContextualError(e);
@@ -168,7 +177,11 @@ export class ItemsService {
 		try {
 			// todo: automatic drizzle types when using joins?
 			results = await db
-				.select()
+				.select({
+					...getTableColumns(items),
+					createdAt: isoFormat(items.createdAt),
+					updatedAt: isoFormat(items.deletedAt),
+				})
 				.from(items)
 				.innerJoin(vaults, eq(items.vaultId, vaults.id))
 				.where(inArray(items.id, itemIds)) as unknown as ItemDtoWithOwner[]
@@ -199,7 +212,11 @@ export class ItemsService {
 		try {
 			// todo: automatic drizzle types when using joins?
 			results = await db
-				.select()
+				.select({
+					...getTableColumns(items),
+					createdAt: isoFormat(items.createdAt),
+					updatedAt: isoFormat(items.deletedAt),
+				})
 				.from(items)
 				.innerJoin(vaults, eq(items.vaultId, vaults.id))
 				.where(and(eq(vaults.id, filters.vaultId))) as unknown as ItemDtoWithOwner[]

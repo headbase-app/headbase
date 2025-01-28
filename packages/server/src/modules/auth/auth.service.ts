@@ -50,7 +50,7 @@ export class AuthService {
      });
     }
 
-    const userDto = this.usersService.convertDatabaseDto(databaseUserDto);
+    const userDto = UsersService.convertDatabaseItemToDto(databaseUserDto);
     const result = await this.tokenService.createNewTokenPair(userDto);
 
     await this.eventsService.dispatch({

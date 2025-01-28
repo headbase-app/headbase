@@ -19,9 +19,9 @@ export const users = pgTable("users", {
 	email: varchar({ length: 100 }).notNull().unique("email_unique"),
 	displayName: varchar({ length: 50 }).notNull(),
 	passwordHash: varchar({ length: 100 }).notNull(),
-	verifiedAt: timestamp(),
-	firstVerifiedAt: timestamp(),
-	role: rolesEnum().default("user"),
+	verifiedAt: timestamp({mode: "string"}),
+	firstVerifiedAt: timestamp({mode: "string"}),
+	role: rolesEnum().default("user").notNull(),
 	createdAt: createdAt.defaultNow(),
 	updatedAt: updatedAt.defaultNow(),
 });
@@ -31,7 +31,6 @@ export const usersRelations = relations(users, ({ many }) => ({
 }));
 
 export type DatabaseUserDto = typeof users.$inferSelect;
-export type CreateDatabaseUserDto = typeof users.$inferInsert;
 
 export const vaults = pgTable("vaults", {
 	ownerId: uuid().notNull(),
