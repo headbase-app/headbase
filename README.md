@@ -42,7 +42,7 @@ If you want to learn more about how this encryption works, you can check out the
 ### Cloud Features
 Headbase is a local-first progressive web app (PWA), meaning that by default all your data is stored on your device. There is no server or internet connection required after you've visited the app for the first time, as the app will be cached for offline use.
 
-If you wish to enable features like cloud backups and cross-device synchronisation, you can do this by **[self-hosting your own server](/docs/self-hosting/docker.md)**.  
+If you wish to enable features like cloud backups and cross-device synchronisation, you can do this by **[self-hosting your own server](/docs/self-hosting/index)**.  
 Headbase uses client-side encryption to encrypt content on your device, which means that the server is unable to decrypt and access your content.
 
 ## Supported devices

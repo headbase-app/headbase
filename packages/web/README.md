@@ -1,10 +1,10 @@
 # `@headbase-app/web`
 
-The React web application which is [headbase.app](https://headbase.app), built using [Vite](https://vitejs.dev/).
+The [headbase.app](https://headbase.app) progressive web application, built using [React](https://react.dev/) and [Vite](https://vitejs.dev/).
 
 ## Prerequisites
 - Node.js installed at version `^20.x`
-- A server set up locally or on a hosting provider if developing server/sync features
+- A Headbase server set up locally or on a hosting provider, if developing server/sync features.
 
 ## Quick Start
 1. Run `npm install`

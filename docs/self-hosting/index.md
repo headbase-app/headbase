@@ -1,6 +1,6 @@
 # Self Hosting
 
-Docker is used to distribute the Headbase server for self-hosting.
+Docker is currently the recommended and only supported way of running the Headbase server.  
 
 ## Using the Docker image
 
@@ -11,7 +11,7 @@ and can be pulled like so:
 docker pull ghcr.io/headbase-app/server
 ```
 
-You can then run that image, however remember:
+You can then run the image, however remember:
 - You must supply all environment variables as defined in `packages/server/.env.example`.
 - You will need to expose the port which matches the `PORT` environment variable you define, for example `-p 8080:8080`.
 

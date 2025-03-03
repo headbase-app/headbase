@@ -1,16 +1,16 @@
-# Headbase Server
-The Headbase server is developed using Express.js and provides an HTTP API and Websocket
-server for syncing content between devices, backing up content to the server and managing user accounts.
+# `@headbase-app/server`
+The Headbase server for cloud backups and cross-device synchronisation, built using Express.js & Postgres.  
 
-## Before you begin
-- [PostgreSQL](https://www.postgresql.org/) is required to run the database. You must also set up the database as per the example in `scripts/example.setup.sql`.
-- Redis
+If you just want to run the sever, it is recommended to use Docker and follow the [self-hosting instructions](../../docs/self-hosting/index.md) rather
+than setting up a full environment.
 
+## Local development setup
 
-## Setting up the app
+### 0. Prerequisites
+- [PostgreSQL](https://www.postgresql.org/download/) is used to run database.
+- [Redis](https://redis.io/docs/latest/operate/oss_and_stack/install/install-redis/) is used for caching and token storage.
 
-
-### 1. Setup database
+### 1. Create database
 
 1.1. This script will create a `headbase` user & database, alternatively create your own database and set the env vars accordingly.
 ```shell

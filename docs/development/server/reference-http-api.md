@@ -1,5 +1,5 @@
 # HTTP API Reference
-An overview of the HTTP API provided by the Localful server.
+An overview of the HTTP API.
 
 ## Errors
 Any errors will be returned with the appropriate status code and the following JSON data:
@@ -45,7 +45,3 @@ Any errors will be returned with the appropriate status code and the following J
 ### Items
 - `/v1/items [GET, POST]`
 - `/v1/items/:itemId [GET, DELETE]`
-
-## Sync
-- `/v1/sync/ticket [GET]`
-- `/v1/sync [WEBSOCKET]`

@@ -16,7 +16,6 @@ import {BaseHttpController} from "@modules/base/base.http.js";
 import {AuthService} from "@modules/auth/auth.service.js";
 import {UsersService} from "@modules/users/users.service.js";
 import {AccessControlService} from "@modules/auth/access-control.service.js";
-import {UsersDatabaseService} from "@modules/users/database/users.database.service.js";
 import {AuthHttpController} from "@modules/auth/auth.http.js";
 import {UsersHttpController} from "@modules/users/users.http.js";
 import {VaultsService} from "@modules/vaults/vaults.service.js";
@@ -184,11 +183,11 @@ export class Application {
         app.delete("/v1/items/:itemId", itemsHttpController.deleteItem.bind(itemsHttpController))
 
         // Sync module routes and websocket server
-        const syncHttpController = this.container.resolve<SyncHttpController>(SyncHttpController)
-        app.get("/v1/sync/ticket", syncHttpController.getConnectionTicket.bind(syncHttpController))
-
-        const syncWebsocketController = this.container.resolve<SyncWebsocketController>(SyncWebsocketController)
-        await syncWebsocketController.init(httpServer, {path: "/v1/sync"})
+        // const syncHttpController = this.container.resolve<SyncHttpController>(SyncHttpController)
+        // app.get("/v1/sync/ticket", syncHttpController.getConnectionTicket.bind(syncHttpController))
+        //
+        // const syncWebsocketController = this.container.resolve<SyncWebsocketController>(SyncWebsocketController)
+        // await syncWebsocketController.init(httpServer, {path: "/v1/sync"})
 
         // Setup HTTP error handlers to serve 404s and server error responses
         // eslint-disable-next-line @typescript-eslint/no-unused-vars -- next is required to match Express error handler signature.
