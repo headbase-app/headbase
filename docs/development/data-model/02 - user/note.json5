@@ -1,0 +1,16 @@
+{
+  definition: "https://spec.headbase.app/v1/user/note",
+  id: "d9a56301-36a7-4447-b431-81eefbf570f0",
+  meta: {
+    versionId: "89397ba0-bf49-48ea-bd62-6add34d2a7dd",
+    previousVersionId: null,
+    createdAt: "2025-03-17T13:28:55.000Z",
+    createdBy: "laptop|bbdf4834-969b-4f5f-a84e-7033e05a4bed",
+  },
+  data: {
+    title: "this is an example note...",
+    isFavorite: true,
+    body: "#markdown  some markdown content here...",
+    tags: ["ee0396c0-e820-42b9-bf44-99d9a0a40559", "49f14654-fc74-43af-99f1-d82430483c6d"]
+  }
+}

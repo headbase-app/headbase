@@ -1,0 +1,13 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spec.headbase.app/core/reference",
+  "title": "Reference",
+  "description": "A reference item",
+  "type": "object",
+  "required": ["definition", "id", "createdAt", "updatedAt"],
+  "additionalProperties": false,
+  "properties": {
+    "definition": {"type": "string", "format": "uri"},
+    "id": {"type": "string", "format": "uuid"}
+  }
+}

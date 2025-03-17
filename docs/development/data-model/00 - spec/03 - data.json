@@ -1,0 +1,17 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spec.headbase.app/core/data",
+  "title": "Data Item",
+  "description": "A data item",
+  "type": "object",
+  "required": ["definition", "id", "createdAt", "updatedAt"],
+  "additionalProperties": false,
+  "properties": {
+    "definition": {"type": "string", "format": "uri"},
+    "id": {"type": "string", "format": "uuid"},
+    "createdAt": {"type": "string", "format": "date-time"},
+    "updatedAt": {"type": "string", "format": "date-time"},
+    "deletedAt": {"type": "string", "format": "date-time"},
+    "data": {"type": "object"}
+  }
+}
