@@ -1,0 +1,26 @@
+{
+  spec: "https://spec.headbase.app/v1",
+  type: "https://spec.headbase.app/v1/app/view",
+  id: "195d6a0b-bf2d-44b5-a451-bbc92cec6e04",
+  createdAt: "2025-03-20T23:25:35.000Z",
+  createdBy: "phone",
+  updatedAt: "2025-03-20T23:25:35.000Z",
+  updatedBy: "laptop",
+  data: {
+    title: "Writing Notes",
+    isFavorite: true,
+    display: {
+      type: "list",
+    },
+    query: {
+      page: {limit: 6, offset: 18},
+      order: {"updatedAt": "updatedAt"},
+      filter: {
+        and: [
+          {"type": {$equal: "note"}},
+          {"/data/tags": {$includes: "writing"}}
+        ]
+      }
+    }
+  }
+}
