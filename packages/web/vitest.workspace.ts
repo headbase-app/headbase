@@ -16,11 +16,13 @@ export default defineWorkspace([
       name: "Browser Unit Tests",
       include: ["**/*.unit-web.test.{ts,tsx}"],
       browser: {
-        name: "firefox",
+        provider: "playwright",
         enabled: true,
         headless: true,
         screenshotFailures: false,
-        provider: "playwright",
+        instances: [
+          {browser: 'firefox'},
+        ],
       },
     },
   },
