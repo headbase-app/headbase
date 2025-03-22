@@ -15,7 +15,7 @@ export function useDatabase(databaseId: string|null) {
 
 		const subscription = observable.subscribe((result) => {
 			if (result.status === LiveQueryStatus.SUCCESS) {
-				Logger.debug(`[useDatabase] Received new data`, result.result)
+				//Logger.debug(`[useDatabase] Received new data`, result.result)
 			}
 			setResult(result)
 		})

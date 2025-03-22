@@ -3,49 +3,34 @@ import {ContentForm} from "../form/content-form";
 import { WithTabData } from "../../workspace/workspace";
 import {useWorkspaceContext} from "../../workspace/workspace-context";
 import {useCallback, useEffect} from "react";
-import {ContentFormOptions, useContentFormData} from "../form/useContentFormData";
+import {ObjectFormOptions, useObjectFormData} from "../form/useObjectFormData.ts";
 import {useHeadbase} from "../../../../logic/react/use-headbase.tsx";
 
-export interface ContentTabProps extends WithTabData, ContentFormOptions {}
+export interface ContentTabProps extends WithTabData, ObjectFormOptions {}
 
 export function ContentTab(props: ContentTabProps) {
 	const {headbase, currentDatabaseId} = useHeadbase()
 	const { replaceTab, setTabName, setTabIsUnsaved, closeTab } = useWorkspaceContext()
 
 	const {
-		contentType,
-		contentTypeId,
-		name,
-		setName,
-		tags,
-		setTags,
-		isFavourite,
-		setIsFavourite,
-		fieldStorage,
-		setField,
-	} = useContentFormData({contentId: props.contentId, contentTypeId: props.contentTypeId})
+		object,
+		type, setType,
+		data, setData
+	} = useObjectFormData({objectId: props.objectId})
 
 	const onSave = useCallback(async () => {
 		// todo: does this need feedback of some kind?
 		if (!currentDatabaseId || !headbase) return
 
-		if (!contentTypeId) {
-			// this should never really happen, but protect against it just in case.
-			console.error('Attempted to save with no content type')
-			return
-		}
-
-		if (props.contentId) {
+		if (props.objectId) {
 			try {
-				await headbase.db.contentItems.update(
+				await headbase.db.objectStore.update(
 					currentDatabaseId,
-					props.contentId,
+					props.objectId,
 					{
-						createdBy: 'todo',
-						type: contentTypeId,
-						name: name,
-						fields: fieldStorage,
-						isFavourite: isFavourite
+						updatedBy: 'todo',
+						type: type,
+						data: JSON.parse(data)
 					}
 				)
 				setTabIsUnsaved(props.tabIndex, false)
@@ -56,79 +41,72 @@ export function ContentTab(props: ContentTabProps) {
 		}
 		else {
 			try {
-				const newContent = await headbase.db.contentItems.create(
+				const newObject = await headbase.db.objectStore.create(
 					currentDatabaseId,
 					{
 						createdBy: 'todo',
-						type: contentTypeId,
-						name: name,
-						fields: fieldStorage,
-						isFavourite: isFavourite
+						type: type,
+						data: JSON.parse(data)
 					}
 				)
-				replaceTab(props.tabIndex, {type: 'content', contentId: newContent.id})
+				replaceTab(props.tabIndex, {type: 'object', objectId: newObject.id})
 			}
 			catch (e) {
 				console.error(e)
 			}
 		}
-	}, [headbase, contentTypeId, replaceTab, setTabIsUnsaved, fieldStorage])
+	}, [headbase, replaceTab, setTabIsUnsaved])
 
 	// contentId and contentTypeId are dependencies to ensure the tab name updates
 	// when a "new content" tab is replaced with a "content" tab.
 	useEffect(() => {
-		setTabName(props.tabIndex, name)
-	}, [name, props.contentId, props.contentTypeId]);
+		if (typeof object?.data?.title === 'string') {
+			setTabName(props.tabIndex, object.data.title)
+		}
+		else {
+			setTabName(props.tabIndex, object?.id || type)
+		}
+	}, [object?.id]);
 
 	const onDelete = useCallback(async () => {
 		// todo: does this need feedback of some kind?
 		if (!currentDatabaseId || !headbase) return
 
-		if (!props.contentId) {
+		if (!props.objectId) {
 			// this should never really happen, but protect against it just in case.
-			console.error('Attempted to delete content with no contentId')
+			console.error('Attempted to delete with no objectId')
 			return
 		}
 
 		try {
-			await headbase.db.contentItems.delete(currentDatabaseId, props.contentId)
+			await headbase.db.objectStore.delete(currentDatabaseId, props.objectId)
 			closeTab(props.tabIndex)
 		}
 		catch (e) {
 			console.error(e)
 		}
-	}, [props.contentId, headbase, currentDatabaseId])
+	}, [props.objectId, headbase, currentDatabaseId])
 
-	const onNameChange = useCallback((name: string) => {
+	const onTypeChange = useCallback((type: string) => {
 		setTabIsUnsaved(props.tabIndex, true)
-		setName(name)
+		setType(type)
 	}, [props.tabIndex])
 
-	const onTagsChange = useCallback((tags: string[]) => {
+	const onDataChange = useCallback((data: string) => {
 		setTabIsUnsaved(props.tabIndex, true)
-		setTags(tags)
-	}, [props.tabIndex])
-
-	const onIsFavouriteChange = useCallback((isFavourite: boolean) => {
-		setTabIsUnsaved(props.tabIndex, true)
-		setIsFavourite(isFavourite)
+		setData(data)
 	}, [props.tabIndex])
 
 	return (
 		<div>
 			<ContentForm
-				name={name}
-				tags={tags}
-				onNameChange={onNameChange}
-				onTagsChange={onTagsChange}
-				isFavourite={isFavourite}
-				onIsFavouriteChange={onIsFavouriteChange}
+				type={type}
+				data={data}
+				onTypeChange={onTypeChange}
+				onDataChange={onDataChange}
 				onSave={onSave}
 				tabIndex={props.tabIndex}
-				onDelete={props.contentId ? onDelete : undefined}
-				fields={contentType?.templateFields}
-				fieldStorage={fieldStorage}
-				onFieldStorageChange={setField}
+				onDelete={props.objectId ? onDelete : undefined}
 			/>
 		</div>
 	)

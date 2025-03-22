@@ -30,8 +30,7 @@ export interface DataChangeEvent {
 		context: DeviceContext,
 		data: {
 			databaseId: string
-			// todo: make enum?
-			tableKey: 'fields' | 'content_types' | 'content_items' | 'views'
+			types: string[]
 			action: 'create' | 'update' | 'delete' | 'purge' | 'delete-version'
 			id: string,
 		}

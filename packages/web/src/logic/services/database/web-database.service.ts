@@ -7,6 +7,10 @@ import {
 import {ClientMessages, QueryResponseMessage, WorkerMessages} from "./sqlite-worker/messages.ts";
 
 
+/**
+ * A database for use within the application web environment.
+ * Uses a worker and OPFS for persistence.
+ */
 export class WebDatabaseService implements IDatabaseService {
 	private readonly context: DeviceContext
 	private readonly worker: Worker

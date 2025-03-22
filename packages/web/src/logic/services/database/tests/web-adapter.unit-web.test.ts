@@ -4,7 +4,6 @@ import {DeviceContext} from "../../interfaces.ts";
 import {DatabaseTransactions} from "../db.ts";
 import {WebEventsService} from "../../events/web-events.service.ts";
 
-
 test("should set up fine", async ({expect}) => {
 	const testContext: DeviceContext = {id: "5a9a690d-03b8-41ea-a67e-db81907b87e2", name: "test-setup"}
 	const testDatabaseId = "40d68de2-884a-4ddc-bdb8-f5bdf9737a5e"
@@ -15,30 +14,31 @@ test("should set up fine", async ({expect}) => {
 	const database = new DatabaseTransactions({context: testContext}, eventService, databaseService)
 	await database.open(testDatabaseId, testEncryptionKey)
 
-	const newField = await database.fields.create(testDatabaseId, {
-		type: "markdown",
-		name: "testing",
-		createdBy: "test-setup",
-		settings: {
-			defaultLines: 5,
-		},
+	const newObject = await database.objectStore.create(testDatabaseId, {
+		type: "note",
+		createdBy: "test",
+		data: {
+			title: "test note 1",
+			body: "this is a test",
+			tags: ["testing", "idea"]
+		}
 	})
-	const fetchedField = await database.fields.get(testDatabaseId, newField.id)
+	const fetchedField = await database.objectStore.get(testDatabaseId, newObject.id)
 
 	expect(fetchedField).toEqual(expect.objectContaining({
+		spec: expect.any(String),
+		type: "note",
 		id: expect.any(String),
-		createdAt: expect.any(String),
-		updatedAt: expect.any(String),
 		versionId: expect.any(String),
-		versionCreatedBy: "test-setup",
 		previousVersionId: null,
-		isDeleted: false,
-		type: "markdown",
-		name: "testing",
-		icon: null,
-		description: null,
-		settings: expect.objectContaining({
-			defaultLines: 5,
+		createdAt: expect.any(String),
+		createdBy: "test",
+		updatedAt: expect.any(String),
+		updatedBy: "test",
+		data: expect.objectContaining({
+			title: "test note 1",
+			body: "this is a test",
+			tags: ["testing", "idea"]
 		})
 	}))
 })

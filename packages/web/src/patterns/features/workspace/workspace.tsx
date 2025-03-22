@@ -6,14 +6,11 @@ import {ContentTab} from "../content/tab/content-tab";
 // todo: split styling by component for better encapsulation
 import "./workspace.scss"
 import {ContentListTab} from "../content-list/tab/content-list-tab";
-import {ViewEditTab} from "../views/tab/view-edit-tab";
-import {ViewListTab} from "../views-list/tab/view-list-tab";
-import {ViewTab} from "../views/tab/view-tab";
 import classNames from "classnames";
 import { ChevronLast as ExpandMenuIcon} from "lucide-react";
-import {JProse, JTooltip} from "@ben-ryder/jigsaw-react";
+import {JTooltip} from "@ben-ryder/jigsaw-react";
 import {WithMenuPanelProps} from "../../layout/menu-panel/menu-panel.tsx";
-import {NewContentMenu} from "../new-content/new-content-menu/new-content-menu.tsx";
+import {ContentList} from "../content-list/content-list.tsx";
 
 export interface WithTabData {
 	tabIndex: number
@@ -29,39 +26,24 @@ export function Workspace(props: WithMenuPanelProps) {
 		let tabName;
 		let tabContent: ReactNode = <p>{tab.type}</p>
 		switch (tab.type) {
-			case "content_new": {
-				tabName = tab.name ?? 'Untitled'
-				tabContent = <ContentTab contentTypeId={tab.contentTypeId} tabIndex={tabIndex} />
-				break;
-			}
-			case "content": {
-				tabName = tab.name ?? 'Untitled'
-				tabContent = <ContentTab contentId={tab.contentId} tabIndex={tabIndex} />
-				break;
-			}
-			case "content_list": {
-				tabName = tab.name ?? 'All Content'
+			case "all": {
+				tabName = 'All Objects'
 				tabContent = <ContentListTab />
 				break;
 			}
-			case "view_new": {
+			case "object-new": {
 				tabName = tab.name ?? 'Untitled'
-				tabContent = <ViewEditTab tabIndex={tabIndex} />
+				tabContent = <ContentTab tabIndex={tabIndex} />
 				break;
 			}
-			case "view_edit": {
-				tabName = tab.name ? `[edit] ${tab.name}` : 'Untitled'
-				tabContent = <ViewEditTab viewId={tab.viewId} tabIndex={tabIndex} />
-				break;
-			}
-			case "view": {
+			case "object": {
 				tabName = tab.name ?? 'Untitled'
-				tabContent = <ViewTab viewId={tab.viewId} tabIndex={tabIndex} />
+				tabContent = <ContentTab objectId={tab.objectId} tabIndex={tabIndex} />
 				break;
 			}
-			case "view_list": {
-				tabName = tab.name ?? 'All Views'
-				tabContent = <ViewListTab />
+			default: {
+				tabName = 'Unknown Tag'
+				tabContent = <p>Somehow a tab was opened that the workspace doesn't know how to deal with.</p>
 				break;
 			}
 		}
@@ -106,12 +88,7 @@ export function Workspace(props: WithMenuPanelProps) {
 					</div>
 				))}
 				{workspaceContent.length === 0 && (
-					<div className='workspace-empty-content'>
-						<JProse>
-							<p>Add new content</p>
-						</JProse>
-						<NewContentMenu />
-					</div>
+					<ContentList />
 				)}
 			</div>
 		</div>

@@ -12,7 +12,7 @@ import {DatabaseTransactions} from "./services/database/db.ts";
 import {WebEventsService} from "./services/events/web-events.service.ts";
 import {SyncService} from "./services/sync/sync.service.ts";
 
-export const HEADBASE_VERSION = '1.0'
+export const HEADBASE_SPEC_VERSION = 'https://spec.headbase.app/v1'
 export const HEADBASE_INDEXDB_DATABASE_VERSION = 1
 
 export class HeadbaseWeb {

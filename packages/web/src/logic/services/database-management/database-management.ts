@@ -15,7 +15,7 @@ import {
 } from "../events/events.ts";
 import {IDBPDatabase, openDB} from "idb";
 import {Logger} from "../../../utils/logger.ts";
-import {HEADBASE_INDEXDB_DATABASE_VERSION, HEADBASE_VERSION} from "../../headbase-web.ts";
+import {HEADBASE_INDEXDB_DATABASE_VERSION, HEADBASE_SPEC_VERSION} from "../../headbase-web.ts";
 import {KeyStorageService} from "../key-storage/key-storage.service.ts";
 import {EncryptionService} from "../encryption/encryption.ts"
 import {
@@ -25,8 +25,6 @@ import {
 	UpdateDatabaseDto
 } from "../../schemas/database.ts";
 import {DeviceContext, IEventsService} from "../interfaces.ts";
-import {VaultDto} from "@headbase-app/common";
-import {i} from "vite/dist/node/types.d-aGj9QkWt";
 
 export interface DatabasesManagementAPIConfig {
 	context: DeviceContext
@@ -225,7 +223,7 @@ export class DatabasesManagementAPI {
 			updatedAt: timestamp,
 			syncEnabled: createDatabaseDto.syncEnabled,
 			lastSyncedAt: undefined,
-			headbaseVersion: HEADBASE_VERSION
+			headbaseVersion: HEADBASE_SPEC_VERSION
 		}
 		await tx.objectStore('databases').add(database)
 

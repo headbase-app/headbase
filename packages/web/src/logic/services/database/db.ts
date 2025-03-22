@@ -1,10 +1,7 @@
 import migration1 from "./migrations/00-setup.sql?raw"
 import {DeviceContext, IDatabaseService, IEventsService} from "../interfaces.ts";
 
-import {FieldTransactions} from "./transactions/fields.db.ts";
-import {ContentTypeTransactions} from "./transactions/content-types.db.ts";
-import {ContentItemTransactions} from "./transactions/content-items.db.ts";
-import {ViewTransactions} from "./transactions/views.db.ts";
+import {ObjectTransactions} from "./transactions/objects.db.ts";
 import {MigrationTransactions} from "./transactions/migration.db.ts";
 import {SnapshotTransactions} from "./transactions/snapshot.db.ts";
 
@@ -16,19 +13,8 @@ export interface DatabaseConfig {
 	context: DeviceContext
 }
 
-export interface TableSnapshot {
+export interface Snapshot {
 	[id: string]: boolean
-}
-
-export interface DatabaseSnapshot {
-	fields: TableSnapshot
-	fieldsVersions: TableSnapshot
-	contentTypes: TableSnapshot
-	contentTypesVersions: TableSnapshot
-	contentItems: TableSnapshot
-	contentItemsVersions: TableSnapshot
-	views: TableSnapshot
-	viewsVersions: TableSnapshot
 }
 
 export interface GlobalListingOptions {
@@ -41,10 +27,7 @@ export interface GlobalListingOptions {
 export class DatabaseTransactions {
 	readonly context: DeviceContext;
 
-	readonly fields: FieldTransactions
-	readonly contentTypes: ContentTypeTransactions
-	readonly contentItems: ContentItemTransactions
-	readonly views: ViewTransactions
+	readonly objectStore: ObjectTransactions
 	readonly snapshot: SnapshotTransactions
 	readonly migration: MigrationTransactions
 
@@ -55,22 +38,7 @@ export class DatabaseTransactions {
 	) {
 		this.context = config.context
 
-		this.fields = new FieldTransactions(
-			{context: this.context},
-			this.eventsService,
-			this.databaseService
-		)
-		this.contentTypes = new ContentTypeTransactions(
-			{context: this.context},
-			this.eventsService,
-			this.databaseService
-		)
-		this.contentItems = new ContentItemTransactions(
-			{context: this.context},
-			this.eventsService,
-			this.databaseService
-		)
-		this.views = new ViewTransactions(
+		this.objectStore = new ObjectTransactions(
 			{context: this.context},
 			this.eventsService,
 			this.databaseService
@@ -82,10 +50,7 @@ export class DatabaseTransactions {
 		)
 		this.migration = new MigrationTransactions(
 			{context: this.context},
-			this.fields,
-			this.contentTypes,
-			this.contentItems,
-			this.views,
+			this.objectStore,
 		)
 	}
 

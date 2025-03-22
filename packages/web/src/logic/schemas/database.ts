@@ -1,6 +1,8 @@
 import {z} from "zod"
 import {VaultDto} from "@headbase-app/common";
-import {TimestampField} from "./common/fields.ts";
+
+export const TimestampField = z.string().datetime('timestamp field must be in iso format')
+export type TimestampField = z.infer<typeof TimestampField>
 
 // todo: refactor common fields out of database folder
 

@@ -1,8 +1,7 @@
 import {useWorkspaceContext} from "../workspace/workspace-context";
-import {useHeadbase} from "../../../logic/react/use-headbase.tsx";
-import {useContentItemQuery} from "../../../logic/react/tables/use-item-query.tsx";
 import {ErrorCallout} from "../../components/error-callout/error-callout.tsx";
 import {ContentCard} from "../../components/content-card/content-card.tsx";
+import {useObjectQuery} from "../../../logic/react/tables/use-object-query.tsx";
 
 export interface SearchProps {
 	onOpen?: () => void
@@ -11,7 +10,7 @@ export interface SearchProps {
 
 export function ContentList(props: SearchProps) {
 	const { openTab } = useWorkspaceContext()
-	const query = useContentItemQuery({filter: {isDeleted: false}})
+	const query = useObjectQuery({filter: {isDeleted: false}})
 
 	if (query.status === 'loading') {
 		return <p>Loading...</p>
@@ -25,13 +24,14 @@ export function ContentList(props: SearchProps) {
 			{query.result.length > 0
 				? (
 					<ul>
-						{query.result.map(content => (
+						{query.result.map(object => (
 							<ContentCard
-								key={content.id}
-								id={content.id}
-								name={content.name}
+								key={object.id}
+								id={object.id}
+								name={typeof object.data?.title === 'string' ? object.data.title : object.id}
+								description={JSON.stringify(object.data)}
 								onSelect={() => {
-									openTab({type: "content", contentId: content.id}, {switch: true})
+									openTab({type: "object", objectId: object.id}, {switch: true})
 									if (props.onOpen) {
 										props.onOpen()
 									}
@@ -41,7 +41,7 @@ export function ContentList(props: SearchProps) {
 					</ul>
 				)
 				: (
-					<p>Not Content Found</p>
+					<p>No Objects Found</p>
 				)
 			}
 		</div>

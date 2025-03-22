@@ -1,7 +1,7 @@
 # Trust and Threat Model
 - Local Device
-  - Encryption at rest?
+  - Data is encrypted at rest. 
 - Server:
-  - All vault data encrypted on device before being sent to server.
-  - Acts as the single authority for managing users, and controlling authentication/authorization for accessing resources.
-  - Trusted to act reliability and not attempt malicious actions against connected devices 
+  - All data encrypted on device before being sent to server.
+  - Acts as the single authority for managing users and controlling authentication/authorization for resources on the server.
+  - Trusted to act reliably and not attempt malicious actions against connected devices 

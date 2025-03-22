@@ -1,23 +1,12 @@
 import {createContext, ReactNode, useCallback, useContext, useState} from "react";
 
 export type WorkspaceTabTypes = {
-	type: 'content_new',
-	contentTypeId: string
+	type: 'all'
 } | {
-	type: 'content',
-	contentId: string
+	type: 'object-new'
 } | {
-	type: 'content_list'
-} | {
-	type: 'view_new'
-} | {
-	type: 'view',
-	viewId: string
-} | {
-	type: 'view_edit',
-	viewId: string
-} | {
-	type: 'view_list'
+	type: 'object',
+	objectId: string
 }
 
 export interface TabMetadata {

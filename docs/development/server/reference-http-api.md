@@ -42,6 +42,6 @@ Any errors will be returned with the appropriate status code and the following J
 - `/v1/vaults/:vaultId [GET, PATCH, DELETE]`
 - `/v1/vaults/:vaultId/snapshot [GET]`
 
-### Objects
-- `/v1/objects [GET, POST]`
-- `/v1/objects/:objectId [GET, DELETE]`
+### Object Versions
+- `/v1/versions [GET, POST]`
+- `/v1/versions/:versionId [GET, DELETE]`

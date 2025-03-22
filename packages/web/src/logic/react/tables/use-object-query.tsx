@@ -3,16 +3,15 @@ import { useEffect, useState } from "react";
 import {Logger} from "../../../utils/logger.ts";
 import {useHeadbase} from "../use-headbase.tsx";
 import {GlobalListingOptions} from "../../services/database/db.ts";
-import {FieldDto} from "../../schemas/fields/dtos.ts";
+import {DataObject} from "../../services/database/transactions/types.ts";
 
-
-export function useFieldQuery(options?: GlobalListingOptions) {
+export function useObjectQuery(options?: GlobalListingOptions) {
 	const { headbase, currentDatabaseId } = useHeadbase()
-	const [result, setResult] = useState<LiveQueryResult<FieldDto[]>>(LIVE_QUERY_LOADING_STATE)
+	const [result, setResult] = useState<LiveQueryResult<DataObject[]>>(LIVE_QUERY_LOADING_STATE)
 
 	useEffect(() => {
 		if (!headbase || !currentDatabaseId) return
-		const observable = headbase.db.fields.liveQuery(currentDatabaseId, options)
+		const observable = headbase.db.objectStore.liveQuery(currentDatabaseId, options)
 
 		const subscription = observable.subscribe((query) => {
 			if (query.status === LiveQueryStatus.SUCCESS) {

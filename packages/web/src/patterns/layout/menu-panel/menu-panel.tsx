@@ -4,7 +4,6 @@ import {
 	PlusSquare as NewContentIcon,
 	Search as SearchIcon,
 	List as AllContentIcon,
-	Filter as AllViewsIcon,
 	Shapes as DataStructureIcon,
 	HelpCircle as HelpIcon,
 	UserCircle as AccountIcon,
@@ -19,16 +18,13 @@ import { JIcon, JTooltip } from "@ben-ryder/jigsaw-react";
 import classNames from "classnames";
 import {useEffect} from "react";
 import {useDatabaseManagerDialogContext} from "../../features/databases/manager/database-manager-context.tsx";
-import {useNewContentDialog} from "../../features/new-content/new-content-dialog.tsx";
 import {useStatusDialog} from "../../features/status/status-dialog.tsx";
-import {useSearchDialog} from "../../features/search/dialog/search-dialog.tsx";
-import {useDataStructureDialog} from "../../features/data-structure/data-structure-dialog.tsx";
-import {useViewsDialog} from "../../features/views/dialog/views-dialog.tsx";
-import {useContentListDialog} from "../../features/content-list/dialog/content-list-dialog.tsx";
 import {useAccountDialog} from "../../features/account/account-dialog.tsx";
 import {useHeadbase} from "../../../logic/react/use-headbase.tsx";
 import {useDatabase} from "../../../logic/react/databases/use-database.tsx";
 import {LiveQueryStatus} from "../../../logic/control-flow.ts";
+import {useWorkspaceContext} from "../../features/workspace/workspace-context.tsx";
+import {FavouritesList} from "../../features/favorites/favourites-list.tsx";
 
 
 export interface WithMenuPanelProps {
@@ -38,16 +34,12 @@ export interface WithMenuPanelProps {
 
 export function MenuPanel(props: WithMenuPanelProps) {
 	const {setOpenTab: setDatabaseManagerDialogTab } = useDatabaseManagerDialogContext()
-	const {setIsOpen: setNewContentDialogOpen } = useNewContentDialog()
 	const {setIsOpen: setStatusDialogOpen } = useStatusDialog()
-	const {setIsOpen: setSearchDialogOpen } = useSearchDialog()
-	const {setIsOpen: setDataStructureDialogOpen } = useDataStructureDialog()
-	const {setIsOpen: setViewsDialogOpen } = useViewsDialog()
-	const {setIsOpen: setContentListDialogOpen } = useContentListDialog()
 	const {setIsOpen: setAccountDialogOpen } = useAccountDialog()
 
 	const { currentDatabaseId, headbase } = useHeadbase()
 	const currentDatabase = useDatabase(currentDatabaseId)
+	const { openTab } = useWorkspaceContext()
 
 	// todo: put this logic somewhere else?
 	// Ensure the current user is still authenticated
@@ -99,7 +91,7 @@ export function MenuPanel(props: WithMenuPanelProps) {
 					<button
 						className="menu-panel__create"
 						onClick={() => {
-							setNewContentDialogOpen(true)
+							openTab({type: 'object-new'}, {switch: true})
 						}}
 					>
 						<JIcon><NewContentIcon/></JIcon>
@@ -112,39 +104,26 @@ export function MenuPanel(props: WithMenuPanelProps) {
 					text='Search'
 					icon={<SearchIcon/>}
 					onSelect={() => {
-						setSearchDialogOpen(true)
+						openTab({type: 'all'}, {switch: true})
 					}}
 				/>
 				<MainPanelAction
-					text='All Content'
-					icon={<AllContentIcon/>}
-					onSelect={() => {
-						setContentListDialogOpen(true)
-					}}
-				/>
-				<MainPanelAction
-					text='All Views'
-					icon={<AllViewsIcon/>}
-					onSelect={() => {
-						setViewsDialogOpen(true)
-					}}
-				/>
-				<MainPanelAction
-					text='Data Structure'
+					text='Templates'
 					icon={<DataStructureIcon/>}
-					onSelect={() => {
-						setDataStructureDialogOpen(true)
-					}}
+					onSelect={() => {}}
+				/>
+				<MainPanelAction
+					text='Views'
+					icon={<AllContentIcon/>}
+					onSelect={() => {}}
 				/>
 			</div>
 
 			<div className="menu-panel__content-items">
 				<div className="menu-panel__favorites-header">
-					<h3>Content items</h3>
+					<h3>Favourites</h3>
 				</div>
-				<div>
-					No items found
-				</div>
+				<FavouritesList />
 			</div>
 
 			<div className="menu-panel__bottom">
