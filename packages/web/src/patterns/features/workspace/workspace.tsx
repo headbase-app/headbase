@@ -87,9 +87,9 @@ export function Workspace(props: WithMenuPanelProps) {
 						{tabContent}
 					</div>
 				))}
-				{workspaceContent.length === 0 && (
-					<ContentList />
-				)}
+				{/*{workspaceContent.length === 0 && (*/}
+				{/*	<ContentList />*/}
+				{/*)}*/}
 			</div>
 		</div>
 	)

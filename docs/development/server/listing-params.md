@@ -51,33 +51,33 @@ on the data type of that field.
 #### Operators
 The available operators for filter conditions are as follows: 
 
-| Operator         | Description              |
-|------------------|--------------------------|
-| `$equal`         | Equal to                 |
-| `$not_equal`     | Not equal to             |
-| `$in`            | Includes                 |
-| `$not_in`        | Doesn't include          |
-| `$starts`        | Starts with              |
-| `$ends`          | Ends with                |
-| `$not_starts`    | Doesn't start with       |
-| `$not_ends`      | Doesn't end with         |
-| `$less`          | Less than                |
-| `$less_equal`    | Less than or equal to    |
-| `$greater`       | Greater than             |
-| `$greater_equal` | Greater than or equal to |
+| Operator        | Description                                                                                                                 |
+|-----------------|-----------------------------------------------------------------------------------------------------------------------------|
+| `$equal`        | Equal to                                                                                                                    |
+| `$notEqual`     | Not equal to                                                                                                                |
+| `$in`           | Includes                                                                                                                    |
+| `$notIn`        | Doesn't include                                                                                                             |
+| `$like`         | Is 'like' supplied value (case sensitive). %value% will be used by default unless % is explicitly includes at start or end) |
+| `$iLike`        | Case insensitive version of $like.                                                                                          |
+| `$notLike`      | Not like                                                                                                                    |
+| `$notILike`     | Case insensitive version of $notLike.                                                                                       |
+| `$less`         | Less than                                                                                                                   |
+| `$lessEqual`    | Less than or equal to                                                                                                       |
+| `$greater`      | Greater than                                                                                                                |
+| `$greaterEqual` | Greater than or equal to                                                                                                    |
 
 #### Values
-The `value` of a condition could either be a value (of the matching type) or a list of values if using the `$in` or `$not_in` operators.  
+The `value` of a condition could either be a value (of the matching type) or a list of values if using the `$in` or `$notIn` operators.  
 The available operators will depend on the data type of the field in the condition, for example:
 
-| Data Type | Available operators                                                                            |
-|-----------|------------------------------------------------------------------------------------------------|
-| boolean   | `$equal`, `$not_equal`                                                                         |
-| string    | `$equal`, `$not_equal`, `$in`, `$not_in`, `$starts`, `$ends`, `$not_starts`, `$not_ends`       |
-| number    | `$equal`, `$not_equal`, `$in`, `$not_in`, `$less`, `$less_equal`, `$greater`, `$greater_equal` |
-| timestamp | `$equal`, `$not_equal`, `$in`, `$not_in`, `$less`, `$less_equal`, `$greater`, `$greater_equal` |
-| uuid      | `$equal`, `$not_equal`, `$in`, `$not_in`                                                       |
-| enum      | `$equal`, `$not_equal`, `$in`, `$not_in`                                                       |
+| Data Type | Available operators                                                                        |
+|-----------|--------------------------------------------------------------------------------------------|
+| boolean   | `$equal`, `$notEqual`                                                                      |
+| string    | `$equal`, `$notEqual`, `$in`, `$notIn`, `$like`, `$iLike`, `$notLike`, `$notILike`         |
+| number    | `$equal`, `$notEqual`, `$in`, `$notIn`, `$less`, `$lessEqual`, `$greater`, `$greaterEqual` |
+| timestamp | `$equal`, `$notEqual`, `$in`, `$notIn`, `$less`, `$lessEqual`, `$greater`, `$greaterEqual` |
+| uuid      | `$equal`, `$notEqual`, `$in`, `$notIn`                                                     |
+| enum      | `$equal`, `$notEqual`, `$in`, `$notIn`                                                     |
 
 #### Combining conditions
 Conditions defined at the same level will be logically combined using "and", for example:
@@ -87,13 +87,13 @@ Conditions defined at the same level will be logically combined using "and", for
   "filter": {
     "name": {
       "$in": "testing",
-      "$not_equal": "testing2"
+      "$notEqual": "testing2"
     }
   },
 }
 ```
 ```
-filter[name][$in]=testing&filter[name][$not_equal]=testing2
+filter[name][$in]=testing&filter[name][$notEqual]=testing2
 ```
 ```
 WHERE "testing" in name AND name != "testing2"  

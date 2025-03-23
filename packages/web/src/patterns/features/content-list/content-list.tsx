@@ -10,7 +10,7 @@ export interface SearchProps {
 
 export function ContentList(props: SearchProps) {
 	const { openTab } = useWorkspaceContext()
-	const query = useObjectQuery({filter: {isDeleted: false}})
+	const query = useObjectQuery()
 
 	if (query.status === 'loading') {
 		return <p>Loading...</p>

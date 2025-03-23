@@ -15,7 +15,7 @@ export class MigrationTransactions {
 	}
 
 	async export(databaseId: string): Promise<DatabaseExport> {
-		const objects = await this.objectStore.query(databaseId, {filter: {isDeleted: false}});
+		const objects = await this.objectStore.query(databaseId);
 
 		return {
 			spec: HEADBASE_SPEC_VERSION,
