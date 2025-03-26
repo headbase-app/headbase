@@ -11,12 +11,10 @@
     "prepare": "husky install",
     "install-all": "run-p install:*",
     "install:common": "cd packages/common && npm install",
-    "install:toolkit": "cd packages/toolkit && npm install",
     "install:server": "cd packages/server && npm install",
     "install:web": "cd packages/web && npm install",
     "ci-all": "run-p ci:*",
     "ci:common": "cd packages/common && npm ci",
-    "ci:toolkit": "cd packages/toolkit && npm ci",
     "ci:server": "cd packages/server && npm ci",
     "ci:web": "cd packages/web && npm ci",
     "build-all": "run-s build:common build:server build:web",
@@ -25,12 +23,11 @@
     "build:web": "cd packages/web && npm run build",
     "test-all": "run-s test:*",
     "test:common": "cd packages/common && npm run test",
-    "test:toolkit": "cd packages/toolkit && npm run test",
     "test:server": "cd packages/server && npm run test",
     "test:web": "cd packages/web && npm run test",
     "prepare-server-deploy": "run-p ci:common ci:server && npm run build:server",
     "start-server-deploy": "cd packages/server && npm run start:prod",
-    "prepare-web-deploy": "run-p ci:common ci:toolkit ci:web && npm run build:web"
+    "prepare-web-deploy": "run-p ci:common ci:web && npm run build:web"
   },
   "repository": {
     "type": "git",
