@@ -41,7 +41,7 @@ export function LoginForm(props: LoginFormProps) {
 		defaultValues: {
 			email: "",
 			password: "",
-			serverUrl: "https://server.headbase.app"
+			serverUrl: ""
 		},
 	});
 	const onSubmit = async (data: LocalLoginRequest) => {
@@ -85,13 +85,13 @@ export function LoginForm(props: LoginFormProps) {
 								<JInput
 									type="url"
 									label="Server URL"
-									placeholder="https://server.headbase.app"
+									placeholder="https://headbase-server.example.com"
 									required={true}
 									{...field}
 									error={errors.serverUrl?.message as string}
 									tooltip={{
 										content: (
-											<p>The URL of a self-hosted <a href="https://github.com/headbase/headbase" target="_blank" rel="noreferrer">Headbase server.</a></p>
+											<p>The URL of a <a href="https://github.com/headbase-app/headbase/blob/main/docs/self-hosting/index.md" target="_blank" rel="noreferrer">self-hosted Headbase server.</a></p>
 										)
 									}}
 								/>

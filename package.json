@@ -46,6 +46,6 @@
     "npm-run-all2": "^7.0.1"
   },
   "engines": {
-    "node": "20"
+    "node": "22"
   }
 }
