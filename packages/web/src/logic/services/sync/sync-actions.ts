@@ -1,110 +1,58 @@
 
-// todo: combine with "tableKey" from events?
-export const ITEM_TABLE_KEYS = ["fields", "contentTypes", "contentItems", "views"] as const
-export type ItemTableKey = "fields" | "contentTypes" | "contentItems" | "views"
-
-export const VERSION_TABLE_KEYS = ["fieldsVersions", "contentTypesVersions", "contentItemsVersions", "viewsVersions"] as const
-export type VersionTableKey = "fieldsVersions" | "contentTypesVersions" | "contentItemsVersions" | "viewsVersions"
-
-export interface SyncDatabaseAction {
-	type: "sync-database",
+export interface UploadDatabaseAction {
+	type: "upload-database",
 	detail: {
 		databaseId: string
 	}
 }
 
-export interface UploadItemAction {
-	type: "item-upload",
+export interface DownloadDatabaseAction {
+	type: "download-database",
+	detail: {
+		databaseId: string
+	}
+}
+
+export interface UploadAction {
+	type: "upload",
 	detail: {
 		databaseId: string,
-		tableKey: ItemTableKey,
 		id: string,
 	}
 }
 
-export interface DownloadItemAction {
-	type: "item-download",
+export interface DownloadAction {
+	type: "download",
 	detail: {
 		databaseId: string,
-		tableKey: ItemTableKey,
 		id: string,
 	}
 }
 
-export interface DeleteLocalItemAction {
-	type: "item-delete-local",
+export interface DeleteLocalAction {
+	type: "delete-local",
 	detail: {
 		databaseId: string,
-		tableKey: ItemTableKey,
 		id: string,
 	}
 }
 
-export interface DeleteServerItemAction {
-	type: "item-delete-server",
+export interface DeleteServerAction {
+	type: "delete-server",
 	detail: {
 		databaseId: string,
-		tableKey: ItemTableKey,
 		id: string,
 	}
 }
 
-export interface PurgeItemAction {
-	type: "item-purge",
+export interface PurgeAction {
+	type: "purge",
 	detail: {
 		databaseId: string,
-		tableKey: ItemTableKey,
 		id: string,
 	}
 }
-
-export interface UploadVersionAction {
-	type: "version-upload",
-	detail: {
-		databaseId: string,
-		tableKey: VersionTableKey,
-		id: string,
-	}
-}
-
-export interface DownloadVersionAction {
-	type: "version-download",
-	detail: {
-		databaseId: string,
-		tableKey: VersionTableKey,
-		id: string,
-	}
-}
-
-export interface DeleteLocalVersionAction {
-	type: "version-delete-local",
-	detail: {
-		databaseId: string,
-		tableKey: VersionTableKey,
-		id: string,
-	}
-}
-
-export interface DeleteServerVersionAction {
-	type: "version-delete-server",
-	detail: {
-		databaseId: string,
-		tableKey: VersionTableKey,
-		id: string,
-	}
-}
-
-export interface PurgeVersionAction {
-	type: "version-purge",
-	detail: {
-		databaseId: string,
-		tableKey: VersionTableKey,
-		id: string,
-	}
-}
-
 
 export type SyncAction =
-	SyncDatabaseAction |
-	UploadItemAction | DownloadItemAction | DeleteLocalItemAction | DeleteServerItemAction | PurgeItemAction |
-	UploadVersionAction | DownloadVersionAction | DeleteLocalVersionAction | DeleteServerVersionAction | PurgeVersionAction;
+	UploadDatabaseAction | DownloadDatabaseAction |
+	UploadAction | DownloadAction | DeleteLocalAction | DeleteServerAction | PurgeAction;

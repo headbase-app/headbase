@@ -40,18 +40,19 @@ export class HeadbaseWeb {
 		this.databaseService = new WebDatabaseService({context: this.context})
 		window.dbs = this.databaseService
 
-		this.db = new DatabaseTransactions(
-			{context: this.context},
-			this.eventsService,
-			this.databaseService
-		)
-
-		this.generalStorageService = new GeneralStorageService()
-
 		this.databases = new DatabasesManagementAPI(
 			{context: this.context},
 			this.eventsService
 		)
+
+		this.db = new DatabaseTransactions(
+			{context: this.context},
+			this.eventsService,
+			this.databaseService,
+			this.databases
+		)
+
+		this.generalStorageService = new GeneralStorageService()
 
 		this.server = new ServerAPI(
 			{context: this.context},

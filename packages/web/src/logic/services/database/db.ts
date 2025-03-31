@@ -4,6 +4,7 @@ import {DeviceContext, IDatabaseService, IEventsService} from "../interfaces.ts"
 import {ObjectTransactions} from "./transactions/objects.db.ts";
 import {MigrationTransactions} from "./transactions/migration.db.ts";
 import {SnapshotTransactions} from "./transactions/snapshot.db.ts";
+import {DatabasesManagementAPI} from "../database-management/database-management.ts";
 
 /**
  * todo: update live queries to ensure errors are handled and passed via observers
@@ -35,6 +36,7 @@ export class DatabaseTransactions {
 		config: DatabaseConfig,
 		private eventsService: IEventsService,
 		private databaseService: IDatabaseService,
+		private vaultsService: DatabasesManagementAPI
 	) {
 		this.context = config.context
 
@@ -45,8 +47,8 @@ export class DatabaseTransactions {
 		)
 		this.snapshot = new SnapshotTransactions(
 			{context: this.context},
-			this.eventsService,
-			this.databaseService
+			this.databaseService,
+			this.vaultsService
 		)
 		this.migration = new MigrationTransactions(
 			{context: this.context},

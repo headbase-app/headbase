@@ -1,6 +1,6 @@
 /**
  * - "sync actions" are generated when the user makes changes or changes are received from the server
- * - a "full sync" will compare snapshots from server and client, then generate the "sync actions" required to sync up
+ * - a "full sync" will compare server and local snapshots and generate the "sync actions" required to sync up
  * - sync actions are processed separate to the logic which creates them
  * - sync actions are a set to prevent duplicates
  * - observables can be used to update the FE with the sync status, actions and log.
@@ -21,14 +21,10 @@ import {SyncAction} from "./sync-actions.ts";
 import {ServerAPI} from "../server/server.ts";
 import {HeadbaseEvent} from "../events/events.ts";
 import {ErrorTypes, HeadbaseError} from "../../control-flow.ts";
-import {ErrorIdentifiers, ItemDto, VaultDto, VersionDto} from "@headbase-app/common";
+import {ErrorIdentifiers, VaultDto} from "@headbase-app/common";
 import {DatabasesManagementAPI} from "../database-management/database-management.ts";
-import {compareSnapshots, convertServerSnapshot} from "./sync-logic.ts";
+import {compareSnapshots} from "./sync-logic.ts";
 import {KeyStorageService} from "../key-storage/key-storage.service.ts";
-import {FieldDto} from "../../schemas/fields/dtos.ts";
-import {ContentTypeDto} from "../../schemas/content-types/dtos.ts";
-import {ContentItemDto} from "../../schemas/content-items/dtos.ts";
-import {ViewDto} from "../../schemas/views/dtos.ts";
 import {EncryptionService} from "../encryption/encryption.ts";
 
 export type SyncStatus = 'idle' | 'running' | 'error' | 'disabled'
@@ -164,15 +160,12 @@ export class SyncService {
 				throw error
 			}
 		}
-
 		if (!serverSnapshot) {
 			throw new HeadbaseError({type: ErrorTypes.SYSTEM_ERROR, devMessage: "Could not fetch server snapshot"})
 		}
 
-		// todo: call server snapshot something different?
-		const serverDataSnapshot = convertServerSnapshot(serverSnapshot)
 		const localSnapshot = await this.databaseTransactions.snapshot.getSnapshot(databaseId)
-		const syncActions = compareSnapshots(databaseId, localSnapshot, serverDataSnapshot)
+		const syncActions = compareSnapshots(databaseId, localSnapshot, serverSnapshot)
 
 		this.actions.push(...syncActions)
 		console.debug(syncActions)
@@ -195,71 +188,23 @@ export class SyncService {
 			throw new HeadbaseError({type: ErrorTypes.SYSTEM_ERROR, devMessage: "Could not fetch encryption key"})
 		}
 
-		if (action.type === "item-upload") {
-			let item: FieldDto | ContentTypeDto | ContentItemDto | ViewDto
-			if (action.detail.tableKey === "fields") {
-				item = await this.databaseTransactions.fields.get(action.detail.databaseId, action.detail.id)
-			}
-			else if (action.detail.tableKey === "contentTypes") {
-				item = await this.databaseTransactions.contentTypes.get(action.detail.databaseId, action.detail.id)
-			}
-			else if (action.detail.tableKey === "contentItems") {
-				item = await this.databaseTransactions.contentItems.get(action.detail.databaseId, action.detail.id)
-			}
-			else {
-				item = await this.databaseTransactions.views.get(action.detail.databaseId, action.detail.id)
-			}
+		if (action.type === "upload") {
+			const version = await this.databaseTransactions.objectStore.get(action.detail.databaseId, action.detail.id)
+			const protectedData = await EncryptionService.encrypt(encryptionKey, version.data)
 
-			const serverItemDto: ItemDto = {
+			const serverVersion: VersionDto = {
 				vaultId: action.detail.databaseId,
-				type: action.detail.tableKey,
-				id: item.id,
-				createdAt: item.createdAt,
-				deletedAt: null
-			}
-
-			const protectedData = await EncryptionService.encrypt(encryptionKey, item)
-			const serverVersionDto: VersionDto = {
-				itemId: item.id,
-				id: item.versionId,
-				createdAt: item.updatedAt,
+				type: version.type,
+				id: version.id,
+				createdAt: version.createdAt,
 				deletedAt: null,
-				deviceName: item.versionCreatedBy || "todo",
-				protectedData,
+				protectedData
 			}
 
-			await this.server.createItem(serverItemDto)
-			await this.server.createVersion(serverVersionDto)
-		}
-		else if (action.type === "item-download") {
-
-		}
-		else if (action.type === "item-delete-local") {
-
-		}
-		else if (action.type === "item-delete-server") {
-
-		}
-		else if (action.type === "item-purge") {
-
-		}
-		else if (action.type === "version-upload") {
-
-		}
-		else if (action.type === "version-download") {
-
-		}
-		else if (action.type === "version-delete-local") {
-
-		}
-		else if (action.type === "version-delete-server") {
-
-		}
-		else if (action.type === "version-purge") {
-
+			await this.server.createVersion(serverVersion)
 		}
 		else {
-			console.error(`[sync] unknown action type found: ${action.type}`)
+			console.error(`[sync] unknown (OR UNIMPLEMENTED) action type found: ${action.type}`)
 		}
 	}
 }
