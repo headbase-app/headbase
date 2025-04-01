@@ -1,6 +1,6 @@
 import Mailgun, {MailgunClientOptions} from "mailgun.js";
 import formData from "form-data";
-import {IMailgunClient} from "mailgun.js/Interfaces";
+import {IMailgunClient} from "mailgun.js/Interfaces/MailgunClient/IMailgunClient.js";
 
 import {EnvironmentService} from "@services/environment/environment.service.js";
 

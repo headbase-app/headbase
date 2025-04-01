@@ -1,4 +1,4 @@
-import {ItemDto, UserDto, VaultDto} from "@headbase-app/common";
+import {VersionDto, UserDto, VaultDto} from "@headbase-app/common";
 
 export const EventIdentifiers = {
     // Auth Events
@@ -13,8 +13,8 @@ export const EventIdentifiers = {
     VAULT_UPDATE: "vault-update",
     VAULT_DELETE: "vault-delete",
     // Item Events
-    ITEM_CREATE: "item-create",
-    ITEM_DELETE: "item-delete"
+    VERSION_CREATE: "version-create",
+    VERSION_DELETE: "version-delete"
 } as const
 
 export interface AuthLoginEvent {
@@ -77,20 +77,20 @@ export interface VaultDeleteEvent {
     }
 }
 
-export interface ItemCreateEvent {
-    type: typeof EventIdentifiers.ITEM_CREATE,
+export interface VersionCreateEvent {
+    type: typeof EventIdentifiers.VERSION_CREATE,
     detail: {
         sessionId: string
-        item: ItemDto
+        version: VersionDto
     }
 }
-export interface ItemDeleteEvent {
-    type: typeof EventIdentifiers.ITEM_DELETE,
+export interface VersionDeleteEvent {
+    type: typeof EventIdentifiers.VERSION_DELETE,
     detail: {
         sessionId: string
         // This is required to allow consumers to know what vault this event occurred in
         vaultId: string
-        itemId: string
+        id: string
     }
 }
 
@@ -108,18 +108,18 @@ export interface EventMap {
     [EventIdentifiers.VAULT_UPDATE]: VaultUpdateEvent,
     [EventIdentifiers.VAULT_DELETE]: VaultDeleteEvent,
     // Item events
-    [EventIdentifiers.ITEM_CREATE]: ItemCreateEvent,
-    [EventIdentifiers.ITEM_DELETE]: ItemDeleteEvent,
+    [EventIdentifiers.VERSION_CREATE]: VersionCreateEvent,
+    [EventIdentifiers.VERSION_DELETE]: VersionDeleteEvent,
 }
 
 export type ServerEvent =
   AuthLoginEvent | AuthLogoutEvent |
   UserCreateEvent | UserUpdateEvent | UserDeleteEvent |
   VaultCreateEvent | VaultUpdateEvent | VaultDeleteEvent |
-  ItemCreateEvent | ItemDeleteEvent
+  VersionCreateEvent | VersionDeleteEvent
 export type EventIdentifiers = keyof EventMap
 
 export type ExternalServerEvent =
   UserUpdateEvent | UserDeleteEvent |
   VaultCreateEvent | VaultUpdateEvent | VaultDeleteEvent |
-  ItemCreateEvent | ItemDeleteEvent
+  VersionCreateEvent | VersionDeleteEvent

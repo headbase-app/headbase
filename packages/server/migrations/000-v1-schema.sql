@@ -80,20 +80,21 @@ CREATE TABLE IF NOT EXISTS vaults (
 CREATE TRIGGER update_vault_timestamps BEFORE UPDATE ON vaults FOR EACH ROW EXECUTE PROCEDURE update_table_timestamps();
 
 /**
-    Items Table
+    Object Versions Table
     -----------
-    Used to store vault items.
+    Used to store vault object versions.
 */
-CREATE TABLE IF NOT EXISTS items (
+CREATE TABLE IF NOT EXISTS versions (
     vault_id UUID NOT NULL,
-    id UUID NOT NULL,
-    group_id UUID NOT NULL,
-    previous_version_id UUID,
+    spec VARCHAR(100) NOT NULL,
     type VARCHAR(20) NOT NULL,
-    protected_data TEXT,
-    created_by VARCHAR(50) NOT NULL,
+    object_id UUID NOT NULL,
+    id UUID NOT NULL,
+    previous_version_id UUID,
     created_at TIMESTAMPTZ NOT NULL,
+    created_by VARCHAR(50) NOT NULL,
+    protected_data TEXT,
     deleted_at TIMESTAMPTZ,
-    CONSTRAINT items_pk PRIMARY KEY (id),
-    CONSTRAINT items_vault FOREIGN KEY (vault_id) REFERENCES vaults(id) ON DELETE CASCADE
+    CONSTRAINT versions_pk PRIMARY KEY (id),
+    CONSTRAINT versions_vault FOREIGN KEY (vault_id) REFERENCES vaults(id) ON DELETE CASCADE
 );

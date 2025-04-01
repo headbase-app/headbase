@@ -17,7 +17,7 @@ export class SnapshotHttpAdapter {
       const requestUser = await this.accessControlService.validateAuthentication(req);
       const params = await validateSchema(req.params, VaultsURLParams);
       const snapshot = await this.snapshotService.getSnapshot(requestUser, params.vaultId);
-      return res.status(HttpStatusCodes.OK).json(snapshot);
+      res.status(HttpStatusCodes.OK).json(snapshot);
     }
     catch (error) {
       next(error);

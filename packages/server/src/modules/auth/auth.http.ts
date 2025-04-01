@@ -18,7 +18,7 @@ export class AuthHttpController {
     try {
       const data = await validateSchema(req.body, LoginRequest);
       const response = await this.authService.login(data.email, data.password);
-      return res.status(HttpStatusCodes.OK).json(response);
+      res.status(HttpStatusCodes.OK).json(response);
     }
     catch (error) {
       next(error)
@@ -29,7 +29,7 @@ export class AuthHttpController {
     try {
       const data = await validateSchema(req.body, LogoutRequest);
       await this.authService.logout(data.refreshToken);
-      return res.status(HttpStatusCodes.OK).json({statusCode: HttpStatusCodes.OK});
+      res.status(HttpStatusCodes.OK).json({statusCode: HttpStatusCodes.OK});
     }
     catch (error) {
       next(error)
@@ -40,7 +40,7 @@ export class AuthHttpController {
     try {
       const data = await validateSchema(req.body, RefreshRequest);
       const response = await this.authService.refresh(data.refreshToken);
-      return res.status(HttpStatusCodes.OK).json(response);
+      res.status(HttpStatusCodes.OK).json(response);
     }
     catch (error) {
       next(error)
@@ -50,7 +50,7 @@ export class AuthHttpController {
   async check(req: Request, res: Response, next: NextFunction) {
     try {
       await this.accessControlService.validateAuthentication(req);
-      return res.status(HttpStatusCodes.OK).send({statusCode: HttpStatusCodes.OK});
+      res.status(HttpStatusCodes.OK).send({statusCode: HttpStatusCodes.OK});
     }
     catch(error) {
       next(error)
@@ -69,7 +69,7 @@ export class AuthHttpController {
     try {
       const requestUser = await this.accessControlService.validateAuthentication(req);
       await this.authService.requestEmailVerification(requestUser.id)
-      return res.status(HttpStatusCodes.OK).json({statusCode: HttpStatusCodes.OK});
+      res.status(HttpStatusCodes.OK).json({statusCode: HttpStatusCodes.OK});
     }
     catch (error) {
       next(error)
@@ -88,7 +88,7 @@ export class AuthHttpController {
       const requestUser = await this.accessControlService.validateAuthentication(req);
       const data = await validateSchema(req.body, VerifyEmailDto);
       const response = await this.authService.verifyEmail(requestUser, data.token)
-      return res.status(HttpStatusCodes.OK).send(response)
+      res.status(HttpStatusCodes.OK).send(response)
     }
     catch (error) {
       next(error)
@@ -100,7 +100,7 @@ export class AuthHttpController {
       await this.accessControlService.validateAuthentication(req);
 
       // todo: implement /v1/auth/change-email [GET]
-      return res.status(HttpStatusCodes.NOT_IMPLEMENTED).send({
+      res.status(HttpStatusCodes.NOT_IMPLEMENTED).send({
         statusCode: HttpStatusCodes.NOT_IMPLEMENTED,
         message: "Email changing has not been implemented yet"
       });
@@ -115,7 +115,7 @@ export class AuthHttpController {
       await this.accessControlService.validateAuthentication(req);
 
       // todo: implement /v1/auth/change-email [POST]
-      return res.status(HttpStatusCodes.NOT_IMPLEMENTED).send({
+      res.status(HttpStatusCodes.NOT_IMPLEMENTED).send({
         statusCode: HttpStatusCodes.NOT_IMPLEMENTED,
         message: "Email changing has not been implemented yet"
       });
@@ -130,7 +130,7 @@ export class AuthHttpController {
       await this.accessControlService.validateAuthentication(req);
 
       // todo: implement /v1/auth/password-reset [GET]
-      return res.status(HttpStatusCodes.NOT_IMPLEMENTED).send({
+      res.status(HttpStatusCodes.NOT_IMPLEMENTED).send({
         statusCode: HttpStatusCodes.NOT_IMPLEMENTED,
         message: "Password reset has not been implemented yet"
       });
@@ -145,7 +145,7 @@ export class AuthHttpController {
       await this.accessControlService.validateAuthentication(req);
 
       // todo: implement /v1/auth/password-reset [POST]
-      return res.status(HttpStatusCodes.NOT_IMPLEMENTED).send({
+      res.status(HttpStatusCodes.NOT_IMPLEMENTED).send({
         statusCode: HttpStatusCodes.NOT_IMPLEMENTED,
         message: "Password reset has not been implemented yet"
       });

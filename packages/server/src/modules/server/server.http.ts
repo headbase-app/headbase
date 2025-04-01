@@ -15,7 +15,7 @@ export class ServerManagementHttpController {
   async requestHealthCheck(req: Request, res: Response, next: NextFunction) {
     try {
       const result = await this.serverManagementService.runHealthCheck()
-      return res.status(HttpStatusCodes.OK).json(result);
+      res.status(HttpStatusCodes.OK).json(result);
     }
     catch (e) {
       next(e)
@@ -37,7 +37,7 @@ export class ServerManagementHttpController {
         }
       }
 
-      return res.status(HttpStatusCodes.OK).json(meta);
+      res.status(HttpStatusCodes.OK).json(meta);
     }
     catch (error) {
       next(error);
@@ -49,7 +49,7 @@ export class ServerManagementHttpController {
 
     try {
       const settings = await this.serverManagementService.getSettings(requestUser)
-      return res.status(HttpStatusCodes.OK).json(settings);
+      res.status(HttpStatusCodes.OK).json(settings);
     }
     catch (e) {
       next(e)
@@ -62,7 +62,7 @@ export class ServerManagementHttpController {
 
     try {
       const settings = await this.serverManagementService.updateSettings(requestUser, updateSettingsDto)
-      return res.status(HttpStatusCodes.OK).json(settings);
+      res.status(HttpStatusCodes.OK).json(settings);
     }
     catch (e) {
       next(e)

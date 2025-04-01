@@ -43,7 +43,7 @@ describe("Retrieve Snapshot - /v1/vaults/:vaultId/snapshot [GET]", () => {
 				vault: expect.objectContaining({
 					updatedAt: expect.any(String),
 				}),
-				items: expect.any(Array)
+				versions: expect.any(Object)
       }))
     });
 
@@ -72,7 +72,7 @@ describe("Retrieve Snapshot - /v1/vaults/:vaultId/snapshot [GET]", () => {
 				vault: expect.objectContaining({
 					updatedAt: expect.any(String),
 				}),
-				items: expect.any(Array)
+				versions: expect.any(Object)
 			}))
     });
 
@@ -89,7 +89,7 @@ describe("Retrieve Snapshot - /v1/vaults/:vaultId/snapshot [GET]", () => {
 				vault: expect.objectContaining({
 					updatedAt: expect.any(String),
 				}),
-				items: expect.any(Array)
+				versions: expect.any(Object)
 			}))
     });
   })

@@ -48,28 +48,29 @@ export const vaultsRelations = relations(vaults, ({ one, many }) => ({
 		fields: [vaults.ownerId],
 		references: [users.id],
 	}),
-	items: many(items)
+	versions: many(versions)
 }));
 
-export const items = pgTable("items", {
+export const versions = pgTable("versions", {
 	vaultId: uuid().notNull(),
-	id: uuid().primaryKey(),
-	groupId: uuid().notNull(),
-	previousVersionId: uuid(),
+	spec: varchar({ length: 100 }).notNull(),
 	type: varchar({ length: 20 }).notNull(),
-	protectedData: text(),
-	createdBy: varchar({ length: 50 }).notNull(),
+	objectId: uuid().notNull(),
+	id: uuid().primaryKey(),
+	previousVersionId: uuid(),
 	createdAt,
+	createdBy: varchar({ length: 50 }).notNull(),
+	protectedData: text(),
 	deletedAt,
 });
 
-export const itemsRelations = relations(items, ({ one }) => ({
+export const versionsRelations = relations(versions, ({ one }) => ({
 	vault: one(vaults, {
-		fields: [items.vaultId],
+		fields: [versions.vaultId],
 		references: [vaults.id],
 	}),
 }));
 
 export const schema = {
-	settings, users, vaults, items
+	settings, users, vaults, versions
 } as const;

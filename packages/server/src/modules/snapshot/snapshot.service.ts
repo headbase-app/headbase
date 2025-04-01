@@ -1,13 +1,13 @@
 import {UserContext} from "@common/request-context.js";
 import {VaultsService} from "@modules/vaults/vaults.service.js";
-import {ItemsService} from "@modules/items/items.service.js";
-import {ItemSnapshot, VaultSnapshot} from "@headbase-app/common";
+import {VersionsService} from "@modules/versions/versions.service.js";
+import {VaultSnapshot} from "@headbase-app/common";
 
 
 export class SnapshotService {
 	constructor(
 		private readonly vaultsService: VaultsService,
-		private readonly itemsService: ItemsService,
+		private readonly versionsService: VersionsService,
 	) {}
 
 	async getSnapshot(userContext: UserContext, vaultId: string): Promise<VaultSnapshot> {
@@ -19,20 +19,13 @@ export class SnapshotService {
 			vault: {
 				updatedAt: vault.updatedAt
 			},
-			items: []
+			versions: {}
 		}
 
 		// todo: only fetch required fields not all item content
-		const items = await this.itemsService.query(userContext, {vaultId})
-		for (const item of items.results) {
-			const itemSnapshot: ItemSnapshot = {
-				id: item.id,
-				groupId: item.groupId,
-				previousVersionId: item.previousVersionId,
-				type: item.type,
-				deletedAt: item.deletedAt
-			}
-			snapshot.items.push(itemSnapshot)
+		const versions = await this.versionsService.query(userContext, {vaultId})
+		for (const version of versions.results) {
+			snapshot.versions[version.id] = !!version.deletedAt
 		}
 
 		return snapshot

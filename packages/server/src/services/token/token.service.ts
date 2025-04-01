@@ -1,6 +1,7 @@
 import jsonwebtoken from "jsonwebtoken";
 import {v4 as createUUID} from "uuid";
 import ms from "ms";
+import { createSecretKey } from "crypto"
 
 
 import {
@@ -36,7 +37,7 @@ export class TokenService {
    */
   private _parseTokenExpiry(expiryString: string) {
     const currentTime = new Date().getTime();
-    const timeToExpiry = ms(expiryString);
+    const timeToExpiry = ms(expiryString as ms.StringValue);
     return currentTime + timeToExpiry;
   }
 
@@ -108,20 +109,22 @@ export class TokenService {
       verifiedAt: userDto.verifiedAt,
       role: userDto.role
     };
+    const accessTokenSecret = createSecretKey(Buffer.from(this.envService.vars.auth.accessToken.secret))
     const accessToken = jsonwebtoken.sign(
       accessTokenPayload,
-      this.envService.vars.auth.accessToken.secret,
-      { expiresIn: this.envService.vars.auth.accessToken.expiry },
+      accessTokenSecret,
+      { expiresIn: this.envService.vars.auth.accessToken.expiry as ms.StringValue },
     );
 
     const refreshTokenPayload = {
       ...basicPayload,
       type: "refreshToken"
     };
+    const refreshTokenSecret = createSecretKey(Buffer.from(this.envService.vars.auth.refreshToken.secret))
     const refreshToken = jsonwebtoken.sign(
       refreshTokenPayload,
-      this.envService.vars.auth.refreshToken.secret,
-      { expiresIn: this.envService.vars.auth.refreshToken.expiry },
+      refreshTokenSecret,
+      { expiresIn: this.envService.vars.auth.refreshToken.expiry as ms.StringValue },
     );
 
     return {
@@ -258,10 +261,11 @@ export class TokenService {
       type: options.actionType,
     };
 
+    const secret = createSecretKey(Buffer.from(options.secret))
     return jsonwebtoken.sign(
         actionTokenPayload,
-        options.secret,
-        {expiresIn: options.expiry},
+        secret,
+        {expiresIn: options.expiry as ms.StringValue},
     );
   }
 

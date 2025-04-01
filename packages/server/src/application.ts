@@ -29,8 +29,8 @@ import {SyncService} from "@modules/sync/sync.service.js";
 import {SyncHttpController} from "@modules/sync/sync.http.js";
 import {ServerManagementService} from "@modules/server/server.service.js";
 import {ServerManagementHttpController} from "@modules/server/server.http.js";
-import {ItemsService} from "@modules/items/items.service.js";
-import {ItemsHttpController} from "@modules/items/items.http.js";
+import {VersionsService} from "@modules/versions/versions.service.js";
+import {VersionsHttpController} from "@modules/versions/versions.http.js";
 import {decodeQueryParameter} from "@common/query-param-decode.js";
 import {SnapshotHttpAdapter} from "@modules/snapshot/snapshot.http.js";
 import {SnapshotService} from "@modules/snapshot/snapshot.service.js";
@@ -90,12 +90,12 @@ export class Application {
         this.container.bindClass(VaultsHttpController, { value: VaultsHttpController, inject: [VaultsService, AccessControlService]}, {scope: "SINGLETON"})
 
         // Snapshot module
-        this.container.bindClass(SnapshotService, { value: SnapshotService, inject: [VaultsService, ItemsService] }, {scope: "SINGLETON"});
+        this.container.bindClass(SnapshotService, { value: SnapshotService, inject: [VaultsService, VersionsService] }, {scope: "SINGLETON"});
         this.container.bindClass(SnapshotHttpAdapter, { value: SnapshotHttpAdapter, inject: [SnapshotService, AccessControlService] }, {scope: "SINGLETON"});
 
         // Items module
-        this.container.bindClass(ItemsService, {value: ItemsService, inject: [DatabaseService, EventsService, AccessControlService, VaultsService]}, {scope: "SINGLETON"})
-        this.container.bindClass(ItemsHttpController, {value: ItemsHttpController, inject: [ItemsService, AccessControlService]}, {scope: "SINGLETON"})
+        this.container.bindClass(VersionsService, {value: VersionsService, inject: [DatabaseService, EventsService, AccessControlService, VaultsService]}, {scope: "SINGLETON"})
+        this.container.bindClass(VersionsHttpController, {value: VersionsHttpController, inject: [VersionsService, AccessControlService]}, {scope: "SINGLETON"})
 
         // Sync module
         this.container.bindClass(SyncService, {value: SyncService, inject: [EventsService, DataStoreService, VaultsService]}, {scope: "SINGLETON"})
@@ -175,12 +175,12 @@ export class Application {
         const snapshotHttpAdapter = this.container.resolve<SnapshotHttpAdapter>(SnapshotHttpAdapter);
         app.get("/v1/vaults/:vaultId/snapshot", snapshotHttpAdapter.getSnapshot.bind(snapshotHttpAdapter))
 
-        // Items module routes
-        const itemsHttpController = this.container.resolve<ItemsHttpController>(ItemsHttpController);
-        app.post("/v1/items", itemsHttpController.createItem.bind(itemsHttpController))
-        app.get("/v1/items", itemsHttpController.queryItems.bind(itemsHttpController))
-        app.get("/v1/items/:itemId", itemsHttpController.getItem.bind(itemsHttpController))
-        app.delete("/v1/items/:itemId", itemsHttpController.deleteItem.bind(itemsHttpController))
+        // Object versions module routes
+        const versionsHttpController = this.container.resolve<VersionsHttpController>(VersionsHttpController);
+        app.post("/v1/versions", versionsHttpController.create.bind(versionsHttpController))
+        app.get("/v1/versions", versionsHttpController.query.bind(versionsHttpController))
+        app.get("/v1/versions/:id", versionsHttpController.get.bind(versionsHttpController))
+        app.delete("/v1/versions/:id", versionsHttpController.delete.bind(versionsHttpController))
 
         // Sync module routes and websocket server
         // const syncHttpController = this.container.resolve<SyncHttpController>(SyncHttpController)

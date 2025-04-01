@@ -60,7 +60,7 @@ export async function httpErrorHandler(err: Error, req: Request, res: Response, 
     console.error(err)
   }
 
-  return res.status(httpCode).send({
+  res.status(httpCode).send({
     identifier: identifier,
     statusCode: httpCode,
     message: message,
