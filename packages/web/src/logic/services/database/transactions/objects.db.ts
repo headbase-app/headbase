@@ -18,7 +18,7 @@ import {
 	like,
 	notLike,
 	ilike,
-	notIlike, lt, lte, gt, gte
+	notIlike, lt, lte, gt, gte, isNull
 } from "drizzle-orm";
 import {HEADBASE_SPEC_VERSION} from "../../../headbase-web.ts";
 import {CreateDataObjectDto, DataObject, DataObjectVersion, Query, UpdateDataObjectDto, WhereQuery} from "./types.ts";
@@ -188,7 +188,6 @@ export class ObjectTransactions {
 				created_at: createdAt,
 				created_by: createDto.createdBy,
 				data: createDto.data,
-				is_deleted: 0,
 			})
 			.toSQL()
 		await this.databaseService.exec({databaseId, ...versionQuery})
@@ -236,7 +235,6 @@ export class ObjectTransactions {
 				created_at: updatedAt,
 				created_by: updateDto.updatedBy,
 				data: updateDto.data,
-				is_deleted: 0,
 			})
 			.toSQL()
 		await this.databaseService.exec({databaseId, ...versionQuery})
@@ -260,6 +258,7 @@ export class ObjectTransactions {
 
 		// Will cause error if entity can't be found.
 		const currentObject = await this.get(databaseId, id)
+		const deletedAt = new Date().toISOString()
 
 		const query = sqlBuilder
 			.delete(objects)
@@ -269,10 +268,10 @@ export class ObjectTransactions {
 
 		const versionQuery = sqlBuilder
 			.update(objectVersions)
-			.set({is_deleted: 1})
+			.set({deleted_at: deletedAt})
 			.where(eq(objectVersions.object_id, id))
 			.toSQL()
-		await this.databaseService.exec({databaseId, ...query})
+		await this.databaseService.exec({databaseId, ...versionQuery})
 
 		this.eventsService.dispatch(EventTypes.DATA_CHANGE, {
 			context: this.context,
@@ -396,13 +395,87 @@ export class ObjectTransactions {
 		})
 	}
 
+	async createVersion(databaseId: string, version: DataObjectVersion): Promise<void> {
+		console.debug(`[database] running create version`)
+
+		const versionQuery = sqlBuilder
+			.insert(objectVersions)
+			.values({
+				spec: version.spec,
+				type: version.type,
+				object_id: version.objectId,
+				id: version.id,
+				previous_version_id: version.previousVersionId,
+				created_at: version.createdAt,
+				created_by: version.createdBy,
+				data: version.data,
+			})
+			.toSQL()
+		await this.databaseService.exec({databaseId, ...versionQuery})
+
+		let currentObject
+		try {
+			currentObject = await this.get(databaseId, version.objectId)
+		}
+		catch(e) {
+			// todo: handle different errors
+		}
+
+		if (!currentObject) {
+			console.debug(`encountered new version '${version.id}' without object, creating now`)
+
+			const query = sqlBuilder
+				.insert(objects)
+				.values({
+					spec: version.spec,
+					type: version.type,
+					id: version.objectId,
+					version_id: version.id,
+					previous_version_id: version.previousVersionId,
+					created_at: version.createdAt,
+					created_by: version.createdBy,
+					updated_at: version.createdAt,
+					updated_by: version.createdBy,
+					data: version.data
+				})
+				.toSQL()
+			await this.databaseService.exec({databaseId, ...query})
+		}
+		else if (currentObject.createdAt < version.createdAt) {
+			const query = sqlBuilder
+				.update(objects)
+				.set({
+					spec: version.spec,
+					type: version.type,
+					version_id: version.id,
+					previous_version_id: version.previousVersionId,
+					updated_at: version.createdAt,
+					updated_by: version.createdBy,
+					data: version.data
+				})
+				.where(eq(objects.id, version.objectId))
+				.toSQL()
+			await this.databaseService.exec({databaseId, ...query})
+		}
+
+		this.eventsService.dispatch(EventTypes.DATA_CHANGE, {
+			context: this.context,
+			data: {
+				databaseId,
+				types: currentObject ? [currentObject.type, version.type] : [version.type],
+				id: version.id,
+				action: 'create-version'
+			}
+		})
+	}
+
 	async getVersion(databaseId: string, id: string) {
 		console.debug(`[database] running get version: ${id}`)
 
 		const selectQuery = sqlBuilder
 			.select()
 			.from(objectVersions)
-			.where(and(eq(objectVersions.id, id), eq(objectVersions.is_deleted, 0)))
+			.where(and(eq(objectVersions.id, id), isNull(objectVersions.deleted_at)))
 			.toSQL()
 		const results = await this.databaseService.exec({databaseId, ...selectQuery, rowMode: 'object'}) as unknown as DrizzleDataVersion[];
 
@@ -419,7 +492,7 @@ export class ObjectTransactions {
 		const selectQuery = sqlBuilder
 			.select()
 			.from(objectVersions)
-			.where(and(eq(objectVersions.object_id, objectId), eq(objectVersions.is_deleted, 0)))
+			.where(and(eq(objectVersions.object_id, objectId), isNull(objectVersions.deleted_at)))
 			.toSQL()
 		const results = await this.databaseService.exec({databaseId, ...selectQuery, rowMode: 'object'}) as unknown as DrizzleDataVersion[];
 
@@ -428,17 +501,16 @@ export class ObjectTransactions {
 
 	async deleteVersion(databaseId: string, versionId: string): Promise<void> {
 		const version = await this.getVersion(databaseId, versionId);
-		const currentObject = await this.get(databaseId, version.objectId);
 
-		if (currentObject.versionId === versionId) {
-			// todo: need error type, or generic user input error type?
-			throw new HeadbaseError({type: ErrorTypes.SYSTEM_ERROR, devMessage: 'Attempted to delete initial version'})
+		if (versionId === version.objectId) {
+			return this.delete(databaseId, version.objectId)
 		}
 
+		const deletedAt = new Date().toISOString()
 		const deleteQuery = sqlBuilder
 			.update(objectVersions)
 			.set({
-				is_deleted: 1,
+				deleted_at: deletedAt,
 			})
 			.where(eq(objectVersions.id, versionId))
 			.toSQL()
@@ -448,10 +520,39 @@ export class ObjectTransactions {
 			context: this.context,
 			data: {
 				databaseId,
-				types: [version.type, currentObject.type],
-				id: currentObject.id,
+				types: [version.type],
+				id: version.id,
 				// todo: should include version id in event?
 				action: 'delete-version'
+			}
+		})
+	}
+
+	async purgeVersion(databaseId: string, versionId: string): Promise<void> {
+		const version = await this.getVersion(databaseId, versionId);
+
+		const purgeVersionQuery = sqlBuilder
+			.delete(objectVersions)
+			.where(eq(objectVersions.id, versionId))
+			.toSQL()
+		await this.databaseService.exec({databaseId, ...purgeVersionQuery})
+
+		if (versionId === version.objectId) {
+			const purgeObjectQuery = sqlBuilder
+				.delete(objects)
+				.where(eq(objects.id, version.objectId))
+				.toSQL()
+			await this.databaseService.exec({databaseId, ...purgeObjectQuery})
+		}
+
+		this.eventsService.dispatch(EventTypes.DATA_CHANGE, {
+			context: this.context,
+			data: {
+				databaseId,
+				types: [version.type],
+				id: version.objectId,
+				// todo: need to separate version purge from object purge
+				action: 'purge'
 			}
 		})
 	}

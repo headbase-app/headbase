@@ -1,10 +1,9 @@
-import {Snapshot} from "../db.ts";
 import {DeviceContext, IDatabaseService} from "../../interfaces.ts";
 import {EntityTransactionsConfig} from "./objects.db.ts";
 import {sqlBuilder} from "./drizzle/sql-builder.ts";
 import {DrizzleDataVersion, objectVersions} from "./drizzle/schema.ts";
-import {VaultSnapshot} from "../../sync/sync-logic.ts";
 import {DatabasesManagementAPI} from "../../database-management/database-management.ts";
+import {Snapshot, VaultSnapshot} from "@headbase-app/common";
 
 
 export class SnapshotTransactions {
@@ -23,12 +22,12 @@ export class SnapshotTransactions {
 		const versionsSnapshot: Snapshot = {}
 
 		const versionsQuery = sqlBuilder
-			.select({id: objectVersions.id, is_deleted: objectVersions.is_deleted})
+			.select({id: objectVersions.id, deleted_at: objectVersions.deleted_at})
 			.from(objectVersions)
 			.toSQL()
 		const versions = await this.databaseService.exec({databaseId, ...versionsQuery, rowMode: 'object'}) as unknown as DrizzleDataVersion[]
 		for (const version of versions) {
-			versionsSnapshot[version.id] = version.is_deleted === 1
+			versionsSnapshot[version.id] = !!version.deleted_at
 		}
 
 		return {

@@ -165,11 +165,16 @@ export class SyncService {
 		}
 
 		const localSnapshot = await this.databaseTransactions.snapshot.getSnapshot(databaseId)
-		const syncActions = compareSnapshots(databaseId, localSnapshot, serverSnapshot)
 
-		this.actions.push(...syncActions)
+		console.debug(`[sync] snapshots:`)
+		console.debug(localSnapshot)
+		console.debug(serverSnapshot)
+
+		const syncActions = compareSnapshots(databaseId, localSnapshot.versions, serverSnapshot.versions)
+		console.debug(`[sync] sync actions:`)
 		console.debug(syncActions)
 
+		this.actions.push(...syncActions)
 		while (this.actions.length > 0) {
 			const action = this.actions.shift()
 			if (!action) break;
@@ -189,19 +194,45 @@ export class SyncService {
 		}
 
 		if (action.type === "upload") {
-			const version = await this.databaseTransactions.objectStore.get(action.detail.databaseId, action.detail.id)
+			const version = await this.databaseTransactions.objectStore.getVersion(action.detail.databaseId, action.detail.id)
 			const protectedData = await EncryptionService.encrypt(encryptionKey, version.data)
-
-			const serverVersion: VersionDto = {
+			await this.server.createVersion({
+				spec: version.spec,
 				vaultId: action.detail.databaseId,
 				type: version.type,
 				id: version.id,
 				createdAt: version.createdAt,
+				createdBy: version.createdBy,
+				objectId: version.objectId,
+				previousVersionId: version.previousVersionId,
 				deletedAt: null,
 				protectedData
-			}
+			})
+		}
+		else if (action.type === "download") {
+			const version = await this.server.getVersion(action.detail.id)
+			if (!version.protectedData || version.deletedAt) return;
+			const data = await EncryptionService.decrypt(encryptionKey, version.protectedData)
 
-			await this.server.createVersion(serverVersion)
+			await this.databaseTransactions.objectStore.createVersion(action.detail.databaseId, {
+				spec: version.spec,
+				type: version.type,
+				id: version.id,
+				createdAt: version.createdAt,
+				createdBy: version.createdBy,
+				objectId: version.objectId,
+				previousVersionId: version.previousVersionId,
+				data: data
+			})
+		}
+		else if (action.type === "delete-local") {
+			await this.databaseTransactions.objectStore.deleteVersion(action.detail.databaseId, action.detail.id)
+		}
+		else if (action.type === "delete-server") {
+			await this.server.deleteVersion(action.detail.id)
+		}
+		else if (action.type === "purge") {
+			await this.databaseTransactions.objectStore.purgeVersion(action.detail.databaseId, action.detail.id)
 		}
 		else {
 			console.error(`[sync] unknown (OR UNIMPLEMENTED) action type found: ${action.type}`)

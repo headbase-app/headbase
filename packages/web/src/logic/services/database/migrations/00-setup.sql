@@ -28,7 +28,7 @@ create table if not exists object_versions (
     created_at text not null default (strftime('%FT%R:%fZ')),
     created_by text not null,
     -- Tombstone
-    is_deleted integer not null default 0 check (is_deleted in (0, 1)),
+    deleted_at text default (strftime('%FT%R:%fZ')),
     -- Data
     data json
 );

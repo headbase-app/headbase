@@ -1,10 +1,4 @@
-import {customType, sqliteTable, text} from "drizzle-orm/sqlite-core";
-
-export const booleanColumn = customType<{data: 0 | 1}>(({
-	dataType() {
-		return 'int'
-	}
-}))
+import {sqliteTable, text} from "drizzle-orm/sqlite-core";
 
 export const objects = sqliteTable('objects', {
 	spec: text().notNull(),
@@ -27,7 +21,7 @@ export const objectVersions = sqliteTable('object_versions', {
 	previous_version_id: text(),
 	created_at: text().notNull(),
 	created_by: text().notNull(),
-	is_deleted: booleanColumn().notNull(),
+	deleted_at: text(),
 	data: text({ mode: 'json' }),
 });
 

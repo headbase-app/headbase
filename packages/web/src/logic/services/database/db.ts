@@ -14,16 +14,6 @@ export interface DatabaseConfig {
 	context: DeviceContext
 }
 
-export interface Snapshot {
-	[id: string]: boolean
-}
-
-export interface GlobalListingOptions {
-	filter?: {
-		isDeleted?: boolean
-	}
-}
-
 
 export class DatabaseTransactions {
 	readonly context: DeviceContext;

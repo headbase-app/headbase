@@ -6,7 +6,7 @@ import {
 	TokenPair,
 	UpdateUserDto,
 	UserDto, LoginRequest, VaultDto, UpdateVaultDto, CreateVaultDto, VaultSnapshot,
-	ItemDto, VersionDto
+	VersionDto
 } from "@headbase-app/common";
 import {ErrorTypes, HeadbaseError, LIVE_QUERY_LOADING_STATE, LiveQueryResult, LiveQueryStatus} from "../../control-flow.ts";
 import {GeneralStorageService} from "../general-storage/general-storage.service.ts";
@@ -370,54 +370,7 @@ export class ServerAPI {
 		});
 	}
 
-	// Items
-	async getItem(id: string) {
-		const serverUrl = await this.getServerUrl()
-
-		return this.query<ItemDto>({
-			serverUrl,
-			method: 'GET',
-			path: `/v1/items/${id}`
-		});
-	}
-
-	async createItem(itemDto: ItemDto) {
-		const serverUrl = await this.getServerUrl()
-
-		return this.query({
-			serverUrl,
-			method: 'POST',
-			path: `/v1/items`,
-			data: itemDto
-		});
-	}
-
-	async deleteItem(id: string) {
-		const serverUrl = await this.getServerUrl()
-
-		return this.query({
-			serverUrl,
-			method: 'DELETE',
-			path: `/v1/items/${id}`
-		});
-	}
-
-	async getItems(databaseId: string) {
-		const serverUrl = await this.getServerUrl()
-
-		const params = new URLSearchParams({
-			vaultId: databaseId,
-		})
-
-		return this.query({
-			serverUrl,
-			method: 'GET',
-			path: `/v1/items`,
-			params
-		});
-	}
-
-	// Version
+	// Object Versions
 	async getVersion(id: string) {
 		const serverUrl = await this.getServerUrl()
 
@@ -449,17 +402,17 @@ export class ServerAPI {
 		});
 	}
 
-	async getVersions(itemId: string) {
+	async getVersions(databaseId: string) {
 		const serverUrl = await this.getServerUrl()
 
 		const params = new URLSearchParams({
-			itemId: itemId,
+			vaultId: databaseId,
 		})
 
 		return this.query({
 			serverUrl,
 			method: 'GET',
-			path: `/v1/items`,
+			path: `/v1/versions`,
 			params
 		});
 	}
