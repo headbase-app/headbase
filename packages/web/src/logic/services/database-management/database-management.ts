@@ -25,6 +25,7 @@ import {
 	UpdateDatabaseDto
 } from "../../schemas/database.ts";
 import {DeviceContext, IEventsService} from "../interfaces.ts";
+import {VaultDto} from "@headbase-app/common";
 
 export interface DatabasesManagementAPIConfig {
 	context: DeviceContext
@@ -238,6 +239,41 @@ export class DatabasesManagementAPI {
 		})
 
 		return id
+	}
+
+	/**
+	 * Insert an existing database (for example, when downloading from server)
+	 *
+	 * @param vaultDto
+	 */
+	async insertExisting(vaultDto: VaultDto): Promise<string> {
+		const db = await this.getAppStorageDatabase()
+		const tx = db.transaction(['databases'], 'readwrite')
+
+		const database: LocalDatabaseEntity = {
+			id: vaultDto.id,
+			name: vaultDto.name,
+			protectedEncryptionKey: vaultDto.protectedEncryptionKey,
+			protectedData: vaultDto.protectedData,
+			createdAt: vaultDto.createdAt,
+			updatedAt: vaultDto.updatedAt,
+			syncEnabled: true,
+			lastSyncedAt: undefined,
+			headbaseVersion: HEADBASE_SPEC_VERSION
+		}
+		await tx.objectStore('databases').add(database)
+
+		await tx.done
+
+		this.eventsService.dispatch(EventTypes.DATABASE_CHANGE, {
+			context: this.context,
+			data: {
+				id: vaultDto.id,
+				action: 'create',
+			}
+		})
+
+		return vaultDto.id
 	}
 
 	/**

@@ -1,5 +1,5 @@
 import React, {PropsWithChildren, ReactNode, useCallback, useEffect, useRef, useState} from "react";
-import {JDialog} from "@ben-ryder/jigsaw-react";
+import {JButton, JDialog} from "@ben-ryder/jigsaw-react";
 import {DatabaseListScreen} from "../screens/database-list";
 import {DatabaseCreateScreen} from "../screens/database-create";
 import { DatabaseEditScreen } from "../screens/database-edit";
@@ -11,6 +11,7 @@ import {useHeadbase} from "../../../../logic/react/use-headbase.tsx";
 import {KeyStorageService} from "../../../../logic/services/key-storage/key-storage.service.ts";
 import {DatabaseImportScreen} from "../screens/database-import.tsx";
 import {DatabaseExportScreen} from "../screens/database-export.tsx";
+import {DatabaseServerList} from "../screens/database-server-list.tsx";
 
 
 export function DatabaseManagerDialogProvider(props: PropsWithChildren) {
@@ -48,6 +49,10 @@ export function DatabaseManagerDialog() {
 	switch (openTab?.type) {
 		case "list": {
 			dialogContent = <DatabaseListScreen />
+			break;
+		}
+		case "list-server": {
+			dialogContent = <DatabaseServerList />
 			break;
 		}
 		case "create": {
@@ -133,7 +138,13 @@ export function DatabaseManagerDialog() {
 			disableOutsideClose={true}
 			title="Manage databases"
 			description="Manage your current database"
-			content={dialogContent}
+			content={
+				<div>
+					<JButton variant='secondary' onClick={() => {setOpenTab({type: "list"})}}>Local</JButton>
+					<JButton variant='secondary' onClick={() => {setOpenTab({type: "list-server"})}}>Server</JButton>
+					{dialogContent}
+				</div>
+			}
 		/>
 	)
 }

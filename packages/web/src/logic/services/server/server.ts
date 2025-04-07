@@ -5,8 +5,7 @@ import {
 	ServerInfoDto,
 	TokenPair,
 	UpdateUserDto,
-	UserDto, LoginRequest, VaultDto, UpdateVaultDto, CreateVaultDto, VaultSnapshot,
-	VersionDto
+	UserDto, LoginRequest, VaultDto, UpdateVaultDto, CreateVaultDto, VaultSnapshot
 } from "@headbase-app/common";
 import {ErrorTypes, HeadbaseError, LIVE_QUERY_LOADING_STATE, LiveQueryResult, LiveQueryStatus} from "../../control-flow.ts";
 import {GeneralStorageService} from "../general-storage/general-storage.service.ts";
@@ -363,10 +362,10 @@ export class ServerAPI {
 	async getVaults() {
 		const serverUrl = await this.getServerUrl()
 
-		return this.query({
+		return this.query<VaultDto[]>({
 			serverUrl,
 			method: 'GET',
-			path: `/v1/vaults}`
+			path: `/v1/vaults`
 		});
 	}
 

@@ -238,4 +238,10 @@ export class SyncService {
 			console.error(`[sync] unknown (OR UNIMPLEMENTED) action type found: ${action.type}`)
 		}
 	}
+
+	private async downloadAndSync(vaultId: string) {
+		const serverVault = await this.server.getVault(vaultId)
+		await this.databasesManagementAPI.insertExisting(serverVault)
+		this.requestSync(vaultId)
+	}
 }

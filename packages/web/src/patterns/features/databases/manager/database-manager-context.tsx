@@ -3,6 +3,8 @@ import { createContext, useContext } from "react";
 export type DatabaseManagerTabs = {
 	type: 'list',
 } | {
+	type: 'list-server',
+}| {
 	type: 'create'
 } | {
 	type: 'edit'
