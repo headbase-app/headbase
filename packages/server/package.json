@@ -1,6 +1,6 @@
 {
   "name": "@headbase-app/server",
-  "version": "0.4.0",
+  "version": "0.6.0",
   "description": "The central sync and backup server for Headbase.",
   "private": true,
   "author": "Ben Ryder <dev@benryder.me> (https://www.benryder.me)",
@@ -19,7 +19,7 @@
     "dev:common-rebuild": "(cd ../common && npm run build) && npm i"
   },
   "dependencies": {
-    "@headbase-app/common": "^0.7.0",
+    "@headbase-app/common": "^0.8.0",
     "bcrypt": "^5.1.1",
     "cors": "^2.8.5",
     "dotenv": "^16.4.7",
