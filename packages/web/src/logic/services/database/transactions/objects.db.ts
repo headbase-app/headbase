@@ -198,6 +198,7 @@ export class ObjectTransactions {
 				databaseId,
 				types: [createDto.type],
 				id: id,
+				versionId: versionId,
 				action: 'create'
 			}
 		})
@@ -245,6 +246,7 @@ export class ObjectTransactions {
 				databaseId,
 				types: [currentObject.type, updateDto.type],
 				id: id,
+				versionId: versionId,
 				action: 'update'
 			}
 		})
@@ -279,6 +281,7 @@ export class ObjectTransactions {
 				databaseId,
 				types: [currentObject.type],
 				id: id,
+				versionId: id,
 				action: 'delete'
 			}
 		})
@@ -463,7 +466,8 @@ export class ObjectTransactions {
 			data: {
 				databaseId,
 				types: currentObject ? [currentObject.type, version.type] : [version.type],
-				id: version.id,
+				id: version.objectId,
+				versionId: version.id,
 				action: 'create-version'
 			}
 		})
@@ -521,38 +525,9 @@ export class ObjectTransactions {
 			data: {
 				databaseId,
 				types: [version.type],
-				id: version.id,
-				// todo: should include version id in event?
-				action: 'delete-version'
-			}
-		})
-	}
-
-	async purgeVersion(databaseId: string, versionId: string): Promise<void> {
-		const version = await this.getVersion(databaseId, versionId);
-
-		const purgeVersionQuery = sqlBuilder
-			.delete(objectVersions)
-			.where(eq(objectVersions.id, versionId))
-			.toSQL()
-		await this.databaseService.exec({databaseId, ...purgeVersionQuery})
-
-		if (versionId === version.objectId) {
-			const purgeObjectQuery = sqlBuilder
-				.delete(objects)
-				.where(eq(objects.id, version.objectId))
-				.toSQL()
-			await this.databaseService.exec({databaseId, ...purgeObjectQuery})
-		}
-
-		this.eventsService.dispatch(EventTypes.DATA_CHANGE, {
-			context: this.context,
-			data: {
-				databaseId,
-				types: [version.type],
 				id: version.objectId,
-				// todo: need to separate version purge from object purge
-				action: 'purge'
+				versionId: version.id,
+				action: 'delete-version'
 			}
 		})
 	}

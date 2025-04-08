@@ -1,18 +1,3 @@
-
-export interface UploadDatabaseAction {
-	type: "upload-database",
-	detail: {
-		databaseId: string
-	}
-}
-
-export interface DownloadDatabaseAction {
-	type: "download-database",
-	detail: {
-		databaseId: string
-	}
-}
-
 export interface UploadAction {
 	type: "upload",
 	detail: {
@@ -45,14 +30,4 @@ export interface DeleteServerAction {
 	}
 }
 
-export interface PurgeAction {
-	type: "purge",
-	detail: {
-		databaseId: string,
-		id: string,
-	}
-}
-
-export type SyncAction =
-	UploadDatabaseAction | DownloadDatabaseAction |
-	UploadAction | DownloadAction | DeleteLocalAction | DeleteServerAction | PurgeAction;
+export type SyncAction = UploadAction | DownloadAction | DeleteLocalAction | DeleteServerAction;

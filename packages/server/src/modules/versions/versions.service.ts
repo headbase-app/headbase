@@ -212,6 +212,7 @@ export class VersionsService {
 				.select({
 					...getTableColumns(versions),
 					createdAt: isoFormat(versions.createdAt),
+					ownerId: vaults.ownerId,
 				})
 				.from(versions)
 				.innerJoin(vaults, eq(versions.vaultId, vaults.id))

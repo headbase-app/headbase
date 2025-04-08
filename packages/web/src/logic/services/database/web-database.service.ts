@@ -47,7 +47,7 @@ export class WebDatabaseService implements IDatabaseService {
 			const timeoutSignal = AbortSignal.timeout(options?.timeout || 5000)
 			const abortListener = () => {
 				this.worker.removeEventListener('message', responseListener)
-				return reject(new Error("Timeout while awaiting worker response."))
+				return reject(new Error(`Timeout while awaiting worker response for message '${message.messageId}'.`))
 			}
 			timeoutSignal.addEventListener('abort', abortListener)
 

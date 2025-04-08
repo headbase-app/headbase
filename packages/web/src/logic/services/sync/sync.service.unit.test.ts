@@ -9,7 +9,7 @@ describe("compareSnapshots should return the correct sync actions", async () => 
 		expect(result.length).toEqual(0)
 	})
 
-	test("identical snapshots with deletions should result in purge actions", async ({expect}) => {
+	test("identical snapshots with deletions should result in no actions", async ({expect}) => {
 		const result = compareSnapshots("4b564b07-038c-4984-9961-224325526230",
 			{
 				"1": false,
@@ -28,9 +28,7 @@ describe("compareSnapshots should return the correct sync actions", async () => 
 				"6": true,
 			})
 
-		expect(result.length).toEqual(2)
-
-		// todo: test that both actions are purge actions for "4" and "6"
+		expect(result.length).toEqual(0)
 	})
 
 	test("different snapshots should result in the correct sync actions", async ({expect}) => {
@@ -53,7 +51,7 @@ describe("compareSnapshots should return the correct sync actions", async () => 
 				"delete-on-server": true,
 			})
 
-		expect(result.length).toEqual(7)
+		expect(result.length).toEqual(6)
 		// todo: test actual sync actions are correct
 	})
 })

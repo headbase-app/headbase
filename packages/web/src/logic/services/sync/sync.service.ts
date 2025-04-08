@@ -19,7 +19,7 @@ import {DeviceContext, IEventsService} from "../interfaces.ts";
 import {DatabaseTransactions} from "../database/db.ts";
 import {SyncAction} from "./sync-actions.ts";
 import {ServerAPI} from "../server/server.ts";
-import {HeadbaseEvent} from "../events/events.ts";
+import {EventTypes, HeadbaseEvent} from "../events/events.ts";
 import {ErrorTypes, HeadbaseError} from "../../control-flow.ts";
 import {ErrorIdentifiers, VaultDto} from "@headbase-app/common";
 import {DatabasesManagementAPI} from "../database-management/database-management.ts";
@@ -32,6 +32,7 @@ export type SyncStatus = 'idle' | 'running' | 'error' | 'disabled'
 export interface SyncServiceConfig {
 	context: DeviceContext
 }
+
 
 export class SyncService {
 	private context: DeviceContext
@@ -68,6 +69,30 @@ export class SyncService {
 	async handleEvent(event: CustomEvent<HeadbaseEvent>) {
 		console.debug(`[sync] event received from context ${this.context.id}`)
 		console.debug(event)
+		if (event.type === EventTypes.DATA_CHANGE) {
+			if (["create", "update"].includes(event.detail.data.action)) {
+				this.actions.push({
+					type: 'upload',
+					detail: {
+						databaseId: event.detail.data.databaseId,
+						id: event.detail.data.versionId,
+					}
+				})
+			}
+			else if (["delete", "delete-version"].includes(event.detail.data.action)) {
+				this.actions.push({
+					type: 'delete-server',
+					detail: {
+						databaseId: event.detail.data.databaseId,
+						id: event.detail.data.versionId,
+					}
+				})
+			}
+
+			// todo: running any actions/database queries here fails.
+			// Maybe issues with query concurrency, scoping/issues with nested code running etc
+			//this.runActions()
+		}
 	}
 
 	async destroy() {
@@ -175,6 +200,11 @@ export class SyncService {
 		console.debug(syncActions)
 
 		this.actions.push(...syncActions)
+
+		this.runActions()
+	}
+
+	private async runActions() {
 		while (this.actions.length > 0) {
 			const action = this.actions.shift()
 			if (!action) break;
@@ -188,6 +218,8 @@ export class SyncService {
 	}
 
 	private async runAction(action: SyncAction) {
+		console.debug(`[sync] running action: ${JSON.stringify(action)}`)
+
 		const encryptionKey = await KeyStorageService.get(action.detail.databaseId)
 		if (!encryptionKey) {
 			throw new HeadbaseError({type: ErrorTypes.SYSTEM_ERROR, devMessage: "Could not fetch encryption key"})
@@ -229,10 +261,8 @@ export class SyncService {
 			await this.databaseTransactions.objectStore.deleteVersion(action.detail.databaseId, action.detail.id)
 		}
 		else if (action.type === "delete-server") {
+			// todo: I don't think server currently cascades all versions?
 			await this.server.deleteVersion(action.detail.id)
-		}
-		else if (action.type === "purge") {
-			await this.databaseTransactions.objectStore.purgeVersion(action.detail.databaseId, action.detail.id)
 		}
 		else {
 			console.error(`[sync] unknown (OR UNIMPLEMENTED) action type found: ${action.type}`)

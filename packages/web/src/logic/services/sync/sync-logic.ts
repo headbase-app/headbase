@@ -62,17 +62,5 @@ export function compareSnapshots(databaseId: string, localSnapshot: Snapshot, se
 		})
 	}
 
-	// Purge locally if the item is already deleted on both the server and locally
-	const toPurge = serverIds.filter(id => serverSnapshot[id] && localSnapshot[id])
-	for (const id of toPurge) {
-		syncActions.push({
-			type: "purge",
-			detail: {
-				databaseId,
-				id: id
-			}
-		})
-	}
-
 	return syncActions;
 }

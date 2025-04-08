@@ -31,8 +31,9 @@ export interface DataChangeEvent {
 		data: {
 			databaseId: string
 			types: string[]
-			action: 'create' | 'update' | 'delete' | 'purge' |  'create-version' | 'delete-version'
+			action: 'create' | 'update' | 'delete' |  'create-version' | 'delete-version'
 			id: string,
+			versionId: string
 		}
 	}
 }
