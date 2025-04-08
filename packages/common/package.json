@@ -1,6 +1,6 @@
 {
   "name": "@headbase-app/common",
-  "version": "0.7.0",
+  "version": "0.8.0",
   "description": "A library of common interfaces, schemas and utilities for use across headbase.app",
   "author": "ben-ryder <dev@benryder.me> (https://www.benryder.me)",
   "homepage": "https://github.com/headbase-app/headbase",
