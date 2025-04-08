@@ -3,10 +3,12 @@ import {createDateField, createIdField, ProtectedDataField} from "../common/fiel
 
 export const BaseVersionDto = z.object({
 	vaultId: createIdField("vaultId"),
-	spec: z.string().min(1),
+	spec: z.string()
+		.min(1, "spec must be at least 1 character.")
+		.max(255, "spec can't be over 255 characters."),
 	type: z.string()
 		.min(1, "type must be at least 1 character.")
-		.max(20, "type can't be over 20 characters."),
+		.max(255, "type can't be over 255 characters."),
 	objectId: createIdField("objectId"),
 	id: createIdField(),
 	previousVersionId: createIdField("previousVersionId").nullable(),

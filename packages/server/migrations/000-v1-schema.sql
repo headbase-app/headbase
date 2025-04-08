@@ -86,8 +86,8 @@ CREATE TRIGGER update_vault_timestamps BEFORE UPDATE ON vaults FOR EACH ROW EXEC
 */
 CREATE TABLE IF NOT EXISTS versions (
     vault_id UUID NOT NULL,
-    spec VARCHAR(100) NOT NULL,
-    type VARCHAR(20) NOT NULL,
+    spec VARCHAR(255) NOT NULL,
+    type VARCHAR(255) NOT NULL,
     object_id UUID NOT NULL,
     id UUID NOT NULL,
     previous_version_id UUID,
