@@ -89,9 +89,7 @@ export class SyncService {
 				})
 			}
 
-			// todo: running any actions/database queries here fails.
-			// Maybe issues with query concurrency, scoping/issues with nested code running etc
-			//this.runActions()
+			this.runActions()
 		}
 	}
 

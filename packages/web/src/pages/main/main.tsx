@@ -11,13 +11,15 @@ import {
 import {StatusDialog, StatusDialogProvider} from "../../patterns/features/status/status-dialog.tsx";
 import {AccountDialog, AccountDialogProvider} from "../../patterns/features/account/account-dialog.tsx";
 import {Workspace} from "../../patterns/features/workspace/workspace.tsx";
+import {HeadbaseWeb} from "../../logic/headbase-web.ts";
 
+const headbase = new HeadbaseWeb()
 
 export function MainPage() {
 	const [isMenuPanelOpen, setIsMenuPanelOpen] = useState<boolean>(true)
 
 	return (
-		<HeadbaseContextProvider>
+		<HeadbaseContextProvider headbase={headbase}>
 			<WorkspaceContextProvider>
 				<DatabaseManagerDialogProvider>
 						<StatusDialogProvider>

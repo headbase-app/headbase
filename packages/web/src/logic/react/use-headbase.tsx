@@ -1,8 +1,8 @@
 import {HeadbaseWeb} from "../headbase-web.ts";
-import {Context, createContext, PropsWithChildren, useContext, useEffect, useState} from "react";
+import {Context, createContext, PropsWithChildren, useContext, useState} from "react";
 
 export type HeadbaseContext = {
-	headbase: HeadbaseWeb | null
+	headbase: HeadbaseWeb
 	currentDatabaseId: string | null
 	setCurrentDatabaseId: (currentDatabaseId: string) => void
 }
@@ -21,28 +21,15 @@ export function useHeadbase() {
 	return headbaseContext as unknown as HeadbaseContext
 }
 
-export type HeadbaseContextProviderProps = PropsWithChildren
+export type HeadbaseContextProviderProps = PropsWithChildren & {
+	headbase: HeadbaseWeb
+}
 
 export function HeadbaseContextProvider(props: HeadbaseContextProviderProps) {
-	const [headbase, setHeadbase] = useState<HeadbaseWeb | null>(null)
-
-	useEffect(() => {
-		if (!headbase) {
-			const instance = new HeadbaseWeb()
-			setHeadbase(instance)
-			// @ts-expect-error -- adding custom to window so fine
-			window.hb = instance
-
-			return () => {
-				instance.destroy()
-			}
-		}
-	}, []);
-
 	const [currentDatabaseId, setCurrentDatabaseId] = useState<string|null>(null)
 
 	return <HeadbaseContext.Provider value={{
-		headbase,
+		headbase: props.headbase,
 		currentDatabaseId,
 		setCurrentDatabaseId,
 	}}>{props.children}</HeadbaseContext.Provider>
