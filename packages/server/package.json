@@ -1,6 +1,6 @@
 {
   "name": "@headbase-app/server",
-  "version": "0.7.0",
+  "version": "0.8.0",
   "description": "The central sync and backup server for Headbase.",
   "private": true,
   "author": "Ben Ryder <dev@benryder.me> (https://www.benryder.me)",
