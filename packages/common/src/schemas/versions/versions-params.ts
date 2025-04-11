@@ -3,7 +3,7 @@ import {ResourceListingParams} from "../common/listings";
 import {BaseVersionDto} from "./versions";
 
 export const VersionsURLParams = z.object({
-	itemId: z.string().uuid("itemId must be a uuid"),
+	versionId: z.string().uuid("versionId must be a uuid"),
 }).strict();
 export type VersionsURLParams = z.infer<typeof VersionsURLParams>;
 
