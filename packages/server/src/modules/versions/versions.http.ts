@@ -36,7 +36,7 @@ export class VersionsHttpController {
       const requestUser = await this.accessControlService.validateAuthentication(req);
       const params = await validateSchema(req.params, VersionsURLParams);
 
-      const versionDto = await this.versionsService.get(requestUser, params.itemId);
+      const versionDto = await this.versionsService.get(requestUser, params.versionId);
       res.status(HttpStatusCodes.OK).json(versionDto)
     }
     catch (error) {
@@ -68,7 +68,7 @@ export class VersionsHttpController {
       const params = await validateSchema(req.params, VersionsURLParams);
       const requestUser = await this.accessControlService.validateAuthentication(req);
 
-      await this.versionsService.delete(requestUser, params.itemId);
+      await this.versionsService.delete(requestUser, params.versionId);
       res.status(HttpStatusCodes.OK).json({statusCode: HttpStatusCodes.OK});
     }
     catch (error) {

@@ -12,6 +12,7 @@ import {KeyStorageService} from "../../../../logic/services/key-storage/key-stor
 import {DatabaseImportScreen} from "../screens/database-import.tsx";
 import {DatabaseExportScreen} from "../screens/database-export.tsx";
 import {DatabaseServerList} from "../screens/database-server-list.tsx";
+import {useCurrentUser} from "../../../../logic/react/use-current-user.tsx";
 
 
 export function DatabaseManagerDialogProvider(props: PropsWithChildren) {
@@ -42,8 +43,8 @@ export function DatabaseManagerDialogProvider(props: PropsWithChildren) {
 export function DatabaseManagerDialog() {
 	const { openTab, setOpenTab, close } = useDatabaseManagerDialogContext()
 	const { closeAllTabs } = useWorkspaceContext()
-
-	const { currentDatabaseId, setCurrentDatabaseId, headbase } = useHeadbase()
+	const { currentDatabaseId, headbase, setCurrentDatabaseId } = useHeadbase()
+	const currentUser = useCurrentUser()
 
 	let dialogContent: ReactNode
 	switch (openTab?.type) {
@@ -122,6 +123,18 @@ export function DatabaseManagerDialog() {
 		}
 		handleDatabaseChange()
 	}, [headbase, currentDatabaseId])
+
+	useEffect(() => {
+		if (currentDatabaseId && currentUser.status === 'success' && currentUser.result) {
+			const interval = setInterval(() => {
+				headbase.sync.requestSync(currentDatabaseId)
+			}, 60000)
+
+			return () => {
+				clearInterval(interval)
+			}
+		}
+	}, [currentDatabaseId, currentUser.status]);
 
 	return (
 		<JDialog
