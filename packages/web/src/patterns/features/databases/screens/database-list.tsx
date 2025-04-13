@@ -56,6 +56,11 @@ export function DatabaseListScreen() {
 					{databasesQuery.result.map(database => (
 						<div key={database.id}>
 							<h2>{database.name}{currentDatabaseId === database.id && <span> [currently open]</span>}</h2>
+							{database.syncEnabled && <p>Sync enabled</p>}
+							{database.lastSyncedAt
+								? <p>Last synced at: {database.lastSyncedAt}</p>
+								: <p>Database not synced</p>
+							}
 							<JButton
 								variant='tertiary'
 								onClick={() => {

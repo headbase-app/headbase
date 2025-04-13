@@ -41,7 +41,7 @@ export function DatabaseServerList() {
 			<p>When deleting a vault, ensure you remove it or disable sync on all devices to stop it being created again!</p>
 			{isLoading && <p>Loading...</p>}
 			{vaults.map((v) => (
-				<div>
+				<div key={v.id}>
 					<h3>{v.name}</h3>
 					{localVaultIds.includes(v.id)
 						? (

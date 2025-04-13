@@ -199,6 +199,12 @@ export class SyncService {
 
 		this.actions.push(...syncActions)
 
+		// Update lastSynced at timestamp saved to database
+		const lastSyncedAt = new Date().toISOString()
+		await this.databasesManagementAPI.update(databaseId, {
+			lastSyncedAt,
+		})
+
 		this.runActions()
 	}
 
@@ -267,7 +273,7 @@ export class SyncService {
 		}
 	}
 
-	private async downloadAndSync(vaultId: string) {
+	async downloadAndSync(vaultId: string) {
 		const serverVault = await this.server.getVault(vaultId)
 		await this.databasesManagementAPI.insertExisting(serverVault)
 		this.requestSync(vaultId)

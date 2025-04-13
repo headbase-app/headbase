@@ -40,7 +40,8 @@ export type CreateDatabaseDto = z.infer<typeof CreateDatabaseDto>
 export const UpdateDatabaseDto = LocalDatabaseDto
 	.pick({
 		name: true,
-		syncEnabled: true
+		syncEnabled: true,
+		lastSyncedAt: true
 	})
 	.partial()
 export type UpdateDatabaseDto = z.infer<typeof UpdateDatabaseDto>

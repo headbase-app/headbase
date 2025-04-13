@@ -33,7 +33,7 @@ export class EnvironmentService {
       },
       refreshToken: {
         secret: process.env.AUTH_REFRESH_TOKEN_SECRET,
-        expiry: "7 days"
+        expiry: "14 days"
       },
       emailVerification: {
         secret: process.env.AUTH_EMAIL_VERIFICATION_SECRET,

@@ -300,7 +300,7 @@ export class DatabasesManagementAPI {
 			createdAt: currentDb.createdAt,
 			updatedAt: timestamp,
 			isUnlocked: currentDb.isUnlocked,
-			lastSyncedAt: currentDb.lastSyncedAt,
+			lastSyncedAt: dataUpdate.lastSyncedAt || currentDb.lastSyncedAt,
 			name: dataUpdate.name || currentDb.name,
 			syncEnabled: dataUpdate.syncEnabled !== undefined
 				? dataUpdate.syncEnabled
