@@ -10,6 +10,7 @@ import { WelcomePage } from "./pages/welcome";
 
 import "./app.scss"
 import "./styles/variables.css"
+import "./styles/tailwind.css"
 
 export function App() {
 

@@ -4,6 +4,7 @@ import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import { VitePWA } from "vite-plugin-pwa";
 import tsconfigPaths from "vite-tsconfig-paths";
+import tailwindcss from '@tailwindcss/vite'
 
 /**
  * A Workbox plugin to add COOP/COEP headers to all assets when served via the service worker cache.
@@ -35,6 +36,7 @@ export default defineConfig({
 	plugins: [
 		tsconfigPaths(),
 		react(),
+		tailwindcss(),
 		VitePWA({
 			registerType: "autoUpdate",
 			manifest: {

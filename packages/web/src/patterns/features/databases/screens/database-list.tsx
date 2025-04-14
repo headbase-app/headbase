@@ -55,12 +55,14 @@ export function DatabaseListScreen() {
 					)}
 					{databasesQuery.result.map(database => (
 						<div key={database.id}>
-							<h2>{database.name}{currentDatabaseId === database.id && <span> [currently open]</span>}</h2>
-							{database.syncEnabled && <p>Sync enabled</p>}
-							{database.lastSyncedAt
-								? <p>Last synced at: {database.lastSyncedAt}</p>
-								: <p>Database not synced</p>
-							}
+							<h2 className='!font-bold'>{database.name}{currentDatabaseId === database.id && <span> [currently open]</span>}</h2>
+							<div className='flex gap-2'>
+								{database.syncEnabled && <p className="!text-sm">Sync enabled</p>}
+								{database.lastSyncedAt
+									? <p className="!text-sm">Last synced at: {database.lastSyncedAt}</p>
+									: <p className="!text-sm">Database not synced</p>
+								}
+							</div>
 							<JButton
 								variant='tertiary'
 								onClick={() => {
