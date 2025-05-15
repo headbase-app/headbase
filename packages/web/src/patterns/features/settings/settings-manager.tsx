@@ -4,16 +4,16 @@ import { JButton, JButtonGroup } from "@ben-ryder/jigsaw-react";
 import {PerformanceManager} from "../performance/performance-manager";
 import {UserManager} from "../user/user-manager";
 
-export type AccountTabs = "account" | "settings" | "attachments" | "performance"
+export type SettingsTabs = "account" | "app-settings" | "attachments" | "performance"
 
-export function AccountManager() {
-	const [currentTab, setCurrentTab] = useState<AccountTabs>("account")
+export function SettingsManager() {
+	const [currentTab, setCurrentTab] = useState<SettingsTabs>("account")
 
 	let content: ReactNode
 	if (currentTab === "account") {
 		content = <UserManager />
 	}
-	else if (currentTab === "settings") {
+	else if (currentTab === "app-settings") {
 		content = <p>Settings</p>
 	}
 	else if (currentTab === "attachments") {
@@ -30,7 +30,7 @@ export function AccountManager() {
 		<div>
 			<JButtonGroup align="left">
 				<JButton onClick={() => setCurrentTab("account")}>Account</JButton>
-				<JButton onClick={() => setCurrentTab("settings")}>Settings</JButton>
+				<JButton onClick={() => setCurrentTab("app-settings")}>App Settings</JButton>
 				<JButton onClick={() => setCurrentTab("attachments")}>Manage Attachments</JButton>
 				<JButton onClick={() => setCurrentTab("performance")}>Device Benchmark</JButton>
 			</JButtonGroup>

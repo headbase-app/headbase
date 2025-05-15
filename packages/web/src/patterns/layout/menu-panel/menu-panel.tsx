@@ -6,7 +6,6 @@ import {
 	List as AllContentIcon,
 	Shapes as DataStructureIcon,
 	HelpCircle as HelpIcon,
-	UserCircle as AccountIcon,
 	ChevronFirst as CollapseMenuIcon,
 	ChevronDown as DownArrowIcon,
 	Settings as SettingsIcon
@@ -19,7 +18,7 @@ import classNames from "classnames";
 import {useEffect} from "react";
 import {useDatabaseManagerDialogContext} from "../../features/databases/manager/database-manager-context.tsx";
 import {useStatusDialog} from "../../features/status/status-dialog.tsx";
-import {useAccountDialog} from "../../features/account/account-dialog.tsx";
+import {useSettingsDialog} from "../../features/settings/settings-dialog.tsx";
 import {useHeadbase} from "../../../logic/react/use-headbase.tsx";
 import {useDatabase} from "../../../logic/react/databases/use-database.tsx";
 import {LiveQueryStatus} from "../../../logic/control-flow.ts";
@@ -35,7 +34,7 @@ export interface WithMenuPanelProps {
 export function MenuPanel(props: WithMenuPanelProps) {
 	const {setOpenTab: setDatabaseManagerDialogTab } = useDatabaseManagerDialogContext()
 	const {setIsOpen: setStatusDialogOpen } = useStatusDialog()
-	const {setIsOpen: setAccountDialogOpen } = useAccountDialog()
+	const {setIsOpen: setAccountDialogOpen } = useSettingsDialog()
 
 	const { currentDatabaseId, headbase } = useHeadbase()
 	const currentDatabase = useDatabase(currentDatabaseId)
@@ -127,19 +126,13 @@ export function MenuPanel(props: WithMenuPanelProps) {
 			</div>
 
 			<div className="menu-panel__bottom">
-				<JTooltip content="Account settings" renderAsChild={true} variant='dark'>
-					<button
-						aria-label='Account settings'
-						className="menu-panel__account"
-						onClick={() => {
-							setAccountDialogOpen(true)
-						}}
-					><AccountIcon/></button>
-				</JTooltip>
 				<JTooltip content="Settings" renderAsChild={true} variant='dark'>
 					<button
 						aria-label='Settings'
 						className="menu-panel__settings"
+						onClick={() => {
+							setAccountDialogOpen(true)
+						}}
 					><SettingsIcon/></button>
 				</JTooltip>
 				<JTooltip content="Help" renderAsChild={true} variant='dark'>

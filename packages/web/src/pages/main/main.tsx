@@ -9,7 +9,7 @@ import {
 	DatabaseManagerDialogProvider
 } from "../../patterns/features/databases/manager/database-manager.tsx";
 import {StatusDialog, StatusDialogProvider} from "../../patterns/features/status/status-dialog.tsx";
-import {AccountDialog, AccountDialogProvider} from "../../patterns/features/account/account-dialog.tsx";
+import {SettingsDialog, SettingsDialogProvider} from "../../patterns/features/settings/settings-dialog.tsx";
 import {Workspace} from "../../patterns/features/workspace/workspace.tsx";
 import {HeadbaseWeb} from "../../logic/headbase-web.ts";
 
@@ -23,7 +23,7 @@ export function MainPage() {
 			<WorkspaceContextProvider>
 				<DatabaseManagerDialogProvider>
 						<StatusDialogProvider>
-								<AccountDialogProvider>
+								<SettingsDialogProvider>
 									<main className="headbase">
 										<DatabaseManagerDialog/>
 
@@ -33,9 +33,9 @@ export function MainPage() {
 											setIsMenuPanelOpen={setIsMenuPanelOpen}/>
 
 										<StatusDialog/>
-										<AccountDialog/>
+										<SettingsDialog/>
 									</main>
-								</AccountDialogProvider>
+								</SettingsDialogProvider>
 						</StatusDialogProvider>
 				</DatabaseManagerDialogProvider>
 			</WorkspaceContextProvider>

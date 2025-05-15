@@ -1,30 +1,30 @@
 import React from "react";
 import {JDialog} from "@ben-ryder/jigsaw-react";
-import {AccountManager} from "./account-manager";
+import {SettingsManager} from "./settings-manager.tsx";
 import {createModalContext} from "../common/dialog/generic-dialog.tsx";
 
 export const {
-	context: AccountDialogContext,
-	useContext: useAccountDialog,
-	provider: AccountDialogProvider
+	context: SettingsDialogContext,
+	useContext: useSettingsDialog,
+	provider: SettingsDialogProvider
 } = createModalContext()
 
-export function AccountDialog() {
-	const {isOpen, setIsOpen} = useAccountDialog()
+export function SettingsDialog() {
+	const {isOpen, setIsOpen} = useSettingsDialog()
 
 	return (
 		<JDialog
 			isOpen={isOpen}
 			setIsOpen={setIsOpen}
-			title="Account"
-			description="Manage your account, including local settings and server account."
+			title="Settings"
+			description="Manage your account, app settings etc."
 			style={{
 				width: "100%",
 				maxWidth: "1000px",
 				height: "100%"
 			}}
 			content={
-				<AccountManager />
+				<SettingsManager />
 			}
 		/>
 	)
