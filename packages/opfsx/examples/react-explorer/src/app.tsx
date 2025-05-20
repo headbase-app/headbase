@@ -1,7 +1,8 @@
 import './app.css'
-import * as opfs from "./opfs"
 import {useEffect, useState} from "react";
-import type {OPFSFile, OPFSDirectoryWithChildren} from "./opfs";
+
+import * as opfs from "opfsx"
+import type {OPFSFile, OPFSDirectoryWithChildren} from "opfsx";
 
 // @ts-expect-error -- adding to window for allow inspecting/using in browser.
 window.opfs = opfs

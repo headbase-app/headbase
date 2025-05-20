@@ -1,4 +1,4 @@
-import {resolveDirectoryPath} from "./common.ts";
+import {resolveDirectoryPath} from "../common.js";
 
 /**
  * Create a directory with the given path, with support for recursively creating all directories.

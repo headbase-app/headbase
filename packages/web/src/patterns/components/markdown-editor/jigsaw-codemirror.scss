@@ -8,10 +8,9 @@ Jigsaw styling for the editor (currently Codemirror 6)
   color: var(--j-c-text);
   line-height: 2;
   margin-top: var(--j-space-4);
-  min-height: 200px;
+  min-height: 400px;
 
-  border: var(--j-border-width-md) solid var(--j-c-blueGrey-300);
-  border-radius: var(--j-border-radius-md);
+  border-left: var(--j-border-width-md) solid var(--j-c-blueGrey-300);
   padding: var(--j-space-5);
 
   .cm-scroller {

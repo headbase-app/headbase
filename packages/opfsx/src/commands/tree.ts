@@ -1,4 +1,4 @@
-import {type OPFSDirectoryWithChildren, type OPFSFile, resolveDirectoryPath} from "./common.ts";
+import {type OPFSDirectoryWithChildren, type OPFSFile, resolveDirectoryPath} from "../common.js";
 
 
 /**

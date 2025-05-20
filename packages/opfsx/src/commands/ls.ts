@@ -1,4 +1,4 @@
-import {type OPFSDirectory, type OPFSFile, type OPFSItem, resolveDirectoryPath} from "./common.ts";
+import {type OPFSDirectory, type OPFSFile, type OPFSItem, resolveDirectoryPath} from "../common.js";
 
 export interface ListOptions {
 	recursive: boolean

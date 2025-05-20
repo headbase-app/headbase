@@ -1,16 +1,16 @@
 import {useWorkspaceContext} from "./workspace-context";
 import {Tab, TabProps} from "./tab";
 import {ReactNode} from "react";
-import {ContentTab} from "../content/tab/content-tab";
+import {FileEditorTab} from "../file-editor/file-editor-tab.tsx";
 
 // todo: split styling by component for better encapsulation
 import "./workspace.scss"
-import {ContentListTab} from "../content-list/tab/content-list-tab";
+import {SearchTab} from "../search/tab/search-tab.tsx";
 import classNames from "classnames";
 import { ChevronLast as ExpandMenuIcon} from "lucide-react";
 import {JTooltip} from "@ben-ryder/jigsaw-react";
 import {WithMenuPanelProps} from "../../layout/menu-panel/menu-panel.tsx";
-import {ContentList} from "../content-list/content-list.tsx";
+import {FileSystemExplorer} from "../file-system-explorer/file-system-explorer.tsx";
 
 export interface WithTabData {
 	tabIndex: number
@@ -26,24 +26,29 @@ export function Workspace(props: WithMenuPanelProps) {
 		let tabName;
 		let tabContent: ReactNode = <p>{tab.type}</p>
 		switch (tab.type) {
-			case "all": {
-				tabName = 'All Objects'
-				tabContent = <ContentListTab />
+			case "search": {
+				tabName = 'Search'
+				tabContent = <SearchTab />
 				break;
 			}
-			case "object-new": {
+			case "file-new": {
 				tabName = tab.name ?? 'Untitled'
-				tabContent = <ContentTab tabIndex={tabIndex} />
+				tabContent = <FileEditorTab tabIndex={tabIndex} />
 				break;
 			}
-			case "object": {
+			case "file": {
 				tabName = tab.name ?? 'Untitled'
-				tabContent = <ContentTab objectId={tab.objectId} tabIndex={tabIndex} />
+				tabContent = <FileEditorTab path={tab.path} tabIndex={tabIndex} />
+				break;
+			}
+			case "file-explorer": {
+				tabName = "Files"
+				tabContent = <FileSystemExplorer />
 				break;
 			}
 			default: {
 				tabName = 'Unknown Tag'
-				tabContent = <p>Somehow a tab was opened that the workspace doesn't know how to deal with.</p>
+				tabContent = <p>A tab was opened that the workspace doesn't know how to deal with.</p>
 				break;
 			}
 		}

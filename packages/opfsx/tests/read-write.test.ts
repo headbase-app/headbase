@@ -1,4 +1,4 @@
-import * as opfs from "../src/opfs"
+import * as opfs from "../src"
 import {afterEach, beforeEach, expect, test} from 'vitest'
 
 beforeEach(async () => {

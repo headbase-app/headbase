@@ -1,7 +1,7 @@
-import * as opfs from "../src/opfs"
+import * as opfs from "../../opfsx/src"
 
 import {afterEach, beforeEach, expect, test} from 'vitest'
-import frontmatter from "frontmatter";
+import {parseMarkdownFrontMatter} from "../src/utils/frontmatter";
 
 beforeEach(async () => {
   await opfs.rm("/", {recursive: true})
@@ -52,7 +52,7 @@ test('query markdown', async () => {
 
   console.time('get-text-content')
   const testFile5Content = await testFile5.text()
-  const data = frontmatter(testFile5Content)
+  const data = parseMarkdownFrontMatter(testFile5Content)
   expect(data.data.file).toEqual(5)
   console.timeEnd('get-text-content')
 
@@ -66,7 +66,7 @@ test('query markdown', async () => {
   for (const opfsFile of files) {
     const file = await opfsFile.handle.getFile()
     const fileContent = await file.text()
-    const parsed = frontmatter(fileContent)
+    const parsed = parseMarkdownFrontMatter(fileContent)
     if (parsed.data.file === 5) {
       results.push(opfsFile.path)
     }

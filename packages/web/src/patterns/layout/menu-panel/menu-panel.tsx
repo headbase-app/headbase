@@ -3,12 +3,12 @@ import {
 	CircleCheck as StatusIcon,
 	PlusSquare as NewContentIcon,
 	Search as SearchIcon,
-	List as AllContentIcon,
-	Shapes as DataStructureIcon,
 	HelpCircle as HelpIcon,
 	ChevronFirst as CollapseMenuIcon,
 	ChevronDown as DownArrowIcon,
-	Settings as SettingsIcon
+	Settings as SettingsIcon,
+	FolderTreeIcon as FilesIcon,
+	UserCircle as AccountIcon
 } from "lucide-react"
 import {MainPanelAction} from "./main-panel-action";
 
@@ -77,7 +77,7 @@ export function MenuPanel(props: WithMenuPanelProps) {
 						{currentDatabase && <JIcon><DownArrowIcon width={2} /></JIcon>}
 					</button>
 				</JTooltip>
-				<JTooltip content='App status' renderAsChild={true} variant='dark'>
+				<JTooltip content='View app status' renderAsChild={true} variant='dark'>
 					<button
 						aria-label='Database status'
 						className="menu-panel__status"
@@ -86,11 +86,11 @@ export function MenuPanel(props: WithMenuPanelProps) {
 						}}
 					><JIcon><StatusIcon /></JIcon></button>
 				</JTooltip>
-				<JTooltip content='Create content' renderAsChild={true} variant='dark'>
+				<JTooltip content='Create new file' renderAsChild={true} variant='dark'>
 					<button
 						className="menu-panel__create"
 						onClick={() => {
-							openTab({type: 'object-new'}, {switch: true})
+							openTab({type: 'file-new'}, {switch: true})
 						}}
 					>
 						<JIcon><NewContentIcon/></JIcon>
@@ -103,18 +103,22 @@ export function MenuPanel(props: WithMenuPanelProps) {
 					text='Search'
 					icon={<SearchIcon/>}
 					onSelect={() => {
-						openTab({type: 'all'}, {switch: true})
+						openTab({type: 'search'}, {switch: true})
 					}}
 				/>
 				<MainPanelAction
-					text='Templates'
-					icon={<DataStructureIcon/>}
-					onSelect={() => {}}
+					text='Files'
+					icon={<FilesIcon />}
+					onSelect={() => {
+						openTab({type: 'file-explorer'}, {switch: true})
+					}}
 				/>
 				<MainPanelAction
-					text='Views'
-					icon={<AllContentIcon/>}
-					onSelect={() => {}}
+					text='Settings'
+					icon={<SettingsIcon />}
+					onSelect={() => {
+						openTab({type: 'settings'}, {switch: true})
+					}}
 				/>
 			</div>
 
@@ -126,14 +130,14 @@ export function MenuPanel(props: WithMenuPanelProps) {
 			</div>
 
 			<div className="menu-panel__bottom">
-				<JTooltip content="Settings" renderAsChild={true} variant='dark'>
+				<JTooltip content="Manage account" renderAsChild={true} variant='dark'>
 					<button
-						aria-label='Settings'
+						aria-label='Account settings'
 						className="menu-panel__settings"
 						onClick={() => {
 							setAccountDialogOpen(true)
 						}}
-					><SettingsIcon/></button>
+					><AccountIcon/></button>
 				</JTooltip>
 				<JTooltip content="Help" renderAsChild={true} variant='dark'>
 					<button

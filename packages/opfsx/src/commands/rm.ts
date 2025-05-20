@@ -1,5 +1,5 @@
-import {parsePath, resolveDirectoryPath} from "./common.ts";
-import {ls} from "./ls.ts";
+import {parsePath, resolveDirectoryPath} from "../common.js";
+import {ls} from "./ls.js";
 
 export interface RemoveOptions {
 	recursive: boolean

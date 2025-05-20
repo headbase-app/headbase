@@ -204,4 +204,4 @@ await opfs.stat("/example/nested/test1")
 Feel free to suggest features, give feedback, suggest improvements, raise bugs, open PRs and anything else.
 
 ## License
-This project is released under the [MIT license](./LICENSE.txt).
+This project is released under the [MIT license](./license.txt).
