@@ -12,7 +12,6 @@ export async function tree(
 	pathHandle?: FileSystemDirectoryHandle,
 ): Promise<OPFSDirectoryWithChildren> {
 	// todo: assert path is valid (correct path format, not file etc)?
-
 	const directoryHandle = pathHandle ?? await resolveDirectoryPath(path)
 
 	const directory: OPFSDirectoryWithChildren = {

@@ -38,11 +38,15 @@ export function useFileEditor(options: FileEditorOptions) {
 			const file = await opfsx.read(options.path)
 			const content = await file.text()
 			const parsed = parseMarkdownFrontMatter(content)
-			const frontMatterString = parsed.data
-				? Object.entries(parsed.data)
+
+			const {$name: frontMatterName, ...frontMatter } = parsed.data
+			const frontMatterString = frontMatter
+				? Object.entries(frontMatter)
 					.map(([k, v]) => `${k}: ${v}`)
 					.join("\n")
 				: ''
+
+			const displayName = typeof frontMatterName === 'string' ? frontMatterName : file.name.replace(".md", "")
 
 			// get the path relative to the vault folder, the full path is an implementation detail the user shouldn't know about.
 			const relativePath = options.path.replace(`/headbase-v1/${currentDatabaseId}`, "") || "/"
@@ -50,10 +54,8 @@ export function useFileEditor(options: FileEditorOptions) {
 			// A newline is automatically added between the frontmatter and content when saving, so ensure this is removed
 			const trimmedContent = parsed.content.trim()
 
-			const parsedName = typeof parsed.data?.$name === 'string' ? parsed.data.$name : file.name.replace(".md", "")
-
 			setPath(relativePath)
-			setName(parsedName)
+			setName(displayName)
 			setContent(trimmedContent)
 			setFields(frontMatterString)
 		}
@@ -75,7 +77,7 @@ export function useFileEditor(options: FileEditorOptions) {
 
 		if (options.path && options.path !== newFilePath) {
 			console.debug(`remove old path: ${options.path}`)
-			// await opfsx.rm(props.path)
+			await opfsx.rm(options.path)
 		}
 
 		return newFilePath
