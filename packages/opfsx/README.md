@@ -19,7 +19,7 @@ In situations where there could be ambiguity, such as if you need to directly us
 Resolve the given path into a [FileSystemDirectoryHandle](https://developer.mozilla.org/en-US/docs/Web/API/FileSystemDirectoryHandle) or [FileSystemFileHandle](https://developer.mozilla.org/en-US/docs/Web/API/FileSystemFileHandle).  
 A path with a trailing slash will resolve to a directory and paths without will resolve to a file.
 
-The default behaviour is to throw an error if the directory/file doesn't exist, passing the `create: true` option will cause all required directories and the file itself to be created.
+The default behaviour is to throw an error if the directory/file doesn't exist, passing the `create: true` option will create all required directories and if applicable the file itself before returning the handle of the new directory/file.
 
 ```ts
 import * as opfs from "opfsx"

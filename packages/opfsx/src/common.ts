@@ -1,24 +1,52 @@
 import {parse, sep as PATH_SEPARATOR} from "pathe"
 
-export interface OPFSFile {
+export interface OPFSXFile {
 	kind: 'file'
 	name: string
 	path: string
 	handle: FileSystemFileHandle
 }
 
-export interface OPFSDirectory {
+export interface OPFSXDirectory {
 	kind: 'directory',
 	name: string
 	path: string
 	handle: FileSystemDirectoryHandle
 }
 
-export type OPFSItem = OPFSDirectory | OPFSFile
+export type OPFSXItem = OPFSXDirectory | OPFSXFile
 
-export interface OPFSDirectoryWithChildren extends OPFSDirectory {
-	children: (OPFSDirectoryWithChildren|OPFSFile)[]
+export interface OPFSDirectoryTree extends OPFSXDirectory {
+	children: (OPFSDirectoryTree|OPFSXFile)[]
 }
+
+export interface ResolveOptions {
+	create: boolean
+}
+
+/**
+ * Resolve the given path into a FileSystemDirectoryHandle or FileSystemFileHandle.
+ * Path with a trailing slash will resolve to a directory and paths without will resolve to a file.
+ *
+ * Will throw if any directory/file doesn't exist unless passing the `create: true` option.
+ *
+ * @param path
+ * @param options
+ */
+export async function resolve(path: string, options?: ResolveOptions): Promise<FileSystemDirectoryHandle|FileSystemFileHandle> {
+	return _resolve(path, {create: options?.create ?? false}, [])
+}
+
+async function _resolve(
+	directoryTree: string[],
+	options: ResolveOptions,
+
+	parentHandle?: FileSystemDirectoryHandle
+) {
+
+}
+
+
 
 export interface ParsedFilePath {
 	directory: string
