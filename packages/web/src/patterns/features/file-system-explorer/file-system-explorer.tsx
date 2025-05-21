@@ -38,7 +38,6 @@ export function FileSystemExplorer() {
 			// ensure directory for current vault exists
 			await opfsx.mkdir(`/headbase-v1/${currentDatabaseId}`)
 			const fs = await opfsx.tree(`/headbase-v1/${currentDatabaseId}`)
-			console.debug(fs)
 			setFileSystem(fs)
 		}
 

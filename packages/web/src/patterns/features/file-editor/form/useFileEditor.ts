@@ -37,25 +37,64 @@ export function useFileEditor(options: FileEditorOptions) {
 
 			const file = await opfsx.read(options.path)
 			const content = await file.text()
-			const parsed = await parseMarkdownFrontMatter(content)
+			const parsed = parseMarkdownFrontMatter(content)
 			const frontMatterString = parsed.data
 				? Object.entries(parsed.data)
 					.map(([k, v]) => `${k}: ${v}`)
 					.join("\n")
 				: ''
 
-			const parsedPath = opfsx.parsePath(options.path)
-			const relativePath = parsedPath.parentPath.replace(`/headbase-v1/${currentDatabaseId}`, "") || "/"
+			// get the path relative to the vault folder, the full path is an implementation detail the user shouldn't know about.
+			const relativePath = options.path.replace(`/headbase-v1/${currentDatabaseId}`, "") || "/"
+
+			// A newline is automatically added between the frontmatter and content when saving, so ensure this is removed
+			const trimmedContent = parsed.content.trim()
+
+			const parsedName = typeof parsed.data?.$name === 'string' ? parsed.data.$name : file.name.replace(".md", "")
 
 			setPath(relativePath)
-			setName(file.name.replace(".md", ""))
-			setContent(parsed.content)
+			setName(parsedName)
+			setContent(trimmedContent)
 			setFields(frontMatterString)
 		}
 		load()
 	}, [options.path, currentDatabaseId])
 
+	async function saveFile(): Promise<string> {
+		if (!currentDatabaseId) {
+			throw new Error("Attempted to save file with no database open")
+		}
+
+		const newFilePath = `/headbase-v1/${currentDatabaseId}${path}`
+
+		const frontMatter = fields ? `---\n$name: ${name}\n${fields.trim()}\n---`: ''
+		const contentToSave = `${frontMatter}${frontMatter && '\n\n'}${content}`
+		await opfsx.write(newFilePath, contentToSave)
+		console.debug(`write to: ${newFilePath}`)
+		console.debug(contentToSave)
+
+		if (options.path && options.path !== newFilePath) {
+			console.debug(`remove old path: ${options.path}`)
+			// await opfsx.rm(props.path)
+		}
+
+		return newFilePath
+	}
+
+	async function deleteFile() {
+		if (!currentDatabaseId) {
+			throw new Error("Attempted to save file with no database open")
+		}
+
+		if (!options.path) {
+			throw new Error("Attempted to delete when file doesn't exist yet.")
+		}
+
+		await opfsx.rm(options.path)
+	}
+
 	return {
+		saveFile, deleteFile,
 		path, setPath,
 		name, setName,
 		content, setContent,
