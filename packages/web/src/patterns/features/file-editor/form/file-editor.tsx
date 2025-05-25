@@ -9,7 +9,7 @@ import {FileEditorData, FileEditorChangeHandlers} from "./useFileEditor.ts";
 
 import "./file-editor.css"
 import {MarkdownEditor} from "../../../components/markdown-editor/markdown-editor.tsx";
-import {Shapes as ChangeTypeIcon} from "lucide-react"
+import {Shapes as ChangeTypeIcon, History as HistoryIcon} from "lucide-react"
 
 export interface FileEditorProps extends WithTabData, FileEditorData, FileEditorChangeHandlers {
 	onSave: () => void;
@@ -27,7 +27,7 @@ export function FileEditor(props: FileEditorProps) {
 	return (
 		<JForm className="file-editor" onSubmit={onSave}>
 			<JFormRow>
-				<JButtonGroup>
+				<JButtonGroup align="right">
 					<JTooltip content="Change file type" renderAsChild={true} variant='dark'>
 						<button
 							type="button"
@@ -35,6 +35,14 @@ export function FileEditor(props: FileEditorProps) {
 							className="menu-panel__menu"
 							onClick={() => {}}
 						><ChangeTypeIcon/></button>
+					</JTooltip>
+					<JTooltip content="View history" renderAsChild={true} variant='dark'>
+						<button
+							type="button"
+							aria-label='View history'
+							className="menu-panel__menu"
+							onClick={() => {}}
+						><HistoryIcon/></button>
 					</JTooltip>
 					{props.onDelete &&
               <JButton

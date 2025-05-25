@@ -107,7 +107,7 @@ export function MenuPanel(props: WithMenuPanelProps) {
 					}}
 				/>
 				<MainPanelAction
-					text='Files'
+					text='Explorer'
 					icon={<FilesIcon />}
 					onSelect={() => {
 						openTab({type: 'file-explorer'}, {switch: true})

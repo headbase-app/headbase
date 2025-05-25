@@ -1,17 +1,26 @@
 import {useHeadbase} from "../../../logic/react/use-headbase.tsx";
 import * as opfsx from "opfsx"
 import {useEffect, useState} from "react";
-import {OPFSDirectoryWithChildren, OPFSFile} from "opfsx";
+import {OPFSXDirectoryTree, OPFSXFile} from "opfsx";
+import {useWorkspaceContext} from "../workspace/workspace-context.tsx";
 
 // @ts-expect-error -- adding for easy debugging and testing during development
 window.opfsx = opfsx
 
-function FileSystemItem(props: OPFSFile | OPFSDirectoryWithChildren) {
+function FileSystemItem(props: OPFSXFile | OPFSXDirectoryTree) {
+	// todo: move to prop
+	const { openTab } = useWorkspaceContext()
+
 	if (props.kind === "file") {
 		return (
-			<div className="flex gap-3 items-center" data-path={props.path}>
+			<button
+				className="flex gap-3 items-center"
+				onClick={() => {
+					openTab({type: "file", path: props.path}, {switch: true})
+				}}
+			>
 				<p>{props.name}</p>
-			</div>
+			</button>
 		)
 	}
 
@@ -31,7 +40,7 @@ function FileSystemItem(props: OPFSFile | OPFSDirectoryWithChildren) {
 
 export function FileSystemExplorer() {
 	const {currentDatabaseId} = useHeadbase()
-	const [fileSystem, setFileSystem] = useState<OPFSDirectoryWithChildren | null>(null)
+	const [fileSystem, setFileSystem] = useState<OPFSXDirectoryTree | null>(null)
 
 	useEffect(() => {
 		async function load() {

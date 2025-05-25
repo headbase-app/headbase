@@ -11,6 +11,7 @@ import { ChevronLast as ExpandMenuIcon} from "lucide-react";
 import {JTooltip} from "@ben-ryder/jigsaw-react";
 import {WithMenuPanelProps} from "../../layout/menu-panel/menu-panel.tsx";
 import {FileSystemExplorer} from "../file-system-explorer/file-system-explorer.tsx";
+import {VaultSettingsPage} from "../vault-settings/vault-settings-page.tsx";
 
 export interface WithTabData {
 	tabIndex: number
@@ -42,8 +43,13 @@ export function Workspace(props: WithMenuPanelProps) {
 				break;
 			}
 			case "file-explorer": {
-				tabName = "Files"
+				tabName = "File Explorer"
 				tabContent = <FileSystemExplorer />
+				break;
+			}
+			case "settings": {
+				tabName = "Vault Settings"
+				tabContent = <VaultSettingsPage />
 				break;
 			}
 			default: {

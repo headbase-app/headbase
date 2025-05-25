@@ -1,7 +1,6 @@
-import {useObjectQuery} from "../../../logic/react/tables/use-object-query.tsx";
 import {JErrorText} from "@ben-ryder/jigsaw-react";
 import {useWorkspaceContext} from "../workspace/workspace-context.tsx";
-import {DataObject} from "../../../logic/services/database/transactions/types.ts";
+import {DataObject} from "../../../headbase/archive/types.ts";
 import {useEffect, useState} from "react";
 import {useHeadbase} from "../../../logic/react/use-headbase.tsx";
 import {LiveQueryResult} from "../../../logic/control-flow.ts";
