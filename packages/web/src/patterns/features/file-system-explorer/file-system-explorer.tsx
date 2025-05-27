@@ -1,8 +1,8 @@
-import {useHeadbase} from "../../../logic/react/use-headbase.tsx";
 import * as opfsx from "opfsx"
 import {useEffect, useState} from "react";
 import {OPFSXDirectoryTree, OPFSXFile} from "opfsx";
 import {useWorkspaceContext} from "../workspace/workspace-context.tsx";
+import {useHeadbase} from "../../../headbase/hooks/use-headbase.tsx";
 
 // @ts-expect-error -- adding for easy debugging and testing during development
 window.opfsx = opfsx

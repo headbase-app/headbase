@@ -7,12 +7,12 @@ import {DatabaseUnlockScreen} from "../screens/database-unlock";
 import {_DatabaseDialogContext, DatabaseManagerTabs, useDatabaseManagerDialogContext} from "./database-manager-context";
 import {useWorkspaceContext} from "../../workspace/workspace-context";
 import {DatabaseChangePasswordScreen} from "../screens/database-change-password";
-import {useHeadbase} from "../../../../logic/react/use-headbase.tsx";
-import {KeyStorageService} from "../../../../logic/services/key-storage/key-storage.service.ts";
 import {DatabaseImportScreen} from "../screens/database-import.tsx";
 import {DatabaseExportScreen} from "../screens/database-export.tsx";
 import {DatabaseServerList} from "../screens/database-server-list.tsx";
-import {useCurrentUser} from "../../../../logic/react/use-current-user.tsx";
+import {useHeadbase} from "../../../../headbase/hooks/use-headbase.tsx";
+import {useCurrentUser} from "../../../../headbase/hooks/use-current-user.tsx";
+import {z} from "zod";
 
 
 export function DatabaseManagerDialogProvider(props: PropsWithChildren) {
@@ -105,11 +105,10 @@ export function DatabaseManagerDialog() {
 					try {
 						// ensure the database exists and is unlocked before opening
 						// todo: refactor local database to return encryptionKey not isUnlocked?
-						const database = await headbase.databases.get(lastOpenedDatabaseId)
-						const encryptionKey = await KeyStorageService.get(lastOpenedDatabaseId)
+						const vault = await headbase.vaults.get(lastOpenedDatabaseId)
+						const encryptionKey = await headbase.keyValueStore.get(`encKey_${lastOpenedDatabaseId}`, z.string())
 
-						if (database.isUnlocked && encryptionKey) {
-							await headbase.db.open(lastOpenedDatabaseId, encryptionKey)
+						if (vault.isUnlocked && encryptionKey) {
 							setCurrentDatabaseId(lastOpenedDatabaseId)
 						}
 					}

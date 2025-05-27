@@ -19,11 +19,11 @@ import {useEffect} from "react";
 import {useDatabaseManagerDialogContext} from "../../features/databases/manager/database-manager-context.tsx";
 import {useStatusDialog} from "../../features/status/status-dialog.tsx";
 import {useSettingsDialog} from "../../features/settings/settings-dialog.tsx";
-import {useHeadbase} from "../../../logic/react/use-headbase.tsx";
-import {useDatabase} from "../../../logic/react/databases/use-database.tsx";
-import {LiveQueryStatus} from "../../../logic/control-flow.ts";
 import {useWorkspaceContext} from "../../features/workspace/workspace-context.tsx";
 import {FavouritesList} from "../../features/favorites/favourites-list.tsx";
+import {useHeadbase} from "../../../headbase/hooks/use-headbase.tsx";
+import {useVault} from "../../../headbase/hooks/vaults/use-vault.tsx";
+import {LiveQueryStatus} from "../../../headbase/control-flow.ts";
 
 
 export interface WithMenuPanelProps {
@@ -37,7 +37,7 @@ export function MenuPanel(props: WithMenuPanelProps) {
 	const {setIsOpen: setAccountDialogOpen } = useSettingsDialog()
 
 	const { currentDatabaseId, headbase } = useHeadbase()
-	const currentDatabase = useDatabase(currentDatabaseId)
+	const currentDatabase = useVault(currentDatabaseId)
 	const { openTab } = useWorkspaceContext()
 
 	// todo: put this logic somewhere else?
@@ -68,12 +68,10 @@ export function MenuPanel(props: WithMenuPanelProps) {
 					<button
 						className="menu-panel__database-edit"
 						onClick={() => {
-							if (currentDatabase.status === LiveQueryStatus.SUCCESS) {
-								setDatabaseManagerDialogTab({type: 'list'})
-							}
+							setDatabaseManagerDialogTab({type: 'list'})
 						}}
 					>
-						<span className="menu-panel__database-name" tabIndex={-1}>{currentDatabase.status === LiveQueryStatus.SUCCESS && currentDatabase.result.name}</span>
+						<span className="menu-panel__database-name" tabIndex={-1}>{currentDatabase.status === LiveQueryStatus.SUCCESS ? currentDatabase.result.name : 'Select Vault'}</span>
 						{currentDatabase && <JIcon><DownArrowIcon width={2} /></JIcon>}
 					</button>
 				</JTooltip>

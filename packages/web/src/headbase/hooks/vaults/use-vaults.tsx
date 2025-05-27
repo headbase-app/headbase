@@ -11,7 +11,7 @@ export function useVaults() {
 	useEffect(() => {
 		if (!headbase) return
 
-		const observable = headbase.databases.liveQuery()
+		const observable = headbase.vaults.liveQuery()
 
 		const subscription = observable.subscribe((result) => {
 			if (result.status === LiveQueryStatus.SUCCESS) {

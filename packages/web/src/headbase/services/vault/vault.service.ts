@@ -23,7 +23,7 @@ import {KeyValueStoreService} from "../key-value-store/key-value-store.service.t
 import {z} from "zod";
 import {schema, vaults} from "./schema.ts"
 import {eq} from "drizzle-orm";
-import { HEADBASE_SPEC_VERSION } from "../../../logic/headbase-web.ts";
+import {HEADBASE_SPEC_VERSION} from "../../app.ts";
 
 export interface VaultsServiceConfig {
 	context: DeviceContext
@@ -64,7 +64,7 @@ export class VaultsService {
 
 		let encryptionKey
 		try {
-			encryptionKey = await EncryptionService.decryptProtectedEncryptionKey(database.protectedEncryptionKey, password)
+			encryptionKey = await EncryptionService.decryptProtectedEncryptionKey(database.encryptionKey, password)
 		}
 		catch (e) {
 			throw new HeadbaseError({type: ErrorTypes.INVALID_PASSWORD_OR_KEY, originalError: e})
@@ -93,7 +93,7 @@ export class VaultsService {
 		const currentVault = await this.get(vaultId)
 
 		const { protectedEncryptionKey } = await EncryptionService.updateProtectedEncryptionKey(
-			currentVault.protectedEncryptionKey,
+			currentVault.encryptionKey,
 			currentPassword,
 			newPassword
 		)
@@ -103,7 +103,7 @@ export class VaultsService {
 		const db = await this.getDatabase()
 		const newVault: LocalVaultEntity = {
 			...currentVault,
-			protectedEncryptionKey: protectedEncryptionKey,
+			encryptionKey: protectedEncryptionKey,
 			updatedAt: timestamp
 		}
 
@@ -157,9 +157,9 @@ export class VaultsService {
 				}
 			}
 
-			const handleEvent = (event: DatabaseChangeEvent['detail']|DatabaseUnlockEvent['detail']|DatabaseLockEvent['detail']) => {
+			const handleEvent = (event: DatabaseChangeEvent|DatabaseUnlockEvent|DatabaseLockEvent) => {
 				// Discard if tableKey or ID doesn't match, as the data won't have changed.
-				if (event.data.id === id && event.data.id === id) {
+				if (event.detail.data.id === id && event.detail.data.id === id) {
 					Logger.debug(`[observableGet] Received event that requires re-query`)
 					runQuery()
 				}
@@ -200,8 +200,8 @@ export class VaultsService {
 			.values({
 				id: id,
 				name: createDatabaseDto.name,
-				protectedEncryptionKey,
-				protectedData: null,
+				encryptionKey: protectedEncryptionKey,
+				data: null,
 				createdAt: timestamp,
 				updatedAt: timestamp,
 				syncEnabled: createDatabaseDto.syncEnabled,
@@ -234,8 +234,8 @@ export class VaultsService {
 				ownerId: vaultDto.ownerId,
 				id: vaultDto.id,
 				name: vaultDto.name,
-				protectedEncryptionKey: vaultDto.protectedEncryptionKey,
-				protectedData: vaultDto.protectedData,
+				encryptionKey: vaultDto.encryptionKey,
+				data: vaultDto.data,
 				createdAt: vaultDto.createdAt,
 				updatedAt: vaultDto.updatedAt,
 				syncEnabled: true,

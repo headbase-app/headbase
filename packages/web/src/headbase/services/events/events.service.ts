@@ -5,7 +5,7 @@ export interface EventsServiceConfig {
 	context: DeviceContext
 }
 
-export type Listener<Event extends keyof EventMap> = (detail: EventMap[Event]["detail"]) => void
+export type Listener<Event extends keyof EventMap> = (event: EventMap[Event]) => void
 type ListenerStore = {
 	[Event in keyof EventMap]?: Listener<Event>[];
 };
@@ -34,7 +34,7 @@ export class EventsService {
 	dispatch<Event extends keyof EventMap>(type: Event, detail: EventMap[Event]["detail"]): void {
 		if (this.listeners[type]) {
 			for (const listener of this.listeners[type]) {
-				listener(detail)
+				listener({type, detail})
 			}
 		}
 
@@ -66,7 +66,7 @@ export class EventsService {
 		}
 	}
 
-	subscribeAll(listener: (detail: HeadbaseEvent['detail']) => void) {
+	subscribeAll(listener: (event: HeadbaseEvent) => void) {
 		this.subscribe(EventTypes.FILE_SYSTEM_CHANGE, listener)
 		this.subscribe(EventTypes.DATABASE_OPEN, listener)
 		this.subscribe(EventTypes.DATABASE_CLOSE, listener)
@@ -78,7 +78,7 @@ export class EventsService {
 		this.subscribe(EventTypes.USER_LOGOUT, listener)
 	}
 
-	unsubscribeAll(listener: (detail: HeadbaseEvent['detail']) => void) {
+	unsubscribeAll(listener: (event: HeadbaseEvent) => void) {
 		this.unsubscribe(EventTypes.FILE_SYSTEM_CHANGE, listener)
 		this.unsubscribe(EventTypes.DATABASE_OPEN, listener)
 		this.unsubscribe(EventTypes.DATABASE_CLOSE, listener)

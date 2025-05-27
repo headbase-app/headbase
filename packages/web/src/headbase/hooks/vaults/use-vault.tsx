@@ -11,7 +11,7 @@ export function useVault(vaultId: string|null) {
 	useEffect(() => {
 		if (!headbase || !vaultId) return
 
-		const observable = headbase.databases.liveGet(vaultId)
+		const observable = headbase.vaults.liveGet(vaultId)
 
 		const subscription = observable.subscribe((result) => {
 			if (result.status === LiveQueryStatus.SUCCESS) {

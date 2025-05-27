@@ -2,8 +2,8 @@ import {useWorkspaceContext} from "../workspace/workspace-context";
 import {ContentCard} from "../../components/content-card/content-card.tsx";
 import {useEffect, useState} from "react";
 import * as opfsx from "opfsx";
-import {useHeadbase} from "../../../logic/react/use-headbase.tsx";
-import {OPFSFile} from "opfsx";
+import {OPFSXFile} from "opfsx";
+import {useHeadbase} from "../../../headbase/hooks/use-headbase.tsx";
 
 export interface SearchProps {
 	onOpen?: () => void
@@ -12,7 +12,7 @@ export interface SearchProps {
 export function Search(props: SearchProps) {
 	const { currentDatabaseId } = useHeadbase()
 	const { openTab } = useWorkspaceContext()
-	const [files, setFiles] = useState<OPFSFile[]>([])
+	const [files, setFiles] = useState<OPFSXFile[]>([])
 
 	useEffect(() => {
 		async function load() {

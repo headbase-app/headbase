@@ -5,15 +5,22 @@ import {
 	ServerInfoDto,
 	TokenPair,
 	UpdateUserDto,
-	UserDto, LoginRequest, VaultDto, UpdateVaultDto, CreateVaultDto, VaultSnapshot
+	UserDto, LoginRequest, VaultDto, UpdateVaultDto, CreateVaultDto, VaultSnapshot, ItemDto
 } from "@headbase-app/common";
-import {ErrorTypes, HeadbaseError, LIVE_QUERY_LOADING_STATE, LiveQueryResult, LiveQueryStatus} from "../../control-flow.ts";
-import {GeneralStorageService} from "../general-storage/general-storage.service.ts";
 import {z} from "zod";
 import {Observable} from "rxjs";
-import {AnyHeadbaseEvent, EventTypes} from "../events/events.ts";
-import {LocalUserDto} from "../../schemas/user.ts";
-import {DeviceContext, IEventsService} from "../interfaces.ts";
+import {EventsService} from "../events/events.service.ts";
+import {KeyValueStoreService} from "../key-value-store/key-value-store.service.ts";
+import {
+	ErrorTypes,
+	HeadbaseError,
+	LIVE_QUERY_LOADING_STATE,
+	LiveQueryResult,
+	LiveQueryStatus
+} from "../../control-flow.ts";
+import {EventTypes, HeadbaseEvent} from "../events/events.ts";
+import {LocalUserDto} from "./local-user.ts";
+import {DeviceContext} from "../../interfaces.ts";
 
 export interface QueryOptions {
 	serverUrl: string,
@@ -37,19 +44,19 @@ export interface ServerAPIConfig {
 }
 
 
-export class ServerAPI {
+export class ServerService {
 	private readonly context: DeviceContext
 
 	constructor(
 		config: ServerAPIConfig,
-		private readonly eventsService: IEventsService,
-		private readonly generalStorageService: GeneralStorageService,
+		private readonly eventsService: EventsService,
+		private readonly keyValueStoreService: KeyValueStoreService,
 	) {
 		this.context = config.context
 	}
 
 	private async getServerUrl(): Promise<string> {
-		const currentUser = await this.generalStorageService.loadCurrentUser()
+		const currentUser = await this.keyValueStoreService.get('currentUser', LocalUserDto)
 		if (!currentUser) {
 			throw new Error("no current user found while attempting to make request.")
 		}
@@ -62,7 +69,7 @@ export class ServerAPI {
 		const headers: Headers = new Headers({"Content-Type": "application/json"})
 
 		if (!options.noAuthRequired) {
-			const accessToken = await this.generalStorageService.loadAccessToken();
+			const accessToken = await this.keyValueStoreService.get('accessToken', z.string());
 
 			// This might be the first request of this session, so refresh auth to fetch a new access token and retry the request.
 			if (!accessToken && !options.disableAuthRetry) {
@@ -131,9 +138,9 @@ export class ServerAPI {
 			...loginResult.user
 		}
 
-		await this.generalStorageService.saveCurrentUser(localUser)
-		await this.generalStorageService.saveRefreshToken(loginResult.tokens.refreshToken)
-		await this.generalStorageService.saveAccessToken(loginResult.tokens.accessToken)
+		await this.keyValueStoreService.save('currentUser', localUser)
+		await this.keyValueStoreService.save('refreshToken', loginResult.tokens.refreshToken)
+		await this.keyValueStoreService.save('accessToken', loginResult.tokens.accessToken)
 
 		this.eventsService.dispatch(EventTypes.USER_LOGIN, {
 			context: this.context,
@@ -157,12 +164,12 @@ export class ServerAPI {
 	}
 
 	public async logout() {
-		const currentUser = await this.generalStorageService.loadCurrentUser()
+		const currentUser = await this.keyValueStoreService.get('currentUser', LocalUserDto)
 		if (!currentUser) {
 			throw new Error('No current user found to logout')
 		}
 
-		const refreshToken = await this.generalStorageService.loadRefreshToken()
+		const refreshToken = await this.keyValueStoreService.get('refreshToken', z.string());
 		if (!refreshToken) {
 			throw new HeadbaseError({type: ErrorTypes.INVALID_OR_CORRUPTED_DATA, devMessage: "No refreshToken found during logout"})
 		}
@@ -177,9 +184,9 @@ export class ServerAPI {
 			}
 		});
 
-		await this.generalStorageService.deleteCurrentUser()
-		await this.generalStorageService.deleteAccessToken()
-		await this.generalStorageService.deleteRefreshToken()
+		await this.keyValueStoreService.delete('currentUser')
+		await this.keyValueStoreService.delete('refreshToken')
+		await this.keyValueStoreService.delete('accessToken')
 
 		this.eventsService.dispatch(EventTypes.USER_LOGOUT, {
 			context: this.context,
@@ -187,7 +194,7 @@ export class ServerAPI {
 	}
 
 	public async refresh() {
-		const refreshToken = await this.generalStorageService.loadRefreshToken()
+		const refreshToken = await this.keyValueStoreService.get('refreshToken', z.string());
 		if (!refreshToken) {
 			throw new HeadbaseError({type: ErrorTypes.INVALID_OR_CORRUPTED_DATA, devMessage: "No refreshToken found during auth refresh"})
 		}
@@ -205,17 +212,17 @@ export class ServerAPI {
 				}
 			});
 
-			await this.generalStorageService.saveAccessToken(tokens.accessToken)
-			await this.generalStorageService.saveRefreshToken(tokens.refreshToken)
+			await this.keyValueStoreService.save('accessToken', tokens.accessToken)
+			await this.keyValueStoreService.save('refreshToken', tokens.refreshToken)
 		}
 		catch(e: unknown) {
 			// Delete all user data if the session is no longer valid
 			// @ts-expect-error -- todo: improve typing of errors?
 			// todo: logout on any 4xx error, error message on 5xx?
 			if (e.response?.data?.identifier === ErrorIdentifiers.ACCESS_UNAUTHORIZED) {
-				await this.generalStorageService.deleteCurrentUser()
-				await this.generalStorageService.deleteRefreshToken()
-				await this.generalStorageService.deleteAccessToken()
+				await this.keyValueStoreService.delete('currentUser')
+				await this.keyValueStoreService.delete('refreshToken')
+				await this.keyValueStoreService.delete('accessToken')
 			}
 
 			throw e;
@@ -268,7 +275,7 @@ export class ServerAPI {
 	}
 
 	getCurrentUser(): Promise<LocalUserDto|null> {
-		return this.generalStorageService.loadCurrentUser()
+		return this.keyValueStoreService.get('currentUser', LocalUserDto)
 	}
 
 	liveGetCurrentUser() {
@@ -287,10 +294,8 @@ export class ServerAPI {
 				}
 			}
 
-			const handleEvent = (e: AnyHeadbaseEvent) => {
-				if (e.type === EventTypes.USER_LOGIN || e.type === EventTypes.USER_LOGOUT) {
-					runQuery()
-				}
+			const handleEvent = () => {
+				runQuery()
 			}
 
 			this.eventsService.subscribe(EventTypes.USER_LOGIN, handleEvent)
@@ -373,14 +378,14 @@ export class ServerAPI {
 	async getVersion(id: string) {
 		const serverUrl = await this.getServerUrl()
 
-		return this.query<VersionDto>({
+		return this.query<ItemDto>({
 			serverUrl,
 			method: 'GET',
 			path: `/v1/versions/${id}`
 		});
 	}
 
-	async createVersion(versionDto: VersionDto) {
+	async createVersion(versionDto: ItemDto) {
 		const serverUrl = await this.getServerUrl()
 
 		return this.query({

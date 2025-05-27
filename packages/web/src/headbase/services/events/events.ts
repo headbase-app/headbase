@@ -2,8 +2,11 @@ import {UserDto} from "@headbase-app/common";
 import {DeviceContext} from "../../interfaces.ts";
 
 export const EventTypes = {
-	// Data Events
+	// File Events
 	FILE_SYSTEM_CHANGE: 'file-system-change',
+	// History Change
+	HISTORY_CREATE: 'history-create',
+	HISTORY_DELETE: 'history-delete',
 	// Database Events
 	DATABASE_OPEN: 'database-open',
 	DATABASE_CLOSE: 'database-close',
@@ -26,6 +29,28 @@ export interface FileSystemChangeEvent {
 			vaultId: string
 			path: string
 			action: 'create' | 'delete'
+		}
+	}
+}
+
+export interface HistoryCreateEvent {
+	type: typeof EventTypes.HISTORY_CREATE,
+	detail: {
+		context: DeviceContext,
+		data: {
+			vaultId: string
+			id: string
+		}
+	}
+}
+
+export interface HistoryDeleteEvent {
+	type: typeof EventTypes.HISTORY_DELETE,
+	detail: {
+		context: DeviceContext,
+		data: {
+			vaultId: string
+			id: string
 		}
 	}
 }
@@ -111,17 +136,25 @@ export interface UserLogoutEvent {
 
 export type HeadbaseEvent =
 	FileSystemChangeEvent |
+	HistoryCreateEvent | HistoryDeleteEvent |
 	DatabaseOpenEvent | DatabaseCloseEvent | DatabaseUnlockEvent | DatabaseLockEvent | DatabaseChangeEvent |
 	UserLoginEvent | UserLogoutEvent
 
 export interface EventMap {
+	// File Events
 	[EventTypes.FILE_SYSTEM_CHANGE]: FileSystemChangeEvent,
+	// History Change
+	[EventTypes.HISTORY_CREATE]: HistoryCreateEvent,
+	[EventTypes.HISTORY_DELETE]: HistoryDeleteEvent,
+	// Database Events
 	[EventTypes.DATABASE_OPEN]: DatabaseOpenEvent,
 	[EventTypes.DATABASE_CLOSE]: DatabaseCloseEvent,
 	[EventTypes.DATABASE_UNLOCK]: DatabaseUnlockEvent,
 	[EventTypes.DATABASE_LOCK]: DatabaseLockEvent,
 	[EventTypes.DATABASE_CHANGE]: DatabaseChangeEvent,
+	// Other Events
 	[EventTypes.STORAGE_PERMISSION]: StoragePermissionEvent,
+	// User Events
 	[EventTypes.USER_LOGIN]: UserLoginEvent,
 	[EventTypes.USER_LOGOUT]: UserLogoutEvent,
 }

@@ -12,7 +12,7 @@ import {
 import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {ErrorIdentifiers} from "@headbase-app/common";
-import {LocalLoginRequest} from "../../../headbase/archive/server.ts";
+import {LocalLoginRequest} from "../../../headbase/services/server/server.service.ts";
 
 export default {
 	title: "Layouts/Form",

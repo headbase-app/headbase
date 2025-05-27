@@ -30,7 +30,7 @@
     "@codemirror/lang-markdown": "^6.3.1",
     "@codemirror/language-data": "^6.5.1",
     "@codemirror/view": "^6.35.0",
-    "@headbase-app/common": "^0.5.0",
+    "@headbase-app/common": "^0.10.0",
     "@headlessui/react": "^1.7.19",
     "@hookform/resolvers": "^3.9.1",
     "@tailwindcss/vite": "^4.1.3",

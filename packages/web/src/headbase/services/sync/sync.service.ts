@@ -15,17 +15,17 @@
  * how will sync service work when the user is not logged in? needs to handle this gracefully
  *
  */
-import {DeviceContext, IEventsService} from "../interfaces.ts";
-import {DatabaseTransactions} from "../database/db.ts";
 import {SyncAction} from "./sync-actions.ts";
-import {ServerAPI} from "../server/server.ts";
 import {EventTypes, HeadbaseEvent} from "../events/events.ts";
 import {ErrorTypes, HeadbaseError} from "../../control-flow.ts";
 import {ErrorIdentifiers, VaultDto} from "@headbase-app/common";
-import {DatabasesManagementAPI} from "../database-management/database-management.ts";
 import {compareSnapshots} from "./sync-logic.ts";
-import {KeyStorageService} from "../key-storage/key-storage.service.ts";
 import {EncryptionService} from "../encryption/encryption.ts";
+import {DeviceContext} from "../../interfaces.ts";
+import {EventsService} from "../events/events.service.ts";
+import {ServerService} from "../server/server.service.ts";
+import {VaultsService} from "../vault/vault.service.ts";
+import {HistoryService} from "../history/history.service.ts";
 
 export type SyncStatus = 'idle' | 'running' | 'error' | 'disabled'
 
@@ -39,14 +39,14 @@ export class SyncService {
 	private actions: SyncAction[]
 
 	private status: SyncStatus
-	_handleEventBound: (event: CustomEvent<HeadbaseEvent>) => Promise<void>
+	_handleEventBound: (event: HeadbaseEvent) => Promise<void>
 
 	constructor(
 		config: SyncServiceConfig,
-		private eventsService: IEventsService,
-		private server: ServerAPI,
-		private databasesManagementAPI: DatabasesManagementAPI,
-		private databaseTransactions: DatabaseTransactions
+		private events: EventsService,
+		private server: ServerService,
+		private vaults: VaultsService,
+		private history: HistoryService,
 	) {
 		this.context = config.context
 
@@ -58,15 +58,15 @@ export class SyncService {
 
 	async start() {
 		console.debug('[sync] starting sync service');
-		this.eventsService.subscribeAll(this._handleEventBound)
+		this.events.subscribeAll(this._handleEventBound)
 	}
 
 	async end() {
 		console.debug('[sync] ending sync service');
-		this.eventsService.unsubscribeAll(this._handleEventBound)
+		this.events.unsubscribeAll(this._handleEventBound)
 	}
 
-	async handleEvent(event: CustomEvent<HeadbaseEvent>) {
+	async handleEvent(event: HeadbaseEvent['detail']) {
 		console.debug(`[sync] event received from context ${this.context.id}`)
 		console.debug(event)
 		if (event.type === EventTypes.DATA_CHANGE) {

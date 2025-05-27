@@ -1,7 +1,7 @@
 import {useEffect, useState} from "react";
-import {useHeadbase} from "../../../../logic/react/use-headbase.tsx";
 import * as opfsx from "opfsx"
 import {parseMarkdownFrontMatter} from "../../../../utils/frontmatter.ts";
+import {useHeadbase} from "../../../../headbase/hooks/use-headbase.tsx";
 
 export interface FileEditorOptions {
 	path?: string

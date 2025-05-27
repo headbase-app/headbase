@@ -4,7 +4,8 @@ export enum ErrorTypes {
 	INVALID_OR_CORRUPTED_DATA = 'invalid-or-corrupted-data',
 	INVALID_PASSWORD_OR_KEY = 'invalid-password-or-key',
 	SYSTEM_ERROR = 'system-error',
-	NO_CURRENT_DATABASE = 'no-current-database'
+	NO_CURRENT_DATABASE = 'no-current-database',
+	NETWORK_ERROR = 'network-error',
 }
 
 export interface HeadbaseErrorCause {

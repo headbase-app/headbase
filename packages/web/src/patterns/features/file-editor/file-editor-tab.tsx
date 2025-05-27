@@ -4,7 +4,7 @@ import { WithTabData } from "../workspace/workspace.tsx";
 import {useWorkspaceContext} from "../workspace/workspace-context.tsx";
 import {useEffect} from "react";
 import {useFileEditor, FileEditorOptions} from "./form/useFileEditor.ts";
-import {useHeadbase} from "../../../logic/react/use-headbase.tsx";
+import {useHeadbase} from "../../../headbase/hooks/use-headbase.tsx";
 
 export interface ContentTabProps extends WithTabData, FileEditorOptions {}
 

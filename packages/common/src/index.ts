@@ -20,7 +20,7 @@ export * from "./schemas/auth/response/auth-user-response";
 export * from "./schemas/vaults/vaults"
 export * from "./schemas/vaults/vaults-params"
 
-export * from "./schemas/versions/versions"
-export * from "./schemas/versions/versions-params"
+export * from "./schemas/history/history"
+export * from "./schemas/history/history-params"
 
 export * from "./schemas/snapshot/snapshot"

@@ -1,9 +1,8 @@
-import {runTest} from "./run-test";
 import {JButton} from "@ben-ryder/jigsaw-react";
 import {ReactNode, useMemo, useState} from "react";
 
 import "./performance.scss"
-import {useHeadbase} from "../../../logic/react/use-headbase.tsx";
+import {useHeadbase} from "../../../headbase/hooks/use-headbase.tsx";
 
 export interface ReportItem {
 	level: "section" | "task" | "message",

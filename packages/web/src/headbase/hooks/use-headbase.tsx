@@ -1,8 +1,8 @@
-import {HeadbaseWeb} from "../headbase-web.ts";
 import {Context, createContext, PropsWithChildren, useContext, useState} from "react";
+import {Headbase} from "../app.ts";
 
 export type HeadbaseContext = {
-	headbase: HeadbaseWeb
+	headbase: Headbase
 	currentDatabaseId: string | null
 	setCurrentDatabaseId: (currentDatabaseId: string) => void
 }
@@ -22,7 +22,7 @@ export function useHeadbase() {
 }
 
 export type HeadbaseContextProviderProps = PropsWithChildren & {
-	headbase: HeadbaseWeb
+	headbase: Headbase
 }
 
 export function HeadbaseContextProvider(props: HeadbaseContextProviderProps) {
