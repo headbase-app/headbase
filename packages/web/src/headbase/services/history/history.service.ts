@@ -18,6 +18,7 @@ import {schema, history} from "./schema.ts"
 import {eq} from "drizzle-orm";
 import { CreateHistoryItemDto } from "@headbase-app/common"
 import {LocalHistoryItemDto} from "./local-history-item.ts";
+import migration0 from "./migrations/00-setup.sql?raw"
 
 export interface ItemsServiceConfig {
 	context: DeviceContext
@@ -43,8 +44,13 @@ export class HistoryService {
 	private async getDatabase(vaultId: string): Promise<SqliteRemoteDatabase<typeof schema>> {
 		if (this.connectionStore[vaultId]) return this.connectionStore[vaultId];
 
-		const { driver, batchDriver } = new SQLocalDrizzle(`/headbase/${vaultId}/database.sqlite3`);
-		this.connectionStore[vaultId] = drizzle(driver, batchDriver);
+		const { driver, batchDriver } = new SQLocalDrizzle({
+			databasePath: `/headbase/${vaultId}/database.sqlite3`,
+			verbose: true,
+		});
+		this.connectionStore[vaultId] = drizzle(driver, batchDriver, {casing: "snake_case"});
+
+		this.connectionStore[vaultId].run(migration0)
 
 		return this.connectionStore[vaultId];
 	}

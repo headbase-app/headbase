@@ -24,7 +24,7 @@ import {EncryptionService} from "../encryption/encryption.ts";
 import {DeviceContext} from "../../interfaces.ts";
 import {EventsService} from "../events/events.service.ts";
 import {ServerService} from "../server/server.service.ts";
-import {VaultsService} from "../vault/vault.service.ts";
+import {VaultsService} from "../vaults/vaults.service.ts";
 import {HistoryService} from "../history/history.service.ts";
 
 export type SyncStatus = 'idle' | 'running' | 'error' | 'disabled'

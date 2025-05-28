@@ -33,6 +33,9 @@ export default defineConfig({
 			'Cross-Origin-Embedder-Policy': 'require-corp',
 		},
 	},
+	optimizeDeps: {
+		exclude: ['sqlocal'],
+	},
 	plugins: [
 		tsconfigPaths(),
 		react(),

@@ -92,7 +92,7 @@ export function DatabaseManagerDialog() {
 			if (!headbase) return
 
 			if (currentDatabaseId) {
-				localStorage.setItem('lf_lastOpenedDb', currentDatabaseId)
+				localStorage.setItem('lastOpenedDb', currentDatabaseId)
 				// todo: should this be managed in workspace not here?
 				closeAllTabs()
 				close()
@@ -100,13 +100,13 @@ export function DatabaseManagerDialog() {
 			else if (isFirstOpen.current) {
 				isFirstOpen.current = false
 
-				const lastOpenedDatabaseId = localStorage.getItem('lf_lastOpenedDb')
+				const lastOpenedDatabaseId = localStorage.getItem('lastOpenedDb')
 				if (lastOpenedDatabaseId) {
 					try {
 						// ensure the database exists and is unlocked before opening
 						// todo: refactor local database to return encryptionKey not isUnlocked?
 						const vault = await headbase.vaults.get(lastOpenedDatabaseId)
-						const encryptionKey = await headbase.keyValueStore.get(`encKey_${lastOpenedDatabaseId}`, z.string())
+						const encryptionKey = await headbase.keyValueStore.get(`enckey_${lastOpenedDatabaseId}`, z.string())
 
 						if (vault.isUnlocked && encryptionKey) {
 							setCurrentDatabaseId(lastOpenedDatabaseId)
@@ -148,8 +148,8 @@ export function DatabaseManagerDialog() {
 			}}
 			role={openTab ? 'dialog' : 'alertdialog'}
 			disableOutsideClose={true}
-			title="Manage databases"
-			description="Manage your current database"
+			title="Manage vaults"
+			description="Manage your current vaults"
 			content={
 				<div>
 					<JButton variant='secondary' onClick={() => {setOpenTab({type: "list"})}}>Local</JButton>

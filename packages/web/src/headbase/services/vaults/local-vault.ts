@@ -16,7 +16,7 @@ export const LocalVaultEntity = VaultDto
 		syncEnabled: z.boolean(),
 		lastSyncedAt: TimestampField.nullish(),
 		// Not used right now, but will help allow for migrations in future if required.
-		headbaseVersion: z.string(),
+		hbv: z.string(),
 	}).strict()
 export type LocalVaultEntity = z.infer<typeof LocalVaultEntity>
 

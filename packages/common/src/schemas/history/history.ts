@@ -7,14 +7,14 @@ export const HistoryItemDto = z.object({
 	previousVersionId: createIdField("previousVersionId").nullable(),
 	createdAt: createDateField('createdAt'),
 	deletedAt: createDateField('deletedAt').nullable(),
-	device: z.string()
-		.min(1, "device must be at least 1 character.")
-		.max(20, "device can't be over 20 characters."),
 	path: z.string()
 		.min(1, "path must be at least 1 character."),
 	type: z.string()
 		.min(1, "type must be at least 1 character.")
 		.max(255, "type can't be over 255 characters."),
+	device: z.string()
+		.min(1, "device must be at least 1 character.")
+		.max(20, "device can't be over 20 characters."),
 	content: z.string().nullable(),
 	contentHash: z.string().nullable(),
 })

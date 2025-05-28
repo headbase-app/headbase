@@ -3,7 +3,7 @@ import {DeviceContext} from "./interfaces.ts";
 import {SyncService} from "./services/sync/sync.service.ts";
 import { EventsService } from "./services/events/events.service.ts";
 import {KeyValueStoreService} from "./services/key-value-store/key-value-store.service.ts";
-import {VaultsService} from "./services/vault/vault.service.ts";
+import {VaultsService} from "./services/vaults/vaults.service.ts";
 import {EncryptionService} from "./services/encryption/encryption.ts";
 import {LIVE_QUERY_LOADING_STATE, LiveQueryResult, LiveQueryStatus} from "./control-flow.ts";
 import {EventTypes} from "./services/events/events.ts";

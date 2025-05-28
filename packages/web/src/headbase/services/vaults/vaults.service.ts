@@ -24,6 +24,7 @@ import {z} from "zod";
 import {schema, vaults} from "./schema.ts"
 import {eq} from "drizzle-orm";
 import {HEADBASE_SPEC_VERSION} from "../../app.ts";
+import migration0 from "./migrations/00-setup.sql?raw"
 
 export interface VaultsServiceConfig {
 	context: DeviceContext
@@ -44,14 +45,20 @@ export class VaultsService {
 	private async getDatabase(): Promise<SqliteRemoteDatabase<typeof schema>> {
 		if (this._db) return this._db;
 
-		const { driver, batchDriver } = new SQLocalDrizzle("/headbase/headbase.sqlite3");
-		this._db = drizzle(driver, batchDriver);
+		const { driver, batchDriver } = new SQLocalDrizzle({
+			databasePath: "/headbase/headbase.sqlite3",
+			verbose: true,
+		});
+		this._db = drizzle(driver, batchDriver, {casing: "snake_case"});
+
+		// Run database migrations
+		await this._db.run(migration0)
 
 		return this._db;
 	}
 
 	private async _createDto(entity: LocalVaultEntity): Promise<LocalVaultDto> {
-		const encryptionKey = await this.keyValueStoreService.get(entity.id, z.string())
+		const encryptionKey = await this.keyValueStoreService.get(`enckey_${entity.id}`, z.string())
 
 		return {
 			...entity,
@@ -70,7 +77,7 @@ export class VaultsService {
 			throw new HeadbaseError({type: ErrorTypes.INVALID_PASSWORD_OR_KEY, originalError: e})
 		}
 
-		await this.keyValueStoreService.save(database.id, encryptionKey)
+		await this.keyValueStoreService.save(`enckey_${database.id}`, encryptionKey)
 		this.eventsService.dispatch(EventTypes.DATABASE_UNLOCK, {
 			context: this.context,
 			data: {
@@ -80,7 +87,7 @@ export class VaultsService {
 	}
 
 	async lock(id: string): Promise<void> {
-		await this.keyValueStoreService.delete(id)
+		await this.keyValueStoreService.delete(`enckey_${id}`)
 		this.eventsService.dispatch(EventTypes.DATABASE_LOCK, {
 			context: this.context,
 			data: {
@@ -206,7 +213,7 @@ export class VaultsService {
 				updatedAt: timestamp,
 				syncEnabled: createDatabaseDto.syncEnabled,
 				lastSyncedAt: null,
-				headbaseVersion: HEADBASE_SPEC_VERSION
+				hbv: HEADBASE_SPEC_VERSION
 			})
 
 		this.eventsService.dispatch(EventTypes.DATABASE_CHANGE, {
@@ -240,7 +247,7 @@ export class VaultsService {
 				updatedAt: vaultDto.updatedAt,
 				syncEnabled: true,
 				lastSyncedAt: undefined,
-				headbaseVersion: HEADBASE_SPEC_VERSION
+				hbv: HEADBASE_SPEC_VERSION
 			})
 
 		this.eventsService.dispatch(EventTypes.DATABASE_CHANGE, {
@@ -374,6 +381,7 @@ export class VaultsService {
 					subscriber.next({status: LiveQueryStatus.SUCCESS, result: query.result, errors: query.errors})
 				}
 				catch (e) {
+					console.error(e)
 					subscriber.next({status: LiveQueryStatus.ERROR, errors: [e]})
 				}
 			}

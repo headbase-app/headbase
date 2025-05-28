@@ -7,7 +7,7 @@ import {useVaults} from "../../../../headbase/hooks/vaults/use-vaults.tsx";
 import {useHeadbase} from "../../../../headbase/hooks/use-headbase.tsx";
 import {z} from "zod";
 import {LiveQueryStatus} from "../../../../headbase/control-flow.ts";
-import {LocalVaultDto} from "../../../../headbase/services/vault/local-vault.ts";
+import {LocalVaultDto} from "../../../../headbase/services/vaults/local-vault.ts";
 
 
 export function DatabaseListScreen() {
@@ -27,7 +27,7 @@ export function DatabaseListScreen() {
 		}
 
 		try {
-			const encryptionKey = await headbase.keyValueStore.get(database.id, z.string())
+			const encryptionKey = await headbase.keyValueStore.get(`enckey_${database.id}`, z.string())
 			if (encryptionKey) {
 				setCurrentDatabaseId(database.id)
 				close()

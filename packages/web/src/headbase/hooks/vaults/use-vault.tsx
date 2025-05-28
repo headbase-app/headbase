@@ -1,7 +1,7 @@
 import {useEffect, useState} from "react";
 import {LIVE_QUERY_LOADING_STATE, LiveQueryResult, LiveQueryStatus} from "../../control-flow.ts";
 import {useHeadbase} from "../use-headbase.tsx";
-import {LocalVaultDto} from "../../services/vault/local-vault.ts";
+import {LocalVaultDto} from "../../services/vaults/local-vault.ts";
 
 
 export function useVault(vaultId: string|null) {

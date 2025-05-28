@@ -8,7 +8,7 @@ import {
 import {Controller, useForm} from "react-hook-form";
 import {zodResolver} from "@hookform/resolvers/zod";
 import {z} from "zod";
-import {CreateVaultDto} from "../../../../headbase/services/vault/local-vault.ts";
+import {CreateVaultDto} from "../../../../headbase/services/vaults/local-vault.ts";
 
 export const DatabaseBasicFields = CreateVaultDto.omit({password: true})
 export type DatabaseBasicFields = z.infer<typeof DatabaseBasicFields>

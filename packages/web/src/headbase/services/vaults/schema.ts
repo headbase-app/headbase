@@ -1,7 +1,7 @@
 import {integer, sqliteTable, text} from 'drizzle-orm/sqlite-core';
 
 export const vaults = sqliteTable('vaults', {
-	headbaseVersion: text().notNull(),
+	hbv: text().notNull(),
 	id: text().primaryKey(),
 	name: text().notNull(),
 	encryptionKey: text().notNull(),
