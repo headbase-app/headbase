@@ -1,6 +1,4 @@
 import {useEffect, useState} from "react";
-import * as opfsx from "opfsx"
-import {parseMarkdownFrontMatter} from "../../../../utils/frontmatter.ts";
 import {useHeadbase} from "../../../../headbase/hooks/use-headbase.tsx";
 
 export interface FileEditorOptions {
@@ -9,24 +7,25 @@ export interface FileEditorOptions {
 
 export interface FileEditorData {
 	path: string,
-	name: string,
+	displayName: string,
 	content: string
 	fields: string
 }
 
 export interface FileEditorChangeHandlers {
 	onPathChange: (name: string) => void;
-	onNameChange: (data: string) => void;
+	onDisplayNameChange: (data: string) => void;
 	onContentChange: (data: string) => void;
 	onFieldsChange: (data: string) => void;
 }
 
 
 export function useFileEditor(options: FileEditorOptions) {
-	const {currentDatabaseId} = useHeadbase()
+	const {currentDatabaseId, headbase} = useHeadbase()
 
+	const [existingPath, setExistingPath] = useState<string|null>(options?.path || null)
 	const [path, setPath] = useState<string>(options?.path || '')
-	const [name, setName] = useState<string>('')
+	const [displayName, setDisplayName] = useState<string>('')
 	const [content, setContent] = useState<string>('')
 	const [fields, setFields] = useState<string>('')
 
@@ -35,70 +34,54 @@ export function useFileEditor(options: FileEditorOptions) {
 		async function load() {
 			if (!currentDatabaseId || !options.path) return
 
-			const file = await opfsx.read(options.path)
-			const content = await file.text()
-			const parsed = parseMarkdownFrontMatter(content)
+			const file = await headbase.fileSystem.loadMarkdownFile(currentDatabaseId, options.path)
+			setPath(file.path)
+			setExistingPath(file.existingPath)
+			setDisplayName(file.displayName)
+			setContent(file.content)
 
-			const {$name: frontMatterName, ...frontMatter } = parsed.data
-			const frontMatterString = frontMatter
-				? Object.entries(frontMatter)
+			const fieldsString = Object.entries(file.fields)
 					.map(([k, v]) => `${k}: ${v}`)
 					.join("\n")
-				: ''
-
-			const displayName = typeof frontMatterName === 'string' ? frontMatterName : file.name.replace(".md", "")
-
-			// get the path relative to the vault folder, the full path is an implementation detail the user shouldn't know about.
-			const relativePath = options.path.replace(`/headbase-v1/${currentDatabaseId}`, "") || "/"
-
-			// A newline is automatically added between the frontmatter and content when saving, so ensure this is removed
-			const trimmedContent = parsed.content.trim()
-
-			setPath(relativePath)
-			setName(displayName)
-			setContent(trimmedContent)
-			setFields(frontMatterString)
+			setFields(fieldsString)
 		}
 		load()
-	}, [options.path, currentDatabaseId])
+	}, [headbase, options.path, currentDatabaseId])
 
-	async function saveFile(): Promise<string> {
-		if (!currentDatabaseId) {
-			throw new Error("Attempted to save file with no database open")
-		}
+	async function saveFile() {
+		if (!currentDatabaseId) throw new Error('No current database')
 
-		const newFilePath = `/headbase-v1/${currentDatabaseId}${path}`
+		const fieldsData = fields
+			.split("\n")
+			.filter(Boolean)
+			.map(line => {
+				return line.split(":").filter(Boolean)
+			})
+		console.debug(fieldsData)
 
-		const frontMatter = fields ? `---\n$name: ${name}\n${fields.trim()}\n---`: ''
-		const contentToSave = `${frontMatter}${frontMatter && '\n\n'}${content}`
-		await opfsx.write(newFilePath, contentToSave)
-		console.debug(`write to: ${newFilePath}`)
-		console.debug(contentToSave)
-
-		if (options.path && options.path !== newFilePath) {
-			console.debug(`remove old path: ${options.path}`)
-			await opfsx.rm(options.path)
-		}
-
-		return newFilePath
+		await headbase.fileSystem.saveMarkdownFile(currentDatabaseId, {
+			path,
+			displayName,
+			content,
+			fields: {}
+		}, existingPath)
 	}
 
 	async function deleteFile() {
 		if (!currentDatabaseId) {
 			throw new Error("Attempted to save file with no database open")
 		}
-
 		if (!options.path) {
 			throw new Error("Attempted to delete when file doesn't exist yet.")
 		}
 
-		await opfsx.rm(options.path)
+		await headbase.fileSystem.delete(currentDatabaseId, options.path)
 	}
 
 	return {
 		saveFile, deleteFile,
 		path, setPath,
-		name, setName,
+		displayName, setDisplayName,
 		content, setContent,
 		fields, setFields
 	}

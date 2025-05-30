@@ -1,7 +1,6 @@
 import {useWorkspaceContext} from "../workspace/workspace-context";
 import {ContentCard} from "../../components/content-card/content-card.tsx";
 import {useEffect, useState} from "react";
-import * as opfsx from "opfsx";
 import {OPFSXFile} from "opfsx";
 import {useHeadbase} from "../../../headbase/hooks/use-headbase.tsx";
 
@@ -10,23 +9,18 @@ export interface SearchProps {
 }
 
 export function Search(props: SearchProps) {
-	const { currentDatabaseId } = useHeadbase()
+	const { currentDatabaseId, headbase } = useHeadbase()
 	const { openTab } = useWorkspaceContext()
 	const [files, setFiles] = useState<OPFSXFile[]>([])
 
 	useEffect(() => {
 		async function load() {
-			// ensure directory for current vault exists
-			await opfsx.mkdir(`/headbase-v1/${currentDatabaseId}`)
-			const items = await opfsx.ls(`/headbase-v1/${currentDatabaseId}`, {recursive: true})
-			const files = items.filter(item => item.kind === "file")
+			if (!currentDatabaseId) return
+			const files = await headbase.fileSystem.query(currentDatabaseId)
 			setFiles(files)
 		}
-
-		if (currentDatabaseId) {
-			load()
-		}
-	}, [currentDatabaseId]);
+		load()
+	}, [headbase, currentDatabaseId]);
 
 	return (
 		<div>
@@ -50,7 +44,7 @@ export function Search(props: SearchProps) {
 					</ul>
 				)
 				: (
-					<p>No Objects Found</p>
+					<p>No Files Found</p>
 				)
 			}
 		</div>

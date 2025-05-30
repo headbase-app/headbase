@@ -9,6 +9,7 @@ import {LIVE_QUERY_LOADING_STATE, LiveQueryResult, LiveQueryStatus} from "./cont
 import {EventTypes} from "./services/events/events.ts";
 import {ServerService} from "./services/server/server.service.ts";
 import {HistoryService} from "./services/history/history.service.ts";
+import {FileSystemService} from "./services/file-system/file-system.service.ts";
 
 export const HEADBASE_SPEC_VERSION = 'https://spec.headbase.app/v1'
 
@@ -17,13 +18,14 @@ export class Headbase {
 	private readonly context: DeviceContext
 	private readonly primaryInstanceLockAbort: AbortController
 
-	private readonly events: EventsService
+	readonly events: EventsService
 	readonly keyValueStore: KeyValueStoreService
 
 	readonly server: ServerService
 	readonly sync: SyncService
 	readonly vaults: VaultsService
 	readonly history: HistoryService
+	readonly fileSystem: FileSystemService
 
 	constructor() {
 		this.context = {
@@ -55,6 +57,11 @@ export class Headbase {
 			{context: this.context},
 			this.events,
 			this.keyValueStore
+		)
+
+		this.fileSystem = new FileSystemService(
+			{context: this.context},
+			this.events
 		)
 
 		this.primaryInstanceLockAbort = new AbortController();

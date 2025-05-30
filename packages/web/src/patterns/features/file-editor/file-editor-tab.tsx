@@ -13,19 +13,19 @@ export function FileEditorTab(props: ContentTabProps) {
 	const {currentDatabaseId} = useHeadbase()
 	const { replaceTab, setTabName, setTabIsUnsaved, closeTab } = useWorkspaceContext()
 
-	const {path, setPath, name, setName, content, setContent, fields, setFields, saveFile, deleteFile} = useFileEditor({path: props.path})
+	const {path, setPath, displayName, setDisplayName, content, setContent, fields, setFields, saveFile, deleteFile} = useFileEditor({path: props.path})
 
 	async function onSave() {
 		// todo: does this need feedback of some kind?
 		if (!currentDatabaseId) return
 
 		try {
-			const newPath = await saveFile()
+			await saveFile()
 			if (props.path) {
 				setTabIsUnsaved(props.tabIndex, false)
 			}
 			else {
-				replaceTab(props.tabIndex, {type: 'file', path: newPath})
+				replaceTab(props.tabIndex, {type: 'file', path: path})
 			}
 		}
 		catch (e) {
@@ -45,17 +45,17 @@ export function FileEditorTab(props: ContentTabProps) {
 
 	// ensure tab name is up to date with entered name
 	useEffect(() => {
-		setTabName(props.tabIndex, name || "untitled")
-	}, [name]);
+		setTabName(props.tabIndex, displayName || "untitled")
+	}, [displayName]);
 
 	function onPathChange(value: string) {
 		setTabIsUnsaved(props.tabIndex, true)
 		setPath(value)
 	}
 
-	function onNameChange(value: string) {
+	function onDisplayNameChange(value: string) {
 		setTabIsUnsaved(props.tabIndex, true)
-		setName(value)
+		setDisplayName(value)
 	}
 
 	function onContentChange(value: string) {
@@ -73,8 +73,8 @@ export function FileEditorTab(props: ContentTabProps) {
 			<FileEditor
 				path={path}
 				onPathChange={onPathChange}
-				name={name}
-				onNameChange={onNameChange}
+				displayName={displayName}
+				onDisplayNameChange={onDisplayNameChange}
 				content={content}
 				onContentChange={onContentChange}
 				fields={fields}

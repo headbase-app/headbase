@@ -80,9 +80,9 @@ export function FileEditor(props: FileEditorProps) {
 						type="text"
 						required
 						tooltip={{content: "The display name used when displaying the file in lists, tabs etc."}}
-						value={props.name}
+						value={props.displayName}
 						onChange={(e) => {
-							props.onNameChange(e.target.value);
+							props.onDisplayNameChange(e.target.value);
 						}}
 						placeholder="Example"
 					/>

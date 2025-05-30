@@ -1,6 +1,127 @@
+import * as opfsx from "opfsx"
+import {parseMarkdownFrontMatter} from "./frontmatter.ts";
+import {EventsService} from "../events/events.service.ts";
+import {EventTypes} from "../events/events.ts";
+import {DeviceContext} from "../../interfaces.ts";
+
+
+export interface MarkdownFile {
+	path: string
+	existingPath: string
+	displayName: string
+	fields: {
+		[key: string]: string | number | boolean | null
+	}
+	content: string
+}
+
+export interface FileSystemServiceConfig {
+	context: DeviceContext
+}
+
+
 export class FileSystemService {
-	async save() {}
-	async load() {}
-	async delete() {}
-	async query() {}
+	private context: DeviceContext
+
+	constructor(
+		config: FileSystemServiceConfig,
+		private events: EventsService
+	) {
+		this.context = config.context
+	}
+
+	async saveMarkdownFile(vaultId: string, file: Omit<MarkdownFile, 'existingPath'>, existingPath?: string | null) {
+		const absolutePath = `/headbase/${vaultId}/files/${file.path}`
+
+		const frontMatterString = Object.entries(file.fields)
+				.map(([k, v]) => `${k}: ${v}`)
+				.join("\n")
+		const frontMatter = `---\n$name: ${file.displayName}\n${frontMatterString}\n---`
+		const content = `${frontMatter}${frontMatter && '\n\n'}${file.content}`
+
+		await opfsx.write(absolutePath, content)
+
+		this.events.dispatch(EventTypes.FILE_SYSTEM_CHANGE, {
+			context: this.context,
+			data: {
+				vaultId,
+				action: 'create',
+				path: file.path
+			}
+		})
+
+		// If file path has changed, remove old file.
+		if (existingPath && existingPath !== file.path) {
+			const absolutePath = `/headbase/${vaultId}/files/${existingPath}`
+			await opfsx.rm(absolutePath)
+
+			this.events.dispatch(EventTypes.FILE_SYSTEM_CHANGE, {
+				context: this.context,
+				data: {
+					vaultId,
+					action: 'delete',
+					path: existingPath
+				}
+			})
+		}
+	}
+
+	async loadMarkdownFile(vaultId: string, relativePath: string): Promise<MarkdownFile> {
+		const absolutePath = `/headbase/${vaultId}/files/${relativePath}`
+
+		const file = await opfsx.read(absolutePath)
+		const content = await file.text()
+		const parsed = parseMarkdownFrontMatter(content)
+
+		const {$name: frontMatterName, ...frontMatter } = parsed.data
+
+		const displayName = typeof frontMatterName === 'string' ? frontMatterName : file.name.replace(".md", "")
+
+		// A newline is automatically added between the frontmatter and content when saving, so ensure this is removed
+		const trimmedContent = parsed.content.trim()
+
+		return {
+			path: relativePath,
+			existingPath: relativePath,
+			displayName,
+			fields: frontMatter,
+			content: trimmedContent
+		}
+	}
+
+	async delete(vaultId: string, relativePath: string) {
+		const absolutePath = `/headbase/${vaultId}/files/${relativePath}`
+		await opfsx.rm(absolutePath)
+
+		this.events.dispatch(EventTypes.FILE_SYSTEM_CHANGE, {
+			context: this.context,
+			data: {
+				vaultId,
+				action: 'delete',
+				path: relativePath
+			}
+		})
+	}
+
+	async query(vaultId: string) {
+		const absolutePath = `/headbase/${vaultId}/files/`
+
+		const items = await opfsx.ls(absolutePath, {recursive: true})
+
+		// Only return files, and ensure paths are relative to vault directory.
+		return items
+			.filter(item => item.kind === 'file')
+			.map(file => {
+				return {
+					...file,
+					path: file.path.replace(`/headbase/${vaultId}/files`, ""),
+				}
+			})
+	}
+
+	async tree(vaultId: string) {
+		const absolutePath = `/headbase/${vaultId}/files/`
+
+		const tree = await opfsx.tree(absolutePath)
+	}
 }

@@ -1,7 +1,7 @@
 import * as opfs from "../../opfsx/src"
 
 import {afterEach, beforeEach, expect, test} from 'vitest'
-import {parseMarkdownFrontMatter} from "../src/utils/frontmatter";
+import {parseMarkdownFrontMatter} from "../src/headbase/services/file-system/frontmatter";
 
 beforeEach(async () => {
   await opfs.rm("/", {recursive: true})
