@@ -2,8 +2,8 @@
 
 <div align="center">
 <p><b>⚠️ Under Active Development ⚠️</b></p>
-<p>This app is early in development and not yet ready for general use.<br>
-Dont trust this app with any important data and expect bugs, missing docs, incomplete features etc!</p>
+<p>This app is in active development and not yet ready for everyday use.<br>
+You're welcome to explore but proceed at your own risk and expect bugs, missing docs, incomplete features etc!</p>
 </div>
 
 ---
@@ -12,32 +12,26 @@ Dont trust this app with any important data and expect bugs, missing docs, incom
 The customizable database for your brain. Note-taking, task-management, personal knowledge bases and more.
 
 ## About
-The way each person wants to organise their content is unique, personal and often use-case specific. Headbase gives you the building blocks to create content databases by
-defining content types, creating content items and then filtering and displaying those items using views like a list, kanban board, calendar, infinite canvas and more.  
-
-Headbase is not just a "notes app" or a "task management" app. It is what you decide to build.  
+The foundation of Headbase is the abilty to create markdown files, track version history and sync these files between devices. You can then customize your experience with features such as "fields" and "content types" to enhance your editing experience, and "views" to transform your files into a queryable database with results displayed as a list, kanban board, calendar, canvas or graph.  
 
 ![](docs/screenshot-placeholder.png)
 
+A big driving force of building Headbase is to explore the concepts of [local-first software](https://www.inkandswitch.com/essay/local-first) and [malleable systems](https://malleable.systems). The goal is not to just create a "notes app" or a "task management" app, but to build an app which provides building blocks for users to combine as they wish while retaining ownership of their own data.
+
 ## How it works
 
-### Content structure
+Headbase is currently built as progressive web app which reads and write files to the browser [Origin private file system](https://developer.mozilla.org/en-US/docs/Web/API/File_System_API/Origin_private_file_system), however future plans include developing a desktop application to read/write to the native file system so users can have more direct ownership and control over their files.
 
-The Headbase content system is built using four building blocks:
-- **Fields** are the core of your content, and range from basic types like text and numbers to more advanced types like media, scales and relationships.
-- **Content types** are where you define your concept of a note, task, recipe, bookmark... anything you want. A content type is a pre-defined group of fields with extra settings such as default values.
-- **Content items** are where all your actual content lives. You create content items of a specific type and populate the fields as required.
-- **Views** allow you to query your content items and display the results using a list, kanban board, calendar, canvas and more.
+### Data storage
 
-![](docs/user-guide/content-structure/content-structure-abstract.svg)
+TODO - Explain basic concepts of treating files and server as a "document-based" data store with user defined types.
 
-### Databases
-All content in Headbase is stored in a database and you can create as many as you want, examples might include "Personal", "Work", "Project 1", "Project 2" etc.  
-Each database is completely seperate, however you are able to import/export your content and data structures between databases. 
+### Vaults
+All content in Headbase is stored in a "vault" and you can create as many as you want, examples might include "Personal", "Work", "Project 1", "Project 2" etc.  
+Each vault is completely seperate, however you are able to import/export your data between vaults. 
 
-When creating a database you pick an "unlock passowrd" which will be used to encrypt/decrypt the database on your device.  
+When creating a vault you pick an "unlock passowrd" which will be used to encrypt/decrypt the content on your device.  
 If you want to learn more about how this encryption works, you can check out the **[encryption specification](/docs/development/web/encryption/index.md)**.  
-
 
 ### Cloud Features
 Headbase is a local-first progressive web app (PWA), meaning that by default all your data is stored on your device. There is no server or internet connection required after you've visited the app for the first time, as the app will be cached for offline use.
