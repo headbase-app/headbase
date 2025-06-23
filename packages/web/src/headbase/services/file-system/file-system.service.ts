@@ -3,6 +3,7 @@ import {parseMarkdownFrontMatter} from "./frontmatter.ts";
 import {EventsService} from "../events/events.service.ts";
 import {EventTypes} from "../events/events.ts";
 import {DeviceContext} from "../../interfaces.ts";
+import {relativeTree} from "./relative-tree.ts";
 
 
 export interface MarkdownFile {
@@ -28,6 +29,9 @@ export class FileSystemService {
 		private events: EventsService
 	) {
 		this.context = config.context
+
+		// @ts-expect-error -- adding for easy debugging and testing during development
+		window.opfsx = opfsx
 	}
 
 	async saveMarkdownFile(vaultId: string, file: Omit<MarkdownFile, 'existingPath'>, existingPath?: string | null) {
@@ -120,8 +124,12 @@ export class FileSystemService {
 	}
 
 	async tree(vaultId: string) {
-		const absolutePath = `/headbase/${vaultId}/files/`
+		const vaultPath = `/headbase/${vaultId}/files/`
 
-		const tree = await opfsx.tree(absolutePath)
+		// Ensure the base directory exists as tree will fail without it
+		await opfsx.mkdir(vaultPath)
+
+		const tree = await opfsx.tree(vaultPath)
+		return relativeTree(tree)
 	}
 }

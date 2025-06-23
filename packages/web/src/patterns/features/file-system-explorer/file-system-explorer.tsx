@@ -1,11 +1,7 @@
-import * as opfsx from "opfsx"
 import {useEffect, useState} from "react";
 import {OPFSXDirectoryTree, OPFSXFile} from "opfsx";
 import {useWorkspaceContext} from "../workspace/workspace-context.tsx";
 import {useHeadbase} from "../../../headbase/hooks/use-headbase.tsx";
-
-// @ts-expect-error -- adding for easy debugging and testing during development
-window.opfsx = opfsx
 
 function FileSystemItem(props: OPFSXFile | OPFSXDirectoryTree) {
 	// todo: move to prop
@@ -39,21 +35,18 @@ function FileSystemItem(props: OPFSXFile | OPFSXDirectoryTree) {
 }
 
 export function FileSystemExplorer() {
-	const {currentDatabaseId} = useHeadbase()
+	const {currentDatabaseId, headbase} = useHeadbase()
 	const [fileSystem, setFileSystem] = useState<OPFSXDirectoryTree | null>(null)
 
 	useEffect(() => {
 		async function load() {
-			// ensure directory for current vault exists
-			await opfsx.mkdir(`/headbase-v1/${currentDatabaseId}`)
-			const fs = await opfsx.tree(`/headbase-v1/${currentDatabaseId}`)
-			setFileSystem(fs)
+			if (!currentDatabaseId) return
+			const tree = await headbase.fileSystem.tree(currentDatabaseId)
+			console.debug(tree)
+			setFileSystem(tree)
 		}
-
-		if (currentDatabaseId) {
-			load()
-		}
-	}, [currentDatabaseId]);
+		load()
+	}, [headbase, currentDatabaseId]);
 
 	return (
 		<div>
