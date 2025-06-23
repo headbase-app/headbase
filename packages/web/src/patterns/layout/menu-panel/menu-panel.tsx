@@ -24,6 +24,7 @@ import {FavouritesList} from "../../features/favorites/favourites-list.tsx";
 import {useHeadbase} from "../../../headbase/hooks/use-headbase.tsx";
 import {useVault} from "../../../headbase/hooks/vaults/use-vault.tsx";
 import {LiveQueryStatus} from "../../../headbase/control-flow.ts";
+import {FileSystemExplorer} from "../../features/file-system-explorer/file-system-explorer.tsx";
 
 
 export interface WithMenuPanelProps {
@@ -105,13 +106,6 @@ export function MenuPanel(props: WithMenuPanelProps) {
 					}}
 				/>
 				<MainPanelAction
-					text='Explorer'
-					icon={<FilesIcon />}
-					onSelect={() => {
-						openTab({type: 'file-explorer'}, {switch: true})
-					}}
-				/>
-				<MainPanelAction
 					text='Settings'
 					icon={<SettingsIcon />}
 					onSelect={() => {
@@ -125,6 +119,14 @@ export function MenuPanel(props: WithMenuPanelProps) {
 					<h3>Favourites</h3>
 				</div>
 				<FavouritesList />
+			</div>
+
+			<div className="menu-panel__file-system">
+				<div className="menu-panel__file-system-header">
+					<h3>File explorer</h3>
+					<button onClick={() => {openTab({type: 'file-explorer'}, {switch: true})}}>open in tab</button>
+				</div>
+				<FileSystemExplorer />
 			</div>
 
 			<div className="menu-panel__bottom">

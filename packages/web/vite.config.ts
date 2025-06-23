@@ -36,6 +36,9 @@ export default defineConfig({
 	optimizeDeps: {
 		exclude: ['sqlocal'],
 	},
+	worker: {
+		format: 'es'
+	},
 	plugins: [
 		tsconfigPaths(),
 		react(),
