@@ -19,6 +19,7 @@ import {eq} from "drizzle-orm";
 import { CreateHistoryItemDto } from "@headbase-app/common"
 import {LocalHistoryItemDto} from "./local-history-item.ts";
 import migration0 from "./migrations/00-setup.sql?raw"
+import {featureFlags} from "../../../flags.ts";
 
 export interface ItemsServiceConfig {
 	context: DeviceContext
@@ -46,7 +47,7 @@ export class HistoryService {
 
 		const { driver, batchDriver } = new SQLocalDrizzle({
 			databasePath: `/headbase/${vaultId}/database.sqlite3`,
-			verbose: true,
+			verbose: featureFlags().debug_sqlite
 		});
 		this.connectionStore[vaultId] = drizzle(driver, batchDriver, {casing: "snake_case"});
 

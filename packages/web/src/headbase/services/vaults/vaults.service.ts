@@ -25,6 +25,7 @@ import {schema, vaults} from "./schema.ts"
 import {eq} from "drizzle-orm";
 import {HEADBASE_SPEC_VERSION} from "../../app.ts";
 import migration0 from "./migrations/00-setup.sql?raw"
+import {featureFlags} from "../../../flags.ts";
 
 export interface VaultsServiceConfig {
 	context: DeviceContext
@@ -47,7 +48,7 @@ export class VaultsService {
 
 		const { driver, batchDriver } = new SQLocalDrizzle({
 			databasePath: "/headbase/headbase.sqlite3",
-			verbose: true,
+			verbose: featureFlags().debug_sqlite
 		});
 		this._db = drizzle(driver, batchDriver, {casing: "snake_case"});
 

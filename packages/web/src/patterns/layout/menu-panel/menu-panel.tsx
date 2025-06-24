@@ -121,7 +121,7 @@ export function MenuPanel(props: WithMenuPanelProps) {
 				<FavouritesList />
 			</div>
 
-			<div className="menu-panel__file-system">
+			<div className="m-2">
 				<div className="menu-panel__file-system-header">
 					<h3>File explorer</h3>
 					<button onClick={() => {openTab({type: 'file-explorer'}, {switch: true})}}>open in tab</button>

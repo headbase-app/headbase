@@ -28,7 +28,7 @@ export interface FileSystemChangeEvent {
 		data: {
 			vaultId: string
 			path: string
-			action: 'create' | 'delete'
+			action: 'save' | 'delete'
 		}
 	}
 }

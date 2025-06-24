@@ -9,8 +9,6 @@ export function relativeTree(tree: OPFSXDirectoryTree): OPFSXDirectoryTree {
 	newTree.path = "/"
 	newTree.parentPath = "/"
 
-	console.debug(tree)
-
 	const relativePath = tree.path.slice(0, tree.path.length - 1)
 	return _relativeTree(relativePath, newTree)
 }

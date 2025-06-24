@@ -42,7 +42,6 @@ export function FileSystemExplorer() {
 		async function load() {
 			if (!currentDatabaseId) return
 			const tree = await headbase.fileSystem.tree(currentDatabaseId)
-			console.debug(tree)
 			setFileSystem(tree)
 		}
 		load()

@@ -15,9 +15,6 @@ export function useCurrentUser() {
 		const observable = headbase.server.liveGetCurrentUser()
 
 		const subscription = observable.subscribe((result) => {
-			if (result.status === LiveQueryStatus.SUCCESS) {
-				Logger.debug(`[useCurrentUser] Received new data`, result.result)
-			}
 			setResult(result)
 		})
 

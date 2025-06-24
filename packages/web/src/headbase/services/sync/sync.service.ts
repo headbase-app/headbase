@@ -66,11 +66,11 @@ export class SyncService {
 		this.events.unsubscribeAll(this._handleEventBound)
 	}
 
-	async handleEvent(event: HeadbaseEvent['detail']) {
+	async handleEvent(event: HeadbaseEvent) {
 		console.debug(`[sync] event received from context ${this.context.id}`)
 		console.debug(event)
-		if (event.type === EventTypes.DATA_CHANGE) {
-			if (["create", "update"].includes(event.detail.data.action)) {
+		if (event.type === EventTypes.FILE_SYSTEM_CHANGE) {
+			if (event.detail.data.action) {
 				this.actions.push({
 					type: 'upload',
 					detail: {

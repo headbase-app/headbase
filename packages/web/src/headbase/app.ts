@@ -41,12 +41,6 @@ export class Headbase {
 			this.keyValueStore
 		)
 
-		this.sync = new SyncService(
-			{context: this.context},
-			this.events,
-			this.server
-		)
-
 		this.vaults = new VaultsService(
 			{context: this.context},
 			this.events,
@@ -57,6 +51,14 @@ export class Headbase {
 			{context: this.context},
 			this.events,
 			this.keyValueStore
+		)
+
+		this.sync = new SyncService(
+			{context: this.context},
+			this.events,
+			this.server,
+			this.vaults,
+			this.history
 		)
 
 		this.fileSystem = new FileSystemService(

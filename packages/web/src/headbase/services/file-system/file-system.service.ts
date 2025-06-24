@@ -4,6 +4,7 @@ import {EventsService} from "../events/events.service.ts";
 import {EventTypes} from "../events/events.ts";
 import {DeviceContext} from "../../interfaces.ts";
 import {relativeTree} from "./relative-tree.ts";
+import {featureFlags} from "../../../flags.ts";
 
 
 export interface MarkdownFile {
@@ -43,13 +44,18 @@ export class FileSystemService {
 		const frontMatter = `---\n$name: ${file.displayName}\n${frontMatterString}\n---`
 		const content = `${frontMatter}${frontMatter && '\n\n'}${file.content}`
 
+		if (featureFlags().debug_file_system) {
+			console.debug(`[file-system] writing markdown file ${absolutePath}`)
+			console.debug(content)
+		}
+
 		await opfsx.write(absolutePath, content)
 
 		this.events.dispatch(EventTypes.FILE_SYSTEM_CHANGE, {
 			context: this.context,
 			data: {
 				vaultId,
-				action: 'create',
+				action: 'save',
 				path: file.path
 			}
 		})
@@ -84,6 +90,11 @@ export class FileSystemService {
 		// A newline is automatically added between the frontmatter and content when saving, so ensure this is removed
 		const trimmedContent = parsed.content.trim()
 
+		if (featureFlags().debug_file_system) {
+			console.debug(`[file-system] loaded file ${absolutePath}`)
+			console.debug(content)
+		}
+
 		return {
 			path: relativePath,
 			existingPath: relativePath,
@@ -95,6 +106,11 @@ export class FileSystemService {
 
 	async delete(vaultId: string, relativePath: string) {
 		const absolutePath = `/headbase/${vaultId}/files/${relativePath}`
+
+		if (featureFlags().debug_file_system) {
+			console.debug(`[file-system] deleting file ${absolutePath}`)
+		}
+
 		await opfsx.rm(absolutePath)
 
 		this.events.dispatch(EventTypes.FILE_SYSTEM_CHANGE, {
