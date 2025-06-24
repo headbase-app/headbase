@@ -12,7 +12,7 @@ import {
 } from "lucide-react"
 import {MainPanelAction} from "./main-panel-action";
 
-import './menu-panel.scss'
+import './menu-panel.css'
 import { JIcon, JTooltip } from "@ben-ryder/jigsaw-react";
 import classNames from "classnames";
 import {useEffect} from "react";
@@ -67,7 +67,7 @@ export function MenuPanel(props: WithMenuPanelProps) {
 			<div className="menu-panel__top">
 				<JTooltip content='Manage databases' renderAsChild={true} variant='dark'>
 					<button
-						className="menu-panel__database-edit"
+						className="menu-panel-button menu-panel__database-edit"
 						onClick={() => {
 							setDatabaseManagerDialogTab({type: 'list'})
 						}}
@@ -79,7 +79,7 @@ export function MenuPanel(props: WithMenuPanelProps) {
 				<JTooltip content='View app status' renderAsChild={true} variant='dark'>
 					<button
 						aria-label='Database status'
-						className="menu-panel__status"
+						className="menu-panel-button menu-panel__status"
 						onClick={() => {
 							setStatusDialogOpen(true);
 						}}
@@ -87,7 +87,7 @@ export function MenuPanel(props: WithMenuPanelProps) {
 				</JTooltip>
 				<JTooltip content='Create new file' renderAsChild={true} variant='dark'>
 					<button
-						className="menu-panel__create"
+						className="menu-panel-button menu-panel__create"
 						onClick={() => {
 							openTab({type: 'file-new'}, {switch: true})
 						}}
@@ -133,7 +133,7 @@ export function MenuPanel(props: WithMenuPanelProps) {
 				<JTooltip content="Manage account" renderAsChild={true} variant='dark'>
 					<button
 						aria-label='Account settings'
-						className="menu-panel__settings"
+						className="menu-panel-button menu-panel__settings"
 						onClick={() => {
 							setAccountDialogOpen(true)
 						}}
@@ -142,13 +142,13 @@ export function MenuPanel(props: WithMenuPanelProps) {
 				<JTooltip content="Help" renderAsChild={true} variant='dark'>
 					<button
 						aria-label='Help'
-						className="menu-panel__help"
+						className="menu-panel-button menu-panel__help"
 					><HelpIcon/></button>
 				</JTooltip>
 				<JTooltip content="Hide menu" renderAsChild={true} variant='dark'>
 					<button
 						aria-label='Hide menu'
-						className="menu-panel__menu"
+						className="menu-panel-button menu-panel__menu"
 						onClick={() => {
 							props.setIsMenuPanelOpen(false)
 						}}

@@ -1,14 +1,12 @@
 
-.j-input,
-.j-textarea ,
-.j-select,
-.j-multiselect {
-  &__element {
-    border-color: var(--j-c-blueGrey-700);
+.j-input__element,
+.j-textarea__element,
+.j-select__element,
+.j-multiselect__element {
+  border-color: var(--j-c-blueGrey-700);
 
-    &:hover:not(:focus) {
-      border-color: var(--j-c-blueGrey-400);
-    }
+  &:hover:not(:focus) {
+    border-color: var(--j-c-blueGrey-400);
   }
 }
 

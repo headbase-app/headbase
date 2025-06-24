@@ -1,6 +1,6 @@
 import React, {useState} from "react";
 
-import "./main.scss"
+import "./main.css"
 import {MenuPanel} from "../../patterns/layout/menu-panel/menu-panel";
 import {WorkspaceContextProvider} from "../../patterns/features/workspace/workspace-context.tsx";
 import {

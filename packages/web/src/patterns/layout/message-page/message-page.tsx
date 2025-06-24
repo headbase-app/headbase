@@ -1,6 +1,6 @@
 import React, { ReactNode } from "react";
 
-import "./message-page.scss"
+import "./message-page.css"
 
 export interface MessagePageProps {
 	heading: string;

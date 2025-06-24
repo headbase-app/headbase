@@ -76,7 +76,7 @@ Jigsaw styling for the editor (currently Codemirror 6)
     font-weight: bold;
     color: var(--j-c-primary);
 
-    // @todo: these classes don't seem to be stable, although "ͼ" seems to be consistent
+    /** @todo: these classes don't seem to be stable, although "ͼ" seems to be consistent */
     &[class*="ͼ"] {
       color: var(--j-c-text);
       font-weight: normal;

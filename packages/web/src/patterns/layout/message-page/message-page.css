@@ -1,0 +1,25 @@
+.ath-message-page {
+  margin-top: var(--j-space-48);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.ath-message-page__panel {
+  width: 100%;
+  max-width: 600px;
+  background-color: var(--j-c-background-f1);
+  border-radius: var(--j-border-radius-md);
+  padding: var(--j-space-16);
+  margin: var(--j-space-4);
+}
+
+.ath-message-page__panel-heading {
+  font-weight: bold;
+  font-size: var(--j-text-size-4xl);
+  color: var(--j-c-text-heading);
+}
+
+.ath-message-page__panel-text {
+  margin: var(--j-space-4) 0;
+}

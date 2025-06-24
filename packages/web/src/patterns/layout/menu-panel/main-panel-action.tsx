@@ -1,6 +1,6 @@
 import {ReactNode} from "react";
 
-import "./main-panel-action.scss";
+import "./main-panel-action.css";
 import classNames from "classnames";
 
 export interface MainPanelActionProps {
@@ -19,7 +19,7 @@ export function MainPanelAction(props: MainPanelActionProps) {
 					"main-panel-action--special": props.isSpecial
 				})
 			}>
-			<button className="main-panel-action__button" onClick={props.onSelect}>
+			<button className="main-panel-action__button menu-panel-button" onClick={props.onSelect}>
 				<span className="main-panel-action__icon">{props.icon}</span>
 				<span className="main-panel-action__text">{props.text}</span>
 			</button>

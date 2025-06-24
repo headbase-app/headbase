@@ -1,7 +1,7 @@
 import {JButton} from "@ben-ryder/jigsaw-react";
 import {ReactNode, useMemo, useState} from "react";
 
-import "./performance.scss"
+import "./performance.css"
 import {useHeadbase} from "../../../headbase/hooks/use-headbase.tsx";
 
 export interface ReportItem {

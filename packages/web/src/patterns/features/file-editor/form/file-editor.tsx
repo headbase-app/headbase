@@ -32,7 +32,7 @@ export function FileEditor(props: FileEditorProps) {
 						<button
 							type="button"
 							aria-label='Change file type'
-							className="menu-panel__menu"
+							className="menu-panel-button menu-panel__menu"
 							onClick={() => {}}
 						><ChangeTypeIcon/></button>
 					</JTooltip>
@@ -40,7 +40,7 @@ export function FileEditor(props: FileEditorProps) {
 						<button
 							type="button"
 							aria-label='View history'
-							className="menu-panel__menu"
+							className="menu-panel-button menu-panel__menu"
 							onClick={() => {}}
 						><HistoryIcon/></button>
 					</JTooltip>

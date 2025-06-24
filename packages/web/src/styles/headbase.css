@@ -2,11 +2,6 @@
 Base Variables
  */
 :root {
-    --j-breakpoint-sm: 576px;
-    --j-breakpoint-md: 768px;
-    --j-breakpoint-lg: 992px;
-    --j-breakpoint-xl: 1200px;
-
     --j-space-1: 2px;
     --j-space-2: 4px;
     --j-space-3: 6px;

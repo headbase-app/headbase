@@ -4,7 +4,7 @@ import {ReactNode} from "react";
 import {FileEditorTab} from "../file-editor/file-editor-tab.tsx";
 
 // todo: split styling by component for better encapsulation
-import "./workspace.scss"
+import "./workspace.css"
 import {SearchTab} from "../search/tab/search-tab.tsx";
 import classNames from "classnames";
 import { ChevronLast as ExpandMenuIcon} from "lucide-react";
