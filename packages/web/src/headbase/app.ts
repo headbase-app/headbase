@@ -138,6 +138,7 @@ export class Headbase {
 	async destroy() {
 		await this.events.destroy()
 		await this.sync.destroy()
+		await this.history.destroy()
 		// todo: any clean up needed for db transactions class or server?
 	}
 }

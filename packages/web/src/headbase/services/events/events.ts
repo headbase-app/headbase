@@ -1,5 +1,6 @@
-import {UserDto} from "@headbase-app/common";
+import {HistoryItemDto, UserDto} from "@headbase-app/common";
 import {DeviceContext} from "../../interfaces.ts";
+import {LocalHistoryItemDto} from "../history/local-history-item.ts";
 
 export const EventTypes = {
 	// File Events
@@ -28,7 +29,12 @@ export interface FileSystemChangeEvent {
 		data: {
 			vaultId: string
 			path: string
-			action: 'save' | 'delete'
+			content: string
+			action: 'save'
+		} | {
+			vaultId: string
+			path: string
+			action: 'delete'
 		}
 	}
 }
@@ -39,7 +45,7 @@ export interface HistoryCreateEvent {
 		context: DeviceContext,
 		data: {
 			vaultId: string
-			id: string
+			item: LocalHistoryItemDto
 		}
 	}
 }

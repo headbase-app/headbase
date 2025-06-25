@@ -69,28 +69,26 @@ export class SyncService {
 	async handleEvent(event: HeadbaseEvent) {
 		console.debug(`[sync] event received from context ${this.context.id}`)
 		console.debug(event)
-		if (event.type === EventTypes.FILE_SYSTEM_CHANGE) {
-			if (event.detail.data.action) {
-				this.actions.push({
-					type: 'upload',
-					detail: {
-						databaseId: event.detail.data.databaseId,
-						id: event.detail.data.versionId,
-					}
-				})
-			}
-			else if (["delete", "delete-version"].includes(event.detail.data.action)) {
-				this.actions.push({
-					type: 'delete-server',
-					detail: {
-						databaseId: event.detail.data.databaseId,
-						id: event.detail.data.versionId,
-					}
-				})
-			}
-
-			this.runActions()
+		if (event.type === EventTypes.HISTORY_CREATE) {
+			this.actions.push({
+				type: 'upload',
+				detail: {
+					databaseId: event.detail.data.vaultId,
+					id: event.detail.data.item.id,
+				}
+			})
 		}
+		else if (event.type === EventTypes.HISTORY_DELETE) {
+			this.actions.push({
+				type: 'delete-server',
+				detail: {
+					databaseId: event.detail.data.vaultId,
+					id: event.detail.data.id,
+				}
+			})
+		}
+
+		this.runActions()
 	}
 
 	async destroy() {
@@ -120,7 +118,7 @@ export class SyncService {
 			throw new HeadbaseError({type: ErrorTypes.SYSTEM_ERROR, devMessage: "Could not load current user during sync"})
 		}
 
-		const localDatabase = await this.databasesManagementAPI.get(databaseId)
+		const localDatabase = await this.vaults.get(databaseId)
 		let serverDatabase: VaultDto | null
 		try {
 			serverDatabase = await this.server.getVault(databaseId);
@@ -201,7 +199,7 @@ export class SyncService {
 
 		// Update lastSynced at timestamp saved to database
 		const lastSyncedAt = new Date().toISOString()
-		await this.databasesManagementAPI.update(databaseId, {
+		await this.vaults.update(databaseId, {
 			lastSyncedAt,
 		})
 

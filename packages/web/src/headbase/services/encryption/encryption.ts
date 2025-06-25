@@ -27,6 +27,11 @@ export const EncryptionMetadata = z.object({
 })
 export type EncryptionMetadata = z.infer<typeof EncryptionMetadata>
 
+export const HashMetadata = z.object({
+	algo: z.literal("SHA-256"),
+})
+export type HashMetadata = z.infer<typeof HashMetadata>
+
 
 export class EncryptionService {
 
@@ -85,6 +90,20 @@ export class EncryptionService {
 	static async encrypt<T>(encryptionKey: string, data: T): Promise<string> {
 		const key = await EncryptionService._getEncryptionCryptoKey(encryptionKey)
 		return EncryptionService._encryptWithKey(key, data)
+	}
+
+	static async hash(data: string): Promise<string> {
+		const dataBytes = new TextEncoder().encode(data)
+		const resultBytes = await window.crypto.subtle.digest("SHA-256", dataBytes)
+		const base64Result = EncryptionService._bytesToHexString(new Uint8Array(resultBytes))
+
+		const metadata: HashMetadata = {
+			algo: "SHA-256"
+		}
+		const encodedMetadata = new TextEncoder().encode(JSON.stringify(metadata))
+		const base64Metadata = EncryptionService._bytesToHexString(encodedMetadata)
+
+		return `v1.${base64Metadata}.${base64Result}`
 	}
 
 	static async decrypt<T>(

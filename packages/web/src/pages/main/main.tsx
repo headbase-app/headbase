@@ -14,6 +14,7 @@ import {HeadbaseContextProvider} from "../../headbase/hooks/use-headbase.tsx";
 import {Headbase} from "../../headbase/app.ts";
 
 const headbase = new Headbase()
+window.hb = headbase;
 
 export function MainPage() {
 	const [isMenuPanelOpen, setIsMenuPanelOpen] = useState<boolean>(true)

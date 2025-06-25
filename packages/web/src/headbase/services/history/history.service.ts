@@ -7,7 +7,7 @@ import {
 	QueryResult
 } from "../../control-flow.ts";
 import {Observable} from "rxjs";
-import {EventMap, EventTypes} from "../events/events.ts";
+import {EventMap, EventTypes, HeadbaseEvent} from "../events/events.ts";
 import {EncryptionService} from "../encryption/encryption.ts"
 import {EventsService} from "../events/events.service.ts";
 import {SQLocalDrizzle} from "sqlocal/drizzle";
@@ -26,34 +26,76 @@ export interface ItemsServiceConfig {
 }
 
 interface ConnectionStore {
-	[key: string]: SqliteRemoteDatabase<typeof schema>;
+	[key: string]: {
+		db: SqliteRemoteDatabase<typeof schema>,
+		destroy: () => Promise<void>
+	}
 }
 
 export class HistoryService {
 	private readonly config: ItemsServiceConfig
-	private readonly connectionStore: ConnectionStore
+	readonly connectionStore: ConnectionStore
+	_handleEventBound: (event: HeadbaseEvent) => Promise<void>
 
 	constructor(
 		config: ItemsServiceConfig,
-		private eventsService: EventsService,
+		private events: EventsService,
 		private keyValueStoreService: KeyValueStoreService
 	) {
 		this.config = config
 		this.connectionStore = {}
+
+		this._handleEventBound = this.handleEvent.bind(this)
+		this.events.subscribeAll(this._handleEventBound)
+	}
+
+	async destroy() {
+		console.debug('[sync] ending sync service');
+		this.events.unsubscribeAll(this._handleEventBound)
+
+		for (const connection of Object.values(this.connectionStore)) {
+			await connection.destroy()
+		}
+	}
+
+	async handleEvent(event: HeadbaseEvent) {
+		if (event.type === EventTypes.FILE_SYSTEM_CHANGE) {
+			if (event.detail.data.action === 'save') {
+				const contentHash = await EncryptionService.hash(event.detail.data.content)
+
+				await this.create(
+					event.detail.data.vaultId,
+					{
+						// todo: pull type from path or event?
+						type: ".md",
+						path: event.detail.data.path,
+						device: this.config.context.name || this.config.context.id,
+						contentHash,
+						content: event.detail.data.content,
+					}
+				)
+			}
+		}
 	}
 
 	private async getDatabase(vaultId: string): Promise<SqliteRemoteDatabase<typeof schema>> {
-		if (this.connectionStore[vaultId]) return this.connectionStore[vaultId];
+		if (this.connectionStore[vaultId]) {
+			return this.connectionStore[vaultId].db;
+		}
 
-		const { driver, batchDriver } = new SQLocalDrizzle({
+		const { driver, batchDriver, destroy } = new SQLocalDrizzle({
 			databasePath: `/headbase/${vaultId}/database.sqlite3`,
 			verbose: featureFlags().debug_sqlite
 		});
-		this.connectionStore[vaultId] = drizzle(driver, batchDriver, {casing: "snake_case"});
+		this.connectionStore[vaultId] = {
+			db: drizzle(driver, batchDriver, {casing: "snake_case"}),
+			destroy,
+		}
 
-		this.connectionStore[vaultId].run(migration0)
+		console.debug(migration0)
+		await this.connectionStore[vaultId].db.run(migration0)
 
-		return this.connectionStore[vaultId];
+		return this.connectionStore[vaultId].db;
 	}
 
 	/**
@@ -94,15 +136,18 @@ export class HistoryService {
 				id: id,
 				createdAt: timestamp,
 				deletedAt: null,
-				previousVersionId: null,
+				previousVersionId: null, //todo: allow to be set
 				...createItemDto,
 			})
 
-		this.eventsService.dispatch(EventTypes.DATABASE_CHANGE, {
+		// todo: use return from insert
+		const item = await this.get(vaultId, id)
+
+		this.events.dispatch(EventTypes.HISTORY_CREATE, {
 			context: this.config.context,
 			data: {
-				id,
-				action: 'create',
+				vaultId,
+				item,
 			}
 		})
 
@@ -122,11 +167,11 @@ export class HistoryService {
 			.insert(history)
 			.values(itemDto)
 
-		this.eventsService.dispatch(EventTypes.DATABASE_CHANGE, {
+		this.events.dispatch(EventTypes.HISTORY_CREATE, {
 			context: this.config.context,
 			data: {
-				id: itemDto.id,
-				action: 'create',
+				vaultId,
+				item: itemDto,
 			}
 		})
 
@@ -145,11 +190,11 @@ export class HistoryService {
 			.delete(history)
 			.where(eq(history.id, id))
 
-		this.eventsService.dispatch(EventTypes.DATABASE_CHANGE, {
+		this.events.dispatch(EventTypes.HISTORY_DELETE, {
 			context: this.config.context,
 			data: {
-				id,
-				action: 'delete',
+				vaultId,
+				id
 			}
 		})
 	}
@@ -191,15 +236,15 @@ export class HistoryService {
 				}
 			}
 
-			this.eventsService.subscribe(EventTypes.HISTORY_CREATE, handleEvent)
-			this.eventsService.subscribe(EventTypes.HISTORY_DELETE, handleEvent)
+			this.events.subscribe(EventTypes.HISTORY_CREATE, handleEvent)
+			this.events.subscribe(EventTypes.HISTORY_DELETE, handleEvent)
 
 			// Run initial query
 			runQuery()
 
 			return () => {
-				this.eventsService.unsubscribe(EventTypes.HISTORY_CREATE, handleEvent)
-				this.eventsService.unsubscribe(EventTypes.HISTORY_DELETE, handleEvent)
+				this.events.unsubscribe(EventTypes.HISTORY_CREATE, handleEvent)
+				this.events.unsubscribe(EventTypes.HISTORY_DELETE, handleEvent)
 			}
 		})
 	}

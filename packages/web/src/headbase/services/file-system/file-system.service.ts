@@ -56,7 +56,8 @@ export class FileSystemService {
 			data: {
 				vaultId,
 				action: 'save',
-				path: file.path
+				path: file.path,
+				content
 			}
 		})
 
