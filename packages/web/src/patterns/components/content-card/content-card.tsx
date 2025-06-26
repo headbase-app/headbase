@@ -1,4 +1,4 @@
-import "./content-card.scss";
+import "./content-card.css";
 
 export interface ContentCardProps {
 	id: string;

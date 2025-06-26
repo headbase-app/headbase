@@ -2,7 +2,7 @@ import {DatabaseBasicDataForm, DatabaseBasicFields} from "../forms/database-basi
 import {useCallback, useState} from "react";
 import {DatabasePasswordForm} from "../forms/database-password-form";
 import {useDatabaseManagerDialogContext} from "../manager/database-manager-context";
-import {useHeadbase} from "../../../../logic/react/use-headbase.tsx";
+import {useHeadbase} from "../../../../headbase/hooks/use-headbase.tsx";
 
 export type DatabaseCreateSteps = 'basic-info' | 'encryption'
 
@@ -30,7 +30,7 @@ export function DatabaseCreateScreen() {
 		}
 
 		try {
-			await headbase.databases.create({
+			await headbase.vaults.create({
 				name: basicInfo.name,
 				syncEnabled: basicInfo.syncEnabled,
 				password: password,

@@ -1,7 +1,7 @@
 import React from "react";
 import {JButton, JDialog} from "@ben-ryder/jigsaw-react";
 import {createModalContext} from "../common/dialog/generic-dialog.tsx";
-import {useHeadbase} from "../../../logic/react/use-headbase.tsx";
+import {useHeadbase} from "../../../headbase/hooks/use-headbase.tsx";
 
 export const {
 	context: StatusDialogContext,

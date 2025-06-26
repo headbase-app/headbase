@@ -1,6 +1,6 @@
 import { useRef, useState } from "react";
 import { JButton, JCallout, JInput } from "@ben-ryder/jigsaw-react";
-import "./attachments-manager.scss"
+import "./attachments-manager.css"
 
 export interface FileRender {
 	name: string

@@ -1,0 +1,4 @@
+@custom-media --j-breakpoint-sm (min-width: 576px);
+@custom-media --j-breakpoint-md (min-width: 768px);
+@custom-media --j-breakpoint-lg (min-width: 992px);
+@custom-media --j-breakpoint-xl (min-width: 1200px);

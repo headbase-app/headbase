@@ -1,13 +1,12 @@
-import {useCallback, useRef} from "react";
+import {useRef} from "react";
 import {JArrowButton, JButton, JErrorText, JInput} from "@ben-ryder/jigsaw-react";
 import {useDatabaseManagerDialogContext} from "../manager/database-manager-context";
-import {useHeadbase} from "../../../../logic/react/use-headbase.tsx";
-import {useDatabase} from "../../../../logic/react/databases/use-database.tsx";
-import {HeadbaseError, LiveQueryStatus} from "../../../../logic/control-flow.ts";
 import {ErrorCallout} from "../../../components/error-callout/error-callout.tsx";
 import {useForm} from "react-hook-form";
 import {z} from "zod";
-import {DatabaseExport} from "../../../../logic/schemas/export.ts";
+import {useHeadbase} from "../../../../headbase/hooks/use-headbase.tsx";
+import {useVault} from "../../../../headbase/hooks/vaults/use-vault.tsx";
+import {HeadbaseError, LiveQueryStatus} from "../../../../headbase/control-flow.ts";
 
 
 export interface DatabaseImportScreenProps {
@@ -23,7 +22,7 @@ type ImportForm = z.infer<typeof ImportForm>
 export function DatabaseImportScreen(props: DatabaseImportScreenProps) {
 	const { setOpenTab } = useDatabaseManagerDialogContext()
 	const {headbase, currentDatabaseId} = useHeadbase()
-	const databaseQuery = useDatabase(props.databaseId)
+	const databaseQuery = useVault(props.databaseId)
 
 	const fileInputRef = useRef<HTMLInputElement | null>(null)
 	const {
@@ -52,20 +51,22 @@ export function DatabaseImportScreen(props: DatabaseImportScreenProps) {
 				return setError('root', { message: 'There appears to be an issue with your upload. Please try again.' })
 			}
 
-			const fileContent = await file.arrayBuffer()
-			const fileText = new TextDecoder().decode(fileContent)
-			let importData: DatabaseExport
-			try {
-				const fileData = JSON.parse(fileText)
-				importData = DatabaseExport.parse(fileData)
-			}
-			catch (e) {
-				console.error(e)
-				return setError('root', { message: 'Your file contains unexpected data.' })
-			}
+			console.error("Import not implemented yet")
+			// const fileContent = await file.arrayBuffer()
+			// const fileText = new TextDecoder().decode(fileContent)
+			// let importData: DatabaseExport
+			// try {
+			// 	const fileData = JSON.parse(fileText)
+			// 	importData = DatabaseExport.parse(fileData)
+			// }
+			// catch (e) {
+			// 	console.error(e)
+			// 	return setError('root', { message: 'Your file contains unexpected data.' })
+			// }
 
 			try {
-				await headbase.db.migration.import(importData)
+				// await headbase.db.migration.import(importData)
+				console.error("Import not implemented yet")
 
 				// todo: show proper success message
 				return setError('root', { message: 'Import successful!' })

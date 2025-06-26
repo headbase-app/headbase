@@ -9,8 +9,8 @@ const TAG_VERSIONS_NUMBER = 20
 export async function runTest(headbase: HeadbaseWeb, report: ReportFunction) {
 
 	// const password = 'password1234'
-	// const databaseId = await headbase.databases.create({name: 'perf test', syncEnabled: 0, password})
-	// await headbase.databases.unlock(databaseId, password)
+	// const databaseId = await headbase.vaults.create({name: 'perf test', syncEnabled: 0, password})
+	// await headbase.vaults.unlock(databaseId, password)
 	//
 	// const benchmarkStartTime = performance.now()
 	//
@@ -22,7 +22,7 @@ export async function runTest(headbase: HeadbaseWeb, report: ReportFunction) {
 	//
 	// report({level: "section", text: "Teardown"})
 	// await headbase.db.close()
-	// await headbase.databases.delete(databaseId)
+	// await headbase.vaults.delete(databaseId)
 	// report({level: "message", text: "deleted database vault"})
 	//
 	// const benchmarkEndTime = performance.now()

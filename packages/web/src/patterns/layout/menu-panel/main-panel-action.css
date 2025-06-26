@@ -1,0 +1,30 @@
+
+.main-panel-action__button {
+  padding: var(--j-space-3) var(--j-space-6) !important;
+  display: flex !important;
+  align-items: center !important;
+
+  &:focus {
+    .main-panel-action__icon {
+      color: var(--j-c-teal-300);
+    }
+  }
+}
+
+.main-panel-action--special {
+  .main-panel-action__text,
+  .main-panel-action__icon {
+    color: var(--j-c-teal-300);
+  }
+}
+
+.main-panel-action__icon {
+  display: contents;
+  color: var(--j-c-blueGrey-50);
+}
+
+.main-panel-action__text {
+  margin-left: var(--j-space-4);
+  font-size: var(--j-text-size-sm);
+  font-weight: var(--j-text-weight-medium);
+}

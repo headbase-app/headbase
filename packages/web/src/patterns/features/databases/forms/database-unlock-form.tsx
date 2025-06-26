@@ -3,8 +3,8 @@ import { JButton, JButtonGroup, JErrorText, JForm, JFormContent, JFormRow, JInpu
 import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import {ErrorTypes, HeadbaseError} from "../../../../logic/control-flow.ts";
-import {useHeadbase} from "../../../../logic/react/use-headbase.tsx";
+import {useHeadbase} from "../../../../headbase/hooks/use-headbase.tsx";
+import {ErrorTypes, HeadbaseError} from "../../../../headbase/control-flow.ts";
 
 
 const UnlockFormSchema = z.object({
@@ -36,7 +36,7 @@ export function DatabaseUnlockForm(props: DatabaseUnlockFormProps) {
 		if (!headbase) return setError('root', { message: 'Headbase instance does not exist' })
 
 		try {
-			await headbase.databases.unlock(props.databaseId, data.password)
+			await headbase.vaults.unlock(props.databaseId, data.password)
 
 			// todo: may not work as doesn't clean up open hooks etc?
 			setCurrentDatabaseId(props.databaseId)

@@ -7,12 +7,12 @@ import {DatabaseUnlockScreen} from "../screens/database-unlock";
 import {_DatabaseDialogContext, DatabaseManagerTabs, useDatabaseManagerDialogContext} from "./database-manager-context";
 import {useWorkspaceContext} from "../../workspace/workspace-context";
 import {DatabaseChangePasswordScreen} from "../screens/database-change-password";
-import {useHeadbase} from "../../../../logic/react/use-headbase.tsx";
-import {KeyStorageService} from "../../../../logic/services/key-storage/key-storage.service.ts";
 import {DatabaseImportScreen} from "../screens/database-import.tsx";
 import {DatabaseExportScreen} from "../screens/database-export.tsx";
 import {DatabaseServerList} from "../screens/database-server-list.tsx";
-import {useCurrentUser} from "../../../../logic/react/use-current-user.tsx";
+import {useHeadbase} from "../../../../headbase/hooks/use-headbase.tsx";
+import {useCurrentUser} from "../../../../headbase/hooks/use-current-user.tsx";
+import {z} from "zod";
 
 
 export function DatabaseManagerDialogProvider(props: PropsWithChildren) {
@@ -92,7 +92,7 @@ export function DatabaseManagerDialog() {
 			if (!headbase) return
 
 			if (currentDatabaseId) {
-				localStorage.setItem('lf_lastOpenedDb', currentDatabaseId)
+				localStorage.setItem('lastOpenedDb', currentDatabaseId)
 				// todo: should this be managed in workspace not here?
 				closeAllTabs()
 				close()
@@ -100,16 +100,15 @@ export function DatabaseManagerDialog() {
 			else if (isFirstOpen.current) {
 				isFirstOpen.current = false
 
-				const lastOpenedDatabaseId = localStorage.getItem('lf_lastOpenedDb')
+				const lastOpenedDatabaseId = localStorage.getItem('lastOpenedDb')
 				if (lastOpenedDatabaseId) {
 					try {
 						// ensure the database exists and is unlocked before opening
 						// todo: refactor local database to return encryptionKey not isUnlocked?
-						const database = await headbase.databases.get(lastOpenedDatabaseId)
-						const encryptionKey = await KeyStorageService.get(lastOpenedDatabaseId)
+						const vault = await headbase.vaults.get(lastOpenedDatabaseId)
+						const encryptionKey = await headbase.keyValueStore.get(`enckey_${lastOpenedDatabaseId}`, z.string())
 
-						if (database.isUnlocked && encryptionKey) {
-							await headbase.db.open(lastOpenedDatabaseId, encryptionKey)
+						if (vault.isUnlocked && encryptionKey) {
 							setCurrentDatabaseId(lastOpenedDatabaseId)
 						}
 					}
@@ -149,8 +148,8 @@ export function DatabaseManagerDialog() {
 			}}
 			role={openTab ? 'dialog' : 'alertdialog'}
 			disableOutsideClose={true}
-			title="Manage databases"
-			description="Manage your current database"
+			title="Manage vaults"
+			description="Manage your current vaults"
 			content={
 				<div>
 					<JButton variant='secondary' onClick={() => {setOpenTab({type: "list"})}}>Local</JButton>

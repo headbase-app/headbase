@@ -1,0 +1,117 @@
+@import "../../../styles/breakpoints.css";
+
+:root {
+  --menu-panel-width: 275px;
+}
+
+.menu-panel-button {
+  display: block;
+  padding: var(--j-space-2);
+  border-radius: var(--j-border-radius-sm);
+  color: inherit;
+
+  &:hover,
+  &:focus {
+    outline: none;
+    background-color: var(--j-c-atom-100);
+    color: var(--j-c-teal-300);
+    cursor: pointer;
+  }
+}
+
+.menu-panel {
+  width: 100%;
+  position: absolute;
+  height: 100%;
+  z-index: var(--j-z-layer-1);
+  transition: all var(--j-motion-duration-medium) var(--j-motion-ease-in-out);
+  /** border-right: var(--j-border-width-sm) solid var(--j-c-blueGrey-900); **/
+
+  background: var(--j-c-background-f1);
+  color: var(--j-c-text);
+  
+  @media (--j-breakpoint-md) {
+    width: var(--menu-panel-width);
+    min-width: var(--menu-panel-width);
+  }
+}
+
+.menu-panel__menu,
+.menu-panel__status {
+  margin-left: auto;
+}
+
+.menu-panel__create,
+.menu-panel__account,
+.menu-panel__settings,
+.menu-panel__status,
+.menu-panel__help,
+.menu-panel__menu {
+  line-height: 0;
+  padding: var(--j-space-3);
+}
+
+.menu-panel--collapsed {
+  transform: translateX(-100vw);
+  /** todo: review accessibility of showing/hiding menu */
+  visibility: hidden;
+
+  @media (--j-breakpoint-md) {
+    transform: translateX(-275px);
+  }
+}
+
+.menu-panel__top {
+  padding: var(--j-space-4);
+  display: flex;
+  align-items: center;
+}
+
+.menu-panel__database-name {
+  text-overflow: ellipsis;
+  overflow-x: hidden;
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+.menu-panel__database-edit {
+  padding: var(--j-space-4);
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  font-size: var(--j-text-size-sm);
+  max-width: 180px;
+
+  .j-icon {
+    margin-left: var(--j-space-2);
+    height: 18px;
+    width: 18px;
+    min-width: 18px;
+    min-height: 18px;
+    line-height: 0;
+  }
+}
+
+.menu-panel__actions {
+  margin-top: var(--j-space-8);
+  padding: var(--j-space-4);
+}
+
+.menu-panel__content-items {
+  margin-top: var(--j-space-8);
+  padding: var(--j-space-4);
+}
+
+.menu-panel__bottom {
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+  display: flex;
+  padding: var(--j-space-3) var(--j-space-5);
+}
+
+.main-panel-action__button {
+  width: 100%;
+}

@@ -1,9 +1,10 @@
 import {LoginForm} from "./login-form";
 import {JButton, JProse} from "@ben-ryder/jigsaw-react";
-import {useHeadbase} from "../../../logic/react/use-headbase.tsx";
-import {useCurrentUser} from "../../../logic/react/use-current-user.tsx";
-import {LiveQueryStatus} from "../../../logic/control-flow.ts";
 import {ErrorCallout} from "../../components/error-callout/error-callout.tsx";
+import {useHeadbase} from "../../../headbase/hooks/use-headbase.tsx";
+import {useCurrentUser} from "../../../headbase/hooks/use-current-user.tsx";
+import {LiveQueryStatus} from "../../../headbase/control-flow.ts";
+
 
 export function UserManager() {
 	const { headbase } = useHeadbase();

@@ -1,0 +1,109 @@
+/**
+Jigsaw styling for the editor (currently Codemirror 6)
+ */
+
+.ath-editor {
+  font-family: var(--j-text-font-primary);
+  font-size: var(--j-text-size-rg);
+  color: var(--j-c-text);
+  line-height: 2;
+  margin-top: var(--j-space-4);
+  min-height: 400px;
+
+  border-left: var(--j-border-width-md) solid var(--j-c-blueGrey-300);
+  padding: var(--j-space-5);
+
+  .cm-scroller {
+    font-family: var(--j-text-font-primary);
+    line-height: 2;
+  }
+
+  .cm-content {
+    padding: 0;
+  }
+
+  &:focus-within {
+    border-color: var(--j-c-primary);
+  }
+
+  .cm-editor {
+    font-family: var(--j-text-font-primary);
+
+    &.cm-focused {
+      outline: none;
+      border-color: var(--j-c-primary);
+    }
+  }
+
+  /**
+  Basic Typography
+   */
+  .strong {
+    font-weight: bold;
+  }
+
+  .em {
+    font-style: italic;
+  }
+
+  /**
+  Headings
+   */
+  .h {
+    font-weight: bold;
+  }
+
+  .h1 {
+    font-size: var(--j-text-size-3xl);
+  }
+
+  .h2 {
+    font-size: var(--j-text-size-2xl);
+  }
+
+  .h3 {
+    font-size: var(--j-text-size-xl);
+  }
+
+  .h4 {
+    font-size: var(--j-text-size-lg);
+  }
+
+  /**
+  Lists
+   */
+  .li {
+    font-weight: bold;
+    color: var(--j-c-primary);
+
+    /** @todo: these classes don't seem to be stable, although "ͼ" seems to be consistent */
+    &[class*="ͼ"] {
+      color: var(--j-c-text);
+      font-weight: normal;
+    }
+  }
+
+  /**
+  Custom CodeMirror (and @uiw/react-codemirror)
+   */
+  .cm-hyper-link-icon {
+    color: var(--j-c-green-400);
+  }
+
+  .cm-foldPlaceholder {
+    background: var(--j-c-background);
+    border: none;
+    letter-spacing: 2px;
+    color: var(--j-c-primary);
+    font-size: 2rem;
+    line-height: 0;
+    font-family: var(--j-text-font-primary);
+  }
+
+  .cm-gutterElement {
+    span {
+      font-size: 1.5rem;
+      line-height: 0;
+    }
+  }
+}

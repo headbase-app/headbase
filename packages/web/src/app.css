@@ -1,0 +1,28 @@
+
+.j-input__element,
+.j-textarea__element,
+.j-select__element,
+.j-multiselect__element {
+  border-color: var(--j-c-blueGrey-700);
+
+  &:hover:not(:focus) {
+    border-color: var(--j-c-blueGrey-400);
+  }
+}
+
+.j-dialog__header {
+  border-bottom: none;
+}
+
+:root {
+  --j-c-primary: var(--j-c-teal-600);
+  --j-c-primary-interaction: var(--j-c-teal-700);
+}
+
+.ath-editor {
+  border-color: var(--j-c-blueGrey-700);
+
+  &:hover:not(:focus-within) {
+    border-color: var(--j-c-blueGrey-400);
+  }
+}

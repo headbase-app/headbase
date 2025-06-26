@@ -1,12 +1,12 @@
-import {useCallback, useEffect, useRef, useState} from "react";
+import {useEffect, useRef, useState} from "react";
 import {JArrowButton, JButton, JErrorText, JProse} from "@ben-ryder/jigsaw-react";
 import {useDatabaseManagerDialogContext} from "../manager/database-manager-context";
-import {useHeadbase} from "../../../../logic/react/use-headbase.tsx";
-import {useDatabase} from "../../../../logic/react/databases/use-database.tsx";
-import {LiveQueryStatus} from "../../../../logic/control-flow.ts";
 import {ErrorCallout} from "../../../components/error-callout/error-callout.tsx";
 import {useForm} from "react-hook-form";
 import {z} from "zod";
+import {useHeadbase} from "../../../../headbase/hooks/use-headbase.tsx";
+import {useVault} from "../../../../headbase/hooks/vaults/use-vault.tsx";
+import {LiveQueryStatus} from "../../../../headbase/control-flow.ts";
 
 
 export interface DatabaseExportScreenProps {
@@ -20,7 +20,7 @@ type ExportForm = z.infer<typeof ExportForm>
 export function DatabaseExportScreen(props: DatabaseExportScreenProps) {
 	const { setOpenTab } = useDatabaseManagerDialogContext()
 	const {headbase, currentDatabaseId} = useHeadbase()
-	const databaseQuery = useDatabase(props.databaseId)
+	const databaseQuery = useVault(props.databaseId)
 
 	const [downloadUrl, setDownloadUrl] = useState<string|undefined>()
 	const downloadRef = useRef<HTMLAnchorElement>(null)
@@ -32,11 +32,12 @@ export function DatabaseExportScreen(props: DatabaseExportScreenProps) {
 		if (!databaseQuery.result.isUnlocked) return setError('root', { message: 'Unable to export database which is not unlocked.' })
 
 		try {
-			const exportData = await headbase.db.migration.export()
-			const fileContent = JSON.stringify(exportData)
-			const downloadFile = new File([fileContent], `${databaseQuery.result.name}.json`, {type: 'application/json'})
-			const downloadURL = URL.createObjectURL(downloadFile)
-			setDownloadUrl(downloadURL)
+			// const exportData = await headbase.db.migration.export()
+			// const fileContent = JSON.stringify(exportData)
+			// const downloadFile = new File([fileContent], `${databaseQuery.result.name}.json`, {type: 'application/json'})
+			// const downloadURL = URL.createObjectURL(downloadFile)
+			// setDownloadUrl(downloadURL)
+			console.error("Export not implemented yet.")
 		}
 		catch (e) {
 			console.error(e)

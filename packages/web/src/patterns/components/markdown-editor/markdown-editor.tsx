@@ -5,7 +5,7 @@ import { jigsawTheme } from "./jigsaw-theme";
 import { EditorView } from "@codemirror/view";
 import { hyperLink } from "@uiw/codemirror-extensions-hyper-link";
 
-import "./jigsaw-codemirror.scss"
+import "./jigsaw-codemirror.css"
 
 export interface MarkdownEditorProps {
 	id: string; // todo: add ID to CodeMirror

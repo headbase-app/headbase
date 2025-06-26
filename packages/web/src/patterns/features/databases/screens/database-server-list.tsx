@@ -1,9 +1,8 @@
 import {useCallback, useEffect, useState} from "react";
-import {useWorkspaceContext} from "../../workspace/workspace-context";
 import {useDatabaseManagerDialogContext} from "../manager/database-manager-context";
-import {useHeadbase} from "../../../../logic/react/use-headbase.tsx";
 import {VaultDto} from "@headbase-app/common";
 import {JButton} from "@ben-ryder/jigsaw-react";
+import {useHeadbase} from "../../../../headbase/hooks/use-headbase.tsx";
 
 
 export function DatabaseServerList() {
@@ -16,7 +15,7 @@ export function DatabaseServerList() {
 	useEffect(() => {
 		async function loadVaults() {
 			if (!headbase) return;
-			const localVaults = await headbase.databases.query()
+			const localVaults = await headbase.vaults.query()
 			setLocalVaultIds(localVaults.result.map(v => v.id))
 			const serverVaults = await headbase.server.getVaults()
 			setVaults(serverVaults)

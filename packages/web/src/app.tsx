@@ -8,9 +8,8 @@ import { MainPage } from "./pages/main/main";
 import { PageNotFound } from "./pages/page-not-found";
 import { WelcomePage } from "./pages/welcome";
 
-import "./app.scss"
-import "./styles/variables.css"
-import "./styles/tailwind.css"
+import "./app.css"
+import "./styles/headbase.css"
 
 export function App() {
 

@@ -1,6 +1,6 @@
 import { JCallout } from "@ben-ryder/jigsaw-react";
 import React from "react";
-import {ErrorTypes, HeadbaseError} from "../../../logic/control-flow.ts";
+import {ErrorTypes, HeadbaseError} from "../../../headbase/control-flow.ts";
 
 export interface ErrorCalloutProps {
 	errors: unknown[]

@@ -8,9 +8,9 @@ import {
 import {Controller, useForm} from "react-hook-form";
 import {zodResolver} from "@hookform/resolvers/zod";
 import {z} from "zod";
-import {CreateDatabaseDto} from "../../../../logic/schemas/database.ts";
+import {CreateVaultDto} from "../../../../headbase/services/vaults/local-vault.ts";
 
-export const DatabaseBasicFields = CreateDatabaseDto.omit({password: true})
+export const DatabaseBasicFields = CreateVaultDto.omit({password: true})
 export type DatabaseBasicFields = z.infer<typeof DatabaseBasicFields>
 
 export interface DatabaseBasicDataFormProps {

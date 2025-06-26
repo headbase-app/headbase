@@ -1,0 +1,126 @@
+@import "../../../styles/breakpoints.css";
+
+.workspace {
+  width: 100%;
+  transition: all var(--j-motion-duration-medium) var(--j-motion-ease-in-out);
+
+  @media (--j-breakpoint-md) {
+    margin-left: var(--menu-panel-width);
+  }
+}
+
+.workspace--menu-hidden {
+  margin-left: 0;
+}
+
+/** todo: use menu-panel-button mixin from menu panel? **/
+.workspace__menu-button {
+  position: absolute;
+  bottom: 0;
+  margin: var(--j-space-4);
+
+  color: var(--j-c-primary-text);
+  padding: var(--j-space-4);
+  line-height: 0;
+  border-radius: var(--j-border-radius-md);
+
+  &:hover,
+  &:focus {
+    background: var(--j-c-atom-200);
+    color: var(--j-c-teal-300);
+    cursor: pointer;
+    outline: none;
+    box-shadow: none;
+  }
+}
+
+.workspace-tab {
+  display: flex;
+  align-items: center;
+  width: max-content;
+  position: relative;
+  height: 100%;
+
+  &:after {
+    content: "";
+    background-color: transparent;
+    width: 100%;
+    height: var(--j-space-2);
+    position: absolute;
+    bottom: 0;
+  }
+
+  &:hover {
+    background: var(--j-c-atom-100);
+  }
+
+  &.--active {
+    &:after {
+      background-color: var(--j-c-primary);
+    }
+  }
+
+  &.__select,
+  &.__close {
+    color: var(--j-c-text-emphasis);
+    font-size: var(--j-text-size-sm);
+
+    &:hover {
+      cursor: pointer;
+    }
+  }
+
+  &.__select {
+    padding: var(--j-space-4) var(--j-space-6);
+    padding-right: var(--j-space-16);
+    font-weight: var(--j-text-weight-medium);
+    display: flex;
+    align-items: center;
+  }
+
+  &.__close {
+    position: absolute;
+    right: var(--j-space-3);
+  }
+
+  &.__save-status {
+    &:before {
+      content: '';
+      display: block;
+      width: 8px;
+      height: 8px;
+      border-radius: 8px;
+      background-color: var(--j-c-orange-400);
+      margin-left: var(--j-space-2);
+    }
+  }
+
+  &.__close {
+    &:hover {
+      color: var(--j-c-red-300);
+    }
+  }
+}
+
+.workspace-tabs__list {
+  display: flex;
+  overflow-x: scroll;
+  min-height: 49px;
+  scrollbar-width: none;
+  background: var(--j-c-background-f1);
+  border-bottom: var(--j-border-width-sm) solid var(--j-c-blueGrey-900);
+}
+
+.workspace-area {
+  max-height: calc(100vh - 50px);
+  overflow-y: scroll;
+  scrollbar-width: none;
+}
+
+.workspace-empty-content {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+}
