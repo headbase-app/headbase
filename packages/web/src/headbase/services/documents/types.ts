@@ -1,34 +1,35 @@
 
-export interface DataObject {
+export interface LocalDocument {
 	spec: string,
 	type: string,
 	id: string,
-	versionId:string,
+	versionId: string,
 	previousVersionId: string | null,
 	createdAt: string,
 	createdBy: string,
 	updatedAt: string,
 	updatedBy: string,
+	deletedAt: string | null,
 	data: any
 }
 
-export interface DataObjectVersion {
+export interface LocalDocumentVersion {
 	spec: string,
 	type: string,
-	objectId: string,
-	id:string,
+	documentId: string,
+	id: string,
 	previousVersionId: string | null,
 	createdAt: string,
 	createdBy: string,
+	deletedAt: string | null,
 	data: any
 }
 
-export type CreateDataObjectDto = Pick<DataObject, 'type' | 'createdBy' | 'data'> & {
+export type CreateLocalDocument = Pick<LocalDocument, 'type' | 'createdBy' | 'data'> & {
 	id?: string
 }
 
-export type UpdateDataObjectDto = Pick<DataObject, 'type' | 'updatedBy' | 'data'>
-
+export type UpdateLocalDocument = Pick<LocalDocument, 'type' | 'updatedBy' | 'data'>
 
 export type WhereQuery = {
 	[field: string]: {

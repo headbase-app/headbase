@@ -1,5 +1,5 @@
 import {z} from "zod";
-import {createIdField, createDateField} from "../common/fields";
+import {createIdField, createDateField, ProtectedDataField} from "../common/fields";
 
 export const VaultDto = z.object({
 	id: createIdField(),
@@ -12,17 +12,17 @@ export const VaultDto = z.object({
 	encryptionKey: z.string()
 		.min(1, "protectedEncryptionKey must be at least 1 character.")
 		.max(500, "protectedEncryptionKey can't be over 500 characters."), // todo: should there be a max length at all?
-	data: z.string().nullable(),
+	protectedData: ProtectedDataField.nullable(),
 	ownerId: createIdField('ownerId'),
 }).strict()
 export type VaultDto = z.infer<typeof VaultDto>;
 
 export const CreateVaultDto = VaultDto
-	.pick({name: true, encryptionKey: true, data: true})
+	.pick({name: true, encryptionKey: true, protectedData: true})
 	.partial();
 export type CreateVaultDto = z.infer<typeof CreateVaultDto>;
 
 export const UpdateVaultDto = VaultDto
-	.pick({name: true, encryptionKey: true, data: true})
+	.pick({name: true, encryptionKey: true, protectedData: true})
 	.partial();
 export type UpdateVaultDto = z.infer<typeof UpdateVaultDto>;

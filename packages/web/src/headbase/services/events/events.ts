@@ -1,13 +1,9 @@
-import {HistoryItemDto, UserDto} from "@headbase-app/common";
+import {UserDto} from "@headbase-app/common";
 import {DeviceContext} from "../../interfaces.ts";
-import {LocalHistoryItemDto} from "../history/local-history-item.ts";
 
 export const EventTypes = {
-	// File Events
-	FILE_SYSTEM_CHANGE: 'file-system-change',
-	// History Change
-	HISTORY_CREATE: 'history-create',
-	HISTORY_DELETE: 'history-delete',
+	// Document Event
+	DOCUMENTS_CHANGE: "documents-change",
 	// Database Events
 	DATABASE_OPEN: 'database-open',
 	DATABASE_CLOSE: 'database-close',
@@ -21,42 +17,16 @@ export const EventTypes = {
 	USER_LOGOUT: 'user-logout',
 } as const
 
-
-export interface FileSystemChangeEvent {
-	type: typeof EventTypes.FILE_SYSTEM_CHANGE,
+export interface DocumentsChangeEvent {
+	type: typeof EventTypes.DOCUMENTS_CHANGE,
 	detail: {
 		context: DeviceContext,
 		data: {
 			vaultId: string
-			path: string
-			content: string
-			action: 'save'
-		} | {
-			vaultId: string
-			path: string
-			action: 'delete'
-		}
-	}
-}
-
-export interface HistoryCreateEvent {
-	type: typeof EventTypes.HISTORY_CREATE,
-	detail: {
-		context: DeviceContext,
-		data: {
-			vaultId: string
-			item: LocalHistoryItemDto
-		}
-	}
-}
-
-export interface HistoryDeleteEvent {
-	type: typeof EventTypes.HISTORY_DELETE,
-	detail: {
-		context: DeviceContext,
-		data: {
-			vaultId: string
-			id: string
+			types: string[]
+			action: 'create' | 'update' | 'delete' |  'create-version' | 'delete-version'
+			id: string,
+			versionId: string
 		}
 	}
 }
@@ -141,17 +111,13 @@ export interface UserLogoutEvent {
 }
 
 export type HeadbaseEvent =
-	FileSystemChangeEvent |
-	HistoryCreateEvent | HistoryDeleteEvent |
+	DocumentsChangeEvent |
 	DatabaseOpenEvent | DatabaseCloseEvent | DatabaseUnlockEvent | DatabaseLockEvent | DatabaseChangeEvent |
 	UserLoginEvent | UserLogoutEvent
 
 export interface EventMap {
-	// File Events
-	[EventTypes.FILE_SYSTEM_CHANGE]: FileSystemChangeEvent,
-	// History Change
-	[EventTypes.HISTORY_CREATE]: HistoryCreateEvent,
-	[EventTypes.HISTORY_DELETE]: HistoryDeleteEvent,
+	// Document Events
+	[EventTypes.DOCUMENTS_CHANGE]: DocumentsChangeEvent,
 	// Database Events
 	[EventTypes.DATABASE_OPEN]: DatabaseOpenEvent,
 	[EventTypes.DATABASE_CLOSE]: DatabaseCloseEvent,

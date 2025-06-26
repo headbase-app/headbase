@@ -8,3 +8,6 @@ export function createIdField(key: string = "id") {
 export function createDateField(key: string = "date") {
 	return z.string().datetime({message: `${key} must be UTC timestamp`})
 }
+
+export const ProtectedDataField = z.string()
+	.min(1, 'protectedData must not be empty')

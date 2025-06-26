@@ -1,5 +1,5 @@
 import {z} from "zod"
-import {VaultDto} from "@headbase-app/common";
+import {ProtectedDataField, VaultDto} from "@headbase-app/common";
 
 export const TimestampField = z.string().datetime('timestamp field must be in iso format')
 export type TimestampField = z.infer<typeof TimestampField>
@@ -9,14 +9,16 @@ export type TimestampField = z.infer<typeof TimestampField>
 export const LocalVaultEntity = VaultDto
 	.omit({
 		ownerId: true,
+		protectedData: true,
 		// todo: remove once removed from common types
 		deletedAt: true
 	})
 	.extend({
+		data: ProtectedDataField,
 		syncEnabled: z.boolean(),
 		lastSyncedAt: TimestampField.nullish(),
 		// Not used right now, but will help allow for migrations in future if required.
-		hbv: z.string(),
+		spec: z.string(),
 	}).strict()
 export type LocalVaultEntity = z.infer<typeof LocalVaultEntity>
 

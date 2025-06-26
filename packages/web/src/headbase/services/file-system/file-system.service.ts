@@ -1,7 +1,7 @@
 import * as opfsx from "opfsx"
 import {parseMarkdownFrontMatter} from "./frontmatter.ts";
 import {EventsService} from "../events/events.service.ts";
-import {EventTypes} from "../events/events.ts";
+// import {EventTypes} from "../events/events.ts";
 import {DeviceContext} from "../../interfaces.ts";
 import {relativeTree} from "./relative-tree.ts";
 import {featureFlags} from "../../../flags.ts";
@@ -51,29 +51,29 @@ export class FileSystemService {
 
 		await opfsx.write(absolutePath, content)
 
-		this.events.dispatch(EventTypes.FILE_SYSTEM_CHANGE, {
-			context: this.context,
-			data: {
-				vaultId,
-				action: 'save',
-				path: file.path,
-				content
-			}
-		})
+		// this.events.dispatch(EventTypes.FILE_SYSTEM_CHANGE, {
+		// 	context: this.context,
+		// 	data: {
+		// 		vaultId,
+		// 		action: 'save',
+		// 		path: file.path,
+		// 		content
+		// 	}
+		// })
 
 		// If file path has changed, remove old file.
 		if (existingPath && existingPath !== file.path) {
 			const absolutePath = `/headbase/${vaultId}/files/${existingPath}`
 			await opfsx.rm(absolutePath)
 
-			this.events.dispatch(EventTypes.FILE_SYSTEM_CHANGE, {
-				context: this.context,
-				data: {
-					vaultId,
-					action: 'delete',
-					path: existingPath
-				}
-			})
+			// this.events.dispatch(EventTypes.FILE_SYSTEM_CHANGE, {
+			// 	context: this.context,
+			// 	data: {
+			// 		vaultId,
+			// 		action: 'delete',
+			// 		path: existingPath
+			// 	}
+			// })
 		}
 	}
 
@@ -114,14 +114,14 @@ export class FileSystemService {
 
 		await opfsx.rm(absolutePath)
 
-		this.events.dispatch(EventTypes.FILE_SYSTEM_CHANGE, {
-			context: this.context,
-			data: {
-				vaultId,
-				action: 'delete',
-				path: relativePath
-			}
-		})
+		// this.events.dispatch(EventTypes.FILE_SYSTEM_CHANGE, {
+		// 	context: this.context,
+		// 	data: {
+		// 		vaultId,
+		// 		action: 'delete',
+		// 		path: relativePath
+		// 	}
+		// })
 	}
 
 	async query(vaultId: string) {

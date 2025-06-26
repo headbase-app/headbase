@@ -243,7 +243,7 @@ export class VaultsService {
 				id: vaultDto.id,
 				name: vaultDto.name,
 				encryptionKey: vaultDto.encryptionKey,
-				data: vaultDto.data,
+				data: vaultDto.protectedData, // todo: would need to decrypt first?
 				createdAt: vaultDto.createdAt,
 				updatedAt: vaultDto.updatedAt,
 				syncEnabled: true,
