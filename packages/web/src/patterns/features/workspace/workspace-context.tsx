@@ -10,7 +10,7 @@ export type WorkspaceTabTypes = {
 	type: 'file-new'
 } | {
 	type: 'file',
-	path: string
+	filePath: string
 }
 
 export interface TabMetadata {

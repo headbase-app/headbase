@@ -2,6 +2,8 @@ import {useEffect, useState} from "react";
 import {OPFSXDirectoryTree, OPFSXFile} from "opfsx";
 import {useWorkspaceContext} from "../workspace/workspace-context.tsx";
 import {useHeadbase} from "../../../headbase/hooks/use-headbase.tsx";
+import {useFileTree} from "../../../headbase/hooks/files/use-file-tree.ts";
+import {JErrorText} from "@ben-ryder/jigsaw-react";
 
 function FileSystemItem(props: OPFSXFile | OPFSXDirectoryTree) {
 	// todo: move to prop
@@ -12,7 +14,7 @@ function FileSystemItem(props: OPFSXFile | OPFSXDirectoryTree) {
 			<button
 				className="flex gap-3 items-center"
 				onClick={() => {
-					openTab({type: "file", path: props.path}, {switch: true})
+					openTab({type: "file", filePath: props.path}, {switch: true})
 				}}
 			>
 				<p>{props.name}</p>
@@ -36,25 +38,36 @@ function FileSystemItem(props: OPFSXFile | OPFSXDirectoryTree) {
 
 export function FileSystemExplorer() {
 	const {currentDatabaseId, headbase} = useHeadbase()
-	const [fileSystem, setFileSystem] = useState<OPFSXDirectoryTree | null>(null)
+	const fileTree = useFileTree(currentDatabaseId)
 
-	useEffect(() => {
-		async function load() {
-			if (!currentDatabaseId) return
-			const tree = await headbase.fileSystem.tree(currentDatabaseId)
-			setFileSystem(tree)
-		}
-		load()
-	}, [headbase, currentDatabaseId]);
+	if (fileTree.status === "loading") {
+		return (
+			<div>
+				<p>Loading ...</p>
+			</div>
+		)
+	}
+	if (fileTree.status === "error") {
+		return (
+			<div>
+				<JErrorText>An error occurred loading the file tree.</JErrorText>
+			</div>
+		)
+	}
+
+	if (fileTree?.result.children?.length === 0) {
+		return (
+			<div>
+				<p>No Files Found</p>
+			</div>
+		)
+	}
 
 	return (
 		<div>
-			{fileSystem?.children.map((item) => (
+			{fileTree?.result.children.map((item) => (
 				<FileSystemItem key={item.path} {...item} />
 			))}
-			{fileSystem?.children.length === 0 && (
-				<p>No files or folders found</p>
-			)}
 		</div>
 	)
 }

@@ -28,7 +28,7 @@ export function FavouritesList() {
 			{favorites.result.map(object => (
 				<div key={object.id}>
 					<button
-						onClick={() => openTab({type: 'file', path: object.id})}
+						onClick={() => openTab({type: 'file', filePath: object.id})}
 					>{typeof object.data?.title === 'string' ? object.data.title : object.id}</button>
 				</div>)
 			)}

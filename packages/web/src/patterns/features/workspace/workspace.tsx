@@ -39,7 +39,7 @@ export function Workspace(props: WithMenuPanelProps) {
 			}
 			case "file": {
 				tabName = tab.name ?? 'Untitled'
-				tabContent = <FileEditorTab path={tab.path} tabIndex={tabIndex} />
+				tabContent = <FileEditorTab filePath={tab.filePath} tabIndex={tabIndex} />
 				break;
 			}
 			case "file-explorer": {

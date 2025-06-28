@@ -9,6 +9,7 @@ import {LIVE_QUERY_LOADING_STATE, LiveQueryResult, LiveQueryStatus} from "./cont
 import {EventTypes} from "./services/events/events.ts";
 import {ServerService} from "./services/server/server.service.ts";
 import {DocumentsService} from "./services/documents/documents.service.ts";
+import {FileSystemService} from "./services/file-system/file-system.service.ts";
 
 export const HEADBASE_SPEC_VERSION = 'https://spec.headbase.app/v1'
 
@@ -23,6 +24,7 @@ export class Headbase {
 	readonly sync: SyncService
 	readonly vaults: VaultsService
 	readonly documents: DocumentsService
+	readonly fileSystem: FileSystemService
 
 	constructor() {
 		this.context = {
@@ -45,6 +47,11 @@ export class Headbase {
 		)
 
 		this.documents = new DocumentsService(
+			{context: this.context},
+			this.events
+		)
+
+		this.fileSystem = new FileSystemService(
 			{context: this.context},
 			this.events
 		)

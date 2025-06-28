@@ -61,28 +61,28 @@ export function FileEditor(props: FileEditorProps) {
 			<JFormContent>
 				<JFormRow>
 					<JInput
-						label="File Path"
+						label="Folder"
 						id="path"
 						type="text"
 						required
-						tooltip={{content: "The full path of the file (including .md), relative to the vault root."}}
-						value={props.path}
+						tooltip={{content: "The folder the file is in, a path relative to the vault root."}}
+						value={props.folderPath}
 						onChange={(e) => {
-							props.onPathChange(e.target.value);
+							props.onFolderPathChange(e.target.value);
 						}}
 						placeholder="/notes/example.md"
 					/>
 				</JFormRow>
 				<JFormRow>
 					<JInput
-						label="Display Name"
+						label="Filename"
 						id="name"
 						type="text"
 						required
-						tooltip={{content: "The display name used when displaying the file in lists, tabs etc."}}
-						value={props.displayName}
+						tooltip={{content: "The filename of the file (excluding .md)"}}
+						value={props.filename}
 						onChange={(e) => {
-							props.onDisplayNameChange(e.target.value);
+							props.onFilenameChange(e.target.value);
 						}}
 						placeholder="Example"
 					/>

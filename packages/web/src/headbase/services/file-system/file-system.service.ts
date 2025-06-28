@@ -5,12 +5,17 @@ import {EventsService} from "../events/events.service.ts";
 import {DeviceContext} from "../../interfaces.ts";
 import {relativeTree} from "./relative-tree.ts";
 import {featureFlags} from "../../../flags.ts";
+import {OPFSXDirectoryTree, parsePath} from "opfsx";
+import {joinPathParts} from "./join-path-parts.ts";
+import {EventMap, EventTypes} from "../events/events.ts";
+import {Observable} from "rxjs";
+import {LiveQueryResult} from "../../control-flow.ts";
+import {LocalDocumentVersion} from "../documents/types.ts";
 
 
 export interface MarkdownFile {
-	path: string
-	existingPath: string
-	displayName: string
+	folderPath: string
+	filename: string
 	fields: {
 		[key: string]: string | number | boolean | null
 	}
@@ -35,73 +40,64 @@ export class FileSystemService {
 		window.opfsx = opfsx
 	}
 
-	async saveMarkdownFile(vaultId: string, file: Omit<MarkdownFile, 'existingPath'>, existingPath?: string | null) {
-		const absolutePath = `/headbase/${vaultId}/files/${file.path}`
+	async saveMarkdownFile(vaultId: string, file: MarkdownFile, oldFile?: MarkdownFile | null) {
+		const relativePath = joinPathParts(file.folderPath, file.filename)
+		const absolutePath = joinPathParts(`/headbase/${vaultId}/files/`, relativePath)
 
 		const frontMatterString = Object.entries(file.fields)
 				.map(([k, v]) => `${k}: ${v}`)
 				.join("\n")
-		const frontMatter = `---\n$name: ${file.displayName}\n${frontMatterString}\n---`
+		const frontMatter = `---\n${frontMatterString}\n---`
 		const content = `${frontMatter}${frontMatter && '\n\n'}${file.content}`
 
 		if (featureFlags().debug_file_system) {
 			console.debug(`[file-system] writing markdown file ${absolutePath}`)
-			console.debug(content)
+			console.debug({frontMatter, content})
 		}
 
 		await opfsx.write(absolutePath, content)
 
-		// this.events.dispatch(EventTypes.FILE_SYSTEM_CHANGE, {
-		// 	context: this.context,
-		// 	data: {
-		// 		vaultId,
-		// 		action: 'save',
-		// 		path: file.path,
-		// 		content
-		// 	}
-		// })
+		this.events.dispatch(EventTypes.FILE_SYSTEM_CHANGE, {
+			context: this.context,
+			data: {
+				vaultId,
+				action: 'save',
+				path: relativePath
+			}
+		})
 
 		// If file path has changed, remove old file.
-		if (existingPath && existingPath !== file.path) {
-			const absolutePath = `/headbase/${vaultId}/files/${existingPath}`
-			await opfsx.rm(absolutePath)
+		const oldRelativePath = oldFile && joinPathParts(oldFile.folderPath, oldFile.filename)
+		if (oldRelativePath && oldRelativePath !== relativePath) {
+			if (featureFlags().debug_file_system) {
+				console.debug(`[file-system] detected move '${oldRelativePath}' -> '${relativePath}' on save`)
+			}
 
-			// this.events.dispatch(EventTypes.FILE_SYSTEM_CHANGE, {
-			// 	context: this.context,
-			// 	data: {
-			// 		vaultId,
-			// 		action: 'delete',
-			// 		path: existingPath
-			// 	}
-			// })
+			await this.delete(vaultId, oldRelativePath)
 		}
 	}
 
 	async loadMarkdownFile(vaultId: string, relativePath: string): Promise<MarkdownFile> {
+		const parsedPath = parsePath(relativePath)
 		const absolutePath = `/headbase/${vaultId}/files/${relativePath}`
 
 		const file = await opfsx.read(absolutePath)
-		const content = await file.text()
-		const parsed = parseMarkdownFrontMatter(content)
-
-		const {$name: frontMatterName, ...frontMatter } = parsed.data
-
-		const displayName = typeof frontMatterName === 'string' ? frontMatterName : file.name.replace(".md", "")
+		const fileText = await file.text()
+		const parsedFile = parseMarkdownFrontMatter(fileText)
 
 		// A newline is automatically added between the frontmatter and content when saving, so ensure this is removed
-		const trimmedContent = parsed.content.trim()
+		const content = parsedFile.content.trim()
 
 		if (featureFlags().debug_file_system) {
 			console.debug(`[file-system] loaded file ${absolutePath}`)
-			console.debug(content)
+			console.debug({frontMatter: parsedFile.data, content})
 		}
 
 		return {
-			path: relativePath,
-			existingPath: relativePath,
-			displayName,
-			fields: frontMatter,
-			content: trimmedContent
+			folderPath: parsedPath.parentPath,
+			filename: file.name,
+			fields: parsedFile.data,
+			content,
 		}
 	}
 
@@ -114,14 +110,14 @@ export class FileSystemService {
 
 		await opfsx.rm(absolutePath)
 
-		// this.events.dispatch(EventTypes.FILE_SYSTEM_CHANGE, {
-		// 	context: this.context,
-		// 	data: {
-		// 		vaultId,
-		// 		action: 'delete',
-		// 		path: relativePath
-		// 	}
-		// })
+		this.events.dispatch(EventTypes.FILE_SYSTEM_CHANGE, {
+			context: this.context,
+			data: {
+				vaultId,
+				action: 'delete',
+				path: relativePath
+			}
+		})
 	}
 
 	async query(vaultId: string) {
@@ -148,5 +144,34 @@ export class FileSystemService {
 
 		const tree = await opfsx.tree(vaultPath)
 		return relativeTree(tree)
+	}
+
+	liveTree(vaultId: string) {
+		return new Observable<LiveQueryResult<OPFSXDirectoryTree>>((subscriber) => {
+			subscriber.next({status: 'loading'})
+
+			const runQuery = async () => {
+				subscriber.next({status: 'loading'})
+				const result = await this.tree(vaultId);
+				subscriber.next({status: 'success', result: result})
+			}
+
+			const handleEvent = (e: EventMap["file-system-change"]) => {
+				if (
+					e.detail.data.vaultId === vaultId
+				) {
+					console.debug(`[liveTree] Received event that requires re-query`)
+					runQuery()
+				}
+			}
+
+			runQuery()
+
+			this.events.subscribe(EventTypes.FILE_SYSTEM_CHANGE, handleEvent)
+
+			return () => {
+				this.events.unsubscribe(EventTypes.FILE_SYSTEM_CHANGE, handleEvent)
+			}
+		})
 	}
 }

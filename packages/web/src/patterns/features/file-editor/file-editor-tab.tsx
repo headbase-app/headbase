@@ -13,7 +13,7 @@ export function FileEditorTab(props: ContentTabProps) {
 	const {currentDatabaseId} = useHeadbase()
 	const { replaceTab, setTabName, setTabIsUnsaved, closeTab } = useWorkspaceContext()
 
-	const {path, setPath, displayName, setDisplayName, content, setContent, fields, setFields, saveFile, deleteFile} = useFileEditor({path: props.path})
+	const {folderPath, setFolderPath, filename, setFilename, content, setContent, fields, setFields, saveFile, deleteFile} = useFileEditor({filePath: props.filePath})
 
 	async function onSave() {
 		// todo: does this need feedback of some kind?
@@ -21,11 +21,11 @@ export function FileEditorTab(props: ContentTabProps) {
 
 		try {
 			await saveFile()
-			if (props.path) {
+			if (props.filePath) {
 				setTabIsUnsaved(props.tabIndex, false)
 			}
 			else {
-				replaceTab(props.tabIndex, {type: 'file', path: path})
+				replaceTab(props.tabIndex, {type: 'file', filePath: `${folderPath}/${filename}.md`})
 			}
 		}
 		catch (e) {
@@ -45,17 +45,17 @@ export function FileEditorTab(props: ContentTabProps) {
 
 	// ensure tab name is up to date with entered name
 	useEffect(() => {
-		setTabName(props.tabIndex, displayName || "untitled")
-	}, [displayName]);
+		setTabName(props.tabIndex, filename || "untitled")
+	}, [filename]);
 
-	function onPathChange(value: string) {
+	function onFolderPathChange(value: string) {
 		setTabIsUnsaved(props.tabIndex, true)
-		setPath(value)
+		setFolderPath(value)
 	}
 
-	function onDisplayNameChange(value: string) {
+	function onFilenameChange(value: string) {
 		setTabIsUnsaved(props.tabIndex, true)
-		setDisplayName(value)
+		setFilename(value)
 	}
 
 	function onContentChange(value: string) {
@@ -71,17 +71,17 @@ export function FileEditorTab(props: ContentTabProps) {
 	return (
 		<div>
 			<FileEditor
-				path={path}
-				onPathChange={onPathChange}
-				displayName={displayName}
-				onDisplayNameChange={onDisplayNameChange}
+				folderPath={folderPath}
+				onFolderPathChange={onFolderPathChange}
+				filename={filename}
+				onFilenameChange={onFilenameChange}
 				content={content}
 				onContentChange={onContentChange}
 				fields={fields}
 				onFieldsChange={onFieldsChange}
 				tabIndex={props.tabIndex}
 				onSave={onSave}
-				onDelete={props.path ? onDelete : undefined}
+				onDelete={props.filePath ? onDelete : undefined}
 			/>
 		</div>
 	)

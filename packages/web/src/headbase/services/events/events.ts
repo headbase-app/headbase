@@ -4,6 +4,8 @@ import {DeviceContext} from "../../interfaces.ts";
 export const EventTypes = {
 	// Document Event
 	DOCUMENTS_CHANGE: "documents-change",
+	// File System Events
+	FILE_SYSTEM_CHANGE: "file-system-change",
 	// Database Events
 	DATABASE_OPEN: 'database-open',
 	DATABASE_CLOSE: 'database-close',
@@ -27,6 +29,18 @@ export interface DocumentsChangeEvent {
 			action: 'create' | 'update' | 'delete' |  'create-version' | 'delete-version'
 			id: string,
 			versionId: string
+		}
+	}
+}
+
+export interface FileSystemChangeEvent {
+	type: typeof EventTypes.FILE_SYSTEM_CHANGE,
+	detail: {
+		context: DeviceContext,
+		data: {
+			vaultId: string
+			action: 'save' | 'delete'
+			path: string,
 		}
 	}
 }
@@ -118,6 +132,8 @@ export type HeadbaseEvent =
 export interface EventMap {
 	// Document Events
 	[EventTypes.DOCUMENTS_CHANGE]: DocumentsChangeEvent,
+	// File System Events
+	[EventTypes.FILE_SYSTEM_CHANGE]: FileSystemChangeEvent,
 	// Database Events
 	[EventTypes.DATABASE_OPEN]: DatabaseOpenEvent,
 	[EventTypes.DATABASE_CLOSE]: DatabaseCloseEvent,

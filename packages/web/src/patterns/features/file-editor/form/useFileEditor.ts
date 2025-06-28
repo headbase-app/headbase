@@ -1,43 +1,42 @@
 import {useEffect, useState} from "react";
 import {useHeadbase} from "../../../../headbase/hooks/use-headbase.tsx";
+import {MarkdownFile} from "../../../../headbase/services/file-system/file-system.service.ts";
 
 export interface FileEditorOptions {
-	path?: string
+	filePath?: string
 }
 
 export interface FileEditorData {
-	path: string,
-	displayName: string,
-	content: string
-	fields: string
+	file: MarkdownFile
 }
 
 export interface FileEditorChangeHandlers {
-	onPathChange: (name: string) => void;
-	onDisplayNameChange: (data: string) => void;
-	onContentChange: (data: string) => void;
-	onFieldsChange: (data: string) => void;
+	onFolderPathChange: (name: string) => void;
+	onFilenameChange: (name: string) => void;
+	onContentChange: (content: string) => void;
+	onFieldsChange: (fields: string) => void;
 }
 
 
 export function useFileEditor(options: FileEditorOptions) {
 	const {currentDatabaseId, headbase} = useHeadbase()
 
-	const [existingPath, setExistingPath] = useState<string|null>(options?.path || null)
-	const [path, setPath] = useState<string>(options?.path || '')
-	const [displayName, setDisplayName] = useState<string>('')
-	const [content, setContent] = useState<string>('')
-	const [fields, setFields] = useState<string>('')
+	const [file, setFile] = useState<MarkdownFile | null>(null)
+	const [folderPath, setFolderPath] = useState('')
+	const [filename, setFilename] = useState('')
+	const [content, setContent] = useState('')
+	const [fields, setFields] = useState('')
 
 	// Load file
 	useEffect(() => {
 		async function load() {
-			if (!currentDatabaseId || !options.path) return
+			if (!currentDatabaseId || !options.filePath) return
 
-			const file = await headbase.fileSystem.loadMarkdownFile(currentDatabaseId, options.path)
-			setPath(file.path)
-			setExistingPath(file.existingPath)
-			setDisplayName(file.displayName)
+			const file = await headbase.fileSystem.loadMarkdownFile(currentDatabaseId, options.filePath)
+			setFile(file)
+
+			setFolderPath(file.folderPath)
+			setFilename(file.filename)
 			setContent(file.content)
 
 			const fieldsString = Object.entries(file.fields)
@@ -46,7 +45,7 @@ export function useFileEditor(options: FileEditorOptions) {
 			setFields(fieldsString)
 		}
 		load()
-	}, [headbase, options.path, currentDatabaseId])
+	}, [headbase, options.filePath, currentDatabaseId])
 
 	async function saveFile() {
 		if (!currentDatabaseId) throw new Error('No current database')
@@ -60,28 +59,28 @@ export function useFileEditor(options: FileEditorOptions) {
 		console.debug(fieldsData)
 
 		await headbase.fileSystem.saveMarkdownFile(currentDatabaseId, {
-			path,
-			displayName,
+			folderPath,
+			filename,
 			content,
 			fields: {}
-		}, existingPath)
+		}, file)
 	}
 
 	async function deleteFile() {
 		if (!currentDatabaseId) {
 			throw new Error("Attempted to save file with no database open")
 		}
-		if (!options.path) {
+		if (!options.filePath) {
 			throw new Error("Attempted to delete when file doesn't exist yet.")
 		}
 
-		await headbase.fileSystem.delete(currentDatabaseId, options.path)
+		await headbase.fileSystem.delete(currentDatabaseId, options.filePath)
 	}
 
 	return {
 		saveFile, deleteFile,
-		path, setPath,
-		displayName, setDisplayName,
+		folderPath, setFolderPath,
+		filename, setFilename,
 		content, setContent,
 		fields, setFields
 	}

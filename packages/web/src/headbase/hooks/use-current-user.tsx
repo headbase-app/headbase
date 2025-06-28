@@ -1,7 +1,6 @@
 import {useEffect, useState} from "react";
-import {LIVE_QUERY_LOADING_STATE, LiveQueryResult, LiveQueryStatus} from "../control-flow";
+import {LIVE_QUERY_LOADING_STATE, LiveQueryResult} from "../control-flow";
 import {useHeadbase} from "./use-headbase.tsx";
-import {Logger} from "../../utils/logger.ts";
 import {LocalUserDto} from "../services/server/local-user.ts";
 
 

@@ -34,7 +34,7 @@ export function Search(props: SearchProps) {
 								name={file.name.replace(".md", "")}
 								description={file.path}
 								onSelect={() => {
-									openTab({type: "file", path: file.path}, {switch: true})
+									openTab({type: "file", filePath: file.path}, {switch: true})
 									if (props.onOpen) {
 										props.onOpen()
 									}
