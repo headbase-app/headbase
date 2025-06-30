@@ -1,0 +1,8 @@
+{
+  "title": "App Settings",
+  "sidebarQuery": {
+    "where": {
+      "/data/isPinned": {"$equal": true}
+    }
+  }
+}

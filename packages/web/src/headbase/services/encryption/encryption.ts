@@ -303,3 +303,5 @@ export class EncryptionService {
 		return Uint8Array.from(bytes);
 	}
 }
+
+window.enc = EncryptionService;

@@ -8,7 +8,7 @@ import {EncryptionService} from "./services/encryption/encryption.ts";
 import {LIVE_QUERY_LOADING_STATE, LiveQueryResult, LiveQueryStatus} from "./control-flow.ts";
 import {EventTypes} from "./services/events/events.ts";
 import {ServerService} from "./services/server/server.service.ts";
-import {DocumentsService} from "./services/documents/documents.service.ts";
+import {FilesService} from "./services/files/files.service.ts";
 import {FileSystemService} from "./services/file-system/file-system.service.ts";
 
 export const HEADBASE_SPEC_VERSION = 'https://spec.headbase.app/v1'
@@ -20,11 +20,11 @@ export class Headbase {
 	readonly events: EventsService
 	readonly keyValueStore: KeyValueStoreService
 
+	readonly fileSystem: FileSystemService
+	readonly files: FilesService
+	readonly vaults: VaultsService
 	readonly server: ServerService
 	readonly sync: SyncService
-	readonly vaults: VaultsService
-	readonly documents: DocumentsService
-	readonly fileSystem: FileSystemService
 
 	constructor() {
 		this.context = {
@@ -46,7 +46,7 @@ export class Headbase {
 			this.keyValueStore
 		)
 
-		this.documents = new DocumentsService(
+		this.files = new FilesService(
 			{context: this.context},
 			this.events
 		)
@@ -61,7 +61,7 @@ export class Headbase {
 			this.events,
 			this.server,
 			this.vaults,
-			this.documents
+			this.files,
 		)
 
 		this.primaryInstanceLockAbort = new AbortController();
@@ -136,7 +136,7 @@ export class Headbase {
 	async destroy() {
 		await this.events.destroy()
 		await this.sync.destroy()
-		await this.documents.destroy()
+		await this.files.destroy()
 		// todo: any clean up needed for db transactions class or server?
 	}
 }

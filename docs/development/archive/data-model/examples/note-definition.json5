@@ -1,0 +1,35 @@
+{
+  spec: "https://spec.headbase.app/v1",
+  type: "https://spec.headbase.app/v1/core/definition",
+  defines: "note",
+  id: "d4c95b26-84d6-437b-aa6b-ef957c82f5d2",
+  createdAt: "2025-03-20T23:25:35.000Z",
+  createdBy: "phone",
+  updatedAt: "2025-03-20T23:25:35.000Z",
+  updatedBy: "laptop",
+  data: {
+    display: {
+      label: "Note",
+      titlePath: "title",
+      icon: "paper"
+    },
+    fields: [
+      {
+        key: "title", label: "Title", format: "text", required: true
+      },
+      {
+        key: "isFavorite", label: "Favorite?", format: "boolean"},
+      {
+        key: "tags", label: "Tags", format: "multiselect",
+        options: [
+          {key: "idea", colour: "green"},
+          {key: "development", colour: "blue"},
+          {key: "writing", colour: "green"}
+        ]
+      },
+      {
+        key: "body", label: "Body", format: "markdown", required: true
+      },
+    ]
+  }
+}

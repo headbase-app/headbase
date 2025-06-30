@@ -2,10 +2,10 @@ import {UserDto} from "@headbase-app/common";
 import {DeviceContext} from "../../interfaces.ts";
 
 export const EventTypes = {
-	// Document Event
-	DOCUMENTS_CHANGE: "documents-change",
 	// File System Events
 	FILE_SYSTEM_CHANGE: "file-system-change",
+	// History Event
+	HISTORY_CHANGE: "history-change",
 	// Database Events
 	DATABASE_OPEN: 'database-open',
 	DATABASE_CLOSE: 'database-close',
@@ -19,14 +19,13 @@ export const EventTypes = {
 	USER_LOGOUT: 'user-logout',
 } as const
 
-export interface DocumentsChangeEvent {
-	type: typeof EventTypes.DOCUMENTS_CHANGE,
+export interface HistoryChangeEvent {
+	type: typeof EventTypes.HISTORY_CHANGE,
 	detail: {
 		context: DeviceContext,
 		data: {
 			vaultId: string
-			types: string[]
-			action: 'create' | 'update' | 'delete' |  'create-version' | 'delete-version'
+			action: 'save' |'delete-version' | 'delete-file'
 			id: string,
 			versionId: string
 		}
@@ -125,15 +124,15 @@ export interface UserLogoutEvent {
 }
 
 export type HeadbaseEvent =
-	DocumentsChangeEvent |
+	FileSystemChangeEvent | HistoryChangeEvent |
 	DatabaseOpenEvent | DatabaseCloseEvent | DatabaseUnlockEvent | DatabaseLockEvent | DatabaseChangeEvent |
 	UserLoginEvent | UserLogoutEvent
 
 export interface EventMap {
-	// Document Events
-	[EventTypes.DOCUMENTS_CHANGE]: DocumentsChangeEvent,
 	// File System Events
 	[EventTypes.FILE_SYSTEM_CHANGE]: FileSystemChangeEvent,
+	// History Events
+	[EventTypes.HISTORY_CHANGE]: HistoryChangeEvent,
 	// Database Events
 	[EventTypes.DATABASE_OPEN]: DatabaseOpenEvent,
 	[EventTypes.DATABASE_CLOSE]: DatabaseCloseEvent,
