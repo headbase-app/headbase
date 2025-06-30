@@ -8,7 +8,7 @@ import {
 import {Controller, useForm} from "react-hook-form";
 import {zodResolver} from "@hookform/resolvers/zod";
 import {z} from "zod";
-import {useHeadbase} from "../../../../logic/react/use-headbase.tsx";
+import {useHeadbase} from "../../../../headbase/hooks/use-headbase.tsx";
 
 
 const ChangePasswordFormSchema = z.object({
@@ -48,7 +48,7 @@ export function DatabaseChangePasswordForm(props: DatabaseChangePasswordFormProp
 		if (!headbase) return setError('root', { message: 'Headbase instance does not exist' })
 
 		try {
-			await headbase.databases.changePassword(props.databaseId, data.currentPassword, data.newPassword)
+			await headbase.vaults.changePassword(props.databaseId, data.currentPassword, data.newPassword)
 			props.onSuccess()
 		}
 		catch (e) {

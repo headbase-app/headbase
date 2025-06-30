@@ -2,22 +2,23 @@ import {JButton, JCallout} from "@ben-ryder/jigsaw-react";
 import {useCallback} from "react";
 import {useWorkspaceContext} from "../../workspace/workspace-context";
 import {useDatabaseManagerDialogContext} from "../manager/database-manager-context";
-import {useHeadbase} from "../../../../logic/react/use-headbase.tsx";
-import {useDatabases} from "../../../../logic/react/databases/use-databases.tsx";
-import {LocalDatabaseDto} from "../../../../logic/schemas/database.ts";
-import {LiveQueryStatus} from "../../../../logic/control-flow.ts";
 import {ErrorCallout} from "../../../components/error-callout/error-callout.tsx";
-import {KeyStorageService} from "../../../../logic/services/key-storage/key-storage.service.ts";
+import {useVaults} from "../../../../headbase/hooks/vaults/use-vaults.tsx";
+import {useHeadbase} from "../../../../headbase/hooks/use-headbase.tsx";
+import {z} from "zod";
+import {LiveQueryStatus} from "../../../../headbase/control-flow.ts";
+import {LocalVaultDto} from "../../../../headbase/services/vaults/local-vault.ts";
+
 
 export function DatabaseListScreen() {
 	const { setOpenTab, close } = useDatabaseManagerDialogContext()
 	const { headbase, setCurrentDatabaseId, currentDatabaseId } = useHeadbase()
-	const databasesQuery = useDatabases()
+	const databasesQuery = useVaults()
 
 	const { tabs } = useWorkspaceContext()
 	const workspaceHasUnsavedChanges = tabs.filter(tab => tab.isUnsaved).length > 0
 
-	const attemptOpenDatabase = useCallback(async (database: LocalDatabaseDto) => {
+	const attemptOpenDatabase = useCallback(async (database: LocalVaultDto) => {
 		if (!headbase) return
 
 		if (!database.isUnlocked) {
@@ -26,9 +27,8 @@ export function DatabaseListScreen() {
 		}
 
 		try {
-			const encryptionKey = await KeyStorageService.get(database.id)
+			const encryptionKey = await headbase.keyValueStore.get(`enckey_${database.id}`, z.string())
 			if (encryptionKey) {
-				await headbase.db.open(database.id, encryptionKey)
 				setCurrentDatabaseId(database.id)
 				close()
 			}
@@ -74,7 +74,7 @@ export function DatabaseListScreen() {
 									variant='tertiary'
 									onClick={async () => {
 										if (!headbase) throw new Error("Headbase not found")
-										await headbase.databases.lock(database.id)
+										await headbase.vaults.lock(database.id)
 									}}
 								>Lock</JButton>
 							)}

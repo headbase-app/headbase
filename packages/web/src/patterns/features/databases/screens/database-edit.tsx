@@ -2,10 +2,10 @@ import {DatabaseBasicDataForm, DatabaseBasicFields} from "../forms/database-basi
 import {useCallback} from "react";
 import {JArrowButton, JButton} from "@ben-ryder/jigsaw-react";
 import {useDatabaseManagerDialogContext} from "../manager/database-manager-context";
-import {useHeadbase} from "../../../../logic/react/use-headbase.tsx";
-import {useDatabase} from "../../../../logic/react/databases/use-database.tsx";
-import {LiveQueryStatus} from "../../../../logic/control-flow.ts";
 import {ErrorCallout} from "../../../components/error-callout/error-callout.tsx";
+import {useHeadbase} from "../../../../headbase/hooks/use-headbase.tsx";
+import {useVault} from "../../../../headbase/hooks/vaults/use-vault.tsx";
+import {LiveQueryStatus} from "../../../../headbase/control-flow.ts";
 
 
 export interface DatabaseEditScreenProps {
@@ -22,7 +22,7 @@ export function DatabaseEditScreen(props: DatabaseEditScreenProps) {
 		if (!headbase) throw new Error("Headbase not found")
 
 		try {
-			await headbase.databases.update(
+			await headbase.vaults.update(
 				props.databaseId,
 				{
 					name: basicInfo.name,
@@ -41,7 +41,7 @@ export function DatabaseEditScreen(props: DatabaseEditScreenProps) {
 		if (!headbase) throw new Error("Headbase not found")
 
 		try {
-			await headbase.databases.delete(props.databaseId)
+			await headbase.vaults.delete(props.databaseId)
 			setOpenTab()
 		}
 		catch (e) {
@@ -53,7 +53,7 @@ export function DatabaseEditScreen(props: DatabaseEditScreenProps) {
 		if (!headbase) throw new Error("Headbase not found")
 
 		try {
-			await headbase.databases.lock(props.databaseId)
+			await headbase.vaults.lock(props.databaseId)
 			setOpenTab()
 		}
 		catch (e) {
@@ -61,7 +61,7 @@ export function DatabaseEditScreen(props: DatabaseEditScreenProps) {
 		}
 	}, [headbase])
 
-	const databaseQuery = useDatabase(props.databaseId)
+	const databaseQuery = useVault(props.databaseId)
 
 	if (databaseQuery.status === LiveQueryStatus.LOADING) {
 		return (

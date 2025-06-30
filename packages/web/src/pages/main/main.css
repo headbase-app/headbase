@@ -1,0 +1,15 @@
+
+.headbase {
+  height: 100vh;
+  width: 100vw;
+  display: flex;
+  justify-content: stretch;
+  align-items: stretch;
+}
+
+/** required to ensure overlay appears in front of the menu panel
+todo: add z-index overlay to Jigsaw.
+ */
+.j-dialog__overlay {
+  z-index: var(--j-z-layer-3);
+}

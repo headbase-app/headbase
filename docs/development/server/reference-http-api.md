@@ -1,4 +1,4 @@
-	# HTTP API Reference
+# HTTP API Reference
 An overview of the HTTP API.
 
 ## Errors
@@ -42,6 +42,6 @@ Any errors will be returned with the appropriate status code and the following J
 - `/v1/vaults/:vaultId [GET, PATCH, DELETE]`
 - `/v1/vaults/:vaultId/snapshot [GET]`
 
-### Object Versions
-- `/v1/versions [GET, POST]`
-- `/v1/versions/:versionId [GET, DELETE]`
+### Files
+- `/v1/files [GET, POST]`
+- `/v1/files/:fileId [GET, DELETE]`

@@ -1,12 +1,16 @@
 import {createContext, ReactNode, useCallback, useContext, useState} from "react";
 
 export type WorkspaceTabTypes = {
-	type: 'all'
+	type: 'search'
 } | {
-	type: 'object-new'
+	type: 'file-explorer'
 } | {
-	type: 'object',
-	objectId: string
+	type: 'settings'
+} | {
+	type: 'file-new'
+} | {
+	type: 'file',
+	filePath: string
 }
 
 export interface TabMetadata {

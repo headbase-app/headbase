@@ -3,27 +3,28 @@ import {
 	CircleCheck as StatusIcon,
 	PlusSquare as NewContentIcon,
 	Search as SearchIcon,
-	List as AllContentIcon,
-	Shapes as DataStructureIcon,
 	HelpCircle as HelpIcon,
 	ChevronFirst as CollapseMenuIcon,
 	ChevronDown as DownArrowIcon,
-	Settings as SettingsIcon
+	Settings as SettingsIcon,
+	FolderTreeIcon as FilesIcon,
+	UserCircle as AccountIcon
 } from "lucide-react"
 import {MainPanelAction} from "./main-panel-action";
 
-import './menu-panel.scss'
+import './menu-panel.css'
 import { JIcon, JTooltip } from "@ben-ryder/jigsaw-react";
 import classNames from "classnames";
 import {useEffect} from "react";
 import {useDatabaseManagerDialogContext} from "../../features/databases/manager/database-manager-context.tsx";
 import {useStatusDialog} from "../../features/status/status-dialog.tsx";
 import {useSettingsDialog} from "../../features/settings/settings-dialog.tsx";
-import {useHeadbase} from "../../../logic/react/use-headbase.tsx";
-import {useDatabase} from "../../../logic/react/databases/use-database.tsx";
-import {LiveQueryStatus} from "../../../logic/control-flow.ts";
 import {useWorkspaceContext} from "../../features/workspace/workspace-context.tsx";
 import {FavouritesList} from "../../features/favorites/favourites-list.tsx";
+import {useHeadbase} from "../../../headbase/hooks/use-headbase.tsx";
+import {useVault} from "../../../headbase/hooks/vaults/use-vault.tsx";
+import {LiveQueryStatus} from "../../../headbase/control-flow.ts";
+import {FileSystemExplorer} from "../../features/file-system-explorer/file-system-explorer.tsx";
 
 
 export interface WithMenuPanelProps {
@@ -37,7 +38,7 @@ export function MenuPanel(props: WithMenuPanelProps) {
 	const {setIsOpen: setAccountDialogOpen } = useSettingsDialog()
 
 	const { currentDatabaseId, headbase } = useHeadbase()
-	const currentDatabase = useDatabase(currentDatabaseId)
+	const currentDatabase = useVault(currentDatabaseId)
 	const { openTab } = useWorkspaceContext()
 
 	// todo: put this logic somewhere else?
@@ -66,31 +67,29 @@ export function MenuPanel(props: WithMenuPanelProps) {
 			<div className="menu-panel__top">
 				<JTooltip content='Manage databases' renderAsChild={true} variant='dark'>
 					<button
-						className="menu-panel__database-edit"
+						className="menu-panel-button menu-panel__database-edit"
 						onClick={() => {
-							if (currentDatabase.status === LiveQueryStatus.SUCCESS) {
-								setDatabaseManagerDialogTab({type: 'list'})
-							}
+							setDatabaseManagerDialogTab({type: 'list'})
 						}}
 					>
-						<span className="menu-panel__database-name" tabIndex={-1}>{currentDatabase.status === LiveQueryStatus.SUCCESS && currentDatabase.result.name}</span>
+						<span className="menu-panel__database-name" tabIndex={-1}>{currentDatabase.status === LiveQueryStatus.SUCCESS ? currentDatabase.result.name : 'Select Vault'}</span>
 						{currentDatabase && <JIcon><DownArrowIcon width={2} /></JIcon>}
 					</button>
 				</JTooltip>
-				<JTooltip content='App status' renderAsChild={true} variant='dark'>
+				<JTooltip content='View app status' renderAsChild={true} variant='dark'>
 					<button
 						aria-label='Database status'
-						className="menu-panel__status"
+						className="menu-panel-button menu-panel__status"
 						onClick={() => {
 							setStatusDialogOpen(true);
 						}}
 					><JIcon><StatusIcon /></JIcon></button>
 				</JTooltip>
-				<JTooltip content='Create content' renderAsChild={true} variant='dark'>
+				<JTooltip content='Create new file' renderAsChild={true} variant='dark'>
 					<button
-						className="menu-panel__create"
+						className="menu-panel-button menu-panel__create"
 						onClick={() => {
-							openTab({type: 'object-new'}, {switch: true})
+							openTab({type: 'file-new'}, {switch: true})
 						}}
 					>
 						<JIcon><NewContentIcon/></JIcon>
@@ -103,18 +102,15 @@ export function MenuPanel(props: WithMenuPanelProps) {
 					text='Search'
 					icon={<SearchIcon/>}
 					onSelect={() => {
-						openTab({type: 'all'}, {switch: true})
+						openTab({type: 'search'}, {switch: true})
 					}}
 				/>
 				<MainPanelAction
-					text='Templates'
-					icon={<DataStructureIcon/>}
-					onSelect={() => {}}
-				/>
-				<MainPanelAction
-					text='Views'
-					icon={<AllContentIcon/>}
-					onSelect={() => {}}
+					text='Settings'
+					icon={<SettingsIcon />}
+					onSelect={() => {
+						openTab({type: 'settings'}, {switch: true})
+					}}
 				/>
 			</div>
 
@@ -125,26 +121,34 @@ export function MenuPanel(props: WithMenuPanelProps) {
 				<FavouritesList />
 			</div>
 
+			<div className="m-2">
+				<div className="menu-panel__file-system-header">
+					<h3>File explorer</h3>
+					<button onClick={() => {openTab({type: 'file-explorer'}, {switch: true})}}>open in tab</button>
+				</div>
+				<FileSystemExplorer />
+			</div>
+
 			<div className="menu-panel__bottom">
-				<JTooltip content="Settings" renderAsChild={true} variant='dark'>
+				<JTooltip content="Manage account" renderAsChild={true} variant='dark'>
 					<button
-						aria-label='Settings'
-						className="menu-panel__settings"
+						aria-label='Account settings'
+						className="menu-panel-button menu-panel__settings"
 						onClick={() => {
 							setAccountDialogOpen(true)
 						}}
-					><SettingsIcon/></button>
+					><AccountIcon/></button>
 				</JTooltip>
 				<JTooltip content="Help" renderAsChild={true} variant='dark'>
 					<button
 						aria-label='Help'
-						className="menu-panel__help"
+						className="menu-panel-button menu-panel__help"
 					><HelpIcon/></button>
 				</JTooltip>
 				<JTooltip content="Hide menu" renderAsChild={true} variant='dark'>
 					<button
 						aria-label='Hide menu'
-						className="menu-panel__menu"
+						className="menu-panel-button menu-panel__menu"
 						onClick={() => {
 							props.setIsMenuPanelOpen(false)
 						}}

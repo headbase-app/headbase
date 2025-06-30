@@ -1,8 +1,7 @@
 import React, {useState} from "react";
 
-import "./main.scss"
+import "./main.css"
 import {MenuPanel} from "../../patterns/layout/menu-panel/menu-panel";
-import { HeadbaseContextProvider } from "../../logic/react/use-headbase";
 import {WorkspaceContextProvider} from "../../patterns/features/workspace/workspace-context.tsx";
 import {
 	DatabaseManagerDialog,
@@ -11,9 +10,11 @@ import {
 import {StatusDialog, StatusDialogProvider} from "../../patterns/features/status/status-dialog.tsx";
 import {SettingsDialog, SettingsDialogProvider} from "../../patterns/features/settings/settings-dialog.tsx";
 import {Workspace} from "../../patterns/features/workspace/workspace.tsx";
-import {HeadbaseWeb} from "../../logic/headbase-web.ts";
+import {HeadbaseContextProvider} from "../../headbase/hooks/use-headbase.tsx";
+import {Headbase} from "../../headbase/app.ts";
 
-const headbase = new HeadbaseWeb()
+const headbase = new Headbase()
+window.hb = headbase;
 
 export function MainPage() {
 	const [isMenuPanelOpen, setIsMenuPanelOpen] = useState<boolean>(true)

@@ -13,13 +13,13 @@ export interface TabProps {
 export function Tab(props: TabProps) {
 	return (
 		<div className={classNames('workspace-tab', {
-			'workspace-tab--active': props.isActive
+			'workspace-tab --active': props.isActive
 		})}>
-			<button className='workspace-tab__select' onClick={() => {props.onSelect()}}>
+			<button className='workspace-tab __select' onClick={() => {props.onSelect()}}>
 				{props.name}
-				{props.isUnsaved && <span className='workspace-tab__save-status'><span className='j-hidden'>Unsaved</span></span>}
+				{props.isUnsaved && <span className='workspace-tab __save-status'><span className='j-hidden'>Unsaved</span></span>}
 			</button>
-			<button className='workspace-tab__close' onClick={() => {props.onClose()}} aria-label={`Close tab ${props.name}`}><JIcon size='xs'><CloseIcon /></JIcon></button>
+			<button className='workspace-tab __close' onClick={() => {props.onClose()}} aria-label={`Close tab ${props.name}`}><JIcon size='xs'><CloseIcon /></JIcon></button>
 		</div>
 	)
 }

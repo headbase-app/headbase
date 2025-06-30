@@ -1,6 +1,6 @@
 import {Loader2 as LoadingIcon} from "lucide-react";
 import { JIcon } from "@ben-ryder/jigsaw-react";
-import "./loading-screen.scss"
+import "./loading-screen.css"
 
 export function LoadingScreen() {
 	return (

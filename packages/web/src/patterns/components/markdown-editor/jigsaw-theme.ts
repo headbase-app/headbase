@@ -3,7 +3,7 @@ import { tags as t } from "@lezer/highlight";
 export const themeOptions: CreateThemeOptions = {
 	theme: "dark",
 	settings: {
-		background: "#242830",
+		background: "transparent",
 		foreground: "#cccccc",
 		caret: "#0c857a",
 		selection: "var(--j-c-atom-200)",
