@@ -61,7 +61,7 @@ export class FilesService {
 		}
 	}
 
-	private async getDatabase(vaultId: string): Promise<SqliteRemoteDatabase<typeof schema>> {
+	async _getDatabase(vaultId: string): Promise<SqliteRemoteDatabase<typeof schema>> {
 		if (this.connectionStore[vaultId]) {
 			return this.connectionStore[vaultId].db;
 		}
@@ -86,7 +86,7 @@ export class FilesService {
 	 * @param id
 	 */
 	async get(vaultId: string, id: string): Promise<LocalFileVersion> {
-		const db = await this.getDatabase(vaultId)
+		const db = await this._getDatabase(vaultId)
 		const result = await db
 			.select()
 			.from(filesHistory)
@@ -106,7 +106,7 @@ export class FilesService {
 	 * @param fileVersion
 	 */
 	async create(vaultId: string, fileVersion: LocalFileVersion): Promise<string> {
-		const db = await this.getDatabase(vaultId)
+		const db = await this._getDatabase(vaultId)
 
 		const id = EncryptionService.generateUUID();
 		await db.insert(filesHistory).values(fileVersion)
@@ -127,7 +127,7 @@ export class FilesService {
 	 * Delete the given file version.
 	 */
 	async delete(vaultId: string, id: string): Promise<void> {
-		const db = await this.getDatabase(vaultId)
+		const db = await this._getDatabase(vaultId)
 
 		// Allows error to be thrown on none existing version.
 		await this.get(vaultId, id)
@@ -153,7 +153,7 @@ export class FilesService {
 	 * Delete all versions for the given file.
 	 */
 	async deleteFile(vaultId: string, fileId: string): Promise<void> {
-		const db = await this.getDatabase(vaultId)
+		const db = await this._getDatabase(vaultId)
 
 		const deletedAt = new Date().toISOString()
 		await db
@@ -175,10 +175,10 @@ export class FilesService {
 	}
 
 	/**
-	 * Query for documents.
+	 * Query for files.
 	 */
 	async query(vaultId: string, query?: QueryOptions): Promise<LocalFileVersion[]> {
-		const db = await this.getDatabase(vaultId)
+		const db = await this._getDatabase(vaultId)
 
 		const where = typeof query?.parentId !== 'undefined'
 			? and(eq(filesHistory.parentId, query.parentId))

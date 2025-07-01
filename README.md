@@ -12,11 +12,11 @@ You're welcome to explore but proceed at your own risk and expect bugs, missing 
 The customizable database for your brain. Note-taking, task-management, personal knowledge bases and more.
 
 ## About
-The foundation of Headbase is the abilty to create markdown files, track version history and sync these files between devices. You can then customize your experience with features such as "fields" and "content types" to enhance your editing experience, and "views" to transform your files into a queryable database with results displayed as a list, kanban board, calendar, canvas or graph.  
+The foundation of Headbase is the ability to create markdown files, track version history and sync those files between devices. You can then customize your experience with features such as "fields" to enhance your editing experience, and "views" to transform your files into a queryable database with results displayed in a list, kanban board, calendar, canvas or graph.  
 
 ![](docs/screenshot-placeholder.png)
 
-A big driving force of building Headbase is to explore the concepts of [local-first software](https://www.inkandswitch.com/essay/local-first) and [malleable systems](https://malleable.systems). The goal is not to just create a "notes app" or a "task management" app, but to build an app which provides building blocks for users to combine as they wish while retaining ownership of their own data.
+A big driving force of building Headbase is to explore the concepts of [local-first software](https://www.inkandswitch.com/essay/local-first) and [malleable systems](https://malleable.systems). The goal is not to just create a "notes app" or a "task management" app, but to build an app which provides building blocks for users to adapt as they wish while retaining ownership of their own data.
 
 ## How it works
 
@@ -28,9 +28,9 @@ TODO - Explain basic concepts of treating files and server as a "document-based"
 
 ### Vaults
 All content in Headbase is stored in a "vault" and you can create as many as you want, examples might include "Personal", "Work", "Project 1", "Project 2" etc.  
-Each vault is completely seperate, however you are able to import/export your data between vaults. 
+Each vault is completely separate, however you are able to import/export your data between vaults. 
 
-When creating a vault you pick an "unlock passowrd" which will be used to encrypt/decrypt the content on your device.  
+When creating a vault you pick an "unlock password" which will be used to encrypt/decrypt the content on your device.  
 If you want to learn more about how this encryption works, you can check out the **[encryption specification](/docs/development/web/encryption/index.md)**.  
 
 ### Cloud Features
