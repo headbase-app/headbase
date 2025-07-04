@@ -13,9 +13,11 @@ import {SQLocalDrizzle} from "sqlocal/drizzle";
 import {drizzle, SqliteRemoteDatabase} from "drizzle-orm/sqlite-proxy";
 import {DeviceContext} from "../../interfaces.ts";
 import {schema, filesHistory, LocalFileVersion} from "./schema.ts"
-import {and, eq} from "drizzle-orm";
+import {and, eq, isNull} from "drizzle-orm";
 import migration0 from "./migrations/00-setup.sql?raw"
 import {featureFlags} from "../../../flags.ts";
+import {joinPathParts} from "../file-system/join-path-parts.ts";
+
 export interface FilesServiceConfig {
 	context: DeviceContext
 }
@@ -27,17 +29,16 @@ interface ConnectionStore {
 	}
 }
 
-export type FileTree = {
-	name: string
-	isDirectory: false
-	fileId: string
-} | {
-	name: string
-	isDirectory: true
-	fileId: string
-	children: FileTree[]
+export interface FileCache {
+	paths: {
+		[path: string]: Set<string>;
+	},
+	files: {
+		[fileId: string]: {
+			versions: LocalFileVersion[]
+		}
+	}
 }
-
 
 export interface QueryOptions {
 	parentId?: string | null
@@ -221,29 +222,42 @@ export class FilesService {
 		})
 	}
 
-	async getFileTree(vaultId: string): Promise<FileTree> {
-		return this._getFileTree(vaultId, null)
+	async getFileCache(vaultId: string): Promise<FileCache> {
+		const fileCache: FileCache = {
+			paths: {},
+			files: {}
+		}
+
+		return this._getFileCache(vaultId, null, fileCache)
 	}
 
-	async _getFileTree(vaultId: string, parentId: string | null): Promise<FileTree> {
-		const tree: FileTree = {
-			name: '/',
-			fileId: '',
-			isDirectory: true,
-			children: []
-		}
-		const children = await this.query(vaultId, {parentId})
+	async _getFileCache(vaultId: string, parentId: string | null, fileCache: FileCache): Promise<FileTree> {
+		const db = await this._getDatabase(vaultId)
 
-		for (const file of children) {
-			if (!file.isDirectory) {
-				tree.children.push({name: file.name, fileId: file.fileId, isDirectory: file.isDirectory})
-			}
-			else {
-				const childTree = await this._getFileTree(vaultId, file.fileId)
-				tree.children.push(childTree)
-			}
-		}
+		await db
+			.select()
+			.from(filesHistory)
+			.where(parentId ? eq(filesHistory.parentId, parentId) : isNull(filesHistory.parentId))
+			.groupBy(filesHistory.fileId)
 
-		return tree
+		for (const fileVersion of rootVersions) {
+			if (!fileVersion.isDirectory) {
+				const path = joinPathParts("/", fileVersion.name)
+				// Ensure path and fileId exist.
+				if (!fileCache.paths[path]) {
+					fileCache.paths[path] = new Set()
+				}
+				if (!fileCache.files[fileVersion.fileId]) {
+					fileCache.files[fileVersion.fileId] = {versions: []}
+				}
+
+				// Write version to path and file cache
+				if (!fileCache.paths[path].has(fileVersion.fileId)) {
+					fileCache.paths[path].add(fileVersion.fileId)
+				}
+				fileCache.files[fileVersion.fileId].versions.push(fileVersion)
+			}
+			else {}
+		}
 	}
 }

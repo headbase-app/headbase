@@ -12,6 +12,7 @@ export const filesHistory = sqliteTable('files_history', {
 	// Data
 	type: text().notNull(),
 	name: text().notNull(),
+	contentHash: text().notNull(),
 	// Metadata
 	createdAt: text().notNull(),
 	createdBy: text().notNull(),
