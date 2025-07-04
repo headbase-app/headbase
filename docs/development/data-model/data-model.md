@@ -1,6 +1,6 @@
 # Data Model
 
-![](data-model.png)
+![](data-model.excalidraw.png)
 
 ## Basics
 
