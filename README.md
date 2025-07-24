@@ -1,8 +1,8 @@
-# Headbase
+<h1 align="center">Headbase</h1>
 
 ![](docs/screenshot.png)
 
-**Headbase** is the customizable database for your brain. Note taking, task management, personal knowledge bases and more.
+<p align="center"><strong>Headbase</strong> is the customizable database for your brain. Note taking, task management, personal knowledge bases and more.</p>
 
 <p align="center">
   <a href="#">Web App</a> •
