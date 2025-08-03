@@ -1,0 +1,12 @@
+.shelf {
+    position: absolute;
+    display: flex;
+    gap: 10px;
+}
+
+.shelf-item {
+    border: 1px solid black;
+    background: white;
+    z-index: 100;
+    padding: 4px;
+}
