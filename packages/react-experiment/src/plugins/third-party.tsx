@@ -11,11 +11,9 @@ class ThirdPartyPlugin {
     const header = document.createElement("div");
     header.innerText = "Third Party!!";
     this.container.appendChild(header);
-    console.log("init")
   }
 
   teardown() {
-    console.log("teardown")
     this.container.innerHTML = "";
   }
 }

@@ -25,11 +25,36 @@
 
 .workspace-panel {
     position: absolute;
-    padding: 8px;
     border: 1px solid;
-    display: flex;
-    align-items: center;
-    justify-content: center;
     border-radius: 4px;
     background: #fff;
+    resize: both;
+    overflow: scroll;
+}
+
+.workspace-panel-content {
+    padding: 8px;
+}
+
+.workspace-panel-drag-handle {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 8px;
+    max-width: 8px;
+    height: 8px;
+    max-height: 8px;
+    background: blue;
+}
+
+.workspace-viewport.--locked {
+    .workspace {
+        position: relative;
+        margin-top: 50px;
+        translate: none !important;
+    }
+
+    .workspace-background {
+        display: none;
+    }
 }

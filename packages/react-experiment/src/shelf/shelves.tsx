@@ -13,11 +13,13 @@ export function Shelves() {
 			)
 		},
 		{
-			name: "Status",
-			position: 'bottom',
+			name: "Content Menu",
+			position: 'top',
 			content: (
 				<>
-					<p>Status goes here...</p>
+					<button>New</button>
+					<button>Search</button>
+					<button>Files</button>
 				</>
 			)
 		},
@@ -26,7 +28,9 @@ export function Shelves() {
 			position: 'bottom',
 			content: (
 				<>
-					<button>lock</button>
+					<button onClick={() => {
+						window.dispatchEvent(new CustomEvent('workspace-lock-toggle'));
+					}}>lock</button>
 					<button onClick={() => {
 						window.dispatchEvent(new CustomEvent('workspace-reset'));
 					}}>reset</button>
