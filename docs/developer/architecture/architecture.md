@@ -1,4 +1,10 @@
-# Web Architecture
+# Architecture
+
+- works over the top of local files for ultimate portability and user ownership
+- "local files" depends on the device.
+  - for the web app, this means files in OPFS even if they aren't directly accessible to end users
+  - for the desktop app, this means files on your local file system
+-
 
 ## PWA
 It is expected that web apps using Localful will be progressive web apps (PWAs) in order to achieve local-first functionality.  

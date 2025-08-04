@@ -8,24 +8,73 @@ Plugins can:
 - Use the MarkdownQueryAPI to run front-matter queries against markdown files in a given directory.
 - Register custom application UI
 
-### Plugin Ideas
-- Editors
-  - Text
-  - Basic Markdown
-  - Enhanced Markdown
-  - List / Grid
-  - Calendar
-  - Kanban Board
-  - Canvas
-  - Graph
-  - Excalidraw
-  - Spreadsheet
-  - Gallery
-  - Media Player
-  - PDF Viewer
+## Built-in Plugins
 - Application
   - File explorer
   - Search
   - AI Chat
   - History
-  - Table of contents / Outlines
+  - Snapshot (view a specific snapshot of a file)
+- Content Editors:
+  - Text
+  - Basic Markdown
+  - Enhanced Markdown (includes UI for special front-matter fields)
+  - Excalidraw
+  - Canvas
+  - Spreadsheet
+  - Media Player
+  - PDF Viewer
+- Search & Query:
+  - Gallery
+  - List / Grid
+  - Calendar
+  - Kanban Board
+  - Graph
+
+## Application APIs
+
+### APIs
+- FilesAPI
+  - read
+  - write
+  - ls
+  - tree
+  - mkdir
+  - mv
+  - copy
+  - rm
+- ObservableFilesAPI
+  - ls
+  - tree
+  - read
+- HistoryAPI
+  - get
+  - query
+  - delete
+- MarkdownQueryAPI
+  - query
+- VaultsAPI
+  - create
+  - update
+  - delete
+  - query
+- WorkspaceAPI
+  - registerEditor
+  - registerPanel
+- SyncAPI
+  - register
+  - login
+  - logout
+  - getUser
+  - updateUser
+  - deleteUser
+  - createVault
+  - updateVault
+  - deleteVault
+  - getVaults
+  - fetchServerInfo
+
+### Internal Services
+- EncryptionService
+- EventsService
+- StorageService

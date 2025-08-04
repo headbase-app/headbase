@@ -1,0 +1,17 @@
+
+.file-explorer__file {
+    color: inherit;
+    font-family: inherit;
+    font-size: inherit;
+
+    &:hover {
+        text-decoration: underline;
+        cursor: pointer;
+    }
+}
+
+.file-explorer__folder-children {
+    display: flex;
+    flex-direction: column;
+    align-items: start;
+}

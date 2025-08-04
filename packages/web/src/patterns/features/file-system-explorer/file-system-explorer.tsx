@@ -1,9 +1,9 @@
-import {useEffect, useState} from "react";
 import {OPFSXDirectoryTree, OPFSXFile} from "opfsx";
 import {useWorkspaceContext} from "../workspace/workspace-context.tsx";
 import {useHeadbase} from "../../../headbase/hooks/use-headbase.tsx";
 import {useFileTree} from "../../../headbase/hooks/files/use-file-tree.ts";
 import {JErrorText} from "@ben-ryder/jigsaw-react";
+import "./file-system-explorer.css"
 
 function FileSystemItem(props: OPFSXFile | OPFSXDirectoryTree) {
 	// todo: move to prop
@@ -12,7 +12,7 @@ function FileSystemItem(props: OPFSXFile | OPFSXDirectoryTree) {
 	if (props.kind === "file") {
 		return (
 			<button
-				className="flex gap-3 items-center"
+				className="file-explorer__file"
 				onClick={() => {
 					openTab({type: "file", filePath: props.path}, {switch: true})
 				}}
@@ -23,11 +23,11 @@ function FileSystemItem(props: OPFSXFile | OPFSXDirectoryTree) {
 	}
 
 	return (
-		<div>
-			<div className="flex gap-3 items-center" data-path={props.path}>
-				<p className="font-bold">{props.name}</p>
+		<div className="file-explorer__folder">
+			<div className="file-explorer__folder-name" data-path={props.path}>
+				<p>{props.name}</p>
 			</div>
-			<div style={{paddingLeft: "20px"}}>
+			<div className="file-explorer__folder-children" style={{paddingLeft: "20px"}}>
 				{props.children.map(item => (
 					<FileSystemItem key={item.path} {...item} />
 				))}
