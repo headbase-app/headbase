@@ -41,10 +41,10 @@
     position: absolute;
     top: 0;
     left: 0;
-    width: 8px;
-    max-width: 8px;
-    height: 8px;
-    max-height: 8px;
+    width: 14px;
+    max-width: 14px;
+    height: 14px;
+    max-height: 14px;
     background: blue;
 }
 

@@ -1,18 +1,10 @@
 import {useCallback, useEffect, useRef, useState} from "react";
-import {type MouseEvent, type TouchEvent} from "react";
+import {type MouseEvent, type TouchEvent, type DragEvent} from "react";
 import "./workspace.css"
 import {PluginTest} from "../plugins/plugins-test.tsx";
 import {useWorkspace} from "./use-workspace/use-workspace.ts";
 import {WORKSPACE_GRID_SIZE, WORKSPACE_ZOOM_MAX, WORKSPACE_ZOOM_MIN} from "./use-workspace/workspace-context.tsx";
 import {WorkspacePanel} from "./workspace-panel.tsx";
-import {
-	DndContext,
-	type DragAbortEvent,
-	type DragCancelEvent,
-	type DragEndEvent,
-	useDndMonitor,
-	useDroppable
-} from "@dnd-kit/core";
 
 
 /**
@@ -21,7 +13,7 @@ import {
  *
  * @constructor
  */
-function WorkspaceInternal() {
+export function Workspace() {
 	const viewportRef = useRef<HTMLDivElement>(null);
 	const workspaceRef = useRef<HTMLDivElement>(null);
 
@@ -29,7 +21,7 @@ function WorkspaceInternal() {
 		isLocked, setIsLocked,
 		zoom, setZoom,
 		position, setPosition,
-		panels, addPanel, removePanel
+		panels, addPanel, removePanel, movePanel
 	} = useWorkspace()
 
 	const [isDragging, setIsDragging] = useState(false);
@@ -235,8 +227,19 @@ function WorkspaceInternal() {
 		}
 	}, [addPanel, removePanel]);
 
-	const {setNodeRef, isOver} = useDroppable({id: 'workspace'});
-	console.debug(isOver)
+	function handleDragOver(e: DragEvent) {
+		e.preventDefault();
+	}
+
+	function handleDrop(e: DragEvent) {
+		e.preventDefault();
+		console.debug('drop')
+		console.debug(e)
+
+		const data = JSON.parse(e.dataTransfer.getData("application/json"))
+		console.debug('data', data);
+		movePanel(data.id, {x: e.clientX - position.x, y: e.clientY - position.y})
+	}
 
 	return (
 		<div
@@ -249,6 +252,8 @@ function WorkspaceInternal() {
 			onTouchEnd={handleTouchEnd}
 			onTouchMove={handleTouchMove}
 			onTouchCancel={handleTouchCancel}
+			onDragOver={handleDragOver}
+			onDrop={handleDrop}
 		>
 			<svg className="workspace-background">
 				<pattern
@@ -265,10 +270,7 @@ function WorkspaceInternal() {
 			</svg>
 			<div
 				className="workspace"
-				ref={(r) => {
-					workspaceRef.current = r
-					setNodeRef(r)
-				}}
+				ref={workspaceRef}
 				style={{
 					transform: `translate(${position.x * zoom}px, ${position.y * zoom}px) scale(${zoom})`
 				}}
@@ -279,36 +281,4 @@ function WorkspaceInternal() {
 			</div>
 		</div>
 	);
-}
-
-export function Workspace() {
-	const { movePanel } = useWorkspace()
-
-	function handleDragEnd(e: DragEndEvent) {
-		if (e.over?.id === 'workspace') {
-			console.debug(e)
-			movePanel(e.active.id, {deltaX: e.delta.x, deltaY: e.delta.y})
-		}
-	}
-
-	function handleDragCancel(e: DragCancelEvent) {
-		console.debug('cancel')
-		console.debug(e)
-	}
-
-	function handleDragAbort(e: DragAbortEvent) {
-		console.debug('abort')
-		console.debug(e)
-	}
-
-
-	return (
-		<DndContext
-			onDragEnd={handleDragEnd}
-			onDragCancel={handleDragCancel}
-			onDragAbort={handleDragAbort}
-		>
-			<WorkspaceInternal/>
-		</DndContext>
-	)
 }
