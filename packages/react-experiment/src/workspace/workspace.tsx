@@ -5,6 +5,14 @@ import {PluginTest} from "../plugins/plugins-test.tsx";
 import {useWorkspace} from "./use-workspace/use-workspace.ts";
 import {WORKSPACE_GRID_SIZE, WORKSPACE_ZOOM_MAX, WORKSPACE_ZOOM_MIN} from "./use-workspace/workspace-context.tsx";
 import {WorkspacePanel} from "./workspace-panel.tsx";
+import {
+	DndContext,
+	type DragAbortEvent,
+	type DragCancelEvent,
+	type DragEndEvent,
+	useDndMonitor,
+	useDroppable
+} from "@dnd-kit/core";
 
 
 /**
@@ -13,33 +21,38 @@ import {WorkspacePanel} from "./workspace-panel.tsx";
  *
  * @constructor
  */
-export function Workspace() {
+function WorkspaceInternal() {
 	const viewportRef = useRef<HTMLDivElement>(null);
 	const workspaceRef = useRef<HTMLDivElement>(null);
-	
-	const { workspace, setWorkspace } = useWorkspace()
+
+	const {
+		isLocked, setIsLocked,
+		zoom, setZoom,
+		position, setPosition,
+		panels, addPanel, removePanel
+	} = useWorkspace()
 
 	const [isDragging, setIsDragging] = useState(false);
 	const [previousTouchPosition, setPreviousTouchPosition] = useState<{pageX: number, pageY: number} | null>(null)
 
 	const isTargetingWorkspace = (target: EventTarget) => {
-		return !workspace.isLocked && (target === viewportRef.current || target === workspaceRef.current)
+		return !isLocked && (target === viewportRef.current || target === workspaceRef.current)
 	}
 
 	const handleMouseDown = (e: MouseEvent) => {
-		if (!workspace.isLocked && isTargetingWorkspace(e.target)) {
+		if (!isLocked && isTargetingWorkspace(e.target)) {
 			setIsDragging(true);
 		}
 	};
 
 	const handleMouseUp = () => {
-		if (!workspace.isLocked) {
+		if (!isLocked) {
 			setIsDragging(false);
 		}
 	};
 
 	const handleMouseMove = (e: MouseEvent) => {
-		if (workspace.isLocked || !isDragging || !isTargetingWorkspace(e.target)) return;
+		if (isLocked || !isDragging || !isTargetingWorkspace(e.target)) return;
 
 		// Ignore all but primary button click
 		if (e.buttons !== 1) {
@@ -47,17 +60,14 @@ export function Workspace() {
 			return;
 		}
 
-		setWorkspace((prev) => ({
-			...prev,
-			offset: {
-				x: prev.offset.x + e.movementX / workspace.zoom,
-				y: prev.offset.y + e.movementY / workspace.zoom
-			}
-		}));
+		setPosition((prev) => ({
+			x: prev.x + e.movementX / zoom,
+			y: prev.y + e.movementY / zoom
+		}))
 	};
 
 	const handleTouchStart = (e: TouchEvent) => {
-		if (workspace.isLocked || !isTargetingWorkspace(e.target)) return;
+		if (isLocked || !isTargetingWorkspace(e.target)) return;
 
 		// Only enable dragging if user is moving one finger, with two they may be zooming.
 		if (e.targetTouches.length === 1) {
@@ -85,7 +95,7 @@ export function Workspace() {
 	};
 
 	const handleTouchMove = (e: TouchEvent) => {
-		if (workspace.isLocked || !isDragging || !isTargetingWorkspace(e.target)) return;
+		if (isLocked || !isDragging || !isTargetingWorkspace(e.target)) return;
 		if (!previousTouchPosition || e.targetTouches.length !== 1) return;
 
 		const touch  = e.targetTouches.item(0)
@@ -97,38 +107,31 @@ export function Workspace() {
 			pageY: touch.pageY
 		})
 
-		setWorkspace((prev) => ({
-			...prev,
-			offset: {
-				x: prev.offset.x + movementX / workspace.zoom,
-				y: prev.offset.y + movementY / workspace.zoom
-			}
-		}));
+		setPosition((prev) => ({
+			x: prev.x + movementX / zoom,
+			y: prev.y + movementY / zoom
+		}))
 	};
 
 	const handleWheel = useCallback((e: WheelEvent) => {
 		e.preventDefault();
 		e.stopPropagation();
 
-		if (workspace.isLocked) return;
+		if (isLocked) return;
 
 		if (e.ctrlKey) {
 			const speedFactor =
 				(e.deltaMode === 1 ? 0.05 : e.deltaMode ? 1 : 0.002) * 10;
+			const pinchDelta = -e.deltaY * speedFactor;
 
-			setWorkspace((prev) => {
-				const pinchDelta = -e.deltaY * speedFactor;
-
-				return {
-					...prev,
-					zoom: Math.min(
-						WORKSPACE_ZOOM_MAX,
-						Math.max(WORKSPACE_ZOOM_MIN, prev.zoom * Math.pow(2, pinchDelta))
-					)
-				};
-			});
+			setZoom((prev) => (
+				Math.min(
+					WORKSPACE_ZOOM_MAX,
+					Math.max(WORKSPACE_ZOOM_MIN, prev * Math.pow(2, pinchDelta))
+				)
+			))
 		}
-	}, [setWorkspace, workspace.isLocked])
+	}, [setZoom, isLocked])
 
 	// Handle zooming workspace based on mouse scroll or touchpad gestures (which mimic ctrl + scroll)
 	useEffect(() => {
@@ -140,37 +143,28 @@ export function Workspace() {
 		return () => {
 			hookViewportRef?.removeEventListener('wheel', handleWheel);
 		}
-	}, [handleWheel, setWorkspace]);
+	}, [handleWheel]);
 
 	const handleWorkspaceLockToggle = useCallback(() => {
-		setWorkspace((prev) => ({
-			...prev,
-			isLocked: !workspace.isLocked
-		}));
+		setIsLocked(!isLocked)
 
-		if (!workspace.isLocked) {
-			setWorkspace((prev) => ({
-				isLocked: prev.isLocked,
-				zoom: 1,
-				offset: {x: 0, y: 0}
-			}));
+		if (isLocked) {
+			setZoom(1)
+			setPosition({x: 0, y: 0})
 		}
-	}, [setWorkspace, workspace.isLocked])
+	}, [isLocked, setIsLocked, setPosition, setZoom])
 
 	const handleWorkspaceReset = useCallback(() => {
-		if (workspace.isLocked) return;
+		if (isLocked) return;
 
 		setIsDragging(false);
 		setPreviousTouchPosition(null)
-		setWorkspace((prev) => ({
-			isLocked: prev.isLocked,
-			offset: {
-				x: 2 * WORKSPACE_GRID_SIZE,
-				y: 2 * WORKSPACE_GRID_SIZE
-			},
-			zoom: 1
-		}));
-	}, [setWorkspace, workspace.isLocked])
+		setZoom(1)
+		setPosition({
+			x: 2 * WORKSPACE_GRID_SIZE,
+			y: 2 * WORKSPACE_GRID_SIZE
+		})
+	}, [isLocked, setPosition, setZoom])
 
 	useEffect(() => {
 		window.addEventListener('workspace-reset', handleWorkspaceReset)
@@ -182,19 +176,71 @@ export function Workspace() {
 		}
 	}, [handleWorkspaceLockToggle, handleWorkspaceReset]);
 
-	const handleDrop = (e) => {
-		e.preventDefault();
-		console.debug(e)
-	}
+	useEffect(() => {
+		console.debug('add')
+		addPanel({
+			id: 'test-1',
+			coordinates: {x: 0, y: 0},
+			children: (
+				<p>test 1</p>
+			)
+		})
+		addPanel({
+			id: 'test-2',
+			coordinates: {x: 0, y: 0},
+			children: (
+				<p>test 2</p>
+			)
+		})
+		addPanel({
+			id: 'test-3',
+			coordinates: {x: 0, y: 0},
+			children: (
+				<p>test 3</p>
+			)
+		})
+		addPanel({
+			id: 'test-4',
+			coordinates: {x: 0, y: 0},
+			children: (
+				<p>test 4</p>
+			)
+		})
+		addPanel({
+			id: 'plugins',
+			coordinates: {x: 0, y: 0},
+			children: (
+				<PluginTest/>
+			)
+		})
+		addPanel({
+			id: 'form',
+			coordinates: {x: 0, y: 0},
+			children: (
+				<>
+					<input />
+					<textarea />
+					<button>test</button>
+				</>
+			)
+		})
 
-	const handleDragOver = (e) => {
-		e.preventDefault();
-		console.debug(e)
-	}
+		return () => {
+			removePanel('test-1')
+			removePanel('test-2')
+			removePanel('test-3')
+			removePanel('test-4')
+			removePanel('plugins')
+			removePanel('form')
+		}
+	}, [addPanel, removePanel]);
+
+	const {setNodeRef, isOver} = useDroppable({id: 'workspace'});
+	console.debug(isOver)
 
 	return (
 		<div
-			className={`workspace-viewport${workspace.isLocked ? " --locked" : ""}`}
+			className={`workspace-viewport${isLocked ? " --locked" : ""}`}
 			ref={viewportRef}
 			onMouseDown={handleMouseDown}
 			onMouseUp={handleMouseUp}
@@ -208,10 +254,10 @@ export function Workspace() {
 				<pattern
 					id="dotted-grid"
 					patternUnits="userSpaceOnUse"
-					x={workspace.offset.x * workspace.zoom}
-					y={workspace.offset.y * workspace.zoom}
-					width={WORKSPACE_GRID_SIZE * workspace.zoom}
-					height={WORKSPACE_GRID_SIZE * workspace.zoom}
+					x={position.x * zoom}
+					y={position.y * zoom}
+					width={WORKSPACE_GRID_SIZE * zoom}
+					height={WORKSPACE_GRID_SIZE * zoom}
 				>
 					<circle cx="1" cy="1" r="1"></circle>
 				</pattern>
@@ -219,25 +265,50 @@ export function Workspace() {
 			</svg>
 			<div
 				className="workspace"
-				ref={workspaceRef}
-				style={{
-						transform: `translate(${workspace.offset.x * workspace.zoom}px, ${workspace.offset.y * workspace.zoom}px) scale(${workspace.zoom})`
+				ref={(r) => {
+					workspaceRef.current = r
+					setNodeRef(r)
 				}}
-				onDragOver={handleDragOver}
-				onDrop={handleDrop}
+				style={{
+					transform: `translate(${position.x * zoom}px, ${position.y * zoom}px) scale(${zoom})`
+				}}
 			>
-				<WorkspacePanel>node</WorkspacePanel>
-				<WorkspacePanel>
-					<PluginTest/>
-				</WorkspacePanel>
-				<WorkspacePanel>
-					<input />
-					<textarea />
-					<button>test</button>
-				</WorkspacePanel>
-				<WorkspacePanel>node</WorkspacePanel>
-				<WorkspacePanel>node</WorkspacePanel>
+				{panels.map((panel) => (
+					<WorkspacePanel key={panel.id} {...panel} />
+				))}
 			</div>
 		</div>
 	);
+}
+
+export function Workspace() {
+	const { movePanel } = useWorkspace()
+
+	function handleDragEnd(e: DragEndEvent) {
+		if (e.over?.id === 'workspace') {
+			console.debug(e)
+			movePanel(e.active.id, {deltaX: e.delta.x, deltaY: e.delta.y})
+		}
+	}
+
+	function handleDragCancel(e: DragCancelEvent) {
+		console.debug('cancel')
+		console.debug(e)
+	}
+
+	function handleDragAbort(e: DragAbortEvent) {
+		console.debug('abort')
+		console.debug(e)
+	}
+
+
+	return (
+		<DndContext
+			onDragEnd={handleDragEnd}
+			onDragCancel={handleDragCancel}
+			onDragAbort={handleDragAbort}
+		>
+			<WorkspaceInternal/>
+		</DndContext>
+	)
 }

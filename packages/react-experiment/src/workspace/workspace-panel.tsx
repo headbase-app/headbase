@@ -1,74 +1,35 @@
-import {useEffect, useRef, useState} from "react";
-import {type ReactNode, type MouseEvent as ReactMouseEvent} from "react";
-import {useWorkspace} from "./use-workspace/use-workspace.ts";
+import {type ReactNode, useEffect} from "react";
+import {useDraggable} from "@dnd-kit/core";
+import type {Coordinates} from "@dnd-kit/utilities";
 
 export interface WorkspacePanelProps {
 	children: ReactNode
-	dropTarget: HTMLDivElement
+	id: string
+	coordinates: Coordinates
 }
 
 export function WorkspacePanel({
 	children,
-	dropTarget,
+	id,
+	coordinates,
 }: WorkspacePanelProps) {
-	const { workspace } = useWorkspace()
-	const [x, setX] = useState(0);
-	const [y, setY] = useState(0);
-
-	// const [isDragging, setIsDragging] = useState(false);
-	//
-	// const dragHandleRef = useRef<HTMLDivElement>(null);
-	//
-	// const onMouseDown = (e: ReactMouseEvent) => {
-	// 	setIsDragging(true)
-	// 	console.debug('drag start')
-	// }
-	//
-	// const onMouseUp = (e: MouseEvent) => {
-	// 	if (isDragging) {
-	// 		console.debug('drag end, setting new x/y')
-	// 		setX(e.pageX - workspace.offset.x)
-	// 		setY(e.pageY - workspace.offset.y)
-	// 	}
-	//
-	// 	console.debug('drag end')
-	// 	setIsDragging(false)
-	// }
-	//
-	// useEffect(() => {
-	// 	document.addEventListener('mouseup', onMouseUp)
-	//
-	// 	return () => {
-	// 		document.removeEventListener('mouseup', onMouseUp)
-	// 	}
-	// }, [isDragging]);
-	const panelRef = useRef<HTMLDivElement | null>(null);
-
-	function handleDragStart(e: DragEvent) {
-		if (panelRef.current) {
-			e.dataTransfer?.setDragImage(panelRef.current, 0, 0,)
-		}
-
-		// todo: some way to identify panel so can be used in workspace to move panel
-		const dragData = {
-			id: ''
-		}
-		e.dataTransfer?.setData('application/json', JSON.stringify(dragData))
-	}
+	const {attributes, listeners, setNodeRef, transform} = useDraggable({id});
+	const style = transform ? {
+		transform: `translate3d(${coordinates.x + transform.x}px, ${coordinates.y + transform.y}px, 0)`,
+	} : {
+		transform: `translate3d(${coordinates.x}px, ${coordinates.y}px, 0)`,
+	};
 
 	return (
 		<div
-			ref={panelRef}
-			style={{
-				top: y,
-				left: x
-			}}
+			style={style}
 			className="workspace-panel"
+			ref={setNodeRef}
+			{...listeners}
+			{...attributes}
 		>
 			<div
 				className="workspace-panel-drag-handle"
-				draggable={true}
-				onDragStart={handleDragStart}
 			/>
 			<div className="workspace-panel-content">
 				{children}
