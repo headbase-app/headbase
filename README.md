@@ -8,7 +8,7 @@
   <a href="https://headbase.app">Web App</a> •
   <a href="/docs/user-guide">User Guide</a> •
   <a href="/docs/developer">Developer Documentation</a> •
-  <a href="#">Feedback</a> •
+  <a href="https://github.com/headbase-app/headbase/issues">Feedback</a> •
   <a href="https://github.com/headbase-app/headbase/issues">Report Issue</a>
 </p>
 
