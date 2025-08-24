@@ -1,6 +1,6 @@
 # `@headbase-app/desktop`
 
-The desktop application for Headbase, built using [Electron](https://www.electronjs.org), [electron-vite](https://github.com/alex8088/electron-vite) and [React](https://react.dev/).
+The desktop application for Headbase, built using [Electron](https://www.electronjs.org) ([electron-vite](https://github.com/alex8088/electron-vite)) and [React](https://react.dev/).
 
 ## Prerequisites
 - Node.js installed at latest LTS version
