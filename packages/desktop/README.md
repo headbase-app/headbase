@@ -1,6 +1,6 @@
-# `@headbase-app/web`
+# `@headbase-app/desktop`
 
-The [headbase.app](https://headbase.app) progressive web application, built using [React](https://react.dev/) and [Vite](https://vitejs.dev/).
+The desktop application for Headbase, built using [Electron](https://www.electronjs.org), [Electron Forge](https://www.electronforge.io) and [Vite](https://www.electronforge.io/config/plugins/vite).
 
 ## Prerequisites
 - Node.js installed at latest LTS version
@@ -8,16 +8,14 @@ The [headbase.app](https://headbase.app) progressive web application, built usin
 
 ## Quick Start
 1. Run `npm install`
-2. Copy `.env.example` to `.env` and set up variables
-3. Run `npm start` to start the dev server
-4. Run `npm run build` and `npm run preview` to build and preview a production build
+2. Run `npm start` to start the app in dev mode
 
 ## Testing
-Vitest is used for unit testing and Playwright is used for E2E browser testing.
+Vitest is used for unit testing and Playwright is used for E2E testing.
 
 ### Setup
 1. Run `npm run test:e2e:setup` to ensure Playwright is installed correctly.
-   - If you're using Linux, you may also have to run `npx playwright install-deps`
+  - If you're using Linux, you may also have to run `npx playwright install-deps`
 
 ### Usage
 - `npm run test:unit` to run all unit tests

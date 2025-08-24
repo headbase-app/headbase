@@ -1,0 +1,47 @@
+{
+  "name": "@headbase-app/desktop",
+  "description": "Turn your local files into a queryable database. Note taking, task management, knowledge bases and more.",
+  "private": true,
+  "version": "0.0.0",
+  "license": "AGPL-3.0-only",
+  "keywords": [],
+  "author": {
+    "name": "Ben Ryder",
+    "email": "dev@benryder.me"
+  },
+  "type": "module",
+  "main": ".vite/build/main.mjs",
+  "scripts": {
+    "start": "electron-forge start",
+    "package": "electron-forge package",
+    "make": "electron-forge make",
+    "publish": "electron-forge publish",
+    "lint": "eslint --ext .ts,.tsx ."
+  },
+  "dependencies": {
+    "electron-squirrel-startup": "^1.0.1",
+    "react": "^19.1.1",
+    "react-dom": "^19.1.1"
+  },
+  "devDependencies": {
+    "@electron-forge/cli": "^7.8.3",
+    "@electron-forge/maker-deb": "^7.8.3",
+    "@electron-forge/maker-rpm": "^7.8.3",
+    "@electron-forge/maker-squirrel": "^7.8.3",
+    "@electron-forge/maker-zip": "^7.8.3",
+    "@electron-forge/plugin-auto-unpack-natives": "^7.8.3",
+    "@electron-forge/plugin-fuses": "^7.8.3",
+    "@electron-forge/plugin-vite": "^7.8.3",
+    "@electron/fuses": "^1.8.0",
+    "@types/electron-squirrel-startup": "^1.0.2",
+    "@types/react": "^19.1.11",
+    "@types/react-dom": "^19.1.7",
+    "@typescript-eslint/eslint-plugin": "^5.62.0",
+    "@typescript-eslint/parser": "^5.62.0",
+    "electron": "37.3.1",
+    "eslint": "^8.57.1",
+    "eslint-plugin-import": "^2.32.0",
+    "typescript": "~4.5.4",
+    "vite": "^5.4.19"
+  }
+}
