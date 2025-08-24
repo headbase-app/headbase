@@ -16,12 +16,12 @@ and both devices will use whichever version is newer, using the version `created
 
 **Important Notes**
 - In reality versions are identified via a UUID, the sequential `version 3x` style above was just used to help the explanation.
-- This system may appear to cause "data loss" in the example above as the content of `version 3a/4a/5a` is lost, however that data still exists in 
+- This system may appear to cause "data loss" in the example above as the content of `version 3a/4a/5a` is lost, however that data still exists in
 the version history that the user can access should this be required.
 
-**Future Improvements**  
+**Future Improvements**
 This "last write wins" system is very simplistic, which is both a big advantage and a weakness. Some potential future improvements are:
-- Versions could be saved with a reference to the previous version, which could help to visualise the history or prioritise versions with more history.
+- SystemInfo could be saved with a reference to the previous version, which could help to visualise the history or prioritise versions with more history.
 - Localful could expose some form of "merge" feature to allow devices to handle new/conflicting versions.
 
 ## Vault States

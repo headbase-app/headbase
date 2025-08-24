@@ -7,9 +7,9 @@ Use regular files (.md etc) rather than an application database in the name of l
 - Filesystem is the source of truth, and is where reads/writes occur.
 - Known data for files is path, filename, content hash, maybe timestamp/s
 - On write, a version is created in a database (maybe IndexedDB in browser or SQLite everywhere?)
-- Versions in database include extra metadata like id, timestamps etc
-- Versions synced between client/s and server
-- Versions can then be applied back files in the filesystem
+- SystemInfo in database include extra metadata like id, timestamps etc
+- SystemInfo synced between client/s and server
+- SystemInfo can then be applied back files in the filesystem
 
 Questions:
 - how to handle moves/renames in filesystem?
@@ -23,6 +23,6 @@ Questions:
   - encryption at rest feels a bit like vendor lock-in, especially for desktop
   - bare text files feel like the best option for longevity
   - file content or fields could be encrypted at rest on individual basis by the user
-  - all content would still be client-side encrypted for sync 
+  - all content would still be client-side encrypted for sync
 - privacy
   - should the server know file paths and names? should the path be hashed?

@@ -80,7 +80,7 @@ CREATE TABLE IF NOT EXISTS vaults (
 CREATE TRIGGER update_vault_timestamps BEFORE UPDATE ON vaults FOR EACH ROW EXECUTE PROCEDURE update_table_timestamps();
 
 /**
-    Object Versions Table
+    Object SystemInfo Table
     -----------
     Used to store vault object versions.
 */

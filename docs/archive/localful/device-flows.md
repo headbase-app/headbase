@@ -23,7 +23,7 @@ How Localful devices work
   - Data:
     - Vaults
     - Content
-    - Content Versions
+    - Content SystemInfo
 
 
 
@@ -49,6 +49,6 @@ How Localful devices work
 ### Server Init
 - Sync user account
 - Sync vaults
-- 
+-
 
 ### Vault Sync

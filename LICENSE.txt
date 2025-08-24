@@ -193,7 +193,7 @@ recipients a copy of this License along with the Program.
   You may charge any price or no price for each copy that you convey,
 and you may offer support or warranty protection for a fee.
 
-  5. Conveying Modified Source Versions.
+  5. Conveying Modified Source SystemInfo.
 
   You may convey a work based on the Program, or the modifications to
 produce it from the Program, in the form of source code under the
@@ -558,7 +558,7 @@ License will continue to apply to the part which is the covered work,
 but the work with which it is combined will remain governed by version
 3 of the GNU General Public License.
 
-  14. Revised Versions of this License.
+  14. Revised SystemInfo of this License.
 
   The Free Software Foundation may publish revised and/or new versions of
 the GNU Affero General Public License from time to time.  Such new versions
