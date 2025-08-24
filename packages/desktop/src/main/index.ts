@@ -2,6 +2,13 @@ import { app, shell, BrowserWindow, ipcMain } from 'electron'
 import { join } from 'path'
 import icon from '../../resources/icon.png?asset'
 
+import { loadVaults } from './vaults/vaults'
+import { versions } from './versions/versions'
+
+// Override package.json name
+app.setName('headbase')
+const USER_DATA_PATH = app.getPath('userData')
+
 function createWindow(): void {
 	// Create the browser window.
 	const mainWindow = new BrowserWindow({
@@ -11,10 +18,9 @@ function createWindow(): void {
 		autoHideMenuBar: true,
 		...(process.platform === 'linux' ? { icon } : {}),
 		webPreferences: {
-			preload: join(__dirname, '../preload/index.js'),
+			preload: join(__dirname, '../preload/index.js')
 		}
 	})
-
 	mainWindow.on('ready-to-show', () => {
 		mainWindow.show()
 	})
@@ -37,8 +43,12 @@ function createWindow(): void {
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
 app.whenReady().then(() => {
-	// IPC test
-	ipcMain.on('ping', () => console.log('pong'))
+	// Testing
+	ipcMain.handle('ping', () => 'pong')
+	ipcMain.handle('versions', () => versions)
+	ipcMain.handle('loadVaults', async () => {
+		return loadVaults(USER_DATA_PATH)
+	})
 
 	createWindow()
 
@@ -57,6 +67,3 @@ app.on('window-all-closed', () => {
 		app.quit()
 	}
 })
-
-// In this file you can include the rest of your app's specific main process
-// code. You can also put them in separate files and require them here.

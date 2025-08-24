@@ -1,8 +1,7 @@
-import { contextBridge } from 'electron'
+import { contextBridge, ipcRenderer } from 'electron'
 
-// Custom APIs for renderer
-const test = () => {
-	console.log('Hello World')
-}
-
-contextBridge.exposeInMainWorld('test', test)
+contextBridge.exposeInMainWorld('platformAPI', {
+	ping: () => ipcRenderer.invoke('ping'),
+	versions: () => ipcRenderer.invoke('versions'),
+	loadVaults: () => ipcRenderer.invoke('loadVaults')
+})

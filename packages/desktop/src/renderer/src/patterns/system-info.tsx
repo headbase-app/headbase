@@ -1,18 +1,28 @@
+import { useEffect, useState } from 'react'
+import { Version } from '../../../types/version'
 
 export function SystemInfo() {
-	const versions = window.electron?.process.versions
+	const [versions, setVersions] = useState<Version[]>([])
+
+	useEffect(() => {
+		async function load() {
+			const loadedVersions = await window.platformAPI.versions()
+			setVersions(loadedVersions)
+		}
+		load()
+	}, [])
 
 	if (versions) {
 		return (
 			<ul className="versions">
-				<li className="electron-version">Electron v{versions.electron}</li>
-				<li className="chrome-version">Chromium v{versions.chrome}</li>
-				<li className="node-version">Node v{versions.node}</li>
+				{versions.map((version) => (
+					<li key={version.version}>
+						{version.name} v{version.version}
+					</li>
+				))}
 			</ul>
 		)
 	}
 
-	return (
-		<p>No versions found</p>
-	)
+	return <p>Versions loading...</p>
 }
