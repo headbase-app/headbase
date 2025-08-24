@@ -1,13 +1,22 @@
-<!DOCTYPE html>
-<html>
-  <head>
-    <meta charset="UTF-8" />
-    <title>Hello World!</title>
+<!doctype html>
+<html lang="en">
+<head>
+  <!-- Functional -->
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
 
-  </head>
+  <!-- Basic Metadata -->
+  <title>Headbase</title>
+  <meta
+    name="description"
+    content="Turn your local files into a queryable database. Note taking, task management, knowledge bases and more."
+  />
+
+  <!-- Theme -->
+  <meta name="theme-color" content="#0c857a" />
+</head>
   <body>
-    <h1>💖 Hello World!</h1>
-    <p>Welcome to your Electron application.</p>
-    <script type="module" src="/src/renderer.ts"></script>
+    <div id="root"></div>
+    <script type="module" src="./src/renderer.ts"></script>
   </body>
 </html>

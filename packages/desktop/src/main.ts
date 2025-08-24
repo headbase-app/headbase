@@ -13,7 +13,7 @@ if (started) {
   app.quit();
 }
 
-const createWindow = () => {
+async function createWindow() {
   // Create the browser window.
   const mainWindow = new BrowserWindow({
     width: 800,
@@ -23,16 +23,13 @@ const createWindow = () => {
     },
   });
 
-  // and load the index.html of the app.
+  // Load the index.html of the app.
   if (MAIN_WINDOW_VITE_DEV_SERVER_URL) {
-    mainWindow.loadURL(MAIN_WINDOW_VITE_DEV_SERVER_URL);
+    await mainWindow.loadURL(MAIN_WINDOW_VITE_DEV_SERVER_URL);
   } else {
-    mainWindow.loadFile(join(__dirname, `../renderer/${MAIN_WINDOW_VITE_NAME}/index.html`));
+    await mainWindow.loadFile(join(__dirname, `index.html`));
   }
-
-  // Open the DevTools.
-  mainWindow.webContents.openDevTools();
-};
+}
 
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.

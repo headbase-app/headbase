@@ -7,12 +7,24 @@ import { VitePlugin } from '@electron-forge/plugin-vite';
 import { FusesPlugin } from '@electron-forge/plugin-fuses';
 import { FuseV1Options, FuseVersion } from '@electron/fuses';
 
+// Setup application and executable names
+// see https://github.com/electron/forge/issues/3753, https://github.com/electron/forge/issues/3660
+const applicationName = 'Headbase'
+const executableName = 'headbase'
+
 const config: ForgeConfig = {
   packagerConfig: {
+    name: applicationName,
+    executableName,
     asar: true,
   },
   rebuildConfig: {},
-  makers: [new MakerSquirrel({}), new MakerZIP({}, ['darwin']), new MakerRpm({}), new MakerDeb({})],
+  makers: [
+    new MakerSquirrel({}),
+    new MakerZIP({}, ['darwin']),
+    new MakerRpm({options: {bin: executableName, name: executableName, productName: applicationName}}),
+    new MakerDeb({options: {bin: executableName, name: executableName, productName: applicationName}})
+  ],
   plugins: [
     new VitePlugin({
       // `build` can specify multiple entry builds, which can be Main process, Preload scripts, Worker process, etc.

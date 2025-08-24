@@ -9,6 +9,8 @@ The desktop application for Headbase, built using [Electron](https://www.electro
 ## Quick Start
 1. Run `npm install`
 2. Run `npm start` to start the app in dev mode
+3. Run `npm run build` to [package and make]((https://www.electronforge.io/core-concepts/build-lifecycle)) the application
+   - If you're using Linux, you may need to `sudo apt install rpm` or equivalent for make to
 
 ## Testing
 Vitest is used for unit testing and Playwright is used for E2E testing.
