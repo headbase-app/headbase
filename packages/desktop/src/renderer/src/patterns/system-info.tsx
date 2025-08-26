@@ -1,12 +1,14 @@
 import { useEffect, useState } from 'react'
 import { Version } from '../../../types/version'
+import {useTranslation} from "react-i18next";
 
 export function SystemInfo() {
 	const [versions, setVersions] = useState<Version[]>([])
+	const { t } = useTranslation()
 
 	useEffect(() => {
 		async function load() {
-			const loadedVersions = await window.platformAPI.versions()
+			const loadedVersions = await window.platformAPI.getVersions()
 			setVersions(loadedVersions)
 		}
 		load()
@@ -24,5 +26,5 @@ export function SystemInfo() {
 		)
 	}
 
-	return <p>Versions loading...</p>
+	return <p>{t('Versions loading...')}</p>
 }

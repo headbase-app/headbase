@@ -2,7 +2,7 @@ import { app, shell, BrowserWindow, ipcMain } from 'electron'
 import { join } from 'path'
 import icon from '../../resources/icon.png?asset'
 
-import { loadVaults } from './vaults/vaults'
+import {getVaults} from './vaults/vaults'
 import { versions } from './versions/versions'
 
 // Override package.json name
@@ -30,6 +30,12 @@ function createWindow(): void {
 		return { action: 'deny' }
 	})
 
+	ipcMain.handle('getVersions', () => versions)
+	ipcMain.handle('getVaults', async () => {
+		return getVaults(USER_DATA_PATH)
+	})
+	mainWindow.webContents.send('', [])
+
 	// HMR for renderer base on electron-vite cli.
 	// Load the remote URL for development or the local html file for production.
 	if (process.env['ELECTRON_RENDERER_URL']) {
@@ -43,13 +49,6 @@ function createWindow(): void {
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
 app.whenReady().then(() => {
-	// Testing
-	ipcMain.handle('ping', () => 'pong')
-	ipcMain.handle('versions', () => versions)
-	ipcMain.handle('loadVaults', async () => {
-		return loadVaults(USER_DATA_PATH)
-	})
-
 	createWindow()
 
 	app.on('activate', function () {
