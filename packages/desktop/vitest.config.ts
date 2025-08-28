@@ -18,6 +18,8 @@ export default defineConfig({
 					include: ['src/renderer/**/*.unit.test.ts'],
 					browser: {
 						enabled: true,
+						provider: 'playwright',
+						headless: true,
 						instances: [
 							{browser: 'chromium'}
 						]

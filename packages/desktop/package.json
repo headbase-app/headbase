@@ -23,16 +23,22 @@
     "build:win": "npm run build && electron-builder --win",
     "build:mac": "electron-vite build && electron-builder --mac",
     "build:linux": "electron-vite build && electron-builder --linux",
-    "test:unit": "vitest run --project unit*"
+    "test": "npm run test:unit && npm run test:e2e",
+    "test:unit": "vitest run --project unit*",
+    "test:unit:ui": "vitest --project unit* --ui",
+    "test:e2e": "npx playwright test",
+    "test:e2e:ui": "npx playwright test --ui"
   },
   "devDependencies": {
     "@electron-toolkit/eslint-config-ts": "^3.1.0",
     "@electron-toolkit/tsconfig": "^1.0.1",
+    "@playwright/test": "^1.55.0",
     "@types/node": "^24.3.0",
     "@types/react": "^19.1.11",
     "@types/react-dom": "^19.1.7",
     "@vitejs/plugin-react": "^5.0.1",
     "@vitest/browser": "^3.2.4",
+    "@vitest/ui": "^3.2.4",
     "electron": "^37.3.1",
     "electron-builder": "^26.0.12",
     "electron-vite": "^4.0.0",
