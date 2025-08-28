@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Version } from '../../../types/version'
+import { Version } from '../../../contracts/version'
 import {useTranslation} from "react-i18next";
 
 export function SystemInfo() {

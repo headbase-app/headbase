@@ -1,6 +1,6 @@
 import { readFile, writeFile } from 'node:fs/promises'
 import { join } from 'node:path'
-import { Vault } from '../../types/vaults'
+import { Vault } from '../../contracts/vaults'
 
 const VAULTS_FILE = 'vaults.json'
 

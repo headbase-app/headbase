@@ -1,5 +1,5 @@
 import {useEffect, useState} from "react";
-import {Vault} from "../../../types/vaults";
+import {Vault} from "../../../contracts/vaults";
 import {useTranslation} from "react-i18next";
 
 export function VaultList() {

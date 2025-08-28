@@ -1,4 +1,4 @@
-import { Version } from '../../types/version'
+import { Version } from '../../contracts/version'
 
 export const versions = [
 	{

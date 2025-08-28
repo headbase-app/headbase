@@ -8,7 +8,7 @@
   "scripts": {
     "prebuild": "rimraf ./dist",
     "build": "tsc --project ./tsconfig.build.json && tsc-alias",
-    "build:prod": "(cd ../common && npm ci && npm run build) && npm ci && npm run build",
+    "build:prod": "(cd ../library && npm ci && npm run build) && npm ci && npm run build",
     "start": "tsx watch ./bin/index.ts",
     "start:prod": "node ./dist/bin/index.js",
     "lint": "eslint \"{src,apps,libs,test}/**/*.ts\" --fix",
@@ -16,7 +16,7 @@
     "db:dump": "pg_dump headbase > ./backup/headbase.sql",
     "db:restore": "psql headbase < ./backup/headbase.sql",
     "db:init:data": "tsx testing/cli.ts",
-    "dev:common-rebuild": "(cd ../common && npm run build) && npm i"
+    "dev:common-rebuild": "(cd ../library && npm run build) && npm i"
   },
   "dependencies": {
     "@headbase-app/common": "^0.9.0",

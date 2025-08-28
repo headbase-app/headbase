@@ -1,4 +1,4 @@
-import { Settings } from '../../types/settings'
+import { Settings } from '../../contracts/settings'
 
 export function loadSettings(dataPath: string): Settings {
 	return {

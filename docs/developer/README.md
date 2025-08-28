@@ -4,7 +4,8 @@
 TODO
 
 ## Project Structure
-This project is a monorepo containing a few projects/packages:
-- `common` - A library of generic functionality and types that are shared across projects/packages.
-- `server` - A Node.js server responsible for cross-device sync and cloud backups etc.
-- `web` - A React progressive web app
+This project is a monorepo containing different packages:
+- `desktop` - The desktop application, built using React/Electron.
+- `pwa` - The progressive web app (PWA), built using React/Vite.
+- `library` - Shared library for apps including a React component library, common web-based functionality etc.
+- `server`- The backup and sync server, built using Node.js.

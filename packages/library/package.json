@@ -1,7 +1,7 @@
 {
-  "name": "@headbase-app/contracts",
+  "name": "@headbase-app/library",
   "version": "0.0.0",
-  "description": "A library of common contracts such as schemas and interfaces for use across Headbase.",
+  "description": "A shared library for common fucntoian.",
 	"license": "AGPL-3.0-only",
 	"homepage": "https://github.com/headbase-app/headbase",
 	"bugs": "https://github.com/headbase-app/headbase/issues",
