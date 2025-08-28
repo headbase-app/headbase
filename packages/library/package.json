@@ -1,0 +1,32 @@
+{
+  "name": "@headbase-app/contracts",
+  "version": "0.0.0",
+  "description": "A library of common contracts such as schemas and interfaces for use across Headbase.",
+	"license": "AGPL-3.0-only",
+	"homepage": "https://github.com/headbase-app/headbase",
+	"bugs": "https://github.com/headbase-app/headbase/issues",
+	"keywords": [],
+	"author": {
+		"name": "Ben Ryder",
+		"email": "dev@benryder.me"
+	},
+	"publishConfig": {
+		"access": "public"
+	},
+  "main": "dist/src/index.js",
+	"files": [
+		"dist/**/*",
+		"README.md",
+		"LICENSE.txt"
+	],
+  "scripts": {
+    "build": "rimraf ./dist && tsc",
+    "prepublishOnly": "npm run build"
+  },
+  "devDependencies": {
+    "@types/validator": "^13.15.2",
+    "rimraf": "^6.0.1",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.9.2"
+  }
+}
