@@ -4,14 +4,20 @@ import icon from '../../resources/icon.png?asset'
 
 import {getVaults} from './vaults/vaults'
 import { versions } from './versions/versions'
+import * as trace_events from "node:trace_events";
+import {Vault} from "../contracts/vaults";
 
-// Override package.json name
+// Override package.json name, ensures calls like `getPath` just use 'headbase'.
 app.setName('headbase')
 const USER_DATA_PATH = app.getPath('userData')
 
-function createWindow(): void {
-	// Create the browser window.
-	const mainWindow = new BrowserWindow({
+// Store the current vault each window has open.
+// Used to allow windows to open with a pre-selected vault, and as a security feature to restrict file system access
+// via IPC to the open vault.
+const windowVaults = new Map<number, string>()
+
+function createWindow(vaultId?: string): void {
+	const window = new BrowserWindow({
 		width: 900,
 		height: 670,
 		show: false,
@@ -21,27 +27,38 @@ function createWindow(): void {
 			preload: join(__dirname, '../preload/index.js')
 		}
 	})
-	mainWindow.on('ready-to-show', () => {
-		mainWindow.show()
+
+	// Ensure open vault status is up to date.
+	if (vaultId) {
+		windowVaults.set(window.id, vaultId)
+	}
+	else if (windowVaults.has(window.id)) {
+		windowVaults.delete(window.id)
+	}
+
+	// Delay showing the window until it is ready.
+	window.on('ready-to-show', () => {
+		window.show()
 	})
 
-	mainWindow.webContents.setWindowOpenHandler((details) => {
+	window.webContents.setWindowOpenHandler((details) => {
 		shell.openExternal(details.url)
 		return { action: 'deny' }
 	})
 
-	ipcMain.handle('getVersions', () => versions)
-	ipcMain.handle('getVaults', async () => {
-		return getVaults(USER_DATA_PATH)
+	// Ensure open vault is removed from store when window is closed
+	window.on('closed', () => {
+		if (windowVaults.has(window.id)) {
+			windowVaults.delete(window.id)
+		}
 	})
-	mainWindow.webContents.send('', [])
 
 	// HMR for renderer base on electron-vite cli.
 	// Load the remote URL for development or the local html file for production.
 	if (process.env['ELECTRON_RENDERER_URL']) {
-		mainWindow.loadURL(process.env['ELECTRON_RENDERER_URL'])
+		window.loadURL(process.env['ELECTRON_RENDERER_URL'])
 	} else {
-		mainWindow.loadFile(join(__dirname, '../renderer/index.html'))
+		window.loadFile(join(__dirname, '../renderer/index.html'))
 	}
 }
 
@@ -64,5 +81,56 @@ app.whenReady().then(() => {
 app.on('window-all-closed', () => {
 	if (process.platform !== 'darwin') {
 		app.quit()
+	}
+})
+
+ipcMain.handle('getOpenVault', (event) => {
+	const senderWindow = BrowserWindow.fromWebContents(event.sender);
+	if (!senderWindow) {
+		return {error: true, identifier: 'no-sender-id', message: 'Event could not be traced to sender window, ignoring request.'}
+	}
+
+	if (windowVaults.has(senderWindow.id)) {
+		return {error: false, result: windowVaults.get(senderWindow.id)}
+	}
+
+	return {error: false, result: null}
+})
+
+
+ipcMain.handle('openVaultWindow', (event, vaultId: string) => {
+	const senderWindow = BrowserWindow.fromWebContents(event.sender);
+	if (!senderWindow) {
+		return {error: true, identifier: 'no-sender-id', message: 'Event could not be traced to sender window, ignoring request.'}
+	}
+
+	createWindow(vaultId)
+	return {error: false}
+})
+
+ipcMain.handle('switchVault', (event, vaultId: string) => {
+	const senderWindow = BrowserWindow.fromWebContents(event.sender);
+	if (!senderWindow) {
+		return {error: true, identifier: 'no-sender-id', message: 'Event could not be traced to sender window, ignoring request.'}
+	}
+
+	windowVaults.set(senderWindow.id, vaultId)
+	return {error: false}
+})
+
+ipcMain.handle('getVersions', () => ({
+	error: false,
+	result: versions
+}))
+
+ipcMain.handle('getVaults', async () => {
+	let vaults: Vault[]
+	try {
+		vaults = await getVaults(USER_DATA_PATH)
+		return {error: false, result: vaults}
+	}
+	// todo: handle other errors?
+	catch (e) {
+		return {error: true, identifier: '', cause: e}
 	}
 })

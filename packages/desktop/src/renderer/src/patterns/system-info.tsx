@@ -9,7 +9,9 @@ export function SystemInfo() {
 	useEffect(() => {
 		async function load() {
 			const loadedVersions = await window.platformAPI.getVersions()
-			setVersions(loadedVersions)
+			if (!loadedVersions.error) {
+				setVersions(loadedVersions.result)
+			}
 		}
 		load()
 	}, [])

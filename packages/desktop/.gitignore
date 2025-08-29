@@ -10,3 +10,8 @@ out
 /playwright-report/
 /blob-report/
 /playwright/.cache/
+
+# Playwright / Vitest Custom
+/tests/reports
+/tests/results
+/tests/screenshots
