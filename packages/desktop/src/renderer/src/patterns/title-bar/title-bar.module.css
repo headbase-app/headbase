@@ -1,0 +1,12 @@
+.title-bar {
+	app-region: drag;
+	width: 100%;
+	height: 30px;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+
+	background: var(--colour-background-b1);
+	font-weight: bold;
+	font-size: var(--text-size-sm);
+}

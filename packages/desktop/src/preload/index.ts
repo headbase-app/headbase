@@ -1,9 +1,11 @@
 import { contextBridge, ipcRenderer } from 'electron'
 
 contextBridge.exposeInMainWorld('platformAPI', {
-	getOpenVault: () => ipcRenderer.invoke('getOpenVault'),
-	switchVault: (vaultId: string) => ipcRenderer.invoke('switchVault', vaultId),
-	openVaultWindow: (vaultId: string) => ipcRenderer.invoke('openVaultWindow', vaultId),
+	// Versions
 	getVersions: () => ipcRenderer.invoke('getVersions'),
-	getVaults: () => ipcRenderer.invoke('getVaults')
+	// Vaults
+	getVaults: () => ipcRenderer.invoke('getVaults'),
+	getCurrentVault: () => ipcRenderer.invoke('getCurrentVault'),
+	openVault: (vaultId: string) => ipcRenderer.invoke('openVault', vaultId),
+	openVaultNewWindow: (vaultId: string) => ipcRenderer.invoke('openVaultNewWindow', vaultId),
 })

@@ -1,5 +1,5 @@
 import { Version } from './version'
-import { Vault } from './vaults'
+import {Vault, VaultMap} from './vaults'
 
 export type PlatformResponse<T> = {
 	error: false,
@@ -11,11 +11,13 @@ export type PlatformResponse<T> = {
 }
 
 export interface IPlatformAPI {
-	getOpenVault: () => Promise<PlatformResponse<string | null>>
-	switchVault: (vaultId: string) => Promise<PlatformResponse<void>>
-	openVaultWindow: (vaultId: string) => Promise<PlatformResponse<void>>
+	// Platform Info
 	getVersions: () => Promise<PlatformResponse<Version[]>>
-	getVaults: () => Promise<PlatformResponse<Vault[]>>
+	// Vaults
+	getVaults: () => Promise<PlatformResponse<VaultMap>>
+	getCurrentVault: () => Promise<PlatformResponse<Vault | null>>
+	openVault: (vaultId: string) => Promise<PlatformResponse<void>>
+	openVaultNewWindow: (vaultId: string) => Promise<PlatformResponse<void>>
 }
 
 declare global {

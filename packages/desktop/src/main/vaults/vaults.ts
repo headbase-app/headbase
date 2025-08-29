@@ -1,31 +1,23 @@
 import { readFile, writeFile } from 'node:fs/promises'
 import { join } from 'node:path'
-import { Vault } from '../../contracts/vaults'
+import {Vault, VaultMap} from '../../contracts/vaults'
 
 const VAULTS_FILE = 'vaults.json'
 
-export async function getVaults(dataPath: string): Promise<Vault[]> {
+export async function getVaults(dataPath: string): Promise<VaultMap> {
 	const vaultsFilePath = join(dataPath, VAULTS_FILE)
 
 	try {
 		const contents = await readFile(vaultsFilePath, { encoding: 'utf8' })
-		return JSON.parse(contents)
+		// todo: validate file based on schema
+		const vaultList: Vault[] = JSON.parse(contents)
+
+		return Object.fromEntries(vaultList.map(v => [v.id, v]))
 	} catch (error) {
 		console.debug(`[vaults] vault file not found (${error})`)
 	}
 
-	return [
-		{
-			id: '00000000-0000-0000-0000-000000000000',
-			path: '~/headbase-example',
-			displayName: 'Example'
-		},
-		{
-			id: '00000000-0000-0000-0000-000000000002',
-			path: '~/headbase-example-2',
-			displayName: 'Example 2'
-		}
-	]
+	return {}
 }
 
 export async function saveVaults(dataPath: string, vaults: Vault[]) {

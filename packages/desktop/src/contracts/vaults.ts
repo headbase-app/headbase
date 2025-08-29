@@ -3,3 +3,7 @@ export interface Vault {
 	path: string
 	displayName: string
 }
+
+export interface VaultMap {
+	[vaultId: string]: Vault
+}

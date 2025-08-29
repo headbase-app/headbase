@@ -4,24 +4,30 @@ import icon from '../../resources/icon.png?asset'
 
 import {getVaults} from './vaults/vaults'
 import { versions } from './versions/versions'
-import * as trace_events from "node:trace_events";
-import {Vault} from "../contracts/vaults";
+import {Vault, VaultMap} from "../contracts/vaults";
 
 // Override package.json name, ensures calls like `getPath` just use 'headbase'.
 app.setName('headbase')
 const USER_DATA_PATH = app.getPath('userData')
 
 // Store the current vault each window has open.
-// Used to allow windows to open with a pre-selected vault, and as a security feature to restrict file system access
-// via IPC to the open vault.
+// - Used to allow windows to open with a pre-selected vault.
+// - Used as a security measure to restrict file system access of renderer IPC calls to the current vault folder.
 const windowVaults = new Map<number, string>()
 
 function createWindow(vaultId?: string): void {
+	// Create a window, hidden by default
 	const window = new BrowserWindow({
-		width: 900,
-		height: 670,
 		show: false,
+		titleBarStyle: 'hidden',
 		autoHideMenuBar: true,
+		...(process.platform !== 'darwin' ? {
+			titleBarOverlay: {
+				color: "#191B23",
+				symbolColor: "#fff",
+				height: 30
+			}
+		} : {}),
 		...(process.platform === 'linux' ? { icon } : {}),
 		webPreferences: {
 			preload: join(__dirname, '../preload/index.js')
@@ -41,6 +47,7 @@ function createWindow(vaultId?: string): void {
 		window.show()
 	})
 
+	// Prevent new windows from being open within the app, and direct links to open externally.
 	window.webContents.setWindowOpenHandler((details) => {
 		shell.openExternal(details.url)
 		return { action: 'deny' }
@@ -75,43 +82,48 @@ app.whenReady().then(() => {
 	})
 })
 
-// Quit when all windows are closed, except on macOS. There, it's common
-// for applications and their menu bar to stay active until the user quits
-// explicitly with Cmd + Q.
+// Quit when all windows are closed, except on macOS where it's common for apps and their menu bar to stay active until quit explicitly with Cmd + Q.
 app.on('window-all-closed', () => {
 	if (process.platform !== 'darwin') {
 		app.quit()
 	}
 })
 
-ipcMain.handle('getOpenVault', (event) => {
+ipcMain.handle('getCurrentVault', async (event) => {
 	const senderWindow = BrowserWindow.fromWebContents(event.sender);
 	if (!senderWindow) {
-		return {error: true, identifier: 'no-sender-id', message: 'Event could not be traced to sender window, ignoring request.'}
+		return {error: true, identifier: 'unidentified-window', message: 'Event could not be traced to sender window, ignoring request.'}
 	}
 
-	if (windowVaults.has(senderWindow.id)) {
-		return {error: false, result: windowVaults.get(senderWindow.id)}
+	const vaultId = windowVaults.get(senderWindow.id)
+	if (vaultId) {
+		const vaults = await getVaults(USER_DATA_PATH)
+		const vault = vaults[vaultId]
+
+		if (vault) {
+			return {error: false, result: vault}
+		}
+		return {error: true, identifier: 'vault-not-found', message: 'Window has current vault which could not be found.'}
 	}
 
 	return {error: false, result: null}
 })
 
 
-ipcMain.handle('openVaultWindow', (event, vaultId: string) => {
+ipcMain.handle('openVaultNewWindow', (event, vaultId: string) => {
 	const senderWindow = BrowserWindow.fromWebContents(event.sender);
 	if (!senderWindow) {
-		return {error: true, identifier: 'no-sender-id', message: 'Event could not be traced to sender window, ignoring request.'}
+		return {error: true, identifier: 'unidentified-window', message: 'Event could not be traced to sender window, ignoring request.'}
 	}
 
 	createWindow(vaultId)
 	return {error: false}
 })
 
-ipcMain.handle('switchVault', (event, vaultId: string) => {
+ipcMain.handle('openVault', (event, vaultId: string) => {
 	const senderWindow = BrowserWindow.fromWebContents(event.sender);
 	if (!senderWindow) {
-		return {error: true, identifier: 'no-sender-id', message: 'Event could not be traced to sender window, ignoring request.'}
+		return {error: true, identifier: 'unidentified-window', message: 'Event could not be traced to sender window, ignoring request.'}
 	}
 
 	windowVaults.set(senderWindow.id, vaultId)
@@ -124,7 +136,7 @@ ipcMain.handle('getVersions', () => ({
 }))
 
 ipcMain.handle('getVaults', async () => {
-	let vaults: Vault[]
+	let vaults: VaultMap
 	try {
 		vaults = await getVaults(USER_DATA_PATH)
 		return {error: false, result: vaults}
