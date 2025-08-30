@@ -1,4 +1,5 @@
 import { defineConfig } from 'vitest/config'
+import {resolve} from "node:path";
 
 export default defineConfig({
 	test: {
@@ -15,7 +16,7 @@ export default defineConfig({
 			{
 				test: {
 					name: 'unit-browser',
-					include: ['src/renderer/**/*.unit.test.ts'],
+					include: ['src/renderer/**/*.unit.test.{ts,tsx}'],
 					browser: {
 						enabled: true,
 						provider: 'playwright',
@@ -23,6 +24,9 @@ export default defineConfig({
 						instances: [
 							{browser: 'chromium'}
 						]
+					},
+					alias: {
+						'@renderer': resolve('src/renderer/src')
 					}
 				}
 			},

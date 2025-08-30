@@ -12,7 +12,7 @@ export interface VaultsContext {
 	openVaultNewWindow: (vaultId: string) => Promise<void>;
 }
 
-export const DEFAULT_VAULTS_CONTEXT: VaultsContext = {
+const DEFAULT_VAULTS_CONTEXT: VaultsContext = {
 	vaults: {},
 	isVaultsLoading: true,
 	currentVault: null,
