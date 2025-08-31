@@ -1,13 +1,18 @@
 import {useTranslation} from "react-i18next";
-import {useVaults} from "@renderer/modules/vaults/use-vaults";
+import {Vault, VaultMap} from "../../../contracts/vaults";
+import {IVaultsService} from "@renderer/modules/vaults/vaults.interface";
 
-export function VaultList() {
+export interface VaultListProps {
+	vaults: VaultMap;
+	isVaultsLoading: boolean;
+	currentVault: Vault | null;
+	isCurrentVaultLoading: boolean;
+	openVault: IVaultsService['openVault'];
+	openVaultNewWindow: IVaultsService['openVaultNewWindow'];
+}
+
+export function VaultList({vaults, isVaultsLoading, currentVault, isCurrentVaultLoading, openVault, openVaultNewWindow}: VaultListProps) {
 	const { t } = useTranslation()
-	const {
-		vaults, isVaultsLoading,
-		currentVault, isCurrentVaultLoading,
-		openVault, openVaultNewWindow
-	} = useVaults()
 
 	if (isVaultsLoading || isCurrentVaultLoading) {
 		return (

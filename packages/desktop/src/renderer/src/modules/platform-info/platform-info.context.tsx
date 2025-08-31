@@ -1,14 +1,11 @@
-import {createContext} from "react";
-import {Version} from "../../../../contracts/version";
+import {createContext, useContext} from "react";
+import {IPlatformInfoService} from "@renderer/modules/platform-info/platform-info.interface";
 
 export interface PlatformInfoContext {
-	versions: Version[]
-	isVersionsLoading: boolean
+	platformInfoService: IPlatformInfoService
 }
 
-export const DEFAULT_PLATFORM_INFO_CONTEXT: PlatformInfoContext = {
-	versions: [],
-	isVersionsLoading: true,
-}
+// no default is provided, instantiation is dependent on using the provider and injection
+export const PlatformInfoContext = createContext<PlatformInfoContext>({} as PlatformInfoContext)
 
-export const PlatformInfoContext = createContext<PlatformInfoContext>(DEFAULT_PLATFORM_INFO_CONTEXT)
+export const usePlatformInfoService = () => useContext(PlatformInfoContext)

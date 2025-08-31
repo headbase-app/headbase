@@ -1,9 +1,11 @@
 import styles from "./title-bar.module.css"
-import {useVaults} from "@renderer/modules/vaults/use-vaults";
+import {Vault} from "../../../../contracts/vaults";
 
-export function TitleBar() {
-	const { currentVault } = useVaults()
+export interface TitleBarProps {
+	currentVault: Vault | null
+}
 
+export function TitleBar({currentVault}: TitleBarProps) {
 	const windowTitle = currentVault ? `Headbase | ${currentVault.displayName}` : "Headbase"
 
 	return (

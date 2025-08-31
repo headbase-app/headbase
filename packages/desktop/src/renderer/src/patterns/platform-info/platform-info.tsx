@@ -1,13 +1,13 @@
 import {useTranslation} from "react-i18next";
-import {usePlatformInfo} from "@renderer/modules/platform-info/use-platform-info";
+import {Version} from "../../../../contracts/version";
 
-export interface IPlatformInfoService {
-
+export interface PlatformInfoProps {
+	versions: Version[]
+	isVersionsLoading: boolean
 }
 
-export function PlatformInfo() {
+export function PlatformInfo({versions, isVersionsLoading}: PlatformInfoProps) {
 	const { t } = useTranslation()
-	const { versions, isVersionsLoading } = usePlatformInfo()
 
 	if (isVersionsLoading) {
 		return <p>{t('Versions loading...')}</p>

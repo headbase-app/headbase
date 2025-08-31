@@ -1,24 +1,11 @@
-import {createContext} from "react";
-import {Vault, VaultMap} from "../../../../contracts/vaults";
+import {createContext, useContext} from "react";
+import {IVaultsService} from "@renderer/modules/vaults/vaults.interface";
 
 export interface VaultsContext {
-	vaults: VaultMap;
-	isVaultsLoading: boolean
-
-	currentVault: Vault | null;
-	isCurrentVaultLoading: boolean;
-
-	openVault: (vaultId: string) => Promise<void>;
-	openVaultNewWindow: (vaultId: string) => Promise<void>;
+	vaultsService: IVaultsService
 }
 
-const DEFAULT_VAULTS_CONTEXT: VaultsContext = {
-	vaults: {},
-	isVaultsLoading: true,
-	currentVault: null,
-	isCurrentVaultLoading: true,
-	openVault: async () => {},
-	openVaultNewWindow: async () => {},
-}
+// no default is provided, instantiation is dependent on using the provider and injection
+export const VaultsContext = createContext<VaultsContext>({} as VaultsContext)
 
-export const VaultsContext = createContext<VaultsContext>(DEFAULT_VAULTS_CONTEXT)
+export const useVaultsService = () => useContext(VaultsContext)

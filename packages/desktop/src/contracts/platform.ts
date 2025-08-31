@@ -18,6 +18,7 @@ export interface IPlatformAPI {
 	getCurrentVault: () => Promise<PlatformResponse<Vault | null>>
 	openVault: (vaultId: string) => Promise<PlatformResponse<void>>
 	openVaultNewWindow: (vaultId: string) => Promise<PlatformResponse<void>>
+	getVault: (vaultId: string) => Promise<PlatformResponse<Vault |null>>
 }
 
 declare global {
