@@ -1,5 +1,5 @@
 import { Version } from './version'
-import {Vault, VaultMap} from './vaults'
+import {CreateVaultDto, UpdateVaultDto, Vault} from './vaults'
 
 export type PlatformResponse<T> = {
 	error: false,
@@ -14,11 +14,14 @@ export interface IPlatformAPI {
 	// Platform Info
 	getVersions: () => Promise<PlatformResponse<Version[]>>
 	// Vaults
-	getVaults: () => Promise<PlatformResponse<VaultMap>>
+	createVault: (createVaultDto: CreateVaultDto) => Promise<PlatformResponse<Vault>>
+	updateVault: (vaultId: string, updateVaultDto: UpdateVaultDto) => Promise<PlatformResponse<Vault>>
+	deleteVault: (vaultId: string) => Promise<PlatformResponse<void>>
+	getVault: (vaultId: string) => Promise<PlatformResponse<Vault |null>>
+	getVaults: () => Promise<PlatformResponse<Vault[]>>
 	getCurrentVault: () => Promise<PlatformResponse<Vault | null>>
 	openVault: (vaultId: string) => Promise<PlatformResponse<void>>
 	openVaultNewWindow: (vaultId: string) => Promise<PlatformResponse<void>>
-	getVault: (vaultId: string) => Promise<PlatformResponse<Vault |null>>
 }
 
 declare global {

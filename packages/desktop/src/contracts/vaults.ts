@@ -4,6 +4,6 @@ export interface Vault {
 	displayName: string
 }
 
-export interface VaultMap {
-	[vaultId: string]: Vault
-}
+export type CreateVaultDto = Pick<Vault,  'path' | 'displayName'>
+
+export type UpdateVaultDto = Pick<Vault, 'displayName'>

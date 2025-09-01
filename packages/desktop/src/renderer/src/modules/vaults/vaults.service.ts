@@ -1,9 +1,34 @@
 import {IVaultsService} from "@renderer/modules/vaults/vaults.interface";
-import {Vault, VaultMap} from "../../../../contracts/vaults";
+import {CreateVaultDto, UpdateVaultDto, Vault, VaultMap} from "../../../../contracts/vaults";
 
 export class WebVaultsService implements IVaultsService {
-	async getCurrentVault(): Promise<Vault | null> {
-		const result = await window.platformAPI.getCurrentVault()
+	async createVault(createVaultDto: CreateVaultDto) {
+		const result = await window.platformAPI.createVault(createVaultDto)
+		if (result.error) {
+			throw result
+		}
+
+		return result.result;
+	}
+
+	async updateVault(vaultId: string, updateVaultDto: UpdateVaultDto) {
+		const result = await window.platformAPI.updateVault(vaultId, updateVaultDto)
+		if (result.error) {
+			throw result
+		}
+
+		return result.result;
+	}
+
+	async deleteVault(vaultId: string) {
+		const result = await window.platformAPI.deleteVault(vaultId)
+		if (result.error) {
+			throw result
+		}
+	}
+
+	async getVault(vaultId: string): Promise<Vault | null> {
+		const result = await window.platformAPI.getVault(vaultId)
 		if (result.error) {
 			throw result
 		}
@@ -38,8 +63,8 @@ export class WebVaultsService implements IVaultsService {
 		return result.result;
 	}
 
-	async getVault(vaultId: string): Promise<Vault | null> {
-		const result = await window.platformAPI.getVault(vaultId)
+	async getCurrentVault(): Promise<Vault | null> {
+		const result = await window.platformAPI.getCurrentVault()
 		if (result.error) {
 			throw result
 		}

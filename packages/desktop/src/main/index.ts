@@ -2,9 +2,9 @@ import { app, shell, BrowserWindow, ipcMain } from 'electron'
 import { join } from 'path'
 import icon from '../../resources/icon.png?asset'
 
-import {getVaults} from './vaults/vaults'
+import {createVault, deleteVault, getVault, getVaults, updateVault} from './vaults/vaults'
 import { versions } from './versions/versions'
-import {Vault, VaultMap} from "../contracts/vaults";
+import {CreateVaultDto, UpdateVaultDto} from "../contracts/vaults";
 
 // Override package.json name, ensures calls like `getPath` just use 'headbase'.
 app.setName('headbase')
@@ -89,6 +89,83 @@ app.on('window-all-closed', () => {
 	}
 })
 
+/**
+ * Platform Information
+ */
+ipcMain.handle('getVersions', () => ({
+	error: false,
+	result: versions
+}))
+
+/**
+ * Vaults
+ */
+ipcMain.handle('createVault', async (_event, createVaultDto: CreateVaultDto) => {
+	try {
+		const result = await createVault(USER_DATA_PATH, createVaultDto)
+		return {error: false, result}
+	}
+	catch (e) {
+		if (e?.type === 'vault-not-found') {
+			return {error: true, identifier: 'vault-not-found', message: 'Requested vault could not be found.'}
+		}
+
+		return {error: true, identifier: 'system-error', message: 'An unexpected error occurred', cause: e}
+	}
+})
+
+ipcMain.handle('updateVault', async (_event, vaultId: string, updateVaultDto: UpdateVaultDto) => {
+	try {
+		const result = await updateVault(USER_DATA_PATH, vaultId, updateVaultDto)
+		return {error: false, result}
+	}
+	catch (e) {
+		if (e?.type === 'vault-not-found') {
+			return {error: true, identifier: 'vault-not-found', message: 'Requested vault could not be found.'}
+		}
+
+		return {error: true, identifier: 'system-error', message: 'An unexpected error occurred', cause: e}
+	}
+})
+
+ipcMain.handle('deleteVault', async (_event, vaultId: string) => {
+	try {
+		await deleteVault(USER_DATA_PATH, vaultId)
+		return {error: false}
+	}
+	catch (e) {
+		if (e?.type === 'vault-not-found') {
+			return {error: true, identifier: 'vault-not-found', message: 'Requested vault could not be found.'}
+		}
+
+		return {error: true, identifier: 'system-error', message: 'An unexpected error occurred', cause: e}
+	}
+})
+
+ipcMain.handle('getVault', async (_event, vaultId: string) => {
+	try {
+		const vault = await getVault(USER_DATA_PATH, vaultId)
+		if (vault) {
+			return {error: false, result: vault}
+		}
+		return {error: true, identifier: 'vault-not-found', message: 'Window has current vault which could not be found.'}
+	}
+	catch (e) {
+		return {error: true, identifier: 'system-error', message: 'An unexpected error occurred', cause: e}
+	}
+})
+
+ipcMain.handle('getVaults', async () => {
+	try {
+		const vaults = await getVaults(USER_DATA_PATH)
+		return {error: false, result: vaults}
+	}
+		// todo: handle other errors?
+	catch (e) {
+		return {error: true, identifier: '', cause: e}
+	}
+})
+
 ipcMain.handle('getCurrentVault', async (event) => {
 	const senderWindow = BrowserWindow.fromWebContents(event.sender);
 	if (!senderWindow) {
@@ -96,28 +173,20 @@ ipcMain.handle('getCurrentVault', async (event) => {
 	}
 
 	const vaultId = windowVaults.get(senderWindow.id)
-	if (vaultId) {
-		const vaults = await getVaults(USER_DATA_PATH)
-		const vault = vaults[vaultId]
+	if (!vaultId) {
+		return {error: false, result: null}
+	}
 
+	try {
+		const vault = await getVault(USER_DATA_PATH, vaultId)
 		if (vault) {
 			return {error: false, result: vault}
 		}
 		return {error: true, identifier: 'vault-not-found', message: 'Window has current vault which could not be found.'}
 	}
-
-	return {error: false, result: null}
-})
-
-
-ipcMain.handle('openVaultNewWindow', (event, vaultId: string) => {
-	const senderWindow = BrowserWindow.fromWebContents(event.sender);
-	if (!senderWindow) {
-		return {error: true, identifier: 'unidentified-window', message: 'Event could not be traced to sender window, ignoring request.'}
+	catch (e) {
+		return {error: true, identifier: 'system-error', message: 'An unexpected error occurred', cause: e}
 	}
-
-	createWindow(vaultId)
-	return {error: false}
 })
 
 ipcMain.handle('openVault', (event, vaultId: string) => {
@@ -130,19 +199,12 @@ ipcMain.handle('openVault', (event, vaultId: string) => {
 	return {error: false}
 })
 
-ipcMain.handle('getVersions', () => ({
-	error: false,
-	result: versions
-}))
+ipcMain.handle('openVaultNewWindow', (event, vaultId: string) => {
+	const senderWindow = BrowserWindow.fromWebContents(event.sender);
+	if (!senderWindow) {
+		return {error: true, identifier: 'unidentified-window', message: 'Event could not be traced to sender window, ignoring request.'}
+	}
 
-ipcMain.handle('getVaults', async () => {
-	let vaults: VaultMap
-	try {
-		vaults = await getVaults(USER_DATA_PATH)
-		return {error: false, result: vaults}
-	}
-	// todo: handle other errors?
-	catch (e) {
-		return {error: true, identifier: '', cause: e}
-	}
+	createWindow(vaultId)
+	return {error: false}
 })
