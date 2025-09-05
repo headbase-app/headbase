@@ -2,9 +2,10 @@ import { PlatformInfo } from './patterns/platform-info/platform-info'
 
 import './i18n';
 
-import './styles/reset.css'
 import './styles/base.css'
 import './styles/theme.css'
+import "./app.css"
+import appStyles from "./app.module.css"
 
 import {VaultList} from "@renderer/patterns/vault-list";
 import {TitleBar} from "@renderer/patterns/title-bar/title-bar";
@@ -39,15 +40,23 @@ export function Main() {
 	return (
 		<ErrorBoundary fallback={<p>An error occurred</p>}>
 			<TitleBar currentVault={currentVault} />
-			<PlatformInfo versions={versions} isVersionsLoading={isVersionsLoading}/>
-			<VaultList
-				vaults={vaults}
-				isVaultsLoading={isVaultsLoading}
-				currentVault={currentVault}
-				isCurrentVaultLoading={isCurrentVaultLoading}
-				openVault={vaultsService.openVault}
-				openVaultNewWindow={vaultsService.openVaultNewWindow}
-			/>
+
+			<div className={appStyles['app']}>
+				<div className={appStyles['sidebar']}>
+
+				</div>
+				<div className={appStyles['workspace']}>
+					<PlatformInfo versions={versions} isVersionsLoading={isVersionsLoading}/>
+					<VaultList
+						vaults={vaults}
+						isVaultsLoading={isVaultsLoading}
+						currentVault={currentVault}
+						isCurrentVaultLoading={isCurrentVaultLoading}
+						openVault={vaultsService.openVault}
+						openVaultNewWindow={vaultsService.openVaultNewWindow}
+					/>
+				</div>
+			</div>
 		</ErrorBoundary>
 	)
 }

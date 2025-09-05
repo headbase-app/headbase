@@ -1,0 +1,230 @@
+@import "tailwindcss";
+@plugin "@tailwindcss/typography";
+
+@theme static {
+	/** Breakpoints */
+	--breakpoint-sm: 576px;
+	--breakpoint-md: 768px;
+	--breakpoint-lg: 992px;
+	--breakpoint-xl: 1200px;
+
+	/** Spacing */
+	--spacing-*: initial;
+	--spacing-1: 2px;
+	--spacing-2: 4px;
+	--spacing-3: 6px;
+	--spacing-4: 8px;
+	--spacing-5: 10px;
+	--spacing-6: 12px;
+	--spacing-7: 14px;
+	--spacing-8: 16px;
+	--spacing-12: 24px;
+	--spacing-14: 28px;
+	--spacing-16: 32px;
+	--spacing-18: 36px;
+	--spacing-24: 48px;
+	--spacing-32: 64px;
+	--spacing-48: 96px;
+	--spacing-64: 128px;
+
+	/** Border Radius */
+	--radius-*: initial;
+	--radius-sm: 4px;
+	--radius-md: 6px;
+	--radius-lg: 8px;
+	--radius-xl: 10px;
+
+	/**
+	Border Width
+	Tailwind uses spacing config for sizes by default, but these can be used via 'border-(border-width-sm)'
+	*/
+	--border-width-sm: 1px;
+	--border-width-md: 2px;
+	--border-width-lg: 4px;
+	--border-width-xl: 8px;
+
+	/** Font Size */
+	--text-*: initial;
+	--text-xs: 12px;
+	--text-sm: 14px;
+	--text-rg: 16px;
+	--text-md: 18px;
+	--text-lg: 20px;
+	--text-xl: 24px;
+	--text-2xl: 30px;
+	--text-3xl: 36px;
+	--text-4xl: 48px;
+
+	/** Font Weight */
+	--font-weight-*: initial;
+	--font-weight-normal: 400;
+	--font-weight-medium: 500;
+	--font-weight-bold: 700;
+
+	/** Font Families */
+	--font-*: initial;
+	--font-sans: "Open Sans", sans-serif;
+	--font-monospace: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, Liberation Mono, Courier New, monospace;
+
+	/** Shadows */
+	--shadow-*: initial;
+	--shadow-sm: 0 1px 3px hsla(0, 0%, 0%, 0.2);
+	--shadow-md: 0 4px 6px hsla(0, 0%, 0%, 0.2);
+	--shadow-lg: 0 5px 15px hsla(0, 0%, 0%, 0.2);
+	--shadow-xl: 0 10px 25px hsla(0, 0%, 0%, 0.2);
+
+	/**
+	Layers
+	Tailwind uses hardcoded z-index values, these can be used via 'z-(layer-1)'
+	*/
+	--layer-1: 20;
+	--layer-2: 40;
+	--layer-3: 60;
+	--layer-4: 80;
+	--layer-5: 100;
+
+	/** Animations */
+	--animate-ease-in: cubic-bezier(0.4, 0, 0.7, 0.2);
+	--animate-ease-out: cubic-bezier(0, 0, 0.2, 1);
+	--animate-ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
+	--animate-linear: linear;
+
+	/**
+	Animation Duration
+	Tailwind doesn't supply duration tokens, these can be used via 'duration-(duration-fast)'
+	*/
+	--duration-fast: 0.15s;
+	--duration-medium: 0.3s;
+	--duration-slow: 0.6s;
+
+	/** Colours */
+	--color-*: initial;
+	--color-teal-200: #259f94;
+	--color-teal-300: #0d9488;
+	--color-teal-400: #0c857a;
+	--color-teal-500: #0a766d;
+	--color-teal-600: #09685f;
+	--color-teal-700: #07564f;
+
+	--color-navy-50: #3D4053;
+	--color-navy-100: #383B4C;
+	--color-navy-200: #333545;
+	--color-navy-300: #2D303E;
+	--color-navy-400: #282A37;
+	--color-navy-500: #232530;
+	--color-navy-600: #20222C;
+	--color-navy-700: #1D1F28;
+	--color-navy-800: #191B23;
+	--color-navy-900: #121419;
+
+	--color-grey-50: #9CA7B8;
+	--color-grey-100: #919CAD;
+	--color-grey-200: #8690A1;
+	--color-grey-300: #7A8596;
+	--color-grey-400: #6F7A8A;
+	--color-grey-500: #646E7F;
+	--color-grey-600: #596373;
+	--color-grey-700: #4D5868;
+	--color-grey-800: #424C5C;
+	--color-grey-900: #374151;
+
+	--color-mono-50: #fff;
+	--color-mono-100: #eee;
+	--color-mono-200: #ccc;
+	--color-mono-300: #aaa;
+	--color-mono-400: #666;
+	--color-mono-500: #444;
+	--color-mono-600: #333;
+	--color-mono-700: #222;
+	--color-mono-800: #1a1a1a;
+	--color-mono-900: #111;
+
+	--color-red-200: #e55c5c;
+	--color-red-300: #e24747;
+	--color-red-400: #df3333;
+	--color-red-500: #c92e2e;
+	--color-red-600: #b22929;
+	--color-red-700: #a22525;
+
+	--color-green-200: #649d71;
+	--color-green-300: #50915f;
+	--color-green-400: #3d854d;
+	--color-green-500: #377845;
+	--color-green-600: #316a3e;
+	--color-green-700: #2b5d36;
+
+	--color-blue-200: #4998c0;
+	--color-blue-300: #328bb8;
+	--color-blue-400: #1b7eb0;
+	--color-blue-500: #18719e;
+	--color-blue-600: #16658d;
+	--color-blue-700: #13597c;
+
+	--color-purple-200: #9d7ee5;
+	--color-purple-300: #916ee1;
+	--color-purple-400: #855ede;
+	--color-purple-500: #7855c8;
+	--color-purple-600: #6a4bb2;
+	--color-purple-700: #6245a4;
+
+	--color-pink-200: #d85797;
+	--color-pink-300: #d3428a;
+	--color-pink-400: #ce2d7d;
+	--color-pink-500: #b92971;
+	--color-pink-600: #a52464;
+	--color-pink-700: #95205a;
+
+	--color-orange-200: #e79155;
+	--color-orange-300: #e48440;
+	--color-orange-400: #e1762b;
+	--color-orange-500: #cb6a27;
+	--color-orange-600: #b45e22;
+	--color-orange-700: #a4551f;
+
+	--color-yellow-200: #fccc50;
+	--color-yellow-300: #fbc53a;
+	--color-yellow-400: #fbbf24;
+	--color-yellow-500: #e2ac20;
+	--color-yellow-600: #c9991d;
+	--color-yellow-700: #b88c1b;
+}
+
+/**
+Custom variants for efficiently composing shared styles between hover and focus states.
+ */
+@custom-variant hocus {
+	&:hover, &:focus {
+		@slot;
+	}
+}
+@custom-variant hocus-within {
+	&:hover, &:focus-within {
+		@slot;
+	}
+}
+@custom-variant focusw {
+	&:focus, &:focus-within {
+		@slot;
+	}
+}
+
+/**
+todo: replace variable fonts with predefined weights/styles once known to reduce bundle size.
+ */
+@font-face {
+	font-family: 'Noto Sans';
+	font-stretch: 100%;
+	font-style: normal;
+	font-weight: 100 900;
+	src: url('./assets/fonts/noto-sans/noto-sans-variable.ttf') format('truetype');
+}
+
+@font-face {
+	font-family: 'Noto Sans';
+	font-stretch: 100%;
+	font-style: italic;
+	font-weight: 100 900;
+	src: url('./assets/fonts/noto-sans/noto-sans-italic-variable.ttf') format('truetype');
+}
+
+
