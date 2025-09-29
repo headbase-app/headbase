@@ -1,15 +1,15 @@
-import {Vault, VaultMap} from "../../../../contracts/vaults";
+import {Vault} from "../../../../contracts/vaults";
 import {useEffect, useState} from "react";
 import {useVaultsService} from "@renderer/modules/vaults/vaults.context";
 
 export interface UseVaults {
-	vaults: VaultMap;
+	vaults: Vault[];
 	isVaultsLoading: boolean
 }
 
 export function useVaults(): UseVaults {
 	const { vaultsService } = useVaultsService()
-	const [vaults, setVaults] = useState<VaultMap>({})
+	const [vaults, setVaults] = useState<Vault[]>([])
 	const [isVaultsLoading, setIsVaultsLoading] = useState(true)
 
 	useEffect(() => {
@@ -41,18 +41,19 @@ export function useCurrentVault(): UseCurrentVault {
 	const [isCurrentVaultLoading, setIsCurrentVaultLoading] = useState(true)
 
 	useEffect(() => {
-		async function load() {
-			try {
-				const result = await vaultsService.getCurrentVault()
-				setCurrentVault(result)
+		const subscription = vaultsService.liveGetCurrentVault((next) => {
+			if (next.status === 'success') {
+				setIsCurrentVaultLoading(false)
+				setCurrentVault(next.result)
 			}
-			catch (e) {
-				// todo: how to handle error?
-				console.error(e)
+			else if (next.status === 'error') {
+				throw next.errors
 			}
-			setIsCurrentVaultLoading(false)
+		})
+
+		return () => {
+			subscription.unsubscribe()
 		}
-		load()
 	}, [vaultsService])
 
 	return {currentVault, isCurrentVaultLoading}

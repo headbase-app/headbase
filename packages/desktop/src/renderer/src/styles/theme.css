@@ -1,46 +1,10 @@
-/**
-Default Theme
- */
-:root {
-	--colour-primary: var(--colour-teal-500);
-	--colour-primary-text: var(--colour-mono-100);
-	--colour-primary-interaction: var(--colour-teal-700);
-	--colour-primary-text-interaction: var(--colour-mono-100);
+@theme {
+	--color-theme-titlebar-bg: var(--color-navy-20);
+	--color-theme-titlebar-text: var(--color-navy-white-60);
 
-	--colour-secondary: var(--colour-mono-100);
-	--colour-secondary-text: var(--colour-mono-800);
-	--colour-secondary-interaction: var(--colour-mono-300);
-	--colour-secondary-text-interaction: var(--colour-mono-800);
+	--color-theme-base-bg: var(--color-navy-30);
+	--color-theme-base-text: var(--color-navy-white-50);
 
-	--colour-disabled: var(--colour-mono-300);
-	--colour-disabled-text: var(--colour-mono-600);
-
-	--colour-tertiary: var(--colour-mono-50);
-
-	--colour-background-b2: var(--colour-navy-900);
-	--colour-background-b1: var(--colour-navy-800);
-	--colour-background: var(--colour-navy-500);
-	--colour-background-f1: var(--colour-navy-300);
-	--colour-background-f2: var(--colour-navy-100);
-
-	--colour-text: var(--colour-mono-200);
-	--colour-text-emphasis: var(--colour-mono-100);
-	--colour-text-heading: var(--colour-mono-100);
-
-	--colour-destructive: #c82d2d;
-	--colour-destructive-text: var(--colour-mono-50);
-	--colour-destructive-interaction: #a02828;
-	--colour-destructive-text-interaction: var(--colour-mono-50);
-
-	--colour-info: var(--colour-blue-500);
-	--colour-warning: var(--colour-orange-500);
-	--colour-danger: var(--colour-red-500);
-	--colour-error: var(--colour-red-500);
-	--colour-success: var(--colour-green-500);
-}
-
-body {
-  min-height: 100vh;
-  color: var(--colour-text);
-  background: var(--colour-background);
+	--color-theme-panel-bg: var(--color-navy-40);
+	--color-theme-panel-text: var(--color-navy-white-50);
 }

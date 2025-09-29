@@ -1,0 +1,216 @@
+@import "./theme.css";
+
+@theme static {
+	/** Breakpoints */
+	--breakpoint-sm: 576px;
+	--breakpoint-md: 768px;
+	--breakpoint-lg: 992px;
+	--breakpoint-xl: 1200px;
+
+	/** Spacing */
+	--spacing-*: initial;
+	--spacing-1: 2px;
+	--spacing-2: 4px;
+	--spacing-3: 6px;
+	--spacing-4: 8px;
+	--spacing-5: 10px;
+	--spacing-6: 12px;
+	--spacing-7: 14px;
+	--spacing-8: 16px;
+	--spacing-12: 24px;
+	--spacing-14: 28px;
+	--spacing-16: 32px;
+	--spacing-18: 36px;
+	--spacing-24: 48px;
+	--spacing-32: 64px;
+	--spacing-48: 96px;
+	--spacing-64: 128px;
+
+	/** Border Radius */
+	--radius-*: initial;
+	--radius-sm: 4px;
+	--radius-md: 6px;
+	--radius-lg: 8px;
+	--radius-xl: 10px;
+
+	/**
+	Border Width
+	Tailwind uses spacing config for sizes by default, but these can be used via 'border-(border-sm)'
+	*/
+	--border-sm: 1px;
+	--border-md: 2px;
+	--border-lg: 4px;
+	--border-xl: 8px;
+
+	/** Font Size */
+	--text-*: initial;
+	--text-xs: 12px;
+	--text-sm: 14px;
+	--text-rg: 16px;
+	--text-md: 18px;
+	--text-lg: 20px;
+	--text-xl: 24px;
+	--text-2xl: 30px;
+	--text-3xl: 36px;
+	--text-4xl: 48px;
+
+	/** Font Weight */
+	--font-weight-*: initial;
+	--font-weight-normal: 400;
+	--font-weight-semibold: 500;
+	--font-weight-bold: 700;
+
+	/** Font Families */
+	--font-*: initial;
+	--font-sans: "Open Sans", sans-serif;
+	--font-monospace: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, Liberation Mono, Courier New, monospace;
+
+	/** Shadows */
+	--shadow-*: initial;
+	--shadow-sm: 0 1px 3px hsla(0, 0%, 0%, 0.2);
+	--shadow-md: 0 4px 6px hsla(0, 0%, 0%, 0.2);
+	--shadow-lg: 0 5px 15px hsla(0, 0%, 0%, 0.2);
+	--shadow-xl: 0 10px 25px hsla(0, 0%, 0%, 0.2);
+
+	/**
+	Layers
+	Tailwind uses hardcoded z-index values, these can be used via 'z-(layer-1)'
+	*/
+	--layer-1: 20;
+	--layer-2: 40;
+	--layer-3: 60;
+	--layer-4: 80;
+	--layer-5: 100;
+
+	/** Animations */
+	--animate-ease-in: cubic-bezier(0.4, 0, 0.7, 0.2);
+	--animate-ease-out: cubic-bezier(0, 0, 0.2, 1);
+	--animate-ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
+	--animate-linear: linear;
+
+	/**
+	Animation Duration
+	Tailwind doesn't supply duration tokens, these can be used via 'duration-(duration-fast)'
+	*/
+	--duration-fast: 0.15s;
+	--duration-medium: 0.3s;
+	--duration-slow: 0.6s;
+
+	/**
+	All Colours
+	*/
+	--color-navy-10: #111217;
+	--color-navy-20: #1a1c24;
+	--color-navy-30: #232530;
+	--color-navy-40: #2d303e;
+	--color-navy-50: #36394a;
+	--color-navy-60: #3f4357;
+
+	--color-navy-grey-10: #4b4f64;
+	--color-navy-grey-20: #575b71;
+	--color-navy-grey-30: #63687f;
+	--color-navy-grey-40: #70758c;
+	--color-navy-grey-50: #7e8299;
+	--color-navy-grey-60: #8c90a6;
+
+	--color-navy-white-10: #9a9fb4;
+	--color-navy-white-20: #a9adc1;
+	--color-navy-white-30: #b9bcce;
+	--color-navy-white-40: #c9ccdb;
+	--color-navy-white-50: #d9dce9;
+	--color-navy-white-60: #eaecf6;
+
+	--color-white-10: #e6e6e6;
+	--color-white-20: #ececec;
+	--color-white-30: #f1f1f1;
+	--color-white-40: #f6f6f6;
+	--color-white-50: #fafafa;
+	--color-white-60: #ffffff;
+
+	--color-black-10: #333333;
+	--color-black-20: #444444;
+	--color-black-30: #555555;
+	--color-black-40: #666666;
+	--color-black-50: #777777;
+	--color-black-60: #888888;
+
+	--color-teal-10: #1a3a38;
+	--color-teal-20: #1a4f4b;
+	--color-teal-30: #14625c;
+	--color-teal-40: #14766e;
+	--color-teal-50: #14867d;
+	--color-teal-60: #17998e;
+
+	--color-teal-contrast-10: #1b2f2e;
+	--color-teal-contrast-20: #74afaa;
+
+	--color-blue-10: #10425b;
+	--color-blue-20: #17506c;
+	--color-blue-30: #1f5f7f;
+	--color-blue-40: #246b8f;
+	--color-blue-50: #2e7ca3;
+	--color-blue-60: #388db7;
+
+	--color-blue-contrast-10: #1b3b4c;
+	--color-blue-contrast-20: #6eaccc;
+
+	--color-purple-10: #43316d;
+	--color-purple-20: #533d86;
+	--color-purple-30: #6045a0;
+	--color-purple-40: #6f4fb6;
+	--color-purple-50: #7b56d0;
+	--color-purple-60: #865de6;
+
+	--color-purple-contrast-10: #352853;
+	--color-purple-contrast-20: #a18bd0;
+
+	--color-pink-10: #6a1b43;
+	--color-pink-20: #841f51;
+	--color-pink-30: #9d1f5e;
+	--color-pink-40: #b92971;
+	--color-pink-50: #cf3582;
+	--color-pink-60: #e34996;
+
+	--color-pink-contrast-10: #4f1c35;
+	--color-pink-contrast-20: #d279a6;
+
+	--color-green-10: #224628;
+	--color-green-20: #295931;
+	--color-green-30: #2e6637;
+	--color-green-40: #367340;
+	--color-green-50: #387f44;
+	--color-green-60: #3c914a;
+
+	--color-green-contrast-10: #234629;
+	--color-green-contrast-20: #73b97e;
+
+	--color-red-10: #681616;
+	--color-red-20: #7f1c1c;
+	--color-red-30: #972424;
+	--color-red-40: #af2c2c;
+	--color-red-50: #c63535;
+	--color-red-60: #de3d3d;
+
+	--color-red-contrast-10: #790505;
+	--color-red-contrast-20: #ff8282;
+
+	--color-orange-10: #ae5b21;
+	--color-orange-20: #ca6926;
+	--color-orange-30: #d37230;
+	--color-orange-40: #db8142;
+	--color-orange-50: #db8950;
+	--color-orange-60: #db915d;
+
+	--color-orange-contrast-10: #7a2c07;
+	--color-orange-contrast-20: #f79b70;
+
+	--color-yellow-10: #ad7f0b;
+	--color-yellow-20: #c79512;
+	--color-yellow-30: #d8a72b;
+	--color-yellow-40: #edbb38;
+	--color-yellow-50: #f6c344;
+	--color-yellow-60: #f9cb56;
+
+	--color-yellow-contrast-10: #75570a;
+	--color-yellow-contrast-20: #f3d075;
+}

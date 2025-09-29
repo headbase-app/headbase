@@ -1,5 +1,13 @@
+# IDEs
+.idea
+
+# Environment
+.env
+.env.*
+!.env.example
+
 # Logs
-logs
+/logs
 *.log
 npm-debug.log*
 yarn-debug.log*
@@ -7,8 +15,12 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
+# Node
 node_modules
+
+# Build
 dist
+build
 dist-ssr
 *.local
 
@@ -22,3 +34,11 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Notes
+/notes
+
+# PLaywright
+/tests/results
+/tests/reports
+/playwright/.cache/

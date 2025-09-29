@@ -1,4 +1,3 @@
-import styles from "./title-bar.module.css"
 import {Vault} from "../../../../contracts/vaults";
 
 export interface TitleBarProps {
@@ -6,10 +5,10 @@ export interface TitleBarProps {
 }
 
 export function TitleBar({currentVault}: TitleBarProps) {
-	const windowTitle = currentVault ? `Headbase | ${currentVault.displayName}` : "Headbase"
+	const windowTitle = currentVault ? `${currentVault.displayName} | Headbase` : "Headbase"
 
 	return (
-		<div className={styles['title-bar']}>
+		<div className="absolute bg-theme-titlebar-bg font-bold text-sm text-theme-titlebar-text h-[30px] [app-region:drag] w-full flex items-center justify-center hover:cursor-pointer">
 			<p>{windowTitle}</p>
 		</div>
 	)

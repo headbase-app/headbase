@@ -1,69 +1,26 @@
-# React + TypeScript + Vite
+# `@headbase-app/web`
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+The [headbase.app](https://headbase.app) progressive web application, built using [React](https://react.dev/) and [Vite](https://vitejs.dev/).
 
-Currently, two official plugins are available:
+## Prerequisites
+- Node.js installed at latest LTS version
+- If developing sync features, a Headbase server set up locally or on a hosting provider.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## Quick Start
+1. Run `npm install`
+2. Copy `.env.example` to `.env` and set up variables
+3. Run `npm start` to start the dev server
+4. Run `npm run build` and `npm run preview` to build and preview a production build
 
-## Expanding the ESLint configuration
+## Testing
+Vitest is used for unit testing and Playwright is used for E2E browser testing.
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+### Setup
+1. Run `npm run test:e2e:setup` to ensure Playwright is installed correctly.
+   - If you're using Linux, you may also have to run `npx playwright install-deps`
 
-```js
-export default tseslint.config([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      ...tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      ...tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      ...tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
-
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
-
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default tseslint.config([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+### Usage
+- `npm run test:unit` to run all unit tests
+- `npm run test:e2e` to run headless E2E tests
+- `npm run test:e2e:ui` to open E2E testing in the Playwright UI
+- `npm run test:e2e:report` to open the latest Playwright report

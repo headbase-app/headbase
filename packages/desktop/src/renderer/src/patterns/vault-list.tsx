@@ -1,9 +1,9 @@
 import {useTranslation} from "react-i18next";
-import {Vault, VaultMap} from "../../../contracts/vaults";
+import {Vault} from "../../../contracts/vaults";
 import {IVaultsService} from "@renderer/modules/vaults/vaults.interface";
 
 export interface VaultListProps {
-	vaults: VaultMap;
+	vaults: Vault[];
 	isVaultsLoading: boolean;
 	currentVault: Vault | null;
 	isCurrentVaultLoading: boolean;
@@ -20,8 +20,7 @@ export function VaultList({vaults, isVaultsLoading, currentVault, isCurrentVault
 		)
 	}
 
-	const vaultsList = Object.entries(vaults)
-		.map(([, vault]) => vault)
+	const vaultsList = vaults
 		.sort((a, b) => (a.displayName > b.displayName ? 1 : -1))
 
 	if (vaultsList.length === 0) {

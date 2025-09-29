@@ -1,5 +1,5 @@
 import {createContext, useContext} from "react";
-import {IVaultsService} from "@renderer/modules/vaults/vaults.interface";
+import {IVaultsService} from "@renderer/services/vaults/vaults.interface";
 
 export interface VaultsContext {
 	vaultsService: IVaultsService
