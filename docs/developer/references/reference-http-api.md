@@ -2,13 +2,13 @@
 An overview of the HTTP API.
 
 ## Errors
-Any errors will be returned with the appropriate status code and the following JSON data:
+Any errors will be returned with the appropriate status code and the following JSON structure:
 
 ```json5
 {
   "statusCode": 404, // a copy of the HTTP status code.
   "identifier": "resource-not-found", // an identifier for the specific error.
-  "message": "An error occurred.", // a message explaining the error.
+  "message": "An error occurred.", // a message explaining the error, for developers not users.
   "context": null // an optional property of any type which may contain extra information about why the error occurred.
 }
 ```
@@ -40,8 +40,8 @@ Any errors will be returned with the appropriate status code and the following J
 ### Vaults
 - `/v1/vaults [GET, POST]`
 - `/v1/vaults/:vaultId [GET, PATCH, DELETE]`
-- `/v1/vaults/:vaultId/snapshot [GET]`
+- `/v1/vaults/summary [GET]`
 
-### Files
-- `/v1/files [GET, POST]`
-- `/v1/files/:fileId [GET, DELETE]`
+### Snapshots
+- `/v1/snapshots [GET, POST]`
+- `/v1/snapshots/:snapshotId [GET, DELETE]`_
