@@ -1,4 +1,4 @@
-import { Version } from '../../contracts/version'
+import { Environment } from '../../contracts/environment'
 
 export const versions = [
 	{
@@ -13,4 +13,4 @@ export const versions = [
 		name: 'Electron',
 		version: process.versions.electron
 	}
-] as const satisfies Version[]
+] as const satisfies Environment[]

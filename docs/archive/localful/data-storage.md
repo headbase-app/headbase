@@ -1,7 +1,7 @@
 # Data Storage
 
 ## Content Basics
-Every time you edit content a new versions is created. A version contains all data associated with that content, and a version can only be created or deleted.  
+Every time you edit content a new versions is created. A version contains all data associated with that content, and a version can only be created or deleted.
 
 ## Data Structure
 Each entity is stored using the following structure:
@@ -12,7 +12,7 @@ Each entity is stored using the following structure:
   - createdAt
   - localfulVersion
   - currentVersionId (local only)
- 
+
 - **Entity Version**
   - entityId
   - id
@@ -27,4 +27,4 @@ Each entity is stored using the following structure:
 - When entities are deleted, all version data is deleted and the `isDeleted` flag is set to true on the device. These same actions will then be performed by the server and other devices.
 - An `isDeleted` flag is required as otherwise devices wouldn't be able to identity the difference between deleted data
   and data that just doesn't exist on the server yet.
- 
+

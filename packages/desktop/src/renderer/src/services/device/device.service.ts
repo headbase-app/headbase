@@ -19,4 +19,12 @@ export class WebDeviceService implements IDeviceService {
 			id: this.contextId,
 		}
 	}
+
+	async getEnvironment() {
+		const versionsResult = await window.platformAPI.getEnvironment()
+		if (versionsResult.error) {
+			throw versionsResult.error
+		}
+		return versionsResult.result
+	}
 }

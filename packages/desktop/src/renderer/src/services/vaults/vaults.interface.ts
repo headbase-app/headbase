@@ -1,14 +1,17 @@
-import {CreateVaultDto, UpdateVaultDto, Vault} from "../../../../contracts/vaults";
+import {CreateVaultDto, UpdateVaultDto, LocalVaultDto} from "@/contracts/vaults";
 import {Subscriber, Subscription} from "@renderer/utils/subscriptions";
 
 export interface IVaultsService {
-	createVault: (createVaultDto: CreateVaultDto) => Promise<Vault>
-	updateVault: (vaultId: string, updateVaultDto: UpdateVaultDto) => Promise<Vault>
+	createVault: (createVaultDto: CreateVaultDto) => Promise<LocalVaultDto>
+	updateVault: (vaultId: string, updateVaultDto: UpdateVaultDto) => Promise<LocalVaultDto>
 	deleteVault: (vaultId: string) => Promise<void>
-	getVault: (vaultId: string) => Promise<Vault|null>;
-	getVaults: () => Promise<Vault[]>;
+	getVault: (vaultId: string) => Promise<LocalVaultDto|null>;
+	getVaults: () => Promise<LocalVaultDto[]>;
 	openVault: (vaultId: string) => Promise<void>;
 	openVaultNewWindow: (vaultId: string) => Promise<void>;
-	getCurrentVault: () => Promise<Vault | null>;
-	liveGetCurrentVault: (subscription: Subscriber<Vault | null>) => Subscription;
+	getCurrentVault: () => Promise<LocalVaultDto | null>;
+	closeCurrentVault: () => Promise<void>;
+	liveGetVaults: (subscription: Subscriber<LocalVaultDto[]>) => Subscription;
+	liveGetVault: (vaultId: string, subscription: Subscriber<LocalVaultDto | null>) => Subscription;
+	liveGetCurrentVault: (subscription: Subscriber<LocalVaultDto | null>) => Subscription;
 }

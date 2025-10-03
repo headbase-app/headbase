@@ -1,58 +1,6 @@
-@import "./theme.css";
-
 @theme static {
-	/** Breakpoints */
-	--breakpoint-sm: 576px;
-	--breakpoint-md: 768px;
-	--breakpoint-lg: 992px;
-	--breakpoint-xl: 1200px;
-
 	/** Spacing */
-	--spacing-*: initial;
-	--spacing-1: 2px;
-	--spacing-2: 4px;
-	--spacing-3: 6px;
-	--spacing-4: 8px;
-	--spacing-5: 10px;
-	--spacing-6: 12px;
-	--spacing-7: 14px;
-	--spacing-8: 16px;
-	--spacing-12: 24px;
-	--spacing-14: 28px;
-	--spacing-16: 32px;
-	--spacing-18: 36px;
-	--spacing-24: 48px;
-	--spacing-32: 64px;
-	--spacing-48: 96px;
-	--spacing-64: 128px;
-
-	/** Border Radius */
-	--radius-*: initial;
-	--radius-sm: 4px;
-	--radius-md: 6px;
-	--radius-lg: 8px;
-	--radius-xl: 10px;
-
-	/**
-	Border Width
-	Tailwind uses spacing config for sizes by default, but these can be used via 'border-(border-sm)'
-	*/
-	--border-sm: 1px;
-	--border-md: 2px;
-	--border-lg: 4px;
-	--border-xl: 8px;
-
-	/** Font Size */
-	--text-*: initial;
-	--text-xs: 12px;
-	--text-sm: 14px;
-	--text-rg: 16px;
-	--text-md: 18px;
-	--text-lg: 20px;
-	--text-xl: 24px;
-	--text-2xl: 30px;
-	--text-3xl: 36px;
-	--text-4xl: 48px;
+	--spacing: 2px;
 
 	/** Font Weight */
 	--font-weight-*: initial;
@@ -65,40 +13,10 @@
 	--font-sans: "Open Sans", sans-serif;
 	--font-monospace: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, Liberation Mono, Courier New, monospace;
 
-	/** Shadows */
-	--shadow-*: initial;
-	--shadow-sm: 0 1px 3px hsla(0, 0%, 0%, 0.2);
-	--shadow-md: 0 4px 6px hsla(0, 0%, 0%, 0.2);
-	--shadow-lg: 0 5px 15px hsla(0, 0%, 0%, 0.2);
-	--shadow-xl: 0 10px 25px hsla(0, 0%, 0%, 0.2);
-
-	/**
-	Layers
-	Tailwind uses hardcoded z-index values, these can be used via 'z-(layer-1)'
-	*/
-	--layer-1: 20;
-	--layer-2: 40;
-	--layer-3: 60;
-	--layer-4: 80;
-	--layer-5: 100;
-
-	/** Animations */
-	--animate-ease-in: cubic-bezier(0.4, 0, 0.7, 0.2);
-	--animate-ease-out: cubic-bezier(0, 0, 0.2, 1);
-	--animate-ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
-	--animate-linear: linear;
-
-	/**
-	Animation Duration
-	Tailwind doesn't supply duration tokens, these can be used via 'duration-(duration-fast)'
-	*/
-	--duration-fast: 0.15s;
-	--duration-medium: 0.3s;
-	--duration-slow: 0.6s;
-
 	/**
 	All Colours
 	*/
+	--color-*: initial;
 	--color-navy-10: #111217;
 	--color-navy-20: #1a1c24;
 	--color-navy-30: #232530;
@@ -213,4 +131,14 @@
 
 	--color-yellow-contrast-10: #75570a;
 	--color-yellow-contrast-20: #f3d075;
+
+	/** Theme */
+	--color-theme-titlebar-bg: var(--color-navy-20);
+	--color-theme-titlebar-text: var(--color-navy-white-60);
+
+	--color-theme-base-bg: var(--color-navy-30);
+	--color-theme-base-text: var(--color-navy-white-50);
+
+	--color-theme-panel-bg: var(--color-navy-40);
+	--color-theme-panel-text: var(--color-navy-white-50);
 }

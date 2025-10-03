@@ -5,6 +5,7 @@ import icon from '../../resources/icon.png?asset'
 import {createVault, deleteVault, getVault, getVaults, updateVault} from './vaults/vaults'
 import { versions } from './versions/versions'
 import {CreateVaultDto, UpdateVaultDto} from "../contracts/vaults";
+import {tree} from "./file-system/operations";
 
 // Override package.json name, ensures calls like `getPath` just use 'headbase'.
 app.setName('headbase')
@@ -46,6 +47,8 @@ function createWindow(vaultId?: string): void {
 	window.on('ready-to-show', () => {
 		window.show()
 	})
+
+	window.webContents.openDevTools()
 
 	// Prevent new windows from being open within the app, and direct links to open externally.
 	window.webContents.setWindowOpenHandler((details) => {
@@ -92,10 +95,15 @@ app.on('window-all-closed', () => {
 /**
  * Platform Information
  */
-ipcMain.handle('getVersions', () => ({
-	error: false,
-	result: versions
-}))
+ipcMain.handle('getEnvironment', () => {
+	return {
+		error: false,
+		result: {
+			name: process.platform,
+			versions
+		}
+	}
+})
 
 /**
  * Vaults
@@ -166,6 +174,26 @@ ipcMain.handle('getVaults', async () => {
 	}
 })
 
+ipcMain.handle('openVault', (event, vaultId: string) => {
+	const senderWindow = BrowserWindow.fromWebContents(event.sender);
+	if (!senderWindow) {
+		return {error: true, identifier: 'unidentified-window', message: 'Event could not be traced to sender window, ignoring request.'}
+	}
+
+	windowVaults.set(senderWindow.id, vaultId)
+	return {error: false}
+})
+
+ipcMain.handle('openVaultNewWindow', (event, vaultId: string) => {
+	const senderWindow = BrowserWindow.fromWebContents(event.sender);
+	if (!senderWindow) {
+		return {error: true, identifier: 'unidentified-window', message: 'Event could not be traced to sender window, ignoring request.'}
+	}
+
+	createWindow(vaultId)
+	return {error: false}
+})
+
 ipcMain.handle('getCurrentVault', async (event) => {
 	const senderWindow = BrowserWindow.fromWebContents(event.sender);
 	if (!senderWindow) {
@@ -189,22 +217,43 @@ ipcMain.handle('getCurrentVault', async (event) => {
 	}
 })
 
-ipcMain.handle('openVault', (event, vaultId: string) => {
+ipcMain.handle('closeCurrentVault', (event) => {
 	const senderWindow = BrowserWindow.fromWebContents(event.sender);
 	if (!senderWindow) {
 		return {error: true, identifier: 'unidentified-window', message: 'Event could not be traced to sender window, ignoring request.'}
 	}
 
-	windowVaults.set(senderWindow.id, vaultId)
+	const vaultId = windowVaults.get(senderWindow.id)
+	if (!vaultId) {
+		return {error: true, identifier: 'no-open-vault', message: 'Window has no current vault open, so unable to close.'}
+	}
+
+	windowVaults.delete(senderWindow.id)
 	return {error: false}
 })
 
-ipcMain.handle('openVaultNewWindow', (event, vaultId: string) => {
+/**
+ * File System
+ */
+ipcMain.handle('fileSystemTree', async (event) => {
 	const senderWindow = BrowserWindow.fromWebContents(event.sender);
 	if (!senderWindow) {
 		return {error: true, identifier: 'unidentified-window', message: 'Event could not be traced to sender window, ignoring request.'}
 	}
+	const vaultId = windowVaults.get(senderWindow.id)
+	if (!vaultId) {
+		return {error: true, identifier: 'no-open-vault', message: 'Window has no current vault open, so unable to fulfill request.'}
+	}
+	const vault = await getVault(USER_DATA_PATH, vaultId)
+	if (!vault) {
+		return {error: true, identifier: 'vault-not-found', message: 'Current open vault not found.'}
+	}
 
-	createWindow(vaultId)
-	return {error: false}
+	try {
+		const result = await tree(vault.path)
+		return {error: false, result}
+	}
+	catch (e) {
+		return {error: true, identifier: 'system-error', message: 'An unexpected error occurred', cause: e}
+	}
 })

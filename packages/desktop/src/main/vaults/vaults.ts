@@ -1,6 +1,6 @@
 import { readFile, writeFile } from 'node:fs/promises'
 import { join } from 'node:path'
-import {CreateVaultDto, UpdateVaultDto, Vault} from '../../contracts/vaults'
+import {CreateVaultDto, UpdateVaultDto, LocalVaultDto} from '../../contracts/vaults'
 
 const VAULTS_FILE = 'vaults.json'
 
@@ -9,8 +9,8 @@ export async function createVault(dataPath: string, createVaultDto: CreateVaultD
 	const vaults = await getVaults(dataPath)
 
 	// todo: validate path, such as restricting access to system folders etc
-	const newVault: Vault = {
-		id: '',
+	const newVault: LocalVaultDto = {
+		id: createVaultDto.id,
 		displayName: createVaultDto.displayName,
 		path: createVaultDto.path,
 	}
@@ -26,28 +26,29 @@ export async function updateVault(dataPath: string, vaultId: string, updateVault
 	const vaultsFilePath = join(dataPath, VAULTS_FILE)
 	const vaults = await getVaults(dataPath)
 
-	const updatedVaults: Vault[] = []
-	let isUpdated = false
+	let updatedVault: LocalVaultDto | null = null
+	const newVaults: LocalVaultDto[] = []
 	for (const vault of vaults) {
 		if (vault.id === vaultId) {
-			updatedVaults.push({
+			updatedVault = {
 				...vault,
-				displayName: updateVaultDto.displayName,
-			})
+				...updateVaultDto
+			}
+			newVaults.push(updatedVault)
 		}
 		else {
-			updatedVaults.push(vault)
+			newVaults.push(vault)
 		}
-
-		isUpdated = true
 	}
 
-	if (!isUpdated) {
+	if (!updatedVault) {
 		throw new Error("Vault not found")
 	}
 
-	const contents = JSON.stringify(updatedVaults)
+	const contents = JSON.stringify(newVaults)
 	await writeFile(vaultsFilePath, contents)
+
+	return updatedVault
 }
 
 export async function deleteVault(dataPath: string, vaultId: string) {
@@ -76,13 +77,13 @@ export async function getVault(dataPath: string, vaultId: string) {
 	return null
 }
 
-export async function getVaults(dataPath: string): Promise<Vault[]> {
+export async function getVaults(dataPath: string): Promise<LocalVaultDto[]> {
 	const vaultsFilePath = join(dataPath, VAULTS_FILE)
 
 	try {
 		const contents = await readFile(vaultsFilePath, { encoding: 'utf8' })
 		// todo: validate parsed data based on schema
-		return  JSON.parse(contents) as Vault[]
+		return JSON.parse(contents) as LocalVaultDto[]
 	} catch (error) {
 		// todo: only suppress file not found error?
 		console.debug(`[vaults] vault file not found (${error})`)

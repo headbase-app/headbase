@@ -1,11 +1,11 @@
 import {useTranslation} from "react-i18next";
-import {Vault} from "../../../contracts/vaults";
-import {IVaultsService} from "@renderer/modules/vaults/vaults.interface";
+import {LocalVaultDto} from "../../../contracts/vaults";
+import {IVaultsService} from "@renderer/services/vaults/vaults.interface";
 
 export interface VaultListProps {
-	vaults: Vault[];
+	vaults: LocalVaultDto[];
 	isVaultsLoading: boolean;
-	currentVault: Vault | null;
+	currentVault: LocalVaultDto | null;
 	isCurrentVaultLoading: boolean;
 	openVault: IVaultsService['openVault'];
 	openVaultNewWindow: IVaultsService['openVaultNewWindow'];

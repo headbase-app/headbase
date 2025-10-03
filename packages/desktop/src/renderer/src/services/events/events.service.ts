@@ -33,6 +33,8 @@ export class EventsService implements IEventsService {
 			}
 		}
 
+		console.debug(`[events] dispatched "${type}":`, detail)
+
 		// Only broadcast events to other instances and the shared worker if they originate in the current context,
 		// otherwise hello infinite event ping pong!
 		const deviceContext = this.deviceService.getCurrentContext()

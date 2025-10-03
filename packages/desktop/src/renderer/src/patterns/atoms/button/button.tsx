@@ -17,10 +17,10 @@ export const buttonStyles = cva(
 	{
 		variants: {
 			variant: {
-				primary: "text-mono-100 bg-teal-500 hocus:bg-teal-700",
-				secondary: "text-mono-900 bg-mono-100 hocus:bg-mono-200",
-				destructive: "text-mono-100 bg-red-500 hocus:bg-red-700",
-				tertiary: "text-mono-100 hocus:text-mono-300 hocus:underline",
+				primary: "text-navy-white-60 bg-teal-40 hocus:bg-teal-30",
+				secondary: "text-black-10 bg-navy-white-60 hocus:bg-navy-white-40",
+				destructive: "text-navy-white-60 bg-red-40 hocus:bg-red-30",
+				tertiary: "text-navy-white-60 hocus:text-mono-300 hocus:underline",
 			},
 		},
 	}
