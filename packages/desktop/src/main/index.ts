@@ -235,7 +235,7 @@ ipcMain.handle('closeCurrentVault', (event) => {
 /**
  * File System
  */
-ipcMain.handle('fileSystemTree', async (event) => {
+ipcMain.handle('filesTree', async (event) => {
 	const senderWindow = BrowserWindow.fromWebContents(event.sender);
 	if (!senderWindow) {
 		return {error: true, identifier: 'unidentified-window', message: 'Event could not be traced to sender window, ignoring request.'}

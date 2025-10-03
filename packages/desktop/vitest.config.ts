@@ -26,7 +26,11 @@ export default defineConfig({
 						]
 					},
 					alias: {
-						'@renderer': resolve('src/renderer/src')
+						'@contracts': resolve('src/contracts'),
+						'@api': resolve('src/renderer/src/api'),
+						'@framework': resolve('src/renderer/src/framework'),
+						'@ui': resolve('src/renderer/src/ui'),
+						'@utils': resolve('src/renderer/src/utils')
 					}
 				}
 			},

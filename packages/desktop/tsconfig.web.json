@@ -15,8 +15,23 @@
         "./src/*"
       ],
       "@renderer/*": [
-        "src/renderer/src/*"
-      ]
+        "./src/renderer/src/*"
+      ],
+			"@contracts/*": [
+				"./src/contracts/*"
+			],
+			"@api/*": [
+				"./src/renderer/src/api/*"
+			],
+			"@framework/*": [
+				"./src/renderer/src/framework/*"
+			],
+			"@ui/*": [
+				"./src/renderer/src/ui/*"
+			],
+			"@utils/*": [
+				"./src/renderer/src/utils/*"
+			]
     }
   }
 }

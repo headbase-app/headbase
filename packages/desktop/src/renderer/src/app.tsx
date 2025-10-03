@@ -1,54 +1,52 @@
 import './i18n';
-
 import "./styles/tailwind.css"
 
 import { ArrowDown as DownArrowIcon } from "lucide-react"
 import {ErrorBoundary} from "react-error-boundary";
 
-import {TitleBar} from "@renderer/patterns/organisms/title-bar/title-bar";
-import {VaultsProvider} from "@renderer/services/vaults/vaults.provider";
-import {DeviceProvider} from "@renderer/services/device/device.provider";
-import {WebDeviceService} from "@renderer/services/device/device.service";
-import {WebVaultsService} from "@renderer/services/vaults/vaults.service";
-import {EventsService} from "@renderer/services/events/events.service";
-import {useCurrentVault, useVaults} from "@renderer/services/vaults/vaults.hooks";
-import {useVaultsService} from "@renderer/services/vaults/vaults.context";
-import {Tooltip} from "@renderer/patterns/components/tooltip/tooltip";
-import {useEnvironment} from "@renderer/services/device/device.selectors";
-import {VaultManagerDialog, VaultManagerDialogProvider} from "@renderer/features/vaults/manager/vaults-manager";
-import {useVaultManagerDialogContext} from "@renderer/features/vaults/manager/vault-manager-context";
-import {SubscriptionResultStatus} from "@renderer/utils/subscriptions";
-import {FileSystemExplorer} from "@renderer/features/file-system/file-system-explorer";
+import {TitleBar} from "@ui/03-organisms/title-bar/title-bar";
+import {DeviceAPI} from "@api/device/device.api";
+import {VaultsAPI} from "@api/vaults/vaults.api";
+import {EventsAPI} from "@api/events/events.api";
+import {Tooltip} from "@ui/02-components/tooltip/tooltip";
+import {VaultManagerDialog, VaultManagerDialogProvider} from "@ui/04-features/vaults/manager/vaults-manager";
+import {useVaultManagerDialogContext} from "@ui/04-features/vaults/manager/vault-manager-context";
+import {FileSystemExplorer} from "@ui/04-features/file-system/file-system-explorer";
+import {DependencyProvider} from "@framework/dependency.provider";
+import {useCurrentVault} from "@framework/hooks/use-current-vault";
+import {CurrentVaultAPI} from "@api/current-vault/current-vault.api";
+import {LiveQueryStatus} from "@contracts/query";
+import {FilesAPI} from "@api/files/files.api";
 
-const deviceService = new WebDeviceService();
-const eventsService = new EventsService(deviceService);
-const vaultsService = new WebVaultsService(deviceService, eventsService);
+const deviceApi = new DeviceAPI();
+const eventsApi = new EventsAPI(deviceApi);
+const vaultsApi = new VaultsAPI(deviceApi, eventsApi);
+const currentVaultApi = new CurrentVaultAPI(deviceApi, eventsApi);
+const filesApi = new FilesAPI(eventsApi);
 
 export function App() {
 	return (
-		<DeviceProvider deviceService={deviceService}>
-			<VaultsProvider vaultsService={vaultsService}>
-				<VaultManagerDialogProvider>
-					<Main />
-
-					<VaultManagerDialog />
-				</VaultManagerDialogProvider>
-			</VaultsProvider>
-		</DeviceProvider>
+		<DependencyProvider
+			deviceApi={deviceApi}
+			eventsApi={eventsApi}
+			vaultsApi={vaultsApi}
+			currentVaultApi={currentVaultApi}
+			filesApi={filesApi}
+		>
+			<VaultManagerDialogProvider>
+				<Main />
+				<VaultManagerDialog />
+			</VaultManagerDialogProvider>
+		</DependencyProvider>
 	)
 }
 
 export function Main() {
-	const { vaultsService } = useVaultsService()
 	const currentVaultQuery = useCurrentVault()
-	const { environment, isEnvironmentLoading } = useEnvironment()
-	const vaultsQuery = useVaults()
 
 	const { setOpenTab: openVaultManagerTab } = useVaultManagerDialogContext()
 
-	const currentVault = currentVaultQuery.status === SubscriptionResultStatus.SUCCESS ? currentVaultQuery.result : undefined
-	const vaults = vaultsQuery.status === SubscriptionResultStatus.SUCCESS ? vaultsQuery.result : []
-
+	const currentVault = currentVaultQuery.status === LiveQueryStatus.SUCCESS ? currentVaultQuery.result : undefined
 	return (
 		<ErrorBoundary fallback={<p>An error occurred</p>}>
 			<TitleBar currentVault={currentVault} />

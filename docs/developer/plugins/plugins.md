@@ -76,5 +76,5 @@ Plugins can:
 
 ### Internal Services
 - EncryptionService
-- EventsService
+- EventsApi
 - StorageService
