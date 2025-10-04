@@ -54,8 +54,8 @@ export function Main() {
 			<div className="flex h-screen w-screen bg-theme-base-bg pt-[30px]">
 				<div className="max-w-[300px] w-full h-full bg-theme-panel-bg relative">
 
-					<div className='absolute w-full top-0 left-0 h-28 bg-theme-panel-bg'>
-						<Tooltip content='Manage databases' renderAsChild={true} variant='dark'>
+					<div className='absolute w-full top-0 left-0 h-25 bg-theme-panel-bg border-b-2 border-b-navy-50'>
+						<Tooltip content='Manage databases' renderAsChild={true} variant='dark' preferredPosition='bottom'>
 							<button
 								className="flex p-4 m-4 hover:bg-navy-50 rounded-md hover:cursor-pointer"
 								onClick={() => {
@@ -67,12 +67,12 @@ export function Main() {
 							</button>
 						</Tooltip>
 					</div>
-					<div className='max-h-[calc(100vh-var(--spacing)*2)] overflow-scroll my-25'>
+					<div className='max-h-[calc(100vh-30px-56px-56px)] overflow-scroll my-25'>
 						<ErrorBoundary fallback={<p>An error occurred</p>}>
 							<FileSystemExplorer />
 						</ErrorBoundary>
 					</div>
-					<div className='absolute w-full bottom-0 left-0 h-25 bg-theme-panel-bg '>
+					<div className='absolute w-full bottom-0 left-0 h-25 bg-theme-panel-bg border-t-2 border-t-navy-50'>
 						<p>footer</p>
 					</div>
 				</div>
