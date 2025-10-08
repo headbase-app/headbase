@@ -43,6 +43,7 @@ export function App() {
 
 export function Main() {
 	const currentVaultQuery = useCurrentVault()
+	console.debug(currentVaultQuery)
 
 	const { setOpenTab: openVaultManagerTab } = useVaultManagerDialogContext()
 
@@ -55,9 +56,9 @@ export function Main() {
 				<div className="max-w-[300px] w-full h-full bg-theme-panel-bg relative">
 
 					<div className='absolute w-full top-0 left-0 h-25 bg-theme-panel-bg border-b-2 border-b-navy-50'>
-						<Tooltip content='Manage databases' renderAsChild={true} variant='dark' preferredPosition='bottom'>
+						<Tooltip content='Manage databases' renderAsChild={true} preferredPosition='bottom'>
 							<button
-								className="flex p-4 m-4 hover:bg-navy-50 rounded-md hover:cursor-pointer"
+								className="flex p-3 m-4 hover:bg-navy-50 rounded-md hover:cursor-pointer text-navy-white-50"
 								onClick={() => {
 									openVaultManagerTab({type: 'list'})
 								}}
@@ -67,7 +68,7 @@ export function Main() {
 							</button>
 						</Tooltip>
 					</div>
-					<div className='max-h-[calc(100vh-30px-56px-56px)] overflow-scroll my-25'>
+					<div className='max-h-[calc(100vh-30px-56px-56px)] overflow-y-scroll overflow-x-hidden my-25'>
 						<ErrorBoundary fallback={<p>An error occurred</p>}>
 							<FileSystemExplorer />
 						</ErrorBoundary>

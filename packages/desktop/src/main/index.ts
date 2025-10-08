@@ -1,5 +1,7 @@
 import { app, shell, BrowserWindow, ipcMain } from 'electron'
 import { join } from 'path'
+import { installExtension, REACT_DEVELOPER_TOOLS } from 'electron-devtools-installer';
+
 import icon from '../../resources/icon.png?asset'
 
 import {createVault, deleteVault, getVault, getVaults, updateVault} from './vaults/vaults'
@@ -48,6 +50,9 @@ function createWindow(vaultId?: string): void {
 		window.show()
 	})
 
+	installExtension([REACT_DEVELOPER_TOOLS])
+		.then(([react]) => console.log(`Added dev tools extensions: ${react.name}`))
+		.catch((err) => console.log('An error occurred adding dev tool extensions:: ', err));
 	window.webContents.openDevTools()
 
 	// Prevent new windows from being open within the app, and direct links to open externally.
