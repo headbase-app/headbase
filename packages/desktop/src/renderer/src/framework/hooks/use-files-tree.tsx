@@ -1,7 +1,7 @@
 import {useEffect, useState} from "react";
 import {useDependency} from "@framework/dependency.context";
 import {LIVE_QUERY_LOADING_STATE, LiveQueryResult} from "@contracts/query";
-import {FileSystemDirectory} from "@/main/file-system/operations";
+import {FileSystemDirectory} from "@/main/apis/files/operations";
 
 export function useFilesTree(): LiveQueryResult<FileSystemDirectory|null> {
 	const { filesApi } = useDependency()

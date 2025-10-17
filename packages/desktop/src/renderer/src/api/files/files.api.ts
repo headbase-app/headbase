@@ -2,15 +2,18 @@ import {IEventsAPI} from "@api/events/events.interface";
 import {EventTypes} from "@api/events/events";
 import {LiveQueryStatus, LiveQuerySubscriber, LiveQuerySubscription} from "@contracts/query";
 import {IFilesAPI} from "@api/files/files.interface";
-import {FileSystemDirectory} from "@/main/file-system/operations";
+import {FileSystemDirectory} from "@/main/apis/files/operations";
+import {parseMarkdownFrontMatter} from "@api/files/frontmatter";
+
 
 export class FilesAPI implements IFilesAPI {
 	constructor(
 		private readonly eventsService: IEventsAPI
-	) {}
+	) {
+	}
 
 	async tree(): Promise<FileSystemDirectory | null> {
-		const result = await window.platformAPI.filesTree()
+		const result = await window.platformAPI.files_tree()
 		if (result.error) {
 			throw result
 		}
@@ -47,5 +50,23 @@ export class FilesAPI implements IFilesAPI {
 				this.eventsService.unsubscribe(EventTypes.FILE_SYSTEM_CHANGE, handleEvent)
 			}
 		}
+	}
+
+	async read(path: string) {
+		const result = await window.platformAPI.files_read(path)
+		if (result.error) {
+			throw result
+		}
+
+		return result.result;
+	}
+
+	async readStream(path: string) {
+		const result = await window.platformAPI.files_readStream(path)
+		if (result.error) {
+			throw result
+		}
+
+		return result.result;
 	}
 }

@@ -14,7 +14,7 @@ export class CurrentVaultAPI implements ICurrentVaultAPI {
 	async open(vaultId: string) {
 		console.debug(`[vaults] requested open for ${vaultId}`)
 
-		const result = await window.platformAPI.openVault(vaultId)
+		const result = await window.platformAPI.currentVault_open(vaultId)
 		if (result.error) {
 			throw result
 		}
@@ -28,7 +28,7 @@ export class CurrentVaultAPI implements ICurrentVaultAPI {
 	}
 
 	async openNewWindow(vaultId: string) {
-		const result = await window.platformAPI.openVaultNewWindow(vaultId)
+		const result = await window.platformAPI.currentVault_openNewWindow(vaultId)
 		if (result.error) {
 			throw result
 		}
@@ -44,7 +44,7 @@ export class CurrentVaultAPI implements ICurrentVaultAPI {
 	}
 
 	async get(): Promise<LocalVaultDto | null> {
-		const result = await window.platformAPI.getCurrentVault()
+		const result = await window.platformAPI.currentVault_get()
 		if (result.error) {
 			throw result
 		}
@@ -58,7 +58,7 @@ export class CurrentVaultAPI implements ICurrentVaultAPI {
 			throw new Error(`no vault is currently open`)
 		}
 
-		const result = await window.platformAPI.closeCurrentVault()
+		const result = await window.platformAPI.currentVault_close()
 		if (result.error) {
 			throw result
 		}

@@ -1,5 +1,5 @@
-import { readdir, stat as fsStat } from "node:fs/promises"
-import { join, basename, sep } from "node:path"
+import {readdir, stat as fsStat} from "node:fs/promises";
+import {basename, join, sep} from "node:path";
 
 export interface FileSystemDirectory {
 	type: 'directory',
@@ -16,11 +16,11 @@ export interface FileSystemFile {
 
 type TreeItem = FileSystemDirectory | FileSystemFile
 
-export async function tree(folderPath: string) {
-	return _tree(folderPath)
+export async function getDirectoryTree(folderPath: string) {
+	return _getDirectoryTree(folderPath, folderPath)
 }
 
-export async function _tree(directoryPath: string) {
+export async function _getDirectoryTree(directoryPath: string, rootPath: string) {
 	// todo: use recursive option to avoid manual recursion of _tree?
 	// advantage of doing this is file structure remains intact
 	const children = await readdir(directoryPath)
@@ -28,7 +28,7 @@ export async function _tree(directoryPath: string) {
 	const parentDirectory: FileSystemDirectory = {
 		type: 'directory',
 		name: basename(directoryPath),
-		path: directoryPath,
+		path: directoryPath.replace(rootPath, ''),
 		children: []
 	}
 
@@ -36,33 +36,17 @@ export async function _tree(directoryPath: string) {
 		const filePath = join(directoryPath + sep + fileItem)
 		const fileStats = await fsStat(filePath)
 		if (fileStats.isDirectory()) {
-			const childItem = await _tree(filePath)
+			const childItem = await _getDirectoryTree(filePath, rootPath)
 			parentDirectory.children.push(childItem)
 		}
 		else {
 			parentDirectory.children.push({
 				type: "file",
 				name: basename(filePath),
-				path: filePath,
+				path: filePath.replace(rootPath, ''),
 			})
 		}
 	}
 
 	return parentDirectory
 }
-
-export function ls() {}
-
-export function mkdir() {}
-
-export function rm() {}
-
-export function cp() {}
-
-export function mv() {}
-
-export function write() {}
-
-export function read() {}
-
-export function stat() {}

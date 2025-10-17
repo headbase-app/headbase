@@ -12,7 +12,7 @@ export class VaultsAPI implements IVaultsAPI {
 	) {}
 
 	async create(createVaultDto: CreateVaultDto) {
-		const result = await window.platformAPI.createVault({
+		const result = await window.platformAPI.vaults_create({
 			id: window.crypto.randomUUID(),
 			...createVaultDto,
 		})
@@ -31,7 +31,7 @@ export class VaultsAPI implements IVaultsAPI {
 	}
 
 	async update(vaultId: string, updateVaultDto: UpdateVaultDto) {
-		const result = await window.platformAPI.updateVault(vaultId, updateVaultDto)
+		const result = await window.platformAPI.vaults_update(vaultId, updateVaultDto)
 		if (result.error) {
 			throw result
 		}
@@ -47,7 +47,7 @@ export class VaultsAPI implements IVaultsAPI {
 	}
 
 	async delete(vaultId: string) {
-		const result = await window.platformAPI.deleteVault(vaultId)
+		const result = await window.platformAPI.vaults_delete(vaultId)
 		if (result.error) {
 			throw result
 		}
@@ -62,7 +62,7 @@ export class VaultsAPI implements IVaultsAPI {
 	}
 
 	async get(vaultId: string): Promise<LocalVaultDto | null> {
-		const result = await window.platformAPI.getVault(vaultId)
+		const result = await window.platformAPI.vaults_get(vaultId)
 		if (result.error) {
 			throw result
 		}
@@ -71,7 +71,7 @@ export class VaultsAPI implements IVaultsAPI {
 	}
 
 	async query(): Promise<LocalVaultDto[]> {
-		const result = await window.platformAPI.getVaults()
+		const result = await window.platformAPI.vaults_query()
 		if (result.error) {
 			throw result
 		}

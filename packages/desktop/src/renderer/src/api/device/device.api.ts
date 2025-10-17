@@ -21,7 +21,7 @@ export class DeviceAPI implements IDeviceAPI {
 	}
 
 	async getEnvironment() {
-		const versionsResult = await window.platformAPI.getEnvironment()
+		const versionsResult = await window.platformAPI.device_getEnvironment()
 		if (versionsResult.error) {
 			throw versionsResult.error
 		}

@@ -1,12 +1,12 @@
 import { readFile, writeFile } from 'node:fs/promises'
 import { join } from 'node:path'
-import {CreateVaultDto, UpdateVaultDto, LocalVaultDto} from '../../contracts/vaults'
+import {CreateVaultDto, UpdateVaultDto, LocalVaultDto} from '../../../contracts/vaults'
 
 const VAULTS_FILE = 'vaults.json'
 
 export async function createVault(dataPath: string, createVaultDto: CreateVaultDto) {
 	const vaultsFilePath = join(dataPath, VAULTS_FILE)
-	const vaults = await getVaults(dataPath)
+	const vaults = await queryVaults(dataPath)
 
 	// todo: validate path, such as restricting access to system folders etc
 	const newVault: LocalVaultDto = {
@@ -24,7 +24,7 @@ export async function createVault(dataPath: string, createVaultDto: CreateVaultD
 
 export async function updateVault(dataPath: string, vaultId: string, updateVaultDto: UpdateVaultDto) {
 	const vaultsFilePath = join(dataPath, VAULTS_FILE)
-	const vaults = await getVaults(dataPath)
+	const vaults = await queryVaults(dataPath)
 
 	let updatedVault: LocalVaultDto | null = null
 	const newVaults: LocalVaultDto[] = []
@@ -54,7 +54,7 @@ export async function updateVault(dataPath: string, vaultId: string, updateVault
 export async function deleteVault(dataPath: string, vaultId: string) {
 	const vaultsFilePath = join(dataPath, VAULTS_FILE)
 
-	const vaults = await getVaults(dataPath)
+	const vaults = await queryVaults(dataPath)
 	const updatedVaults = vaults.filter(vault => vault.id !== vaultId)
 
 	if (vaults.length === updatedVaults.length) {
@@ -66,7 +66,7 @@ export async function deleteVault(dataPath: string, vaultId: string) {
 }
 
 export async function getVault(dataPath: string, vaultId: string) {
-	const vaults = await getVaults(dataPath)
+	const vaults = await queryVaults(dataPath)
 
 	for (const vault of vaults) {
 		if (vault.id === vaultId) {
@@ -77,7 +77,7 @@ export async function getVault(dataPath: string, vaultId: string) {
 	return null
 }
 
-export async function getVaults(dataPath: string): Promise<LocalVaultDto[]> {
+export async function queryVaults(dataPath: string): Promise<LocalVaultDto[]> {
 	const vaultsFilePath = join(dataPath, VAULTS_FILE)
 
 	try {
