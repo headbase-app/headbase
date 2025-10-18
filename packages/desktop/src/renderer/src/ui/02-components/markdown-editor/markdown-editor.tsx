@@ -4,24 +4,26 @@ import { languages } from "@codemirror/language-data";
 import { theme } from "./theme";
 import { EditorView } from "@codemirror/view";
 import { hyperLink } from "@uiw/codemirror-extensions-hyper-link";
+import {useCallback, useState} from "react";
 
 export interface MarkdownEditorProps {
-	id: string; // todo: add ID to CodeMirror
-	value: string;
+	initialValue: string;
 	onChange: (value: string) => void;
 }
 
-export function MarkdownEditor(props: MarkdownEditorProps) {
+export function MarkdownEditor({initialValue, onChange: _onChange}: MarkdownEditorProps) {
+	const [value, setValue] = useState<string>(initialValue);
+
+	const onChange = useCallback((value: string) => {
+		setValue(value);
+		_onChange(value);
+	}, [_onChange]);
+
 	return (
 		<div className="ath-editor">
 			<CodeMirror
-				value={props.value}
-				onChange={(value) => {
-					// onChange is triggered even for external value changes, so this checks if there really was an update
-					if (value !== props.value) {
-						props.onChange(value);
-					}
-				}}
+				value={value}
+				onChange={onChange}
 				extensions={[
 					markdown({ base: markdownLanguage, codeLanguages: languages }),
 					EditorView.lineWrapping,

@@ -1,7 +1,7 @@
 import { Environment } from './environment'
 import {CreateVaultDto, UpdateVaultDto, LocalVaultDto} from './vaults'
 import {FileSystemDirectory} from "../main/apis/files/operations";
-import {IFileBuffer, IFileBufferWrite, IFileStream} from "../renderer/src/api/files/files.interface";
+import {IFileBuffer, IFileStream} from "../renderer/src/api/files/files.interface";
 
 export type PlatformResponse<T> = {
 	error: false,
@@ -31,7 +31,7 @@ export interface IPlatformAPI {
 	files_tree: () => Promise<PlatformResponse<FileSystemDirectory>>
 	files_read: (path: string) => Promise<PlatformResponse<IFileBuffer>>
 	files_readStream: (path: string) => Promise<PlatformResponse<IFileStream>>
-	files_write: (path: string, file: IFileBufferWrite) => Promise<PlatformResponse<void>>
+	files_write: (path: string, buffer: ArrayBuffer) => Promise<PlatformResponse<void>>
 }
 
 declare global {

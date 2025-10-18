@@ -3,7 +3,7 @@ import {clsx} from "clsx";
 import {ChevronLast as ExpandMenuIcon} from "lucide-react";
 import {useWorkspace} from "./framework/use-workspace";
 import {Tab, TabProps} from "./tab";
-import {FileEditorTab} from "../file-editor/file-editor-tab";
+import {FileTab} from "@ui/04-features/file-tab/file-tab";
 import {Tooltip} from "@ui/02-components/tooltip/tooltip";
 import {FileSystemExplorer} from "@ui/04-features/file-system/file-system-explorer";
 import {WithMenuPanelProps} from "@ui/04-features/menu-panel/menu-panel";
@@ -30,12 +30,12 @@ export function Workspace(props: WithMenuPanelProps) {
 			}
 			case "file-new": {
 				tabName = tab.name ?? 'Untitled'
-				tabContent = <FileEditorTab tabIndex={tabIndex} />
+				tabContent = <FileTab tabIndex={tabIndex} />
 				break;
 			}
 			case "file": {
 				tabName = tab.name ?? 'Untitled'
-				tabContent = <FileEditorTab filePath={tab.filePath} tabIndex={tabIndex} />
+				tabContent = <FileTab filePath={tab.filePath} tabIndex={tabIndex} />
 				break;
 			}
 			case "file-explorer": {

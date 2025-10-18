@@ -7,10 +7,12 @@ export type WorkspaceTabTypes = {
 } | {
 	type: 'settings'
 } | {
-	type: 'file-new'
+	type: 'file-new',
+	editor?: string
 } | {
 	type: 'file',
 	filePath: string
+	editor?: string
 }
 
 export interface TabMetadata {

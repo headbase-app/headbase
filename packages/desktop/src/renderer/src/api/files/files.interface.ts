@@ -30,13 +30,11 @@ export interface IFileStream extends IFileBase {
 	url: string
 }
 
-export type IFileBufferWrite = Omit<IFileBuffer, 'platformPath'>
-
 export interface IFilesAPI {
 	// Read / Write
 	read: (path: string) => Promise<IFileBuffer>
 	readStream: (path: string) => Promise<IFileStream>
-	write: (path: string, file: IFileBufferWrite) => Promise<void>
+	write: (path: string, buffer: ArrayBuffer) => Promise<void>
 	liveRead: (path: string) => Promise<IFileBuffer>
 	// Tree
 	tree: () => Promise<FileSystemDirectory | null>
