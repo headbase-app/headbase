@@ -32,11 +32,11 @@ Headbase is a lot of different things...
 - [Self-hosting](docs/developer/self-hosting/README.md)
 - [Architecture](docs/developer/architecture/README.md)
 - [Build a plugin](docs/developer/plugins/README.md)
-- [Encryption specification](docs/developer/specs/encryption/v1.md)
+- [Encryption specification](docs/developer/specs/encryption/encryption-v1.md)
 - [Local development](docs/developer/setup/README.md)
 
 ## Contributions
-This project is open source, not open contribution.  
+This project is open source, not open contribution.
 This is a personal project in its early stages. You're welcome to try it out, ask questions, raise bug reports etc but
 it wouldn't be practical to accept external code contributions or feature requests yet.
 
@@ -46,4 +46,4 @@ I'm open to this changing in the future once the project is more stable, collabo
 Inspired by great tools such as [Obsidian](https://obsidian.md/), [Notion](https://www.notion.com/) and [Todoist](https://www.todoist.com/).
 
 ## License
-Headbase is released under the [GNU AGPLv3](https://choosealicense.com/licenses/agpl-3.0/) license.  
+Headbase is released under the [GNU AGPLv3](https://choosealicense.com/licenses/agpl-3.0/) license.

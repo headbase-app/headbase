@@ -1,6 +1,10 @@
 import { app, shell, BrowserWindow, ipcMain } from 'electron'
 import { join } from 'path'
 import { installExtension, REACT_DEVELOPER_TOOLS } from 'electron-devtools-installer';
+import Watcher from "watcher";
+
+// @ts-ignore -- Required to support ESM module (https://github.com/fabiospampinato/watcher/issues/26)
+const WatcherClass: Watcher = Watcher.default
 
 import icon from '../../resources/icon.png?asset'
 
@@ -8,7 +12,7 @@ import {CreateVaultDto, UpdateVaultDto} from "../contracts/vaults";
 
 import { getEnvironment } from './apis/device/device'
 import {createVault, deleteVault, getVault, queryVaults, updateVault} from './apis/vaults/vaults'
-import {getDirectoryTree, readFile} from "./apis/files";
+import {getDirectoryTree, readFile, writeFile} from "./apis/files";
 
 // Override package.json name, ensures calls like `getPath` just use 'headbase'.
 app.setName('headbase')
@@ -19,7 +23,72 @@ const USER_DATA_PATH = app.getPath('userData')
 // - Used as a security measure to restrict file system access of renderer IPC calls to the current vault folder.
 const windowVaults = new Map<number, string>()
 
-function createWindow(vaultId?: string): void {
+// Store vault file system listeners.
+// vaultId: watcher
+const vaultListeners = new Map<string, Watcher>()
+
+async function openVault(windowId: number, vaultId: string) {
+	const vault = await getVault(USER_DATA_PATH, vaultId)
+	if (!vault) {
+		// todo: throw instead?
+		return {error: true, identifier: 'vault-not-found', message: 'Window has current vault which could not be found.'}
+	}
+
+	windowVaults.set(windowId, vault.id)
+
+	const existingListener = vaultListeners.get(vault.id)
+	if (!existingListener) {
+		const watcher = new WatcherClass(vault.path, {
+			renameDetection: true,
+			recursive: true,
+			ignoreInitial: true,
+			ignore: (path) => {
+				// Ignore headbase internal dir
+				if (path.endsWith('.headbase')) return true
+				// Ignore OS specific management files
+				if (path.endsWith('.DS_Store')) return true
+				return false
+			}
+		})
+		watcher.on('all', ( event, targetPath, targetPathNext ) => {
+			console.debug(event, targetPath, targetPathNext)
+			const windows = BrowserWindow.getAllWindows();
+			for (const window of windows) {
+				const openVault = windowVaults.get(window.id)
+				if (openVault === vault.id) {
+					if (event === 'add' || event === 'addDir') {
+						window.webContents.send('vault_fs_change', {event: 'add', path: targetPath})
+					}
+					else if (event === 'rename' || event === 'renameDir') {
+						window.webContents.send('vault_fs_change', {event: 'rename', path: targetPathNext, previousPath: targetPath})
+					}
+					else if (event === 'unlink' || event === 'unlinkDir') {
+						window.webContents.send('vault_fs_change', {event: 'delete', path: targetPath})
+					}
+					else {
+						window.webContents.send('vault_fs_change', {event: 'change', path: targetPath})
+					}
+				}
+			}
+		});
+		vaultListeners.set(vault.id, watcher)
+	}
+}
+
+async function closeVault(windowId: number, vaultId: string) {
+	windowVaults.delete(windowId)
+
+	const openVaults = Array.from(windowVaults.values())
+	if (!openVaults.includes(vaultId)) {
+		const listener = vaultListeners.get(vaultId)
+		if (listener) {
+			listener.close()
+			vaultListeners.delete(vaultId)
+		}
+	}
+}
+
+async function createWindow(vaultId?: string) {
 	// Create a window, hidden by default
 	const window = new BrowserWindow({
 		show: false,
@@ -40,7 +109,7 @@ function createWindow(vaultId?: string): void {
 
 	// Ensure open vault status is up to date.
 	if (vaultId) {
-		windowVaults.set(window.id, vaultId)
+		await openVault(window.id, vaultId)
 	}
 	else if (windowVaults.has(window.id)) {
 		windowVaults.delete(window.id)
@@ -203,7 +272,7 @@ ipcMain.handle('currentVault_get', async (event) => {
 	}
 })
 
-ipcMain.handle('currentVault_close', (event) => {
+ipcMain.handle('currentVault_close', async (event) => {
 	const senderWindow = BrowserWindow.fromWebContents(event.sender);
 	if (!senderWindow) {
 		return {error: true, identifier: 'unidentified-window', message: 'Event could not be traced to sender window, ignoring request.'}
@@ -214,17 +283,20 @@ ipcMain.handle('currentVault_close', (event) => {
 		return {error: true, identifier: 'no-open-vault', message: 'Window has no current vault open, so unable to close.'}
 	}
 
-	windowVaults.delete(senderWindow.id)
+	// todo: error handle
+	await closeVault(senderWindow.id, vaultId)
 	return {error: false}
 })
 
-ipcMain.handle('currentVault_open', (event, vaultId: string) => {
+ipcMain.handle('currentVault_open', async (event, vaultId: string) => {
 	const senderWindow = BrowserWindow.fromWebContents(event.sender);
 	if (!senderWindow) {
 		return {error: true, identifier: 'unidentified-window', message: 'Event could not be traced to sender window, ignoring request.'}
 	}
 
-	windowVaults.set(senderWindow.id, vaultId)
+	// todo: error handle
+	await openVault(senderWindow.id, vaultId)
+
 	return {error: false}
 })
 
@@ -281,6 +353,53 @@ ipcMain.handle('files_read', async (event, filePath: string) => {
 	try {
 		const result = await readFile(vault.path, filePath)
 		return {error: false, result}
+	}
+	catch (e) {
+		return {error: true, identifier: 'system-error', message: 'An unexpected error occurred', cause: e}
+	}
+})
+
+ipcMain.handle('files_write', async (event, filePath: string, data: ArrayBuffer) => {
+	const senderWindow = BrowserWindow.fromWebContents(event.sender);
+	if (!senderWindow) {
+		return {error: true, identifier: 'unidentified-window', message: 'Event could not be traced to sender window, ignoring request.'}
+	}
+	const vaultId = windowVaults.get(senderWindow.id)
+	if (!vaultId) {
+		return {error: true, identifier: 'no-open-vault', message: 'Window has no current vault open, so unable to fulfill request.'}
+	}
+	const vault = await getVault(USER_DATA_PATH, vaultId)
+	if (!vault) {
+		return {error: true, identifier: 'vault-not-found', message: 'Current open vault not found.'}
+	}
+
+	try {
+		const result = await writeFile(vault.path, filePath, data)
+		return {error: false, result}
+	}
+	catch (e) {
+		return {error: true, identifier: 'system-error', message: 'An unexpected error occurred', cause: e}
+	}
+})
+
+ipcMain.handle('files_open_external', async (event, filePath: string) => {
+	const senderWindow = BrowserWindow.fromWebContents(event.sender);
+	if (!senderWindow) {
+		return {error: true, identifier: 'unidentified-window', message: 'Event could not be traced to sender window, ignoring request.'}
+	}
+	const vaultId = windowVaults.get(senderWindow.id)
+	if (!vaultId) {
+		return {error: true, identifier: 'no-open-vault', message: 'Window has no current vault open, so unable to fulfill request.'}
+	}
+	const vault = await getVault(USER_DATA_PATH, vaultId)
+	if (!vault) {
+		return {error: true, identifier: 'vault-not-found', message: 'Current open vault not found.'}
+	}
+
+	try {
+		const platformFilePath = join(vault.path, filePath)
+		await shell.openPath(platformFilePath)
+		return {error: false}
 	}
 	catch (e) {
 		return {error: true, identifier: 'system-error', message: 'An unexpected error occurred', cause: e}

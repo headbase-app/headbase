@@ -43,4 +43,6 @@ export interface IFilesAPI {
 	rm: (path: string) => Promise<void>
 	mv: (sourcePath: string, targetPath: string) => Promise<void>
 	cp: (sourcePath: string, targetPath: string) => Promise<void>
+	// Open
+	openExternal: (path: string) => Promise<void>
 }

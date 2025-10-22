@@ -1,7 +1,7 @@
 import {ErrorText} from "@ui/01-atoms/error-text/error-text";
 import {FileSystemDirectory, FileSystemFile} from "@/main/apis/files/operations";
 import {useFilesTree} from "@framework/hooks/use-files-tree";
-import {ComponentProps, ReactNode} from "react";
+import {ReactNode} from "react";
 import {useWorkspace} from "@ui/04-features/workspace/framework/use-workspace";
 
 export interface FileItemProps {

@@ -1,55 +1,37 @@
-import {createRoot, type Root} from "react-dom/client";
-import {IEditorMountOptions, IEditorPlugin} from "@ui/04-features/file-tab/file-tab";
-import {IFilesAPI} from "@api/files/files.interface";
+import {createRoot} from "react-dom/client";
 import {MarkdownEditor} from "@ui/02-components/markdown-editor/markdown-editor";
+import {IPluginEditorProps, IPluginEditorReturn} from "@ui/04-features/file-tab/file-tab";
 
-export class MarkdownEditorPlugin implements IEditorPlugin {
-	container?: HTMLDivElement
-	reactRoot?: Root
-	filesAPI: IFilesAPI
-	content: string
-	filePath?: string
+export async function MarkdownEditorPlugin({ filePath, container, filesAPI, setTabName, setTabIsUnsaved }: IPluginEditorProps): Promise<IPluginEditorReturn> {
+	const file = await filesAPI.read(filePath)
+	setTabName(file.fileName)
 
-	constructor(
-		filesAPI: IFilesAPI,
-	) {
-		this.filesAPI = filesAPI
-		this.content = ''
-	}
+	const decoder = new TextDecoder()
+	let content = decoder.decode(file.buffer)
 
-	async mount(options: IEditorMountOptions) {
-		this.filePath = options.filePath
-		const file = await this.filesAPI.read(options.filePath)
-		options.setTabName(file.fileName)
+	const reactRoot = createRoot(container)
+	reactRoot.render(
+		<MarkdownEditor
+			initialValue={content}
+			onChange={(value) => {
+				setTabIsUnsaved(true)
+				content = value
+			}}
+		/>
+	)
 
-		const decoder = new TextDecoder()
-		this.content = decoder.decode(file.buffer)
-
-		this.reactRoot = createRoot(options.container)
-		this.reactRoot.render(
-			<MarkdownEditor
-				initialValue={this.content}
-				onChange={(value) => {this.content = value}}
-			/>
-		)
-	}
-
-	unmount() {
-		if (this.reactRoot) {
-			this.reactRoot.unmount()
-		}
-
-		this.filePath = undefined
-	}
-
-	async save() {
-		if (!this.filePath) {
-			throw new Error("Attempted to save with no file path")
-		}
-
+	async function save() {
 		const encoder = new TextEncoder()
-		const encodedContent = encoder.encode(this.content)
-		await this.filesAPI.write(this.filePath, encodedContent.buffer)
+		const encodedContent = encoder.encode(content)
+		await filesAPI.write(filePath, encodedContent.buffer)
 	}
-}
 
+	async function unmount() {
+		// Adding setTimeout to remove react warning when unmounted nested root (https://github.com/facebook/react/issues/25675)
+		setTimeout(() => {
+			reactRoot.unmount()
+		}, 0)
+	}
+
+	return {save, unmount}
+}

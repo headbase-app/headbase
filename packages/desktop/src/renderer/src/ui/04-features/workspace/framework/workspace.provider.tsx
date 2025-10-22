@@ -51,11 +51,11 @@ export function WorkspaceProvider(props: {children: ReactNode}) {
 	const closeAllTabs = useCallback(() => {
 		setTabs([])
 		setActiveTab(0)
-	}, [tabs, activeTab])
+	}, [])
 
 	const isValidTabIndex = useCallback((tabIndex: number) => {
 		return tabIndex === 0 || (tabIndex >= 0 && tabIndex < tabs.length)
-	}, [tabs])
+	}, [tabs.length])
 
 	const requestSetActiveTab = useCallback((tabIndex: number) => {
 		if (isValidTabIndex(tabIndex)) {
@@ -65,7 +65,7 @@ export function WorkspaceProvider(props: {children: ReactNode}) {
 			console.error('Attempted to set active tab outside current range of tabs')
 			// todo: throw some sort of UI error too?
 		}
-	}, [tabs])
+	}, [isValidTabIndex])
 
 	const setTabIsUnsaved = useCallback((tabIndex: number, isUnsaved: boolean) => {
 		if (!isValidTabIndex(tabIndex)) {
@@ -83,7 +83,7 @@ export function WorkspaceProvider(props: {children: ReactNode}) {
 				return tab
 			})
 		})
-	}, [tabs, isValidTabIndex])
+	}, [isValidTabIndex])
 
 	const setTabName = useCallback((tabIndex: number, name: string) => {
 		if (!isValidTabIndex(tabIndex)) {
@@ -101,7 +101,7 @@ export function WorkspaceProvider(props: {children: ReactNode}) {
 				return tab
 			})
 		})
-	}, [tabs, isValidTabIndex])
+	}, [isValidTabIndex])
 
 	const replaceTab = useCallback((tabIndex: number, newTab: WorkspaceTab) => {
 		if (!isValidTabIndex(tabIndex)) {
@@ -113,7 +113,7 @@ export function WorkspaceProvider(props: {children: ReactNode}) {
 			return index === tabIndex ? newTab : tab
 		})
 		setTabs(updatedTabs)
-	}, [tabs])
+	}, [isValidTabIndex, tabs])
 
 	return <WorkspaceContext.Provider value={{
 		tabs: tabs,

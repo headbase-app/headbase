@@ -1,6 +1,7 @@
 
 export * from "./tree"
-export * from "./load"
+export * from "./read"
+export * from "./write"
 
 export function ls() {}
 
@@ -11,9 +12,5 @@ export function rm() {}
 export function cp() {}
 
 export function mv() {}
-
-export function write() {}
-
-export function read() {}
 
 export function stat() {}

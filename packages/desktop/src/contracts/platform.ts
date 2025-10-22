@@ -32,6 +32,7 @@ export interface IPlatformAPI {
 	files_read: (path: string) => Promise<PlatformResponse<IFileBuffer>>
 	files_readStream: (path: string) => Promise<PlatformResponse<IFileStream>>
 	files_write: (path: string, buffer: ArrayBuffer) => Promise<PlatformResponse<void>>
+	files_open_external: (path: string) => Promise<PlatformResponse<void>>
 }
 
 declare global {

@@ -40,8 +40,11 @@ Any errors will be returned with the appropriate status code and the following J
 ### Vaults
 - `/v1/vaults [GET, POST]`
 - `/v1/vaults/:vaultId [GET, PATCH, DELETE]`
-- `/v1/vaults/summary [GET]`
 
-### Snapshots
-- `/v1/snapshots [GET, POST]`
-- `/v1/snapshots/:snapshotId [GET, DELETE]`_
+### File Metadata
+- `/v1/files [GET, POST]`
+- `/v1/files/:fileId [GET, DELETE]`
+
+### Chunks
+- `/v1/chunks [GET]`
+- `/v1/chunks/upload [POST]`

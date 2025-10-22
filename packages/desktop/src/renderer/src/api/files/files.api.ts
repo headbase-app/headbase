@@ -3,13 +3,23 @@ import {EventTypes} from "@api/events/events";
 import {LiveQueryStatus, LiveQuerySubscriber, LiveQuerySubscription} from "@contracts/query";
 import {IFilesAPI} from "@api/files/files.interface";
 import {FileSystemDirectory} from "@/main/apis/files/operations";
-import {parseMarkdownFrontMatter} from "@api/files/frontmatter";
-
 
 export class FilesAPI implements IFilesAPI {
 	constructor(
 		private readonly eventsService: IEventsAPI
 	) {
+		window.platformAPI.files_on_change((event: string, path: string) => {
+			this.eventsService.dispatch(EventTypes.FILE_SYSTEM_CHANGE, {
+				context: {
+					id: ""
+				},
+				data: {
+					vaultId: '',
+					action: event,
+					path: path,
+				}
+			})
+		})
 	}
 
 	async tree(): Promise<FileSystemDirectory | null> {
@@ -63,6 +73,24 @@ export class FilesAPI implements IFilesAPI {
 
 	async readStream(path: string) {
 		const result = await window.platformAPI.files_readStream(path)
+		if (result.error) {
+			throw result
+		}
+
+		return result.result;
+	}
+
+	async write(path: string, data: ArrayBuffer) {
+		const result = await window.platformAPI.files_write(path, data)
+		if (result.error) {
+			throw result
+		}
+
+		return result.result;
+	}
+
+	async openExternal(path: string) {
+		const result = await window.platformAPI.files_open_external(path)
 		if (result.error) {
 			throw result
 		}

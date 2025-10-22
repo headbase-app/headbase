@@ -14,12 +14,12 @@ export function Tab(props: TabProps) {
 		<div className='bg-navy-50 rounded-md flex items-center h-full p-2'>
 			<button
 				onClick={() => {props.onSelect()}}
-				className={clsx('hover:underline', {
-					'text-teal-40': props.isActive
+				className={clsx('hover:underline text-navy-white-50', {
+					'text-teal-50': props.isActive
 				})}
 			>
 				{props.name}
-				{props.isUnsaved && <span className='workspace-tab __save-status'><span className='j-hidden'>Unsaved</span></span>}
+				{props.isUnsaved && <span className='workspace-tab __save-status'><span className='j-hidden'>[unsaved]</span></span>}
 			</button>
 			<button className='' onClick={() => {props.onClose()}} aria-label={`Close tab ${props.name}`}><CloseIcon /></button>
 		</div>

@@ -8,6 +8,7 @@ export type WorkspaceTabTypes = {
 	type: 'settings'
 } | {
 	type: 'file-new',
+	filePath: string
 	editor?: string
 } | {
 	type: 'file',

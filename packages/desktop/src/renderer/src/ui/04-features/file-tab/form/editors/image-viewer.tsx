@@ -1,44 +1,25 @@
-import {IEditorMountOptions, IEditorPlugin} from "@ui/04-features/file-tab/file-tab";
-import {IFilesAPI} from "@api/files/files.interface";
+import {IPluginEditorProps, IPluginEditorReturn} from "@ui/04-features/file-tab/file-tab";
 
-export class ImageViewerPlugin implements IEditorPlugin {
-	container?: HTMLDivElement
-	filesAPI: IFilesAPI
-	imageElement?: HTMLImageElement
-	url?: string
+export async function ImageViewerPlugin({ filePath, container, filesAPI }: IPluginEditorProps): Promise<IPluginEditorReturn> {
+	const file = await filesAPI.read(filePath)
+	//options.setTabName(file.fileName)
 
-	constructor(
-		filesAPI: IFilesAPI,
-	) {
-		this.filesAPI = filesAPI
+	const blob = new Blob([file.buffer])
+	const url = URL.createObjectURL(blob)
+
+	const image = document.createElement("img")
+	image.src = url;
+	image.style.maxWidth = "100%";
+	image.style.height = "auto"
+	container.append(image)
+
+	async function save() {}
+
+	async function unmount() {
+		container.removeChild(image)
+		URL.revokeObjectURL(url)
 	}
 
-	async mount(options: IEditorMountOptions) {
-		this.container = options.container
-
-		const file = await this.filesAPI.read(options.filePath)
-		//options.setTabName(file.fileName)
-
-		const blob = new Blob([file.buffer])
-		const url = URL.createObjectURL(blob)
-
-		const image = document.createElement("img")
-		image.src = url;
-		image.style.maxWidth = "100%";
-		image.style.height = "auto"
-
-		options.container.append(image)
-	}
-
-	unmount() {
-		if (this.imageElement && this.container) {
-			this.container.removeChild(this.imageElement)
-		}
-
-		if (this.url) {
-			URL.revokeObjectURL(this.url)
-		}
-	}
-
-	async save() {}
+	return {save, unmount}
 }
+

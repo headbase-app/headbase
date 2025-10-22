@@ -1,7 +1,6 @@
 import { contextBridge, ipcRenderer } from 'electron'
 import {CreateVaultDto, UpdateVaultDto} from "../contracts/vaults";
 import {IPlatformAPI} from "../contracts/platform";
-import {IFileBufferWrite} from "../renderer/src/api/files/files.interface";
 
 contextBridge.exposeInMainWorld('platformAPI', {
 	// DeviceAPI
@@ -22,4 +21,8 @@ contextBridge.exposeInMainWorld('platformAPI', {
 	files_read: (path: string) => ipcRenderer.invoke('files_read', path),
 	files_readStream: (path: string) => ipcRenderer.invoke('files_readStream', path),
 	files_write: (path: string, buffer: ArrayBuffer) => ipcRenderer.invoke('files_write', path, buffer),
+	files_open_external: (path: string) => ipcRenderer.invoke('files_open_external', path),
+	files_on_change: (callback) => {
+		ipcRenderer.on('vault_fs_change', (_event, value) => callback(value))
+	}
 } satisfies IPlatformAPI)

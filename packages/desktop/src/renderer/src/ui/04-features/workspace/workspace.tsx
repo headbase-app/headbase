@@ -30,7 +30,7 @@ export function Workspace(props: WithMenuPanelProps) {
 			}
 			case "file-new": {
 				tabName = tab.name ?? 'Untitled'
-				tabContent = <FileTab tabIndex={tabIndex} />
+				tabContent = <FileTab tabIndex={tabIndex} filePath={tab.filePath} />
 				break;
 			}
 			case "file": {
@@ -88,7 +88,7 @@ export function Workspace(props: WithMenuPanelProps) {
 					</ul>
 				</div>
 			)}
-			<div className='workspace-area'>
+			<div className='overflow-y-scroll max-h-[calc(100vh-30px-50px)] p-8'>
 				{workspaceContent.map((tabContent, tabIndex) => (
 					<div key={tabIndex} style={{display: activeTab === tabIndex ? 'block' : 'none'}}>
 						{tabContent}
