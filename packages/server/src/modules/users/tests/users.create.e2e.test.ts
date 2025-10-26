@@ -1,6 +1,6 @@
 import {describe, expect, test, beforeAll, beforeEach, afterAll } from "vitest";
 
-import {ErrorIdentifiers, Roles} from "@headbase-app/common";
+import {ErrorIdentifiers, Roles} from "@headbase-app/contracts";
 import {TestHelper} from "@testing/test-helper.js";
 import {expectBadRequest} from "@testing/common/expect-bad-request.js";
 import {testMissingField} from "@testing/common/test-missing-field.js";

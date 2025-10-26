@@ -21,8 +21,8 @@ export class EnvironmentService {
     database: {
       url: process.env.DATABASE_URL,
     },
-    dataStore: {
-      redisUrl: process.env.DATA_STORE_REDIS_URL
+		cacheStore: {
+      redisUrl: process.env.CACHE_STORE_REDIS_URL
     },
     auth: {
       issuer: process.env.AUTH_ISSUER ?? null,
@@ -65,6 +65,14 @@ export class EnvironmentService {
       maxPageLimit: process.env.ITEMS_LISTING_MAX_PAGE_LIMIT
         ? parseInt(process.env.ITEMS_LISTING_MAX_PAGE_LIMIT as string)
         : 100,
-    }
+    },
+		objectStore: {
+			accountEndpoint: process.env.OBJECT_STORE_ACCOUNT_ENDPOINT,
+			accessKeyId: process.env.OBJECT_STORE_ACCESS_KEY_ID,
+			secretAccessKey: process.env.OBJECT_STORE_SECRET_ACCESS_KEY,
+			bucketName: process.env.OBJECT_STORE_BUCKET_NAME,
+			uploadExpiry: parseInt(process.env.OBJECT_STORE_UPLOAD_EXPIRY as string),
+			downloadExpiry: parseInt(process.env.OBJECT_STORE_DOWNLOAD_EXPIRY as string)
+		}
   });
 }

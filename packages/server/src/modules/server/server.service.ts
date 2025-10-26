@@ -1,5 +1,5 @@
 import {DatabaseService} from "@services/database/database.service.js";
-import {DataStoreService} from "@services/data-store/data-store.service.js";
+import {CacheStoreService} from "@services/cache-store/cache-store.service.js";
 import {z} from "zod";
 import {AccessControlService} from "@modules/auth/access-control.service.js";
 import {RequestUser} from "@common/request-context.js";
@@ -30,7 +30,7 @@ export type UpdateServerSettingsDto = z.infer<typeof UpdateServerSettingsDto>
 export class ServerManagementService {
     constructor(
         private readonly databaseService: DatabaseService,
-        private readonly dataStoreService: DataStoreService,
+        private readonly dataStoreService: CacheStoreService,
         private readonly accessControlService: AccessControlService
     ) {}
 

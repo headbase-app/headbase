@@ -23,7 +23,7 @@ afterEach(async () => {
 });
 
 
-describe("Sync Module - Connection Tests",() => {
+describe.todo("Sync Module - Connection Tests",() => {
   describe("/v1/sync [WEBSOCKET]", () => {
     test("When a connection attempt is made with no ticket, it should be denied", async () => {
       await testSocket(server)

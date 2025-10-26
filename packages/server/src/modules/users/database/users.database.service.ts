@@ -1,6 +1,6 @@
 import postgres, {Row, RowList} from "postgres";
 
-import {ErrorIdentifiers} from "@headbase-app/common";
+import {ErrorIdentifiers} from "@headbase-app/contracts";
 
 import {
   DatabaseCreateUserDto,

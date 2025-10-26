@@ -1,6 +1,6 @@
 import {describe, expect, test, beforeAll, beforeEach, afterAll } from "vitest";
 
-import {ErrorIdentifiers} from "@headbase-app/common";
+import {ErrorIdentifiers} from "@headbase-app/contracts";
 
 import {HttpStatusCodes} from "@common/http-status-codes.js";
 

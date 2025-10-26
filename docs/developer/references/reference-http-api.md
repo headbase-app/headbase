@@ -19,7 +19,7 @@ Any errors will be returned with the appropriate status code and the following J
 - `/ [GET]`
 - `/v1 [GET]`
 
-### Server
+### Server Management
 - `/v1/server/info [GET]`
 - `/v1/server/health [GET]`
 - `/v1/server/settings [GET, PATCH]`
@@ -41,10 +41,11 @@ Any errors will be returned with the appropriate status code and the following J
 - `/v1/vaults [GET, POST]`
 - `/v1/vaults/:vaultId [GET, PATCH, DELETE]`
 
-### File Metadata
+### File Versions
 - `/v1/files [GET, POST]`
 - `/v1/files/:fileId [GET, DELETE]`
 
-### Chunks
-- `/v1/chunks [GET]`
-- `/v1/chunks/upload [POST]`
+### File Chunks
+- `/v1/chunks [GET, POST]`
+- `/v1/chunks/:hash/upload [POST]`
+- `/v1/chunks/:hash/download [POST]`

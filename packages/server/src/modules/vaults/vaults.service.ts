@@ -1,5 +1,5 @@
 import {UserContext} from "@common/request-context.js";
-import {CreateVaultDto, ErrorIdentifiers, UpdateVaultDto, VaultDto, VaultsQueryParams} from "@headbase-app/common";
+import {ErrorIdentifiers, UpdateVaultDto, VaultDto, VaultsQueryParams} from "@headbase-app/contracts";
 import {AccessControlService} from "@modules/auth/access-control.service.js";
 import {EventsService} from "@services/events/events.service.js";
 import {EventIdentifiers} from "@services/events/events.js";
@@ -87,12 +87,18 @@ export class VaultsService {
 		return result[0]
 	}
 
-	async create(userContext: UserContext, createVaultDto: CreateVaultDto): Promise<VaultDto> {
+	/**
+	 * Add a vault which was created on a local device to the server.
+	 * Vaults are created on a local device before being pushed to the server, so there is no separate "CreateVaultDto" here.
+	 *
+	 * // todo: use separate verbs like "push" and "sync" rather than "create" and "update" to distinguish resources managed by the server vs local devices?
+	 */
+	async create(userContext: UserContext, vaultDto: VaultDto): Promise<VaultDto> {
 		await this.accessControlService.validateAccessControlRules({
 			userScopedPermissions: ["vaults:create"],
 			unscopedPermissions: ["vaults:create:all"],
 			requestingUserContext: userContext,
-			targetUserId: createVaultDto.ownerId
+			targetUserId: vaultDto.ownerId
 		})
 
 		const db = this.databaseService.getDatabase()
@@ -101,7 +107,7 @@ export class VaultsService {
 		try {
 			result = await db
 				.insert(vaults)
-				.values(createVaultDto)
+				.values(vaultDto)
 				.returning({
 					...getTableColumns(vaults),
 					createdAt: isoFormat(vaults.createdAt),

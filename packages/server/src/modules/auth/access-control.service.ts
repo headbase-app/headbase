@@ -1,5 +1,5 @@
 import {AccessForbiddenError} from "@services/errors/access/access-forbidden.error.js";
-import {ErrorIdentifiers, Permissions, RolePermissions, Roles} from "@headbase-app/common";
+import {ErrorIdentifiers, Permissions, RolePermissions, Roles} from "@headbase-app/contracts";
 import {ResourceNotFoundError} from "@services/errors/resource/resource-not-found.error.js";
 import {UserRequestError} from "@services/errors/base/user-request.error.js";
 import {UserContext} from "@common/request-context.js";

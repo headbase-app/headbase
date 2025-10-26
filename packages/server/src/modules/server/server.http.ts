@@ -1,6 +1,6 @@
 import {NextFunction, Request, Response} from "express";
 import {HttpStatusCodes} from "@common/http-status-codes.js";
-import {ServerInfoDto} from "@headbase-app/common";
+import {ServerInfoDto} from "@headbase-app/contracts";
 import {ServerManagementService, UpdateServerSettingsDto} from "@modules/server/server.service.js";
 import {AccessControlService} from "@modules/auth/access-control.service.js";
 import {validateSchema} from "@common/schema-validator.js";
@@ -30,10 +30,10 @@ export class ServerManagementHttpController {
         version: "v1",
         registrationEnabled: settings.registrationEnabled,
         limits: {
-          vaultsPerUser: 10,
-          // todo: review if/how to implement these size limits.
-          contentSize: 20,
-          vaultSize: 1000,
+					// todo: review if/how to implement these size limits.
+          usersMaxVaults: 10,
+					vaultMaxSize: 10000,
+          fileMaxSize: 2000,
         }
       }
 

@@ -10,7 +10,7 @@ import {
 import internal from "node:stream";
 import {ClientSentEvents, ServerSentEvents, ServerWelcomeEvent} from "@modules/sync/events.js";
 import {AccessError} from "@services/errors/access/access.error.js";
-import {ErrorIdentifiers} from "@headbase-app/common";
+import {ErrorIdentifiers} from "@headbase-app/contracts";
 
 export interface SyncWebsocketControllerConfig {
     path: string;
@@ -86,7 +86,7 @@ export class SyncWebsocketController {
             socket.destroy()
             return;
         }
-        
+
         // If an existing socket already exists for the given session id, ensure it is closed before opening a new one.
         // todo: should this sit with the service, or should this be blocked when receiving a token?
         if (this.#sockets[initialConnection.connectionData.sessionId]) {
@@ -223,7 +223,7 @@ export class SyncWebsocketController {
             }
         }
     }
-    
+
     async changeRooms(sessionId: string, newRooms: string[]) {
         // todo: is this socket check actually needed, or should error be thrown?
         if (this.#sockets[sessionId]) {

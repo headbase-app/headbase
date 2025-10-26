@@ -11,9 +11,9 @@ import {
   RefreshTokenPayload,
   TokenPair,
   UserDto
-} from "@headbase-app/common";
+} from "@headbase-app/contracts";
 
-import {DataStoreService} from "@services/data-store/data-store.service.js";
+import {CacheStoreService} from "@services/cache-store/cache-store.service.js";
 import {SystemError} from "@services/errors/base/system.error.js";
 import {EnvironmentService} from "@services/environment/environment.service.js";
 
@@ -26,7 +26,7 @@ export interface CreatedTokenPair {
 export class TokenService {
   constructor(
     private envService: EnvironmentService,
-    private dataStoreService: DataStoreService
+    private dataStoreService: CacheStoreService
   ) {}
 
   /**
@@ -57,7 +57,7 @@ export class TokenService {
 
     await this._setSessionCounterId(sessionId, counterId, expiry);
     const tokenPair = await this._getTokenPair(userDto, sessionId, counterId);
-    
+
     return {
       sessionId: sessionId,
       tokens: tokenPair,

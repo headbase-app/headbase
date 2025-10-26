@@ -1,6 +1,6 @@
 import {describe, expect, test, beforeAll, beforeEach, afterAll } from "vitest";
 
-import {ErrorIdentifiers} from "@headbase-app/common";
+import {ErrorIdentifiers} from "@headbase-app/contracts";
 
 import { TestHelper } from "@testing/test-helper.js";
 import {expectForbidden} from "@testing/common/expect-forbidden.js";
@@ -64,7 +64,7 @@ describe("Create Vaults - /v1/vaults [POST]",() => {
 			expect(body).toEqual(expect.objectContaining({...exampleVault1, ownerId: testUser1.id}))
 		})
 
-		test("When creating vault with no optional protectedData, Then vault should be created & returned", async () => {
+		test("When creating vault with null protectedData, Then vault should be created & returned", async () => {
 			const accessToken = await testHelper.getUserAccessToken(testUser1.id);
 
 			const {body, statusCode} = await testHelper.client
@@ -73,7 +73,7 @@ describe("Create Vaults - /v1/vaults [POST]",() => {
 				.send({
 					...exampleVault1,
 					ownerId: testUser1.id,
-					protectedData: undefined
+					protectedData: null
 				});
 
 			expect(statusCode).toEqual(201);
@@ -255,6 +255,18 @@ describe("Create Vaults - /v1/vaults [POST]",() => {
 				endpoint: "/v1/vaults",
 				data: exampleVault1,
 				testFieldKey: "protectedEncryptionKey"
+			})
+		})
+
+		test("When creating vault without protectedData, Then response should be 'HTTP 400 - bad request'", async () => {
+			const accessToken = await testHelper.getUserAccessToken(testUser1.id);
+
+			await testMissingField({
+				clientFunction: testHelper.client.post.bind(testHelper.client),
+				accessToken: accessToken,
+				endpoint: "/v1/vaults",
+				data: exampleVault1,
+				testFieldKey: "protectedData"
 			})
 		})
 

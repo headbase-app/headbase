@@ -1,4 +1,4 @@
-import {CreateUserDto, UpdateUserDto, UsersURLParams} from "@headbase-app/common";
+import {CreateUserDto, UpdateUserDto, UsersURLParams} from "@headbase-app/contracts";
 import {NextFunction, Request, Response} from "express";
 import {validateSchema} from "@common/schema-validator.js";
 import {HttpStatusCodes} from "@common/http-status-codes.js";

@@ -26,9 +26,9 @@ describe("Server Module",() => {
         version: expect.any(String),
         registrationEnabled: expect.any(Boolean),
         limits: {
-          vaultsPerUser: expect.any(Number),
-          contentSize: expect.any(Number),
-          vaultSize: expect.any(Number),
+					usersMaxVaults: expect.any(Number),
+					vaultMaxSize: expect.any(Number),
+					fileMaxSize: expect.any(Number),
         }
       });
     })

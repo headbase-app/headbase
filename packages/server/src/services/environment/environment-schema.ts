@@ -14,7 +14,7 @@ export const EnvironmentSchema = z.object({
   database: z.object({
     url: z.string()
   }),
-  dataStore: z.object({
+	cacheStore: z.object({
     redisUrl: z.string()
   }),
   auth: z.object({
@@ -53,10 +53,19 @@ export const EnvironmentSchema = z.object({
       isEu: z.boolean().optional(),
     })
   }),
+	// todo: delete items / replace with files
   items: z.object({
     defaultPageLimit: z.number().int(),
     maxPageLimit: z.number().int(),
   }),
+	objectStore: z.object({
+		accountEndpoint: z.string(),
+		accessKeyId: z.string(),
+		secretAccessKey: z.string(),
+		bucketName: z.string(),
+		uploadExpiry: z.number().int(),
+		downloadExpiry: z.number().int(),
+	}),
 });
 
 export type EnvironmentSchema = z.infer<typeof EnvironmentSchema>;

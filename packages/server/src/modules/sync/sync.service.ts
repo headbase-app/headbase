@@ -2,9 +2,9 @@ import {EventsService} from "@services/events/events.service.js";
 import {RequestUser} from "@common/request-context.js";
 import ms from "ms";
 import crypto from "node:crypto";
-import {DataStoreService} from "@services/data-store/data-store.service.js";
+import {CacheStoreService} from "@services/cache-store/cache-store.service.js";
 import {AccessUnauthorizedError} from "@services/errors/access/access-unauthorized.error.js";
-import {ErrorIdentifiers} from "@headbase-app/common";
+import {ErrorIdentifiers} from "@headbase-app/contracts";
 import {SystemError} from "@services/errors/base/system.error.js";
 import {z} from "zod";
 import {AccessForbiddenError} from "@services/errors/access/access-forbidden.error.js";
@@ -60,7 +60,7 @@ export class SyncService {
 
     constructor(
         private readonly eventService: EventsService,
-        private readonly dataStoreService: DataStoreService,
+        private readonly dataStoreService: CacheStoreService,
         private readonly vaultsService: VaultsService,
     ) {
         // All server events will need to be processed as they will require socket events

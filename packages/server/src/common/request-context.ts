@@ -1,5 +1,5 @@
 import { Request } from "express";
-import {Permissions} from "@headbase-app/common";
+import {Permissions} from "@headbase-app/contracts";
 
 /**
  * User details to be included in the request.

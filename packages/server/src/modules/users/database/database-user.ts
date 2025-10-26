@@ -1,8 +1,8 @@
 import {z} from "zod";
 
-import {CreateUserDto, Roles, UpdateUserDto, UserDto, createDateField} from "@headbase-app/common";
+import {CreateUserDto, Roles, UpdateUserDto, UserDto, createDateField} from "@headbase-app/contracts";
 
-// todo: Should this exported from @headbase-app/common as generic UserDtoWithPassword?
+// todo: Should this exported from @headbase-app/contracts as generic UserDtoWithPassword?
 // if not, is there a better way than reusing the CreateUserDto just to get that field?
 export const DatabaseUserDto = UserDto.extend({
 	passwordHash: z.string()
@@ -10,7 +10,7 @@ export const DatabaseUserDto = UserDto.extend({
 export type DatabaseUserDto = z.infer<typeof DatabaseUserDto>
 
 export const DatabaseCreateUserDto = CreateUserDto
-	.omit({password: true})
+	//.omit({password: true})
 	.extend({
 		passwordHash: z.string(),
 		role: Roles

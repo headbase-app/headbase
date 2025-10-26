@@ -1,4 +1,4 @@
-import {ErrorIdentifiers} from "@headbase-app/common";
+import {ErrorIdentifiers} from "@headbase-app/contracts";
 import {TestHelper} from "@testing/test-helper.js";
 import {expectUnauthorized} from "@testing/common/expect-unauthorized.js";
 import {expectForbidden} from "@testing/common/expect-forbidden.js";

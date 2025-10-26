@@ -1,14 +1,14 @@
 import {agent, SuperAgentTest} from "supertest";
 import {Server} from "node:http";
 
-import {TokenPair} from "@headbase-app/common";
+import {TokenPair} from "@headbase-app/contracts";
 
 import {resetTestData, ScriptOptions} from "./database-scripts.js";
 import {EnvironmentService} from "@services/environment/environment.service.js";
 import {UsersService} from "@modules/users/users.service.js";
 import {TokenService} from "@services/token/token.service.js";
 import {DatabaseService} from "@services/database/database.service.js";
-import {DataStoreService} from "@services/data-store/data-store.service.js";
+import {CacheStoreService} from "@services/cache-store/cache-store.service.js";
 import {Application} from "../src/application.js";
 import {ServerManagementService} from "@modules/server/server.service.js";
 
@@ -89,7 +89,7 @@ export class TestHelper {
    */
   async killApplication() {
     const databaseService = this.application.getDependency<DatabaseService>(DatabaseService);
-    const dataStoreService = this.application.getDependency<DataStoreService>(DataStoreService);
+    const dataStoreService = this.application.getDependency<CacheStoreService>(CacheStoreService);
 
     // Clean up db connection before exiting
     await databaseService.onModuleDestroy();
@@ -105,7 +105,7 @@ export class TestHelper {
     await serverManagementDatabaseService._UNSAFE_updateSettings({registrationEnabled: true})
 
     // Purge the data store to ensure things like refresh/access tokens aren't persisted
-    const dataStoreService = this.application.getDependency<DataStoreService>(DataStoreService);
+    const dataStoreService = this.application.getDependency<CacheStoreService>(CacheStoreService);
     await dataStoreService.purge();
   }
 

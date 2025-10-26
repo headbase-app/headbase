@@ -1,4 +1,4 @@
-import {DeletedItemDto, ItemDto} from "@headbase-app/common";
+import {DeletedItemDto, ItemDto} from "@headbase-app/contracts";
 import {testAdminUser1Vault1, testUser1Vault1, testUser1Vault2} from "@testing/data/vaults.js";
 import {randomUUID} from "node:crypto";
 import {testAdminUser1} from "@testing/data/users.js";

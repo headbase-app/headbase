@@ -1,5 +1,5 @@
 # `@headbase-app/server`
-The Headbase server for cloud backups and cross-device synchronisation, built using Express.js & Postgres.  
+The Headbase server for cloud backups and cross-device synchronisation, built using Express.js & Postgres.
 
 If you just want to run the sever, it is recommended to use Docker and follow the [self-hosting instructions](../../docs/self-hosting/index.md) rather
 than setting up a full environment.
@@ -33,7 +33,7 @@ npm install
 ```
 
 ### 3. Setup environment
-You will have to configure environment variables such as `AUTH_*` and `DATABASE_URL` if you edited the `setup.sql` script 
+You will have to configure environment variables such as `AUTH_*` and `DATABASE_URL` if you edited the `setup.sql` script
 or created your database a different way.
 ```shell
 cp .env.example .env

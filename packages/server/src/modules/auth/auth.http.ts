@@ -1,6 +1,6 @@
 import {NextFunction, Request, Response} from "express"
 
-import {LoginRequest, LogoutRequest, RefreshRequest, VerifyEmailDto} from "@headbase-app/common";
+import {LoginRequest, LogoutRequest, RefreshRequest, VerifyEmailDto} from "@headbase-app/contracts";
 
 import { validateSchema } from "@common/schema-validator.js";
 import {HttpStatusCodes} from "@common/http-status-codes.js";

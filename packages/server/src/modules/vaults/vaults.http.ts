@@ -1,9 +1,8 @@
 import {
-  CreateVaultDto,
-  UpdateVaultDto,
-  VaultsURLParams,
-  VaultsQueryParams,
-} from "@headbase-app/common";
+	UpdateVaultDto,
+	VaultsURLParams,
+	VaultsQueryParams, VaultDto,
+} from "@headbase-app/contracts";
 import {NextFunction, Request, Response} from "express";
 import {validateSchema} from "@common/schema-validator.js";
 import {HttpStatusCodes} from "@common/http-status-codes.js";
@@ -20,9 +19,9 @@ export class VaultsHttpController {
   async createVault(req: Request, res: Response, next: NextFunction) {
     try {
       const requestUser = await this.accessControlService.validateAuthentication(req);
-      const createVaultDto = await validateSchema(req.body, CreateVaultDto);
+      const vaultDto = await validateSchema(req.body, VaultDto);
 
-      const result = await this.vaultsService.create(requestUser, createVaultDto);
+      const result = await this.vaultsService.create(requestUser, vaultDto);
       res.status(HttpStatusCodes.CREATED).json(result);
     }
     catch (error) {

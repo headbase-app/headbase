@@ -1,5 +1,5 @@
-import {UserEntity} from "@headbase-app/common";
+import {UserDto} from "@headbase-app/contracts";
 
-export interface TestUserEntity extends UserEntity {
+export interface TestUserEntity extends UserDto {
   passwordHash: string,
 }

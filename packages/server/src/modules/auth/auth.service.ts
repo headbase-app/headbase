@@ -1,7 +1,7 @@
 import {TokenService} from "@services/token/token.service.js";
 import {EnvironmentService} from "@services/environment/environment.service.js";
 import {EmailService} from "@services/email/email.service.js";
-import {AuthUserResponse, ErrorIdentifiers, TokenPair} from "@headbase-app/common";
+import {AuthUserResponse, ErrorIdentifiers, TokenPair} from "@headbase-app/contracts";
 import {DatabaseUserDto} from "@modules/users/database/database-user.js";
 import {AccessForbiddenError} from "@services/errors/access/access-forbidden.error.js";
 import {PasswordService} from "@services/password/password.service.js";

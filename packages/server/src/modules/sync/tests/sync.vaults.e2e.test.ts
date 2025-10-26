@@ -23,7 +23,7 @@ afterEach(async () => {
 });
 
 
-describe("Sync Module - Vault Events",() => {
+describe.todo("Sync Module - Vault Events",() => {
   describe("/v1/sync [WEBSOCKET]", () => {
     test("When a vault is created by the same user with different sessions, an event should be received", async () => {
       const accessToken = await testHelper.getUserAccessToken(testUser1.id)

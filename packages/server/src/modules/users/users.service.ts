@@ -1,4 +1,4 @@
-import {CreateUserDto, ErrorIdentifiers, UpdateUserDto, UserDto} from "@headbase-app/common";
+import {CreateUserDto, ErrorIdentifiers, UpdateUserDto, UserDto} from "@headbase-app/contracts";
 import {UserContext} from "@common/request-context.js";
 import {AccessForbiddenError} from "@services/errors/access/access-forbidden.error.js";
 import {PasswordService} from "@services/password/password.service.js";
@@ -15,7 +15,6 @@ import {PG_UNIQUE_VIOLATION} from "@services/database/database-error-codes.js";
 import {ResourceRelationshipError} from "@services/errors/resource/resource-relationship.error.js";
 import {SystemError} from "@services/errors/base/system.error.js";
 import {isoFormat} from "@services/database/iso-format-date.js";
-
 
 export class UsersService {
     constructor(

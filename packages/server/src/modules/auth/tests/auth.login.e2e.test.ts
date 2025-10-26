@@ -1,6 +1,6 @@
 import {describe, expect, test, beforeAll, beforeEach, afterAll } from "vitest";
 
-import {ErrorIdentifiers} from "@headbase-app/common"
+import {ErrorIdentifiers} from "@headbase-app/contracts"
 import {TestHelper} from "@testing/test-helper.js";
 import {testUser1} from "@testing/data/users.js";
 import {expectForbidden} from "@testing/common/expect-forbidden.js";

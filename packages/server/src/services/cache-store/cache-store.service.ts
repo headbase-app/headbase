@@ -1,15 +1,15 @@
 import {Redis} from "ioredis";
 
+import {HealthStatus} from "@modules/server/server.service.js";
 import {EnvironmentService} from "@services/environment/environment.service.js";
 import {SystemError} from "@services/errors/base/system.error.js";
-import {HealthStatus} from "@modules/server/server.service.js";
+
 
 export interface CacheOptions {
   epochExpiry: number;
 }
 
-
-export class DataStoreService {
+export class CacheStoreService {
   private redis: Redis | null = null;
 
   constructor(private envService: EnvironmentService) {}
@@ -19,7 +19,7 @@ export class DataStoreService {
       return this.redis
     }
     else {
-      this.redis = new Redis(this.envService.vars.dataStore.redisUrl)
+      this.redis = new Redis(this.envService.vars.cacheStore.redisUrl)
       return this.redis
     }
   }
@@ -49,7 +49,7 @@ export class DataStoreService {
     }
     catch (e) {
       throw new SystemError({
-        message: "Error adding item to data store",
+        message: "Error adding item to cache store",
         originalError: e,
       });
     }
@@ -64,7 +64,7 @@ export class DataStoreService {
     }
     catch (e) {
       throw new SystemError({
-        message: "Error fetching item from data store",
+        message: "Error fetching item from cache store",
         originalError: e,
       });
     }
