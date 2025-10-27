@@ -4,8 +4,9 @@ import { BaseModule } from "@modules/base/base.module";
 import { ServerManagementModule } from "@modules/server/server.module";
 import { AuthModule } from "@modules/auth/auth.module";
 import { UsersModule } from "@modules/users/users.module";
+import { VaultsModule } from "@modules/vaults/vaults.module";
 
 @Module({
-	imports: [ServicesModule, BaseModule, ServerManagementModule, AuthModule, UsersModule],
+	imports: [ServicesModule, BaseModule, ServerManagementModule, AuthModule, UsersModule, VaultsModule],
 })
 export class AppModule {}
