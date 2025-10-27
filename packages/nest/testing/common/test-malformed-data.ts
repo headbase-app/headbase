@@ -1,4 +1,4 @@
-import { expectBadRequest } from "./expect-bad-request.js";
+import { expectBadRequest } from "./expect-bad-request";
 import { SuperAgentRequest } from "superagent";
 
 export interface TestMalformedDataConfig {

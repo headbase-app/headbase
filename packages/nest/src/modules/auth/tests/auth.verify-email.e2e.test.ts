@@ -1,4 +1,4 @@
-import { describe, expect, test, beforeAll, beforeEach, afterAll } from "vitest";
+import { describe, expect, test, beforeAll, beforeEach, afterAll } from "@jest/globals";
 
 import { ErrorIdentifiers } from "@headbase-app/contracts";
 
@@ -39,7 +39,7 @@ describe("Email Verification - /v1/auth/verify-email [GET, POST]", () => {
 
 		test("authenticated user can verify their email", async () => {
 			const accessToken = await testHelper.getUserAccessToken(testUser2Unverified.id);
-			const token = await testHelper.getEmailVerificationToken(testUser2Unverified.id);
+			const token = testHelper.getEmailVerificationToken(testUser2Unverified.id);
 
 			const { statusCode, body } = await testHelper.client.post("/v1/auth/verify-email").set("Authorization", `Bearer ${accessToken}`).send({
 				token,
@@ -68,7 +68,7 @@ describe("Email Verification - /v1/auth/verify-email [GET, POST]", () => {
 
 		test("authenticated admin can verify their email", async () => {
 			const accessToken = await testHelper.getUserAccessToken(testAdminUser2Unverified.id);
-			const token = await testHelper.getEmailVerificationToken(testAdminUser2Unverified.id);
+			const token = testHelper.getEmailVerificationToken(testAdminUser2Unverified.id);
 
 			const { statusCode, body } = await testHelper.client.post("/v1/auth/verify-email").set("Authorization", `Bearer ${accessToken}`).send({
 				token,
@@ -97,33 +97,33 @@ describe("Email Verification - /v1/auth/verify-email [GET, POST]", () => {
 
 		test("user can perform actions once verified ", async () => {
 			const accessToken = await testHelper.getUserAccessToken(testUser2Unverified.id);
-			const verificationToken = await testHelper.getEmailVerificationToken(testUser2Unverified.id);
+			const verificationToken = testHelper.getEmailVerificationToken(testUser2Unverified.id);
 
-			// Initial attempt to create vault should fail as unverified (technically a repeat test, but included here to illustrate scenario)
+			// Initial attempt to fetch own user should fail as unverified
 			const { statusCode: initialCreateStatusCode, body: initialCreateBody } = await testHelper.client
-				.post("/v1/vaults")
+				// ignoring prettier
+				.get(`/v1/users/${testUser2Unverified.id}`)
 				.set("Authorization", `Bearer ${accessToken}`)
-				.send({
-					...exampleVault1,
-					ownerId: testUser1.id,
-				});
+				.send();
 			expectForbidden(initialCreateBody, initialCreateStatusCode, ErrorIdentifiers.AUTH_NOT_VERIFIED);
 
 			// Now verify user
-			const { statusCode: verifyStatusCode, body: verifyBody } = await testHelper.client.post("/v1/auth/verify-email").set("Authorization", `Bearer ${accessToken}`).send({
-				token: verificationToken,
-			});
+			const { statusCode: verifyStatusCode, body: verifyBody } = await testHelper.client
+				// ignoring prettier
+				.post("/v1/auth/verify-email")
+				.set("Authorization", `Bearer ${accessToken}`)
+				.send({
+					token: verificationToken,
+				});
 			expect(verifyStatusCode).toEqual(200);
 
-			// Now user should be able to create vault
+			// Now verification is complete, should be able to fetch own user
 			const { statusCode: verifiedCreateStatusCode } = await testHelper.client
-				.post("/v1/vaults")
+				// ignoring prettier
+				.get(`/v1/users/${testUser2Unverified.id}`)
 				.set("Authorization", `Bearer ${verifyBody.tokens.accessToken}`)
-				.send({
-					...exampleVault1,
-					ownerId: testUser2Unverified.id,
-				});
-			expect(verifiedCreateStatusCode).toEqual(201);
+				.send();
+			expect(verifiedCreateStatusCode).toEqual(200);
 		});
 	});
 

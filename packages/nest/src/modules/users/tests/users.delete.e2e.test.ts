@@ -4,7 +4,7 @@ import { expectUnauthorized } from "@testing/common/expect-unauthorized";
 import { expectForbidden } from "@testing/common/expect-forbidden";
 import { expectBadRequest } from "@testing/common/expect-bad-request";
 import { testUser1, testUser2Unverified } from "@testing/data/users";
-import { describe, test, expect, afterAll, beforeAll, beforeEach } from "vitest";
+import { describe, test, expect, afterAll, beforeAll, beforeEach } from "@jest/globals";
 
 const testHelper: TestHelper = new TestHelper();
 beforeAll(async () => {

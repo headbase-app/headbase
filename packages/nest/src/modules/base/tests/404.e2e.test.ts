@@ -1,4 +1,4 @@
-import { describe, test, beforeAll, beforeEach, afterAll } from "vitest";
+import { describe, test, beforeAll, beforeEach, afterAll } from "@jest/globals";
 
 import { TestHelper } from "@testing/test-helper";
 import { expectNotFound } from "@testing/common/expect-not-found";

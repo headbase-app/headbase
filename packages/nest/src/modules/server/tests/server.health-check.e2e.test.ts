@@ -1,4 +1,4 @@
-import { describe, expect, test, beforeAll, beforeEach, afterAll } from "vitest";
+import { describe, expect, test, beforeAll, beforeEach, afterAll } from "@jest/globals";
 import { TestHelper } from "@testing/test-helper";
 
 const testHelper = new TestHelper();

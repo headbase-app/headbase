@@ -1,4 +1,4 @@
-import { describe, expect, test, beforeAll, beforeEach, afterAll } from "vitest";
+import { describe, expect, test, beforeAll, beforeEach, afterAll } from "@jest/globals";
 import { TestHelper } from "@testing/test-helper";
 import { ObjectStoreService } from "@services/object-store/object-store.service";
 
@@ -19,7 +19,7 @@ describe("Object Store Service", () => {
 
 		const uploadUrl = await objectStore.getChunkUploadUrl("vault1", "hash1");
 
-		expect(uploadUrl).toBeTypeOf("string");
+		expect(uploadUrl).toEqual(expect.any(String));
 		expect(uploadUrl.includes("vault1")).toBe(true);
 		expect(uploadUrl.includes("hash1")).toBe(true);
 	});
@@ -29,7 +29,7 @@ describe("Object Store Service", () => {
 
 		const downloadUrl = await objectStore.getChunkDownloadUrl("vault1", "hash1");
 
-		expect(downloadUrl).toBeTypeOf("string");
+		expect(downloadUrl).toEqual(expect.any(String));
 		expect(downloadUrl.includes("vault1")).toBe(true);
 		expect(downloadUrl.includes("hash1")).toBe(true);
 	});

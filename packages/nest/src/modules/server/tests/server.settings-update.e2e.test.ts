@@ -1,4 +1,4 @@
-import { test, describe, afterAll, beforeAll, beforeEach, expect } from "vitest";
+import { test, describe, afterAll, beforeAll, beforeEach, expect } from "@jest/globals";
 
 import { TestHelper } from "@testing/test-helper";
 import { testAdminUser1, testUser1 } from "@testing/data/users";
@@ -73,20 +73,20 @@ describe("Update Settings - /v1/server/settings [PATCH]", () => {
 
 	// Data validation (required fields, invalid data types, unique constraints, malformed data etc).
 	describe("Data Validation", () => {
-		describe("When not supplying registrationEnabled as boolean, the request should fail", async () => {
-			testInvalidDataTypes({
-				testHelper: testHelper,
-				req: {
-					clientMethod: "patch",
-					endpoint: "/v1/server/settings",
-					initialData: { registrationEnabled: true },
-				},
-				auth: {
-					userId: testAdminUser1.id,
-				},
-				testFieldKey: "registrationEnabled",
-				testCases: [1, 1.5, "testing", null, undefined, { test: "yes" }, [1, 2]],
-			});
+		// test("When not supplying registrationEnabled as boolean, the request should fail", async () => {
+		// });
+		testInvalidDataTypes({
+			testHelper: testHelper,
+			req: {
+				clientMethod: "patch",
+				endpoint: "/v1/server/settings",
+				initialData: { registrationEnabled: true },
+			},
+			auth: {
+				userId: testAdminUser1.id,
+			},
+			testFieldKey: "registrationEnabled",
+			testCases: [1, 1.5, "testing", null, undefined, { test: "yes" }, [1, 2]],
 		});
 
 		test("When supplying invalid JSON data, the request should fail", async () => {

@@ -16,13 +16,19 @@ export class ErrorFilter implements ExceptionFilter {
 	sendErrorResponse(err: Error, res: Response) {
 		const errorName = err.constructor.name;
 
-		// Intercept NestJS errors to handle 404, otherwise fallback to NestJS formatted response.
+		// Intercept NestJS errors to customise responses, otherwise fallback to NestJS formatted response.
 		if (err instanceof HttpException) {
 			if (errorName === "NotFoundException") {
 				return res.status(HttpStatus.NOT_FOUND).send({
 					identifier: ErrorIdentifiers.NOT_FOUND,
 					statusCode: HttpStatus.NOT_FOUND,
 					message: "The route you requested could not be found.",
+				});
+			} else if (errorName === "BadRequestException") {
+				return res.status(HttpStatus.BAD_REQUEST).send({
+					identifier: ErrorIdentifiers.REQUEST_INVALID,
+					statusCode: HttpStatus.BAD_REQUEST,
+					message: "Your request was invalid.",
 				});
 			} else {
 				return res.status(err.getStatus()).send({

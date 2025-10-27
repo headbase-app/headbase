@@ -1,4 +1,4 @@
-import { describe, expect, test, beforeAll, beforeEach, afterAll } from "vitest";
+import { describe, expect, test, beforeAll, beforeEach, afterAll } from "@jest/globals";
 import { sign } from "jsonwebtoken";
 
 import { TestHelper } from "@testing/test-helper";

@@ -1,54 +1,51 @@
-import { test, describe, afterAll, beforeAll, beforeEach, expect } from "vitest"
+import { test, describe, afterAll, beforeAll, beforeEach, expect } from "@jest/globals";
 
-import {TestHelper} from "@testing/test-helper.js";
-import {testUser1} from "@testing/data/users.js";
+import { TestHelper } from "@testing/test-helper";
+import { testUser1 } from "@testing/data/users";
 
 const testHelper = new TestHelper();
 beforeAll(async () => {
-  await testHelper.beforeAll();
+	await testHelper.beforeAll();
 });
 afterAll(async () => {
-  await testHelper.afterAll()
+	await testHelper.afterAll();
 });
 beforeEach(async () => {
-  await testHelper.beforeEach()
+	await testHelper.beforeEach();
 });
 
-describe("Short Description - /v1/path [METHOD]",() => {
-  // Testing success cases/happy paths work.
-  describe("Success Cases", () => {
+describe("Short Description - /v1/path [METHOD]", () => {
+	// Testing success cases/happy paths work.
+	describe("Success Cases", () => {
+		test("Given CONTEXT, When ACTION, Then RESULT", async () => {
+			const accessToken = await testHelper.getUserAccessToken(testUser1.id);
 
-    test("Given CONTEXT, When ACTION, Then RESULT", async () => {
-      const accessToken = await testHelper.getUserAccessToken(testUser1.id);
+			const { body, statusCode } = await testHelper.client.post("/v1/ROUTE").set("Authorization", `Bearer ${accessToken}`).send({});
 
-      const {body, statusCode} = await testHelper.client
-        .post("/v1/ROUTE")
-        .set("Authorization", `Bearer ${accessToken}`)
-        .send({});
+			expect(statusCode).toEqual(200);
+			expect(body).toEqual(
+				expect.objectContaining({
+					field: "value",
+				}),
+			);
+		});
+	});
 
-      expect(statusCode).toEqual(200);
-      expect(body).toEqual(expect.objectContaining({
-        field: "value",
-      }))
-    });
+	// Testing auth & permissions work.
+	describe("Invalid Authentication", () => {});
 
-  })
+	// Testing all unique constraint work.
+	describe("None Unique Data", () => {});
 
-  // Testing auth & permissions work.
-  describe("Invalid Authentication", () => {})
+	// Data validation .
+	describe("Data Validation", () => {});
 
-  // Testing all unique constraint work.
-  describe("None Unique Data", () => {})
+	// Testing relationship validation works (fails on invalid foreign keys).
+	describe("Relationship Validation", () => {});
 
-  // Data validation .
-  describe("Data Validation", () => {})
+	// Testing internal/system fields are not user editable (timestamps, id, owner relationships etc).
+	describe("Forbidden Fields", () => {});
 
-  // Testing relationship validation works (fails on invalid foreign keys).
-  describe("Relationship Validation", () => {})
-
-  // Testing internal/system fields are not user editable (timestamps, id, owner relationships etc).
-  describe("Forbidden Fields", () => {})
-
-  // Testing invalid type validation works (pass number to sting field, malformed data etc).
-  describe("Invalid Data", () => {})
-})
+	// Testing invalid type validation works (pass number to sting field, malformed data etc).
+	describe("Invalid Data", () => {});
+});

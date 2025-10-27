@@ -28,13 +28,13 @@ export class UsersHttpController {
 		};
 	}
 
-	@Get("/:id")
+	@Get("/:userId")
 	@UseGuards(AuthenticationGuard)
 	async getUser(@RequestContext() requestContext: RequestContext, @Param(new ZodValidationPipe(UsersURLParams)) params: UsersURLParams) {
 		return this.usersService.get(requestContext.user, params.userId);
 	}
 
-	@Patch("/:id")
+	@Patch("/:userId")
 	@UseGuards(AuthenticationGuard)
 	async updateUser(
 		@RequestContext() requestContext: RequestContext,
@@ -44,7 +44,7 @@ export class UsersHttpController {
 		return this.usersService.update(requestContext.user, params.userId, updateUserDto);
 	}
 
-	@Delete("/:id")
+	@Delete("/:userId")
 	@UseGuards(AuthenticationGuard)
 	async deleteUser(@RequestContext() requestContext: RequestContext, @Param(new ZodValidationPipe(UsersURLParams)) params: UsersURLParams) {
 		return this.usersService.delete(requestContext.user, params.userId);

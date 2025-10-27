@@ -1,6 +1,6 @@
-import { test } from "vitest";
+import { test } from "@jest/globals";
 
-import { expectBadRequest } from "./expect-bad-request.js";
+import { expectBadRequest } from "./expect-bad-request";
 import { TestHelper } from "../test-helper";
 
 export interface TestInvalidDataTypesConfig {

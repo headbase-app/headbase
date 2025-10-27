@@ -32,6 +32,7 @@ export class AuthenticationGuard implements CanActivate {
 						// todo: should depend on service not static method, or method should be moved?
 						permissions: AccessControlService.resolveRolePermissions(tokenPayload.role),
 					});
+					return true;
 				}
 			}
 		}

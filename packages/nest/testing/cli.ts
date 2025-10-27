@@ -2,7 +2,7 @@ import * as dotenv from "dotenv";
 dotenv.config();
 
 import postgres from "postgres";
-import { resetTestData } from "./database-scripts.js";
+import { resetTestData } from "./database-scripts";
 
 async function run() {
 	console.log("Starting database script");

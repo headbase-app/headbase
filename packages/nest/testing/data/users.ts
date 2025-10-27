@@ -1,4 +1,4 @@
-import { TestUserEntity } from "../types/test-user.dto.js";
+import { TestUserEntity } from "../types/test-user.dto";
 
 /**
  * Test users.

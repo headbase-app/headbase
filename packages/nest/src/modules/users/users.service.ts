@@ -1,6 +1,6 @@
 import { forwardRef, Inject, Injectable } from "@nestjs/common";
 import postgres from "postgres";
-import { eq, getTableColumns } from "drizzle-orm";
+import { DrizzleQueryError, eq, getTableColumns } from "drizzle-orm";
 
 import { CreateUserDto, ErrorIdentifiers, UpdateUserDto, UserDto } from "@headbase-app/contracts";
 import { UserContext } from "@common/request-context";
@@ -30,9 +30,9 @@ export class UsersService {
 	) {}
 
 	static getContextualError(e: any) {
-		if (e instanceof postgres.PostgresError) {
-			if (e.code && e.code === PG_UNIQUE_VIOLATION) {
-				if (e.constraint_name == "email_unique") {
+		if (e instanceof DrizzleQueryError && e.cause instanceof postgres.PostgresError) {
+			if (e.cause.code && e.cause.code === PG_UNIQUE_VIOLATION) {
+				if (e.cause.constraint_name == "email_unique") {
 					return new ResourceRelationshipError({
 						identifier: ErrorIdentifiers.USER_EMAIL_EXISTS,
 						userMessage: "The supplied email address is already in use.",

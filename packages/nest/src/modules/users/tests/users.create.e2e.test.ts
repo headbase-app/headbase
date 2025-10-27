@@ -1,4 +1,4 @@
-import { describe, expect, test, beforeAll, beforeEach, afterAll } from "vitest";
+import { describe, expect, test, beforeAll, beforeEach, afterAll } from "@jest/globals";
 
 import { ErrorIdentifiers, Roles } from "@headbase-app/contracts";
 import { TestHelper } from "@testing/test-helper";
@@ -46,7 +46,7 @@ describe("Create User - /v1/users [POST]", () => {
 			);
 		});
 
-		test.todo("When adding a valid new user, the returned access and refresh tokens should be valid", async () => {});
+		test.todo("When adding a valid new user, the returned access and refresh tokens should be valid");
 
 		test("When using a password that's 12 characters, the new user should be added & returned", async () => {
 			const newUser = {

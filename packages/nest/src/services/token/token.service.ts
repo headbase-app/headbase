@@ -1,14 +1,7 @@
 import jsonwebtoken from "jsonwebtoken";
 import ms from "ms";
-import { createSecretKey } from "crypto";
+import { createSecretKey, randomUUID } from "crypto";
 import { Injectable } from "@nestjs/common";
-
-/**
- * Allow importing the pure ESM module 'uuid' in CJS.
- */
-async function createUUID() {
-	return (await import("uuid")).v4();
-}
 
 import { AccessTokenPayload, ActionTokenOptions, ActionTokenPayload, RefreshTokenPayload, TokenPair, UserDto } from "@headbase-app/contracts";
 
@@ -51,7 +44,7 @@ export class TokenService {
 	 * @param userDto
 	 */
 	async createNewTokenPair(userDto: UserDto): Promise<CreatedTokenPair> {
-		const sessionId = await createUUID();
+		const sessionId = randomUUID();
 		const counterId = 1;
 
 		// Generate the expiry of the refresh token here so I can set an initial expiry on the sid value stored.

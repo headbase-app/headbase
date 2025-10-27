@@ -1,4 +1,4 @@
-import { Injectable } from "@nestjs/common";
+import { forwardRef, Inject, Injectable } from "@nestjs/common";
 
 import { AccessForbiddenError } from "@services/errors/access/access-forbidden.error";
 import { ErrorIdentifiers, Permissions, RolePermissions, Roles } from "@headbase-app/contracts";
@@ -29,6 +29,7 @@ export interface AccessControlOptions {
 export class AccessControlService {
 	constructor(
 		// todo: must depend on DatabaseService not UsersService to prevent circular dependency. Ideally everything should go through the user service?
+		@Inject(forwardRef(() => UsersService))
 		private readonly usersService: UsersService,
 	) {}
 

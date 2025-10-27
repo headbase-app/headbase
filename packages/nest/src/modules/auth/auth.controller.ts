@@ -1,4 +1,4 @@
-import { Body, Controller, Get, HttpStatus, Post, UseGuards } from "@nestjs/common";
+import { Body, Controller, Get, HttpCode, HttpStatus, Post, UseGuards } from "@nestjs/common";
 
 import { LoginRequest, LogoutRequest, RefreshRequest, VerifyEmailDto } from "@headbase-app/contracts";
 
@@ -19,22 +19,25 @@ export class AuthHttpController {
 	) {}
 
 	@Post("/login")
+	@HttpCode(HttpStatus.OK)
 	async login(@Body(new ZodValidationPipe(LoginRequest)) loginRequest: LoginRequest) {
 		return this.authService.login(loginRequest.email, loginRequest.password);
 	}
 
 	@Post("/logout")
+	@HttpCode(HttpStatus.OK)
 	async logout(@Body(new ZodValidationPipe(LogoutRequest)) logoutRequest: LogoutRequest) {
 		await this.authService.logout(logoutRequest.refreshToken);
 		return { statusCode: HttpStatus.OK };
 	}
 
 	@Post("/refresh")
+	@HttpCode(HttpStatus.OK)
 	async refresh(@Body(new ZodValidationPipe(RefreshRequest)) refreshRequest: RefreshRequest) {
 		return this.authService.refresh(refreshRequest.refreshToken);
 	}
 
-	@Post("/check")
+	@Get("/check")
 	@UseGuards(AuthenticationGuard)
 	check() {
 		return { statusCode: HttpStatus.OK };
@@ -56,6 +59,7 @@ export class AuthHttpController {
 	 */
 	@Post("/verify-email")
 	@UseGuards(AuthenticationGuard)
+	@HttpCode(HttpStatus.OK)
 	async verifyEmail(@RequestContext() requestContext: RequestContext, @Body(new ZodValidationPipe(VerifyEmailDto)) verifyEmailDto: VerifyEmailDto) {
 		return this.authService.verifyEmail(requestContext.user, verifyEmailDto.token);
 	}
@@ -69,6 +73,7 @@ export class AuthHttpController {
 	}
 
 	@Post("/change-email")
+	@HttpCode(HttpStatus.OK)
 	changeEmail() {
 		return {
 			statusCode: HttpStatus.NOT_IMPLEMENTED,
@@ -77,6 +82,7 @@ export class AuthHttpController {
 	}
 
 	@Get("/reset-password")
+	@HttpCode(HttpStatus.OK)
 	requestResetPassword() {
 		return {
 			statusCode: HttpStatus.NOT_IMPLEMENTED,
@@ -85,6 +91,7 @@ export class AuthHttpController {
 	}
 
 	@Post("/reset-password")
+	@HttpCode(HttpStatus.OK)
 	resetPassword() {
 		return {
 			statusCode: HttpStatus.NOT_IMPLEMENTED,
