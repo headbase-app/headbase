@@ -2,7 +2,6 @@ import { agent } from "supertest";
 import TestAgent from "supertest/lib/agent";
 import { Server } from "node:http";
 import { INestApplication } from "@nestjs/common";
-import { App } from "supertest/types";
 
 import { TokenPair } from "@headbase-app/contracts";
 
@@ -16,21 +15,22 @@ import { resetTestData, ScriptOptions } from "./database-scripts";
 import { createApp } from "../src/create-app";
 
 export class TestHelper {
-	private application!: INestApplication<App>;
+	private application!: INestApplication<Server>;
 	public client!: TestAgent;
+	public server!: Server;
 
 	async beforeAll() {
 		this.application = await createApp({ logger: false });
 		await this.application.init();
 
-		const server = this.application.getHttpServer();
+		this.server = this.application.getHttpServer();
 
 		// Overwrite the email mode to silence output and prevent actual email sending during test runs.
 		const configService = this.application.get(ConfigService);
 		configService.vars.email.sendMode = "silent";
 
 		// Setup supertest agent for test requests
-		this.client = agent(server);
+		this.client = agent(this.server);
 	}
 
 	getAppDependency<T>(dependency: any): T {

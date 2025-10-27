@@ -8,5 +8,6 @@ import { VaultsHttpController } from "@modules/vaults/vaults.controller";
 	imports: [ServicesModule, forwardRef(() => AuthModule)],
 	controllers: [VaultsHttpController],
 	providers: [VaultsService],
+	exports: [VaultsService],
 })
 export class VaultsModule {}
