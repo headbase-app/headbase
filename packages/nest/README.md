@@ -1,98 +1,89 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# `@headbase-app/server`
+The Headbase server for cloud backups and cross-device synchronisation built using Nest.js.
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+If you just want to self-host a sever instance, it's recommended to use Docker and follow the [self-hosting instructions](../../docs/self-hosting/index.md) rather than setting up this project from scratch.
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+## Local development setup
 
-## Description
+### 0. Prerequisites
+- [PostgreSQL](https://www.postgresql.org/download/) is used for the application database.
+- [Redis](https://redis.io/docs/latest/operate/oss_and_stack/install/install-redis/) is used for caching and token storage.
+- S3/S3-compatible object storage is used for storing file chunks, for example [Cloudflare R2](https://www.cloudflare.com/en-gb/developer-platform/products/r2/).
+- Emails are sent using SMTP, so an email provider like [Mailgun](https://www.mailgun.com/) is required (local dev can log emails without sending).
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+### 1. Create database
 
-## Project setup
-
-```bash
-$ npm install
+1.1. This script will create a `headbase` user & database, alternatively create your own database and set the env vars accordingly.
+```shell
+psql postgres < ./scripts/setup.sql
 ```
 
-## Compile and run the project
+1.2. Run database migrations to set up the required tables in your database
+```shell
+psql -d headbase < ./migrations/000-v1-schema.sql
+```
+
+1.3. You may have to ensure that you user has permissions to access the new tables
+```shell
+psql postgres < ./scripts/permissions.sql
+```
+
+### 2. Install dependencies
+```shell
+npm install
+```
+
+### 3. Setup environment
+You will have to configure environment variables, especially `AUTH_*` and `DATABASE_URL` if you edited the `setup.sql` script or created your database a different way.
+```shell
+cp .env.example .env
+```
+
+## Running the app
+
+### Development mode
+```bash
+# run app in dev mode
+$ npm start
+
+# run in watch mode, restarting server on file changes
+$ npm run start:watch
+```
+
+### Production build
 
 ```bash
-# development
-$ npm run start
+# build the application, outputting to ./dist/
+$ npm run build
 
-# watch mode
-$ npm run start:dev
-
-# production mode
+# run the production build in ./dist/
 $ npm run start:prod
 ```
 
-## Run tests
+## Testing the app
 
+### Run all tests
 ```bash
-# unit tests
+# run all tests (e2e and unit)
 $ npm run test
 
-# e2e tests
-$ npm run test:e2e
-
-# test coverage
+# run test coverage
 $ npm run test:cov
 ```
 
-## Deployment
-
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
-
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
+### Run E2E tests
+Run E2E tests that use supertest to make API requests against the application like a real user.
+This is done by using an E2E test helper `./testing/e2e-helper.ts` which provides setup/teardown of the app and utility functions.
 
 ```bash
-$ npm install -g @nestjs/mau
-$ mau deploy
+$ npm run test:e2e
 ```
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+### Run unit tests
+Run unit tests which focus on testing isolated functionality directly, covering cases E2E tests miss and features which benefit from extra internal testing.
+These tests don't spin up the full application or depend on external setup, utilising mocking when required instead.
 
-## Resources
+```bash
+$ npm run test:unit
+```
 
-Check out a few resources that may come in handy when working with NestJS:
-
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
-
-## Support
-
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
-
-## Stay in touch
-
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
-
-## License
-
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).

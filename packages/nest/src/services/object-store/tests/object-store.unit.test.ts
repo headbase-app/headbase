@@ -1,21 +1,14 @@
-import { describe, expect, test, beforeAll, beforeEach, afterAll } from "@jest/globals";
-import { TestHelper } from "@testing/test-helper";
+import { describe, expect, test } from "@jest/globals";
 import { ObjectStoreService } from "@services/object-store/object-store.service";
-
-const testHelper = new TestHelper();
-beforeAll(async () => {
-	await testHelper.beforeAll();
-});
-afterAll(async () => {
-	await testHelper.afterAll();
-});
-beforeEach(async () => {
-	await testHelper.beforeEach();
-});
+import { Test } from "@nestjs/testing";
+import { ConfigService } from "@services/config/config.service";
 
 describe("Object Store Service", () => {
 	test("Getting upload URL should work", async () => {
-		const objectStore = testHelper.getAppDependency<ObjectStoreService>(ObjectStoreService);
+		const moduleRef = await Test.createTestingModule({
+			providers: [ObjectStoreService, ConfigService],
+		}).compile();
+		const objectStore = moduleRef.get(ObjectStoreService);
 
 		const uploadUrl = await objectStore.getChunkUploadUrl("vault1", "hash1");
 
@@ -25,7 +18,10 @@ describe("Object Store Service", () => {
 	});
 
 	test("Getting download URL should work", async () => {
-		const objectStore = testHelper.getAppDependency<ObjectStoreService>(ObjectStoreService);
+		const moduleRef = await Test.createTestingModule({
+			providers: [ObjectStoreService, ConfigService],
+		}).compile();
+		const objectStore = moduleRef.get(ObjectStoreService);
 
 		const downloadUrl = await objectStore.getChunkDownloadUrl("vault1", "hash1");
 

@@ -1,9 +1,11 @@
 import { NestFactory } from "@nestjs/core";
 import { NestApplicationOptions, VersioningType } from "@nestjs/common";
+import helmet from "helmet";
 
 import { AppModule } from "./app.module";
 import { ErrorFilter } from "@services/errors/error.filter";
 import { ConfigService } from "@services/config/config.service";
+import { NextFunction, Request, Response } from "express";
 
 export async function createApp(options?: NestApplicationOptions) {
 	const app = await NestFactory.create(AppModule, options || {});
@@ -15,6 +17,14 @@ export async function createApp(options?: NestApplicationOptions) {
 
 	app.enableVersioning({
 		type: VersioningType.URI,
+	});
+
+	app.use(helmet());
+
+	// GNU Terry Pratchett (http://www.gnuterrypratchett.com/)
+	app.use((req: Request, res: Response, next: NextFunction) => {
+		res.set("x-clacks-overhead", "GNU Terry Pratchett");
+		next();
 	});
 
 	app.useGlobalFilters(new ErrorFilter());

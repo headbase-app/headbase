@@ -10,8 +10,8 @@ async function bootstrap() {
 	await app.listen(configService.vars.general.port);
 
 	if (configService.vars.general.environment !== "production") {
-		const logger = new Logger("Local Dev");
-		logger.log(`Application available at: http://localhost:${configService.vars.general.port}`);
+		const serverLogger = new Logger("Server");
+		serverLogger.log(`Server started and listening at: http://localhost:${configService.vars.general.port}`);
 	}
 }
 bootstrap();
