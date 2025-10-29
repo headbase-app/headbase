@@ -87,20 +87,19 @@ CREATE TRIGGER update_vault_timestamps BEFORE UPDATE ON vaults FOR EACH ROW EXEC
 CREATE TABLE IF NOT EXISTS files (
 	-- Vault the file item belongs to.
 	vault_id UUID NOT NULL,
-	-- ID (primary key) and previous ID used to track version history.
-	id UUID NOT NULL,
-	previous_id UUID,
+	-- Version ID and previous version ID used to track version history.
+	version_id UUID NOT NULL,
+	previous_version_id UUID,
 	-- File ID used to track history between different versions.
 	file_id UUID NOT NULL,
 	-- Parent file ID used to model the file system graph.
 	parent_file_id UUID,
-	-- The name of the file item.
-	name VARCHAR(255) NOT NULL,
 	-- If the file is a directory.
 	is_directory BOOLEAN NOT NULL,
-	-- File contents metadata, used for error checking when reassembling chunks.
+	-- File contents metadata, hash/size used for error checking when reassembling chunks.
+	file_name VARCHAR(255) NOT NULL,
 	file_hash TEXT NOT NULL,
-	file_size BIGINT NOT NULL,
+	file_size INT NOT NULL,
 	-- Timestamps
 	created_at TIMESTAMPTZ NOT NULL,
 	updated_at TIMESTAMPTZ NOT NULL,
@@ -109,10 +108,10 @@ CREATE TABLE IF NOT EXISTS files (
 	created_by VARCHAR(100) NOT NULL,
 	updated_by VARCHAR(100) NOT NULL,
 	deleted_by VARCHAR(100),
-	-- Object store metadata
-	saved_at TIMESTAMPTZ,
-	CONSTRAINT file_history_pk PRIMARY KEY (id),
-	CONSTRAINT file_history_vault FOREIGN KEY (vault_id) REFERENCES vaults(id) ON DELETE CASCADE
+	-- Tracking if file has been committed to server (all chunks uploaded)
+	committed_at TIMESTAMPTZ,
+	CONSTRAINT files_pk PRIMARY KEY (version_id),
+	CONSTRAINT files_vault FOREIGN KEY (vault_id) REFERENCES vaults(id) ON DELETE CASCADE
 );
 
 /**
@@ -122,8 +121,9 @@ CREATE TABLE IF NOT EXISTS files (
 */
 CREATE TABLE IF NOT EXISTS files_chunks (
 	version_id UUID NOT NULL,
-	hash TEXT NOT NULL,
-	-- The index (0-based) where the chunk fits in the file version.
-	index INT NOT NULL,
-	CONSTRAINT file_versions_chunks_version FOREIGN KEY (version_id) REFERENCES file_versions(id) ON DELETE CASCADE
+	chunk_hash TEXT NOT NULL,
+	-- The position (0-based) where the chunk fits in the file version.
+	file_position INT NOT NULL,
+	CONSTRAINT files_chunks_pk PRIMARY KEY (hash),
+	CONSTRAINT files_chunks_file FOREIGN KEY (version_id) REFERENCES files(version_id) ON DELETE CASCADE
 );

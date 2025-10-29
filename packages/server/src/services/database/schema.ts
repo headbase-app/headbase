@@ -1,4 +1,4 @@
-import { pgTable, uuid, varchar, timestamp, pgEnum, text, boolean } from "drizzle-orm/pg-core";
+import { pgTable, uuid, varchar, timestamp, pgEnum, text, boolean, integer } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
 
 const createdAt = timestamp({ mode: "string" }).notNull();
@@ -49,8 +49,49 @@ export const vaultsRelations = relations(vaults, ({ one }) => ({
 	}),
 }));
 
+export const files = pgTable("files", {
+	vaultId: uuid().notNull(),
+	versionId: uuid().primaryKey(),
+	previousVersionId: uuid(),
+	fileId: uuid().notNull(),
+	parentFileId: uuid(),
+	isDirectory: boolean().notNull(),
+	fileName: varchar({ length: 255 }).notNull(),
+	fileHash: text().notNull(),
+	fileSize: integer().notNull(),
+	createdAt,
+	updatedAt,
+	deletedAt,
+	createdBy: varchar({ length: 100 }).notNull(),
+	updatedBy: varchar({ length: 100 }).notNull(),
+	deletedBy: varchar({ length: 100 }).notNull(),
+	committedAt: timestamp({ mode: "string" }),
+});
+
+export const filesRelations = relations(files, ({ one }) => ({
+	vault: one(vaults, {
+		fields: [files.vaultId],
+		references: [vaults.id],
+	}),
+}));
+
+export const filesChunks = pgTable("files_chunks", {
+	versionId: uuid().notNull(),
+	chunkHash: text().primaryKey(),
+	filePosition: integer().notNull(),
+});
+
+export const filesChunksRelations = relations(filesChunks, ({ one }) => ({
+	file: one(files, {
+		fields: [filesChunks.versionId],
+		references: [files.versionId],
+	}),
+}));
+
 export const schema = {
 	settings,
 	users,
 	vaults,
+	files,
+	filesChunks,
 } as const;

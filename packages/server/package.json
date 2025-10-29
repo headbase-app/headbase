@@ -32,7 +32,7 @@
 	"dependencies": {
 		"@aws-sdk/client-s3": "^3.917.0",
 		"@aws-sdk/s3-request-presigner": "^3.917.0",
-		"@headbase-app/contracts": "^0.4.0",
+		"@headbase-app/contracts": "^0.7.0",
 		"@nestjs/common": "^11.1.7",
 		"@nestjs/core": "^11.1.7",
 		"@nestjs/mapped-types": "*",

@@ -8,7 +8,6 @@ export const ChunkDto = z.object({
 	size: z.number()
 		.int()
 		.min(1, "fileSize must be greater than 1"),
-	isStored: z.boolean(),
 })
 export type ChunkDto = z.infer<typeof ChunkDto>;
 

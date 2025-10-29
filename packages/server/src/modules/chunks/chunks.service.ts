@@ -63,4 +63,9 @@ export class ChunksService {
 				.filter(Boolean)
 		);
 	}
+
+	async isUploaded(vaultId: string, hash: string) {
+		const objectKey = this.getChunkObjectKey(vaultId, hash);
+		return this.objectStoreService.isUploaded(objectKey);
+	}
 }
