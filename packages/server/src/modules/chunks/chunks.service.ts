@@ -1,4 +1,4 @@
-import { Injectable } from "@nestjs/common";
+import { forwardRef, Inject, Injectable } from "@nestjs/common";
 
 import { ObjectStoreService } from "@services/object-store/object-store.service";
 import { UserContext } from "@common/request-context";
@@ -10,6 +10,7 @@ import { ResourceNotFoundError } from "@services/errors/resource/resource-not-fo
 export class ChunksService {
 	constructor(
 		private readonly objectStoreService: ObjectStoreService,
+		@Inject(forwardRef(() => VaultsService))
 		private readonly vaultsService: VaultsService,
 	) {}
 
@@ -47,5 +48,19 @@ export class ChunksService {
 		}
 
 		return this.objectStoreService.getSignedDownloadUrl(this.getChunkObjectKey(vaultId, hash));
+	}
+
+	async getAllVaultChunks(vaultId: string) {
+		const vaultPrefix = `v1/vaults/${vaultId}/`;
+		const objectKeys = await this.objectStoreService.query(vaultPrefix);
+
+		return (
+			objectKeys
+				// Only return chunk hash, vault prefix/location is implementation detail of storage.
+				.map((key) => key.replace(vaultPrefix, ""))
+				// Remove parent/prefix file to leave only hashes.
+				// todo: could this be filtered out in .query?
+				.filter(Boolean)
+		);
 	}
 }

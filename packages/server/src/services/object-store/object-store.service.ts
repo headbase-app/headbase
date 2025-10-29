@@ -86,7 +86,7 @@ export class ObjectStoreService {
 	}
 
 	/**
-	 * Query for objects, with optional prefix.
+	 * Query for objects keys, with optional prefix.
 	 *
 	 * @param prefix
 	 */
@@ -106,11 +106,17 @@ export class ObjectStoreService {
 				},
 			);
 
-			// todo: types of .Contents and .Key include undefined, does this need special handling?
-			// https://docs.aws.amazon.com/sdk-for-javascript/v3/developer-guide/javascript_s3_code_examples.html doesn't handle undefined either
 			for await (const page of paginator) {
-				for (const object of page.Contents!) {
-					objectKeys.push(object.Key!);
+				// contents will be undefined in requested prefix doesn't exists.
+				if (page.Contents) {
+					for (const object of page.Contents) {
+						// Don't add parent/prefix file
+						// todo: type of .Key includes undefined, does this need special handling?
+						// https://docs.aws.amazon.com/sdk-for-javascript/v3/developer-guide/javascript_s3_code_examples.html doesn't handle undefined either
+						if (object.Key! === `${prefix}/`) break;
+
+						objectKeys.push(object.Key!);
+					}
 				}
 			}
 

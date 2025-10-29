@@ -42,4 +42,9 @@ export class VaultsHttpController {
 	async deleteVault(@RequestContext() requestContext: RequestContext, @Param(new ZodValidationPipe(VaultsURLParams)) params: VaultsURLParams) {
 		return this.vaultsService.delete(requestContext.user, params.vaultId);
 	}
+
+	@Get(":vaultId/chunks")
+	async getChunks(@RequestContext() requestContext: RequestContext, @Param(new ZodValidationPipe(VaultsURLParams)) params: VaultsURLParams) {
+		return this.vaultsService.getChunks(requestContext.user, params.vaultId);
+	}
 }

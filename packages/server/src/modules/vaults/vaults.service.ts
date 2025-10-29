@@ -1,4 +1,4 @@
-import { Injectable } from "@nestjs/common";
+import { forwardRef, Inject, Injectable } from "@nestjs/common";
 import postgres from "postgres";
 import { DrizzleQueryError, eq, getTableColumns, inArray } from "drizzle-orm";
 import { ErrorIdentifiers, UpdateVaultDto, VaultDto, VaultsQueryParams } from "@headbase-app/contracts";
@@ -14,6 +14,7 @@ import { ResourceRelationshipError } from "@services/errors/resource/resource-re
 import { PG_FOREIGN_KEY_VIOLATION, PG_UNIQUE_VIOLATION } from "@services/database/database-error-codes";
 import { ResourceNotFoundError } from "@services/errors/resource/resource-not-found.error";
 import { isoFormat } from "@services/database/iso-format-date";
+import { ChunksService } from "@modules/chunks/chunks.service";
 
 @Injectable()
 export class VaultsService {
@@ -21,6 +22,8 @@ export class VaultsService {
 		private readonly databaseService: DatabaseService,
 		private readonly eventsService: EventsService,
 		private readonly accessControlService: AccessControlService,
+		@Inject(forwardRef(() => ChunksService))
+		private readonly chunksService: ChunksService,
 	) {}
 
 	private static getContextualError(e: any) {
@@ -218,5 +221,12 @@ export class VaultsService {
 			.from(vaults)
 			.where(inArray(vaults.ownerId, ownerIds))
 			.orderBy(vaults.updatedAt);
+	}
+
+	async getChunks(userContext: UserContext, vaultId: string) {
+		// Using get method to run authentication checks
+		await this.get(userContext, vaultId);
+
+		return this.chunksService.getAllVaultChunks(vaultId);
 	}
 }
