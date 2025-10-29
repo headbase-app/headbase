@@ -40,12 +40,13 @@ Any errors will be returned with the appropriate status code and the following J
 ### Vaults
 - `/v1/vaults [GET, POST]`
 - `/v1/vaults/:vaultId [GET, PATCH, DELETE]`
+- `/v1/vaults/:vaultId/chunks [GET]`
 
-### File Versions
+### Files
 - `/v1/files [GET, POST]`
 - `/v1/files/:fileId [GET, DELETE]`
+- `/v1/files/:fileId/commit [POST]`
+- `/v1/files/:fileId/chunks [GET]`
 
 ### File Chunks
-- `/v1/chunks [GET, POST]`
-- `/v1/chunks/:hash/upload [POST]`
-- `/v1/chunks/:hash/download [POST]`
+- `/v1/chunks/:vaultId/:hash [GET, POST]`

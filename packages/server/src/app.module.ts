@@ -5,8 +5,9 @@ import { ServerManagementModule } from "@modules/server/server.module";
 import { AuthModule } from "@modules/auth/auth.module";
 import { UsersModule } from "@modules/users/users.module";
 import { VaultsModule } from "@modules/vaults/vaults.module";
+import { ChunksModule } from "@modules/chunks/chunks.module";
 
 @Module({
-	imports: [ServicesModule, BaseModule, ServerManagementModule, AuthModule, UsersModule, VaultsModule],
+	imports: [ServicesModule, BaseModule, ServerManagementModule, AuthModule, UsersModule, VaultsModule, ChunksModule],
 })
 export class AppModule {}

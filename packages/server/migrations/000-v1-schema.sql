@@ -80,11 +80,11 @@ CREATE TABLE IF NOT EXISTS vaults (
 CREATE TRIGGER update_vault_timestamps BEFORE UPDATE ON vaults FOR EACH ROW EXECUTE PROCEDURE update_table_timestamps();
 
 /**
-	File Versions Table
+	Files Table
 	-----------
-	Used to store file version metadata.
+	Used to store file metadata.
 */
-CREATE TABLE IF NOT EXISTS file_versions (
+CREATE TABLE IF NOT EXISTS files (
 	-- Vault the file item belongs to.
 	vault_id UUID NOT NULL,
 	-- ID (primary key) and previous ID used to track version history.
@@ -109,33 +109,21 @@ CREATE TABLE IF NOT EXISTS file_versions (
 	created_by VARCHAR(100) NOT NULL,
 	updated_by VARCHAR(100) NOT NULL,
 	deleted_by VARCHAR(100),
+	-- Object store metadata
+	saved_at TIMESTAMPTZ,
 	CONSTRAINT file_history_pk PRIMARY KEY (id),
 	CONSTRAINT file_history_vault FOREIGN KEY (vault_id) REFERENCES vaults(id) ON DELETE CASCADE
 );
 
 /**
-	File Versions Chunks Table
+	File Chunks Table
 	-----------
-	Used to store the chunks of each version.
+	Used to store the chunks of each file.
 */
-CREATE TABLE IF NOT EXISTS file_versions_chunks (
+CREATE TABLE IF NOT EXISTS files_chunks (
 	version_id UUID NOT NULL,
 	hash TEXT NOT NULL,
 	-- The index (0-based) where the chunk fits in the file version.
 	index INT NOT NULL,
 	CONSTRAINT file_versions_chunks_version FOREIGN KEY (version_id) REFERENCES file_versions(id) ON DELETE CASCADE
-);
-
-/**
-	Chunks Table
-	-----------
-	Used to store chunks, independent of versions.
-*/
-CREATE TABLE IF NOT EXISTS file_chunks (
-	-- Chunks are scoped to vaults and must be related, otherwise they can't be cleaned up
-	vault_id UUID NOT NULL,
-	hash TEXT NOT NULL,
-	size BIGINT NOT NULL,
-	is_stored BOOLEAN NOT NULL,
-	CONSTRAINT file_chunks_vault FOREIGN KEY (vault_id) REFERENCES vaults(id) ON DELETE CASCADE
 );

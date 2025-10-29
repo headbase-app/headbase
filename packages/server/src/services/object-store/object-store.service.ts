@@ -1,7 +1,9 @@
 import { Injectable } from "@nestjs/common";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
-import { GetObjectCommand, PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
+import { GetObjectCommand, PutObjectCommand, S3Client, HeadObjectCommandInput, HeadObjectCommand, paginateListObjectsV2, S3ServiceException } from "@aws-sdk/client-s3";
 import { ConfigService } from "@services/config/config.service";
+import { SystemError } from "@services/errors/base/system.error";
+import { ErrorIdentifiers } from "@headbase-app/contracts";
 
 @Injectable()
 export class ObjectStoreService {
@@ -13,7 +15,7 @@ export class ObjectStoreService {
 		const SECRET_ACCESS_KEY = this.configService.vars.objectStore.secretAccessKey;
 
 		this.s3Client = new S3Client({
-			region: "eu",
+			region: "auto",
 			endpoint: ACCOUNT_ENDPOINT,
 			credentials: {
 				accessKeyId: ACCESS_KEY_ID,
@@ -22,23 +24,111 @@ export class ObjectStoreService {
 		});
 	}
 
-	private getChunkObjectKey(vaultId: string, chunkHash: string) {
-		return `/v1/${vaultId}/chunks/${chunkHash}`;
+	/**
+	 * Check if an object with the given key has been uploaded.
+	 *
+	 * @param objectKey
+	 */
+	async isUploaded(objectKey: string): Promise<boolean> {
+		const BUCKET_NAME = this.configService.vars.objectStore.bucketName;
+
+		try {
+			const bucketParams: HeadObjectCommandInput = {
+				Bucket: BUCKET_NAME,
+				Key: objectKey,
+			};
+			const headCmd = new HeadObjectCommand(bucketParams);
+			const result = await this.s3Client.send(headCmd);
+
+			return result.$metadata.httpStatusCode === 200;
+		} catch (error) {
+			if (error instanceof S3ServiceException) {
+				// Doesn't exist and permission policy includes s3:ListBucket
+				if (error.$metadata?.httpStatusCode === 404) {
+					return false;
+				}
+				// Doesn't exist and permission policy WITHOUT s3:ListBucket
+				else if (error.$metadata?.httpStatusCode === 403) {
+					return false;
+				}
+			}
+
+			throw new SystemError({
+				identifier: ErrorIdentifiers.SYSTEM_UNEXPECTED,
+				message: `Unexpected error from object store while querying for object ${objectKey}`,
+				cause: error,
+			});
+		}
 	}
 
-	getChunkUploadUrl(vaultId: string, chunkHash: string) {
+	/**
+	 * Return a presigned URL allowing for object upload.
+	 *
+	 * todo: restrict upload via checksum and max size limits?
+	 *
+	 * @param objectKey
+	 */
+	async getSignedUploadUrl(objectKey: string) {
 		const BUCKET_NAME = this.configService.vars.objectStore.bucketName;
-		const SIGNED_URL_EXPIRY = this.configService.vars.objectStore.uploadExpiry;
-		const objectKey = this.getChunkObjectKey(vaultId, chunkHash);
-
-		return getSignedUrl(this.s3Client, new PutObjectCommand({ Bucket: BUCKET_NAME, Key: objectKey }), { expiresIn: SIGNED_URL_EXPIRY });
+		const UPLOAD_EXPIRY = this.configService.vars.objectStore.uploadExpiry;
+		return getSignedUrl(this.s3Client, new PutObjectCommand({ Bucket: BUCKET_NAME, Key: objectKey }), { expiresIn: UPLOAD_EXPIRY });
 	}
 
-	getChunkDownloadUrl(vaultId: string, chunkHash: string) {
+	/**
+	 * Return a presigned URL allowing for object download.
+	 *
+	 * @param objectKey
+	 */
+	async getSignedDownloadUrl(objectKey: string) {
 		const BUCKET_NAME = this.configService.vars.objectStore.bucketName;
-		const SIGNED_URL_EXPIRY = this.configService.vars.objectStore.downloadExpiry;
-		const objectKey = this.getChunkObjectKey(vaultId, chunkHash);
+		const DOWNLOAD_EXPIRY = this.configService.vars.objectStore.downloadExpiry;
+		return getSignedUrl(this.s3Client, new GetObjectCommand({ Bucket: BUCKET_NAME, Key: objectKey }), { expiresIn: DOWNLOAD_EXPIRY });
+	}
 
-		return getSignedUrl(this.s3Client, new GetObjectCommand({ Bucket: BUCKET_NAME, Key: objectKey }), { expiresIn: SIGNED_URL_EXPIRY });
+	/**
+	 * Query for objects, with optional prefix.
+	 *
+	 * @param prefix
+	 */
+	async query(prefix?: string) {
+		const BUCKET_NAME = this.configService.vars.objectStore.bucketName;
+
+		try {
+			const objectKeys: string[] = [];
+			const paginator = paginateListObjectsV2(
+				{
+					client: this.s3Client,
+					// pageSize: 1000,
+				},
+				{
+					Bucket: BUCKET_NAME,
+					Prefix: prefix,
+				},
+			);
+
+			// todo: types of .Contents and .Key include undefined, does this need special handling?
+			// https://docs.aws.amazon.com/sdk-for-javascript/v3/developer-guide/javascript_s3_code_examples.html doesn't handle undefined either
+			for await (const page of paginator) {
+				for (const object of page.Contents!) {
+					objectKeys.push(object.Key!);
+				}
+			}
+
+			return objectKeys;
+		} catch (error) {
+			if (error instanceof S3ServiceException) {
+				throw new SystemError({
+					identifier: ErrorIdentifiers.SYSTEM_UNEXPECTED,
+					message: `Unexpected error from object store while querying for objects, prefix "${prefix}"`,
+					cause: error,
+				});
+			}
+
+			throw new SystemError({
+				identifier: ErrorIdentifiers.SYSTEM_UNEXPECTED,
+				message: `Unexpected error from application while querying for objects, prefix "${prefix}"`,
+				cause: error,
+			});
+		}
 	}
 }
