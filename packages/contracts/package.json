@@ -1,6 +1,6 @@
 {
   "name": "@headbase-app/contracts",
-  "version": "0.7.0",
+  "version": "0.8.0",
   "description": "A library of common interface and schema contracts for use across Headbase apps",
   "author": {
 		"name": "Ben Ryder",

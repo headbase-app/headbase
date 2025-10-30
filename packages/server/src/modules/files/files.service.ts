@@ -1,8 +1,8 @@
 import { Injectable } from "@nestjs/common";
-import { DrizzleQueryError, eq, getTableColumns } from "drizzle-orm";
+import { count, desc, DrizzleQueryError, eq, getTableColumns, inArray } from "drizzle-orm";
 import postgres from "postgres";
 
-import { CreateFileDto, ErrorIdentifiers, FileChunkDto, FileDto } from "@headbase-app/contracts";
+import { CreateFileDto, ErrorIdentifiers, FileChunkDto, FileDto, FilesQueryParams } from "@headbase-app/contracts";
 
 import { UserContext } from "@common/request-context";
 import { PG_FOREIGN_KEY_VIOLATION, PG_UNIQUE_VIOLATION } from "@services/database/database-error-codes";
@@ -192,8 +192,70 @@ export class FilesService {
 		});
 	}
 
-	async query() {
-		return [];
+	async query(userContext: UserContext, query: FilesQueryParams) {
+		// fetching vault upfront to check permissions
+		// todo: improve/simplify permissions checks, should be separate service or explicit method?
+		for (const vaultId of query.vaultIds) {
+			await this.vaultsService.get(userContext, vaultId);
+		}
+
+		const offset = query.offset ?? 0;
+		const limit = query.limit ?? 50;
+
+		const db = this.databaseService.getDatabase();
+		let resultsWithOwner: FileWithOwnerDto[];
+		let total: number;
+		try {
+			resultsWithOwner = await db
+				.select({
+					...getTableColumns(files),
+					createdAt: isoFormat(files.createdAt),
+					updatedAt: isoFormat(files.updatedAt),
+					deletedAt: isoFormat(files.deletedAt),
+					committedAt: isoFormat(files.committedAt),
+					ownerId: vaults.ownerId,
+				})
+				.from(files)
+				.innerJoin(vaults, eq(files.vaultId, vaults.id))
+				.where(inArray(files.vaultId, query.vaultIds))
+				// todo: ordering will change as items are added, should be consistent?
+				.orderBy(desc(files.createdAt))
+				.limit(limit)
+				.offset(offset);
+
+			const totalQuery = await db
+				.select({
+					total: count(),
+				})
+				.from(files)
+				.innerJoin(vaults, eq(files.vaultId, vaults.id))
+				.where(inArray(files.vaultId, query.vaultIds));
+
+			total = totalQuery[0].total;
+		} catch (e) {
+			throw FilesService.getContextualError(e);
+		}
+
+		const results: FileDto[] = [];
+		for (const result of resultsWithOwner) {
+			await this.accessControlService.validateAccessControlRules({
+				userScopedPermissions: ["files:retrieve"],
+				unscopedPermissions: ["files:retrieve"],
+				requestingUserContext: userContext,
+				targetUserId: result.ownerId,
+			});
+			results.push(this.convertFileWithOwner(result));
+		}
+
+		return {
+			meta: {
+				results: results.length,
+				total: total,
+				limit: limit,
+				offset: offset,
+			},
+			results,
+		};
 	}
 
 	async commit(userContext: UserContext, versionId: string) {

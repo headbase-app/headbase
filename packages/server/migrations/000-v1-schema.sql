@@ -124,6 +124,6 @@ CREATE TABLE IF NOT EXISTS files_chunks (
 	chunk_hash TEXT NOT NULL,
 	-- The position (0-based) where the chunk fits in the file version.
 	file_position INT NOT NULL,
-	CONSTRAINT files_chunks_pk PRIMARY KEY (hash),
+	CONSTRAINT files_chunks_pk PRIMARY KEY (chunk_hash),
 	CONSTRAINT files_chunks_file FOREIGN KEY (version_id) REFERENCES files(version_id) ON DELETE CASCADE
 );

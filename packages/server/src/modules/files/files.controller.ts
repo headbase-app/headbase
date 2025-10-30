@@ -1,5 +1,11 @@
-import { Controller, Delete, Get, Post, UseGuards, Version } from "@nestjs/common";
+import { Body, Controller, Delete, Get, Param, Post, Query, UseGuards } from "@nestjs/common";
+
+import { CreateFileDto, FilesURLParams, FilesQueryParams } from "@headbase-app/contracts";
+
 import { AuthenticationGuard } from "@modules/auth/auth.guard";
+import { FilesService } from "@modules/files/files.service";
+import { RequestContext } from "@common/request-context";
+import { ZodValidationPipe } from "@common/zod-validator.pipe";
 
 @Controller({
 	path: "/files",
@@ -7,31 +13,35 @@ import { AuthenticationGuard } from "@modules/auth/auth.guard";
 })
 @UseGuards(AuthenticationGuard)
 export class FilesHttpController {
+	constructor(private readonly filesService: FilesService) {}
+
 	@Post()
-	create() {
-		return {};
+	create(@RequestContext() requestContext: RequestContext, @Body(new ZodValidationPipe(CreateFileDto)) createFileDto: CreateFileDto) {
+		return this.filesService.create(requestContext.user, createFileDto);
 	}
 
 	@Get()
-	query() {
-		return [];
+	query(@RequestContext() requestContext: RequestContext, @Query(new ZodValidationPipe(FilesQueryParams)) query: FilesQueryParams) {
+		return this.filesService.query(requestContext.user, query);
 	}
 
 	@Get(":fileId")
-	get() {
-		return {};
+	get(@RequestContext() requestContext: RequestContext, @Param(new ZodValidationPipe(FilesURLParams)) params: FilesURLParams) {
+		return this.filesService.get(requestContext.user, params.fileId);
 	}
 
 	@Delete(":fileId")
-	delete() {
-		return {};
+	delete(@RequestContext() requestContext: RequestContext, @Param(new ZodValidationPipe(FilesURLParams)) params: FilesURLParams) {
+		return this.filesService.delete(requestContext.user, params.fileId);
 	}
 
 	@Post(":fileId/commit")
-	commit() {}
+	commit(@RequestContext() requestContext: RequestContext, @Param(new ZodValidationPipe(FilesURLParams)) params: FilesURLParams) {
+		return this.filesService.commit(requestContext.user, params.fileId);
+	}
 
 	@Get(":fileId/chunks")
-	getChunks() {
-		return [];
+	getChunks(@RequestContext() requestContext: RequestContext, @Param(new ZodValidationPipe(FilesURLParams)) params: FilesURLParams) {
+		return this.filesService.getChunks(requestContext.user, params.fileId);
 	}
 }

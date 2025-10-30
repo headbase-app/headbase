@@ -8,7 +8,6 @@ export const FilesURLParams = z.object({
 export type FilesURLParams = z.infer<typeof FilesURLParams>;
 
 export const FilesQueryParams = ResourceListingParams.extend({
-	vaultIds: z.array(FileDto.shape.vaultId).optional(),
-	fileIds: z.array(FileDto.shape.fileId).optional(),
+	vaultIds: z.array(FileDto.shape.vaultId),
 }).strict()
 export type FilesQueryParams = z.infer<typeof FilesQueryParams>;
