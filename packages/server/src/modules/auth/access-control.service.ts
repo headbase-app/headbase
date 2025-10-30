@@ -5,8 +5,8 @@ import { ErrorIdentifiers, Permissions, RolePermissions, Roles } from "@headbase
 import { ResourceNotFoundError } from "@services/errors/resource/resource-not-found.error";
 import { UserRequestError } from "@services/errors/base/user-request.error";
 import { UserContext } from "@common/request-context";
-import { DatabaseUserDto } from "@services/database/schema";
 import { UsersService } from "@modules/users/users.service";
+import { DatabaseUserDto } from "@modules/users/database-user";
 
 export interface AccessControlOptions {
 	/** A list of valid permissions if the requesting user context matches the target user **/

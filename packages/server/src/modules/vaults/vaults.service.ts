@@ -8,12 +8,12 @@ import { AccessControlService } from "@modules/auth/access-control.service";
 import { EventsService } from "@services/events/events.service";
 import { EventIdentifiers } from "@services/events/events";
 import { DatabaseService } from "@services/database/database.service";
-import { vaults } from "@services/database/schema";
+import { vaults } from "@services/database/schema/schema";
 import { SystemError } from "@services/errors/base/system.error";
 import { ResourceRelationshipError } from "@services/errors/resource/resource-relationship.error";
 import { PG_FOREIGN_KEY_VIOLATION, PG_UNIQUE_VIOLATION } from "@services/database/database-error-codes";
 import { ResourceNotFoundError } from "@services/errors/resource/resource-not-found.error";
-import { isoFormat } from "@services/database/iso-format-date";
+import { isoFormat } from "@services/database/schema/iso-format-date";
 import { ChunksService } from "@modules/chunks/chunks.service";
 
 @Injectable()

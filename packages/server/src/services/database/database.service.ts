@@ -1,9 +1,11 @@
 import postgres, { Sql } from "postgres";
 import { sql } from "drizzle-orm";
+import { migrate } from "drizzle-orm/postgres-js/migrator";
 import { drizzle, PostgresJsDatabase } from "drizzle-orm/postgres-js";
 import { Injectable } from "@nestjs/common";
+import { join } from "node:path";
 
-import { schema } from "./schema";
+import { schema } from "./schema/schema";
 import { ConfigService } from "@services/config/config.service";
 import { HealthStatus } from "@modules/server/server.service";
 
@@ -39,6 +41,10 @@ export class DatabaseService {
 		// }
 		// this.driver.options.serializers["114"] = (x) => JSON.stringify(x);
 		// this.driver.options.serializers["3802"] = (x) => JSON.stringify(x);
+	}
+
+	async onApplicationBootstrap() {
+		await migrate(this.db, { migrationsFolder: "./migrations", migrationsSchema: "public", migrationsTable: "migrations" });
 	}
 
 	getSQL(): Sql {

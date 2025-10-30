@@ -11,21 +11,23 @@ If you just want to self-host a sever instance, it's recommended to use Docker a
 - S3/S3-compatible object storage is used for storing file chunks, for example [Cloudflare R2](https://www.cloudflare.com/en-gb/developer-platform/products/r2/).
 - Emails are sent using SMTP, so an email provider like [Mailgun](https://www.mailgun.com/) is required (local dev can log emails without sending).
 
-### 1. Create database
+### 1. Setup database
 
-1.1. This script will create a `headbase` user & database, alternatively create your own database and set the env vars accordingly.
-```shell
-psql postgres < ./scripts/setup.sql
-```
+The required actions here will depend on how you personally want to run your database, for example using a local postgres install or connecting to a remote development database.
+If in doubt, it's recommended to run a local database as E2E tests run constant setup/teardown tasks.
 
-1.2. Run database migrations to set up the required tables in your database
-```shell
-psql -d headbase < ./migrations/000-v1-schema.sql
-```
+Migrations are ran at runtime by the application, so simply ensure you have a blank database and set your `DATABASE_URL` environment variable correctly.
 
-1.3. You may have to ensure that you user has permissions to access the new tables
-```shell
-psql postgres < ./scripts/permissions.sql
+#### Example local setup steps:
+
+Run `psql postgres` and then:
+```bash
+create user headbase with password 'password' login;
+create database headbase;
+\c headbase
+grant create on schema public to headbase;
+grant create on database headbase to headbase;
+create extension if not exists "uuid-ossp";
 ```
 
 ### 2. Install dependencies
@@ -86,4 +88,3 @@ These tests don't spin up the full application or depend on external setup, util
 ```bash
 $ npm run test:unit
 ```
-

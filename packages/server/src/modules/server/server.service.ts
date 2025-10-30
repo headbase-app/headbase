@@ -6,7 +6,7 @@ import { CacheStoreService } from "@services/cache-store/cache-store.service";
 import { AccessControlService } from "@modules/auth/access-control.service";
 import { RequestUser } from "@common/request-context";
 import { SystemError } from "@services/errors/base/system.error";
-import { settings } from "@services/database/schema";
+import { settings } from "@services/database/schema/schema";
 import { forwardRef, Inject, Injectable } from "@nestjs/common";
 
 export type HealthStatus = "ok" | "degraded" | "error";

@@ -11,12 +11,13 @@ import { EventsService } from "@services/events/events.service";
 import { EventIdentifiers } from "@services/events/events";
 import { ServerManagementService } from "@modules/server/server.service";
 import { DatabaseService } from "@services/database/database.service";
-import { DatabaseUserDto, users } from "@services/database/schema";
+import { users } from "@services/database/schema/schema";
 import { ResourceNotFoundError } from "@services/errors/resource/resource-not-found.error";
 import { PG_UNIQUE_VIOLATION } from "@services/database/database-error-codes";
 import { ResourceRelationshipError } from "@services/errors/resource/resource-relationship.error";
 import { SystemError } from "@services/errors/base/system.error";
-import { isoFormat } from "@services/database/iso-format-date";
+import { isoFormat } from "@services/database/schema/iso-format-date";
+import { DatabaseUserDto } from "@modules/users/database-user";
 
 @Injectable()
 export class UsersService {

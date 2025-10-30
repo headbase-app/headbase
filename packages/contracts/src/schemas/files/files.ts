@@ -27,7 +27,8 @@ export const FileDto = z.object({
 		.max(20, "updatedBy can't be over 20 characters."),
 	deletedBy: z.string()
 		.min(1, "deletedBy must be at least 1 character.")
-		.max(20, "deletedBy can't be over 20 characters."),
+		.max(20, "deletedBy can't be over 20 characters.")
+		.nullable(),
 	committedAt: createDateField('committedAt').nullable(),
 })
 	.strict()
