@@ -1,9 +1,22 @@
 import { Injectable } from "@nestjs/common";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
-import { GetObjectCommand, PutObjectCommand, S3Client, HeadObjectCommandInput, HeadObjectCommand, paginateListObjectsV2, S3ServiceException } from "@aws-sdk/client-s3";
+import {
+	GetObjectCommand,
+	PutObjectCommand,
+	S3Client,
+	HeadObjectCommandInput,
+	HeadObjectCommand,
+	paginateListObjectsV2,
+	S3ServiceException,
+	HeadBucketCommand,
+	HeadBucketCommandInput,
+} from "@aws-sdk/client-s3";
+
+import { ErrorIdentifiers } from "@headbase-app/contracts";
+
 import { ConfigService } from "@services/config/config.service";
 import { SystemError } from "@services/errors/base/system.error";
-import { ErrorIdentifiers } from "@headbase-app/contracts";
+import { HealthStatus } from "@modules/server/server.service";
 
 @Injectable()
 export class ObjectStoreService {
@@ -133,6 +146,26 @@ export class ObjectStoreService {
 			throw new SystemError({
 				identifier: ErrorIdentifiers.SYSTEM_UNEXPECTED,
 				message: `Unexpected error from application while querying for objects, prefix "${prefix}"`,
+				cause: error,
+			});
+		}
+	}
+
+	async healthCheck(): Promise<HealthStatus> {
+		const BUCKET_NAME = this.configService.vars.objectStore.bucketName;
+
+		try {
+			const bucketParams: HeadBucketCommandInput = {
+				Bucket: BUCKET_NAME,
+			};
+			const headCmd = new HeadBucketCommand(bucketParams);
+			const result = await this.s3Client.send(headCmd);
+
+			return result.$metadata.httpStatusCode === 200 ? "ok" : "error";
+		} catch (error) {
+			throw new SystemError({
+				identifier: ErrorIdentifiers.SYSTEM_UNEXPECTED,
+				message: `Unexpected error while querying bucket health.`,
 				cause: error,
 			});
 		}
