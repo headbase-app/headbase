@@ -6,17 +6,19 @@ If you just want to self-host a sever instance, it's recommended to use Docker a
 ## Local development setup
 
 ### 0. Prerequisites
-- [PostgreSQL](https://www.postgresql.org/download/) is used for the application database.
+- [Postgres](https://www.postgresql.org/download/) is used for the application database.
 - [Redis](https://redis.io/docs/latest/operate/oss_and_stack/install/install-redis/) is used for caching and token storage.
-- S3/S3-compatible object storage is used for storing file chunks, for example [Cloudflare R2](https://www.cloudflare.com/en-gb/developer-platform/products/r2/).
-- Emails are sent using SMTP, so an email provider like [Mailgun](https://www.mailgun.com/) is required (local dev can log emails without sending).
+- An S3/S3-compatible object storage is used for storing file chunks, for example [Cloudflare R2](https://www.cloudflare.com/en-gb/developer-platform/products/r2/).
+- Emails are sent using SMTP, so an email provider supporting SMTP is required (local dev can log emails without sending).
 
 ### 1. Setup database
 
-The required actions here will depend on how you personally want to run your database, for example using a local postgres install or connecting to a remote development database.
+The required actions here will depend on how you want to run your database, for example using a local postgres install or connecting to a remote development database.
 If in doubt, it's recommended to run a local database as E2E tests run constant setup/teardown tasks.
 
-Migrations are ran at runtime by the application, so simply ensure you have a blank database and set your `DATABASE_URL` environment variable correctly.
+**Important notes:**
+- The application depends on `uuid_generate_v4` so ensure the `uuid-ossp` extension is installed.
+- Migrations are ran by the application at runtime using [drizzle](https://orm.drizzle.team/docs/migrations) which [currently requires](https://github.com/drizzle-team/drizzle-orm/pull/4025) permissions to `create schema`, so you must set this permission accordingly too.
 
 #### Example local setup steps:
 

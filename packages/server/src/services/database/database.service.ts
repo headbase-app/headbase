@@ -3,7 +3,6 @@ import { sql } from "drizzle-orm";
 import { migrate } from "drizzle-orm/postgres-js/migrator";
 import { drizzle, PostgresJsDatabase } from "drizzle-orm/postgres-js";
 import { Injectable } from "@nestjs/common";
-import { join } from "node:path";
 
 import { schema } from "./schema/schema";
 import { ConfigService } from "@services/config/config.service";
@@ -22,6 +21,8 @@ export class DatabaseService {
 			},
 			// todo: will this option be needed after migrating to Drizzle?
 			transform: postgres.camel,
+			// Silencing log messages, which are sent for every migration run triggered.
+			onnotice: () => {},
 		});
 
 		this.db = drizzle({
