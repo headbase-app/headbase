@@ -22,7 +22,7 @@ describe("Update Settings - /v1/server/settings [PATCH]", () => {
 	// Testing success cases/happy paths work.
 	describe("Success Cases", () => {
 		test("When authorized as admin, the settings should be updated", async () => {
-			const accessToken = await testHelper.getUserAccessToken(testAdminUser1.id);
+			const accessToken = await testHelper.getSessionToken(testAdminUser1.id);
 
 			// Disable registration and check that change has been made
 			const { body: disabledBody, statusCode: disabledStatusCode } = await testHelper.client.patch("/v1/server/settings").set("Authorization", `Bearer ${accessToken}`).send({
@@ -53,7 +53,7 @@ describe("Update Settings - /v1/server/settings [PATCH]", () => {
 	// Testing auth & permissions work.
 	describe("Invalid Authentication", () => {
 		test("When authorized as regular user, the request should be forbidden", async () => {
-			const accessToken = await testHelper.getUserAccessToken(testUser1.id);
+			const accessToken = await testHelper.getSessionToken(testUser1.id);
 
 			const { body, statusCode } = await testHelper.client.patch("/v1/server/settings").set("Authorization", `Bearer ${accessToken}`).send({
 				registrationEnabled: true,
@@ -90,7 +90,7 @@ describe("Update Settings - /v1/server/settings [PATCH]", () => {
 		});
 
 		test("When supplying invalid JSON data, the request should fail", async () => {
-			const accessToken = await testHelper.getUserAccessToken(testAdminUser1.id);
+			const accessToken = await testHelper.getSessionToken(testAdminUser1.id);
 
 			await testMalformedData({
 				clientFunction: testHelper.client.patch.bind(testHelper.client),

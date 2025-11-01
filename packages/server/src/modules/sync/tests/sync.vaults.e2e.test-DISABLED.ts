@@ -25,8 +25,8 @@ afterEach(() => {
 describe("Sync Module - Vault Events", () => {
 	describe("/v1/sync [WEBSOCKET]", () => {
 		test("When a vault is created by the same user with different sessions, an event should be received", async () => {
-			const accessToken = await testHelper.getUserAccessToken(testUser1.id);
-			const accessToken2 = await testHelper.getUserAccessToken(testUser1.id);
+			const accessToken = await testHelper.getSessionToken(testUser1.id);
+			const accessToken2 = await testHelper.getSessionToken(testUser1.id);
 
 			const { body } = await testHelper.client.get("/v1/sync/ticket").set("Authorization", `Bearer ${accessToken}`).send();
 
@@ -61,7 +61,7 @@ describe("Sync Module - Vault Events", () => {
 		});
 
 		test("When a vault is created by the same user using the same session, no event should be received", async () => {
-			const accessToken = await testHelper.getUserAccessToken(testUser1.id);
+			const accessToken = await testHelper.getSessionToken(testUser1.id);
 			const { body } = await testHelper.client.get("/v1/sync/ticket").set("Authorization", `Bearer ${accessToken}`).send();
 
 			const protocol = `headbase.ticket.${body.ticket}`;

@@ -22,7 +22,7 @@ beforeEach(async () => {
 
 describe("Check Auth", () => {
 	test("authenticated request succeeds", async () => {
-		const accessToken = await testHelper.getUserAccessToken(testUser1.id);
+		const accessToken = await testHelper.getSessionToken(testUser1.id);
 
 		const { statusCode } = await testHelper.client.get("/v1/auth/check").set("Authorization", `Bearer ${accessToken}`);
 

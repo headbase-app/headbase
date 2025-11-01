@@ -1,4 +1,5 @@
 import { Module } from "@nestjs/common";
+import { ScheduleModule } from "@nestjs/schedule";
 
 import { ServicesModule } from "@services/services.module";
 import { BaseModule } from "@modules/base/base.module";
@@ -10,6 +11,6 @@ import { FilesModule } from "@modules/files/files.module";
 import { ChunksModule } from "@modules/chunks/chunks.module";
 
 @Module({
-	imports: [ServicesModule, BaseModule, ServerManagementModule, AuthModule, UsersModule, VaultsModule, FilesModule, ChunksModule],
+	imports: [ServicesModule, BaseModule, ServerManagementModule, AuthModule, UsersModule, VaultsModule, FilesModule, ChunksModule, ScheduleModule.forRoot()],
 })
 export class AppModule {}

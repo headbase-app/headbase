@@ -23,9 +23,6 @@ export class ConfigService {
 		database: {
 			url: process.env.DATABASE_URL,
 		},
-		cacheStore: {
-			redisUrl: process.env.CACHE_STORE_REDIS_URL,
-		},
 		auth: {
 			issuer: process.env.AUTH_ISSUER ?? null,
 			audience: process.env.AUTH_AUDIENCE ?? null,

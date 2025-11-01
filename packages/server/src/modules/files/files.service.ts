@@ -1,6 +1,7 @@
 import { Injectable } from "@nestjs/common";
 import { count, desc, DrizzleQueryError, eq, getTableColumns, inArray } from "drizzle-orm";
 import postgres from "postgres";
+import { Cron } from "@nestjs/schedule";
 
 import { CreateFileDto, ErrorIdentifiers, FileChunkDto, FileDto, FilesQueryParams } from "@headbase-app/contracts";
 
@@ -324,4 +325,11 @@ export class FilesService {
 
 		return results;
 	}
+
+	// todo: dynamically schedule via SchedulerRegistry so can be adjusted via ConfigService?
+	@Cron("@daily")
+	async removeUncommittedFiles() {}
+
+	@Cron("@weekly")
+	async removeOldChunks() {}
 }

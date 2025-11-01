@@ -20,7 +20,7 @@ describe("Fetch Vault Chunks - /v1/vaults/:vaultId/chunks [GET]", () => {
 	// Testing success cases/happy paths work.
 	describe("Success Cases", () => {
 		test("When fetching from vault with chunks, all chunks should be returned.", async () => {
-			const accessToken = await testHelper.getUserAccessToken(testUser1.id);
+			const accessToken = await testHelper.getSessionToken(testUser1.id);
 
 			const { body, statusCode } = await testHelper.client.get(`/v1/vaults/${testUser1Vault1.id}/chunks`).set("Authorization", `Bearer ${accessToken}`).send();
 
@@ -29,7 +29,7 @@ describe("Fetch Vault Chunks - /v1/vaults/:vaultId/chunks [GET]", () => {
 		});
 
 		test("When fetching from vault with no chunks, no chunks should be returned.", async () => {
-			const accessToken = await testHelper.getUserAccessToken(testUser1.id);
+			const accessToken = await testHelper.getSessionToken(testUser1.id);
 
 			const { body, statusCode } = await testHelper.client.get(`/v1/vaults/${testUser1Vault2.id}/chunks`).set("Authorization", `Bearer ${accessToken}`).send();
 

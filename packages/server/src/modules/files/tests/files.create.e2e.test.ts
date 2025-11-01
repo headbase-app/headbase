@@ -15,30 +15,9 @@ beforeEach(async () => {
 	await testHelper.beforeEach();
 });
 
-describe("Query Files - /v1/files [GET]", () => {
+describe("Create File - /v1/files [POST]", () => {
 	// Testing success cases/happy paths work.
-	describe("Success Cases", () => {
-		test("When fetching vault with 0 files, empty results should be returned.", async () => {
-			const accessToken = await testHelper.getSessionToken(testUser1.id);
-
-			const { body, statusCode } = await testHelper.client
-				// query string used as supertest/agent doesn't seem to handle arrays
-				.get(`/v1/files?offset=0&limit=42&vaultIds[]=${testUser1Vault2.id}`)
-				.set("Authorization", `Bearer ${accessToken}`)
-				.send();
-
-			expect(statusCode).toEqual(200);
-			expect(body).toEqual({
-				meta: {
-					results: 0,
-					offset: 0,
-					limit: 42,
-					total: 0,
-				},
-				results: [],
-			});
-		});
-	});
+	describe("Success Cases", () => {});
 
 	// Testing auth & permissions work.
 	describe("Invalid Authentication", () => {});
@@ -53,7 +32,9 @@ describe("Query Files - /v1/files [GET]", () => {
 	describe("Relationship Validation", () => {});
 
 	// Testing internal/system fields are not user editable (timestamps, id, owner relationships etc).
-	describe("Forbidden Fields", () => {});
+	describe("Forbidden Fields", () => {
+		test.todo("When passing a committedAt field, the request should fail");
+	});
 
 	// Testing invalid type validation works (pass number to sting field, malformed data etc).
 	describe("Invalid Data", () => {});

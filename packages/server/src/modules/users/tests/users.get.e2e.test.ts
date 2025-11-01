@@ -26,7 +26,7 @@ describe("Get User - /v1/users/:id [GET]", () => {
 	});
 
 	test("When authorized as the user to get, the response should succeed and return the user", async () => {
-		const accessToken = await testHelper.getUserAccessToken(testUser1.id);
+		const accessToken = await testHelper.getSessionToken(testUser1.id);
 
 		const { body, statusCode } = await testHelper.client.get(`/v1/users/${testUser1.id}`).set("Authorization", `Bearer ${accessToken}`);
 
@@ -46,7 +46,7 @@ describe("Get User - /v1/users/:id [GET]", () => {
 	});
 
 	test("When authorized as a different user to the one to get, the request should fail", async () => {
-		const accessToken = await testHelper.getUserAccessToken(testUser1.id);
+		const accessToken = await testHelper.getSessionToken(testUser1.id);
 
 		const { body, statusCode } = await testHelper.client.get(`/v1/users/${testUser2Unverified.id}`).set("Authorization", `Bearer ${accessToken}`);
 
@@ -55,7 +55,7 @@ describe("Get User - /v1/users/:id [GET]", () => {
 
 	// todo: reword to call out that 404 is not expected here and why?
 	test("When fetching a user that doesn't exist, the request should fail", async () => {
-		const accessToken = await testHelper.getUserAccessToken(testUser1.id);
+		const accessToken = await testHelper.getSessionToken(testUser1.id);
 
 		const { body, statusCode } = await testHelper.client.get("/v1/users/82f7d7a4-e094-4f15-9de0-5b5621376714").set("Authorization", `Bearer ${accessToken}`);
 
@@ -63,7 +63,7 @@ describe("Get User - /v1/users/:id [GET]", () => {
 	});
 
 	test("When passing an invalid ID, the request should fail", async () => {
-		const accessToken = await testHelper.getUserAccessToken(testUser1.id);
+		const accessToken = await testHelper.getSessionToken(testUser1.id);
 
 		const { body, statusCode } = await testHelper.client.get("/v1/users/invalid").set("Authorization", `Bearer ${accessToken}`);
 

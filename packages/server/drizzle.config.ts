@@ -7,14 +7,14 @@ import { defineConfig } from "drizzle-kit";
  * See ./src/services/database/database.service.ts for runtime migrations.
  */
 export default defineConfig({
-	schema: "./src/services/database/schema.ts",
+	schema: "./src/services/database/schema/schema.ts",
 	out: "./migrations",
 	dialect: "postgresql",
 	dbCredentials: {
 		url: process.env.DATABASE_URL!,
 	},
 	migrations: {
-		table: "migrations",
+		table: "_migrations",
 		schema: "public",
 	},
 });

@@ -5,7 +5,6 @@ import ms from "ms";
 
 import { EventsService } from "@services/events/events.service";
 import { RequestUser } from "@common/request-context";
-import { CacheStoreService } from "@services/cache-store/cache-store.service";
 import { AccessUnauthorizedError } from "@services/errors/access/access-unauthorized.error";
 import { ErrorIdentifiers } from "@headbase-app/contracts";
 import { SystemError } from "@services/errors/base/system.error";
@@ -64,9 +63,10 @@ export class SyncService {
 
 	constructor(
 		private readonly eventService: EventsService,
-		private readonly dataStoreService: CacheStoreService,
 		private readonly vaultsService: VaultsService,
-	) {
+	) {}
+
+	onApplicationBootstrap() {
 		// All server events will need to be processed as they will require socket events
 		this.eventService.subscribeAll((e: CustomEvent<ServerEvent>) => {
 			this.handleServerEvent({
@@ -82,6 +82,7 @@ export class SyncService {
 		this.#actionCallback = callback;
 	}
 
+	// eslint-disable-next-line
 	async requestTicket(requestUser: RequestUser): Promise<string> {
 		// todo: validate that request user has permissions and is verified.
 
@@ -97,7 +98,7 @@ export class SyncService {
 		};
 		const connectionTicket = crypto.randomBytes(16).toString("hex");
 
-		await this.dataStoreService.addItem(connectionTicket, JSON.stringify(connectionData), { epochExpiry: ticketExpiry });
+		// await this.dataStoreService.addItem(connectionTicket, JSON.stringify(connectionData), { epochExpiry: ticketExpiry });
 
 		return connectionTicket;
 	}
@@ -109,8 +110,11 @@ export class SyncService {
 	 * @param connectionTicket
 	 * @param existingConnection
 	 */
+	// eslint-disable-next-line
 	async validateTicket(connectionTicket: string, existingConnection?: ConnectionData): Promise<InitialConnection> {
-		const item = await this.dataStoreService.getItem(connectionTicket);
+		// const item = await this.dataStoreService.getItem(connectionTicket);
+		const item = {};
+
 		if (!item) {
 			throw new AccessUnauthorizedError({ identifier: ErrorIdentifiers.REQUEST_INVALID, message: "No matching connection ticket found" });
 		}

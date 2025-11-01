@@ -9,6 +9,6 @@ import { ServicesModule } from "@services/services.module";
 	imports: [ServicesModule, forwardRef(() => UsersModule)],
 	controllers: [AuthHttpController],
 	providers: [AuthService, AccessControlService],
-	exports: [AccessControlService],
+	exports: [AccessControlService, AuthService],
 })
 export class AuthModule {}

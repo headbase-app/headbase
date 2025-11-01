@@ -2,10 +2,10 @@ import { Body, Controller, Get, Post, UseGuards, Param, Patch, Delete } from "@n
 
 import { CreateUserDto, UpdateUserDto, UsersURLParams } from "@headbase-app/contracts";
 import { UsersService } from "@modules/users/users.service";
-import { TokenService } from "@services/token/token.service";
 import { ZodValidationPipe } from "@common/zod-validator.pipe";
 import { AuthenticationGuard } from "@modules/auth/auth.guard";
 import { RequestContext } from "@common/request-context";
+import { AuthService } from "@modules/auth/auth.service";
 
 @Controller({
 	path: "/users",
@@ -14,17 +14,17 @@ import { RequestContext } from "@common/request-context";
 export class UsersHttpController {
 	constructor(
 		private usersService: UsersService,
-		private tokenService: TokenService,
+		private authService: AuthService,
 	) {}
 
 	@Post()
 	async createUser(@Body(new ZodValidationPipe(CreateUserDto)) createUserDto: CreateUserDto) {
 		const newUser = await this.usersService.create(createUserDto);
-		const createdTokenPair = await this.tokenService.createNewTokenPair(newUser);
+		const session = await this.authService.createSession(newUser.id);
 
 		return {
 			user: newUser,
-			tokens: createdTokenPair.tokens,
+			tokens: { accessToken: session.token, refreshToken: "" },
 		};
 	}
 

@@ -3,16 +3,14 @@ import TestAgent from "supertest/lib/agent";
 import { Server } from "node:http";
 import { INestApplication } from "@nestjs/common";
 
-import { TokenPair } from "@headbase-app/contracts";
-
 import { ConfigService } from "@services/config/config.service";
-import { UsersService } from "@modules/users/users.service";
 import { TokenService } from "@services/token/token.service";
 import { DatabaseService } from "@services/database/database.service";
-import { CacheStoreService } from "@services/cache-store/cache-store.service";
 import { ServerManagementService } from "@modules/server/server.service";
 import { resetTestData, ScriptOptions } from "./database-scripts";
 import { createApp } from "../src/create-app";
+import { AuthService } from "@modules/auth/auth.service";
+import { SchedulerRegistry } from "@nestjs/schedule";
 
 export class TestHelper {
 	private application!: INestApplication<Server>;
@@ -38,27 +36,15 @@ export class TestHelper {
 	}
 
 	/**
-	 * Return a token pair for the given user.
+	 * Return a session token for the given user.
+	 * Note that automatic setup/teardown (beforeEach) will delete all users and cascade to sessions too.
 	 *
 	 * @param userId
 	 */
-	async getUserTokens(userId: string): Promise<TokenPair> {
-		const userService = this.application.get(UsersService);
-		const tokenService = this.application.get(TokenService);
-
-		const user = await userService._UNSAFE_getById(userId);
-		const createdTokenPair = await tokenService.createNewTokenPair(user);
-		return createdTokenPair.tokens;
-	}
-
-	/**
-	 * Return an access token for the given user.
-	 *
-	 * @param userId
-	 */
-	async getUserAccessToken(userId: string): Promise<string> {
-		const tokenPair = await this.getUserTokens(userId);
-		return tokenPair.accessToken;
+	async getSessionToken(userId: string): Promise<string> {
+		const authService = this.application.get(AuthService);
+		const session = await authService.createSession(userId);
+		return session.token;
 	}
 
 	getEmailVerificationToken(userId: string): string {
@@ -91,11 +77,16 @@ export class TestHelper {
 	 */
 	async killApplication() {
 		const databaseService = this.application.get(DatabaseService);
-		const dataStoreService = this.application.get(CacheStoreService);
 
-		// Clean up db connection before exiting
+		// Clean up external connections
 		await databaseService.onModuleDestroy();
-		dataStoreService.onModuleDestroy();
+
+		// Stop all registered cron jobs
+		const schedulerRegistry = this.application.get(SchedulerRegistry);
+		const allJobs = schedulerRegistry.getCronJobs();
+		for (const job of allJobs.values()) {
+			await job.stop();
+		}
 	}
 
 	async beforeEach(options?: ScriptOptions) {
@@ -107,10 +98,6 @@ export class TestHelper {
 		await serverManagementDatabaseService._UNSAFE_updateSettings({
 			registrationEnabled: true,
 		});
-
-		// Purge the data store to ensure things like refresh/access tokens aren't persisted
-		const dataStoreService = this.application.get(CacheStoreService);
-		await dataStoreService.purge();
 	}
 
 	async afterAll() {

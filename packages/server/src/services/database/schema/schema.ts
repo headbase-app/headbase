@@ -30,6 +30,32 @@ export const usersRelations = relations(users, ({ many }) => ({
 	vaults: many(vaults),
 }));
 
+export const sessions = pgTable(
+	"sessions",
+	{
+		token: varchar({ length: 64 }).primaryKey(),
+		id: uuid()
+			.notNull()
+			.default(sql`uuid_generate_v4()`),
+		userId: uuid("user_id").notNull(),
+		expiresAt: timestamp("expires_at", { withTimezone: true, mode: "string" }).notNull(),
+	},
+	(table) => [
+		foreignKey({
+			columns: [table.userId],
+			foreignColumns: [users.id],
+			name: "sessions_user",
+		}).onDelete("cascade"),
+	],
+);
+
+export const sessionsRelations = relations(sessions, ({ one }) => ({
+	user: one(users, {
+		fields: [sessions.userId],
+		references: [users.id],
+	}),
+}));
+
 export const vaults = pgTable(
 	"vaults",
 	{

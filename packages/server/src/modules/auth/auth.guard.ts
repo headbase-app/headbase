@@ -1,8 +1,8 @@
 import { CanActivate, ExecutionContext, Injectable } from "@nestjs/common";
 import { AccessUnauthorizedError } from "@services/errors/access/access-unauthorized.error";
 import { RequestWithContext, UserContext } from "@common/request-context";
-import { TokenService } from "@services/token/token.service";
 import { AccessControlService } from "@modules/auth/access-control.service";
+import { AuthService } from "@modules/auth/auth.service";
 
 /**
  * An authentication guard which sits at the controller layer.
@@ -12,25 +12,25 @@ import { AccessControlService } from "@modules/auth/access-control.service";
  */
 @Injectable()
 export class AuthenticationGuard implements CanActivate {
-	constructor(private tokenService: TokenService) {}
+	constructor(private authService: AuthService) {}
 
 	async canActivate(context: ExecutionContext): Promise<boolean> {
-		const request = context.switchToHttp().getRequest();
+		const request = context.switchToHttp().getRequest<RequestWithContext>();
 
 		const authorizationHeader = request.header("authorization");
 		if (authorizationHeader) {
-			const accessToken = authorizationHeader.split(" ")[1];
+			const sessionToken = authorizationHeader.split(" ")[1];
 
 			// todo: this is reused in AuthGatewayGuard. Should be a separate function?
-			if (accessToken) {
-				const tokenPayload = await this.tokenService.validateAndDecodeAccessToken(accessToken);
-				if (tokenPayload) {
+			if (sessionToken) {
+				const sessionDetails = await this.authService.validateSession(sessionToken);
+				if (sessionDetails) {
 					this.attachRequestContext(request, {
-						id: tokenPayload.sub,
-						sessionId: tokenPayload.sid,
-						verifiedAt: tokenPayload.verifiedAt,
+						id: sessionDetails.userId,
+						sessionId: sessionDetails.id,
+						verifiedAt: sessionDetails.verifiedAt,
 						// todo: should depend on service not static method, or method should be moved?
-						permissions: AccessControlService.resolveRolePermissions(tokenPayload.role),
+						permissions: AccessControlService.resolveRolePermissions(sessionDetails.role),
 					});
 					return true;
 				}
@@ -38,7 +38,7 @@ export class AuthenticationGuard implements CanActivate {
 		}
 
 		throw new AccessUnauthorizedError({
-			message: "You are not authorized to perform that action",
+			message: "You are not authenticated to perform that action.",
 		});
 	}
 

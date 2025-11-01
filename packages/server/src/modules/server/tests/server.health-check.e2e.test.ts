@@ -25,7 +25,6 @@ describe("Server Module", () => {
 				status: "ok",
 				services: {
 					database: "ok",
-					dataStore: "ok",
 					objectStore: "ok",
 				},
 			});

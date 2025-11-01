@@ -18,7 +18,7 @@ beforeEach(async () => {
 // todo: add further tests, including auth checks, invalid data etc
 describe("Chunk Upload - /v1/chunks/:vaultId/:hash [POST]", () => {
 	test("When object doesn't exist, upload URL should be returned", async () => {
-		const accessToken = await testHelper.getUserAccessToken(testUser1.id);
+		const accessToken = await testHelper.getSessionToken(testUser1.id);
 
 		const { body } = await testHelper.client.post(`/v1/chunks/${testUser1Vault1.id}/noexists`).set("Authorization", `Bearer ${accessToken}`).send();
 
@@ -30,7 +30,7 @@ describe("Chunk Upload - /v1/chunks/:vaultId/:hash [POST]", () => {
 	});
 
 	test("When object exist, 400 error should be returned", async () => {
-		const accessToken = await testHelper.getUserAccessToken(testUser1.id);
+		const accessToken = await testHelper.getSessionToken(testUser1.id);
 
 		const { body, statusCode } = await testHelper.client.post(`/v1/chunks/${testUser1Vault1.id}/exists`).set("Authorization", `Bearer ${accessToken}`).send();
 

@@ -1,9 +1,8 @@
 import { Body, Controller, Get, HttpCode, HttpStatus, Post, UseGuards } from "@nestjs/common";
 
-import { LoginRequest, LogoutRequest, RefreshRequest, VerifyEmailDto } from "@headbase-app/contracts";
+import { LoginRequest, VerifyEmailDto } from "@headbase-app/contracts";
 
 import { AuthService } from "@modules/auth/auth.service";
-import { AccessControlService } from "@modules/auth/access-control.service";
 import { ZodValidationPipe } from "@common/zod-validator.pipe";
 import { RequestContext } from "@common/request-context";
 import { AuthenticationGuard } from "@modules/auth/auth.guard";
@@ -13,10 +12,7 @@ import { AuthenticationGuard } from "@modules/auth/auth.guard";
 	version: "1",
 })
 export class AuthHttpController {
-	constructor(
-		private readonly authService: AuthService,
-		private readonly accessControlService: AccessControlService,
-	) {}
+	constructor(private readonly authService: AuthService) {}
 
 	@Post("/login")
 	@HttpCode(HttpStatus.OK)
@@ -25,16 +21,11 @@ export class AuthHttpController {
 	}
 
 	@Post("/logout")
+	@UseGuards(AuthenticationGuard)
 	@HttpCode(HttpStatus.OK)
-	async logout(@Body(new ZodValidationPipe(LogoutRequest)) logoutRequest: LogoutRequest) {
-		await this.authService.logout(logoutRequest.refreshToken);
+	async logout(@RequestContext() requestContext: RequestContext) {
+		await this.authService.revokeSession(requestContext.user);
 		return { statusCode: HttpStatus.OK };
-	}
-
-	@Post("/refresh")
-	@HttpCode(HttpStatus.OK)
-	async refresh(@Body(new ZodValidationPipe(RefreshRequest)) refreshRequest: RefreshRequest) {
-		return this.authService.refresh(refreshRequest.refreshToken);
 	}
 
 	@Get("/check")

@@ -164,7 +164,7 @@ describe("Create User - /v1/users [POST]", () => {
 
 	describe("Required Fields", () => {
 		test("When not supplying an email, the request should fail", async () => {
-			const accessToken = await testHelper.getUserAccessToken(testUser1.id);
+			const accessToken = await testHelper.getSessionToken(testUser1.id);
 
 			await testMissingField({
 				clientFunction: testHelper.client.post.bind(testHelper.client),
@@ -176,7 +176,7 @@ describe("Create User - /v1/users [POST]", () => {
 		});
 
 		test("When not supplying a password, the request should fail", async () => {
-			const accessToken = await testHelper.getUserAccessToken(testUser1.id);
+			const accessToken = await testHelper.getSessionToken(testUser1.id);
 
 			await testMissingField({
 				clientFunction: testHelper.client.post.bind(testHelper.client),
@@ -188,7 +188,7 @@ describe("Create User - /v1/users [POST]", () => {
 		});
 
 		test("When not supplying a displayName, the request should fail", async () => {
-			const accessToken = await testHelper.getUserAccessToken(testUser1.id);
+			const accessToken = await testHelper.getSessionToken(testUser1.id);
 
 			await testMissingField({
 				clientFunction: testHelper.client.post.bind(testHelper.client),
@@ -270,7 +270,7 @@ describe("Create User - /v1/users [POST]", () => {
 
 	describe("Invalid Data", () => {
 		test("When supplying invalid JSON data, the request should fail", async () => {
-			const accessToken = await testHelper.getUserAccessToken(testUser1.id);
+			const accessToken = await testHelper.getSessionToken(testUser1.id);
 
 			await testMalformedData({
 				clientFunction: testHelper.client.post.bind(testHelper.client),
@@ -330,7 +330,7 @@ describe("Create User - /v1/users [POST]", () => {
 
 	describe("Registration Enabled", () => {
 		test("When registration is disabled, adding a new user should fail", async () => {
-			const accessToken = await testHelper.getUserAccessToken(testAdminUser1.id);
+			const accessToken = await testHelper.getSessionToken(testAdminUser1.id);
 
 			// Update settings to disable registration
 			await testHelper.client.patch("/v1/server/settings").set("Authorization", `Bearer ${accessToken}`).send({

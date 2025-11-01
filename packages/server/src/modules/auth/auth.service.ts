@@ -1,18 +1,34 @@
 import { Injectable } from "@nestjs/common";
+import ms from "ms";
+import { eq, getTableColumns } from "drizzle-orm";
+import { randomBytes, randomUUID } from "node:crypto";
+
+import { AuthUserResponse, ErrorIdentifiers, Roles } from "@headbase-app/contracts";
 
 import { TokenService } from "@services/token/token.service";
 import { EmailService } from "@services/email/email.service";
-import { AuthUserResponse, ErrorIdentifiers, TokenPair } from "@headbase-app/contracts";
 import { DatabaseUserDto } from "@modules/users/database-user";
 import { AccessForbiddenError } from "@services/errors/access/access-forbidden.error";
 import { PasswordService } from "@services/password/password.service";
-import { AccessUnauthorizedError } from "@services/errors/access/access-unauthorized.error";
 import { UserRequestError } from "@services/errors/base/user-request.error";
 import { UserContext } from "@common/request-context";
 import { EventsService } from "@services/events/events.service";
 import { EventIdentifiers } from "@services/events/events";
 import { UsersService } from "@modules/users/users.service";
 import { ConfigService } from "@services/config/config.service";
+import { DatabaseService } from "@services/database/database.service";
+import { sessions, users } from "@services/database/schema/schema";
+import { SystemError } from "@services/errors/base/system.error";
+
+export interface Session {
+	id: string;
+	userId: string;
+	expiresAt: string;
+}
+export interface SessionWithUser extends Session {
+	verifiedAt: string | null;
+	role: Roles;
+}
 
 @Injectable()
 export class AuthService {
@@ -22,8 +38,10 @@ export class AuthService {
 		private readonly configService: ConfigService,
 		private readonly emailService: EmailService,
 		private readonly eventsService: EventsService,
-	) {
-		// todo: would this be better setup somewhere else?
+		private readonly databaseService: DatabaseService,
+	) {}
+
+	onApplicationBootstrap() {
 		this.eventsService.subscribe(EventIdentifiers.USER_CREATE, (event) => {
 			this.requestVerifyEmail(event.detail.user.id);
 		});
@@ -39,6 +57,7 @@ export class AuthService {
 				identifier: ErrorIdentifiers.AUTH_CREDENTIALS_INVALID,
 				message: "The supplied email & password combination is invalid.",
 				userMessage: "The supplied email & password combination is invalid.",
+				cause: e,
 			});
 		}
 
@@ -52,60 +71,24 @@ export class AuthService {
 		}
 
 		const userDto = UsersService.convertDatabaseItemToDto(databaseUserDto);
-		const result = await this.tokenService.createNewTokenPair(userDto);
+		const session = await this.createSession(databaseUserDto.id);
 
 		this.eventsService.dispatch({
 			type: EventIdentifiers.AUTH_LOGIN,
 			detail: {
-				userId: userDto.id,
-				sessionId: result.sessionId,
+				userId: databaseUserDto.id,
+				sessionId: session.id,
 			},
 		});
 
 		return {
-			tokens: result.tokens,
 			user: userDto,
-		};
-	}
-
-	async refresh(refreshToken: string): Promise<TokenPair> {
-		const tokenPayload = await this.tokenService.validateAndDecodeRefreshToken(refreshToken);
-
-		if (!tokenPayload) {
-			throw new AccessUnauthorizedError({
-				identifier: ErrorIdentifiers.AUTH_TOKEN_INVALID,
-				message: "The supplied refresh token is invalid.",
-				userMessage: "The supplied refresh token is invalid.",
-			});
-		}
-
-		// As the token has been validated the supplied userId/sub value in the token can be trusted in theory
-		// If the user isn't found, the user service will throw an error.
-		// todo: the user service throwing an error not returning null makes the error handling here unclear.
-		const userDto = await this.usersService._UNSAFE_getById(tokenPayload.sub);
-
-		return await this.tokenService.getRefreshedTokenPair(userDto, tokenPayload.sid);
-	}
-
-	async logout(refreshToken: string) {
-		const tokenPayload = await this.tokenService.validateAndDecodeRefreshToken(refreshToken);
-
-		if (!tokenPayload) {
-			throw new UserRequestError({
-				identifier: ErrorIdentifiers.AUTH_TOKEN_INVALID,
-				userMessage: "The refresh token supplied is either invalid or already expired.",
-			});
-		}
-
-		await this.tokenService.blacklistSession(tokenPayload.sid, tokenPayload.exp);
-
-		this.eventsService.dispatch({
-			type: EventIdentifiers.AUTH_LOGOUT,
-			detail: {
-				userId: tokenPayload.sub,
-				sessionId: tokenPayload.sid,
+			// todo: remove
+			tokens: {
+				accessToken: session.token,
+				refreshToken: "",
 			},
-		});
+		};
 	}
 
 	async requestVerifyEmail(userId: string) {
@@ -159,11 +142,87 @@ export class AuthService {
 		}
 
 		const updatedUser = await this.usersService.verifyUser(user.id);
-		const result = await this.tokenService.createNewTokenPair(updatedUser);
 
 		return {
 			user: updatedUser,
-			tokens: result.tokens,
+			// todo: remove
+			tokens: {
+				accessToken: "",
+				refreshToken: "",
+			},
 		};
+	}
+
+	async createSession(userId: string): Promise<{ token: string; id: string }> {
+		const db = this.databaseService.getDatabase();
+
+		// todo: this is probably very wrong due to JS Date/timezone things, need to double check
+		const currentTime = new Date().getTime();
+		const timeToExpiry = ms("7 days" as ms.StringValue);
+		const expiresAt = new Date(currentTime + timeToExpiry).toISOString();
+
+		const sessionId = randomUUID();
+		const sessionToken = Buffer.from(randomBytes(32)).toString("hex");
+
+		try {
+			await db.insert(sessions).values({
+				id: sessionId,
+				token: sessionToken,
+				userId: userId,
+				expiresAt: expiresAt,
+			});
+		} catch (error) {
+			throw new SystemError({
+				message: "An unexpected error occurred while creating user session.",
+				cause: error,
+			});
+		}
+
+		return { id: sessionId, token: sessionToken };
+	}
+
+	async validateSession(sessionToken: string): Promise<SessionWithUser | null> {
+		const db = this.databaseService.getDatabase();
+
+		let session: SessionWithUser | null;
+		try {
+			const result = await db
+				.select({
+					...getTableColumns(sessions),
+					verifiedAt: users.verifiedAt,
+					role: users.role,
+				})
+				.from(sessions)
+				.where(eq(sessions.token, sessionToken))
+				.innerJoin(users, eq(sessions.userId, users.id));
+			session = result[0];
+		} catch (error) {
+			throw new SystemError({
+				message: "An unexpected error occurred while validating user session.",
+				cause: error,
+			});
+		}
+
+		return session ?? null;
+	}
+
+	async revokeSession(userContext: UserContext): Promise<void> {
+		try {
+			const db = this.databaseService.getDatabase();
+			await db.delete(sessions).where(eq(sessions.id, userContext.sessionId));
+		} catch (error) {
+			throw new SystemError({
+				message: "An unexpected error occurred while revoking user session.",
+				cause: error,
+			});
+		}
+
+		this.eventsService.dispatch({
+			type: EventIdentifiers.AUTH_LOGOUT,
+			detail: {
+				userId: userContext.id,
+				sessionId: userContext.sessionId,
+			},
+		});
 	}
 }

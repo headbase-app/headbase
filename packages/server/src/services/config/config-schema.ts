@@ -13,9 +13,6 @@ export const ConfigSchema = z.object({
 	database: z.object({
 		url: z.string(),
 	}),
-	cacheStore: z.object({
-		redisUrl: z.string(),
-	}),
 	auth: z.object({
 		issuer: z.string().optional(),
 		audience: z.string().optional(),

@@ -4,7 +4,6 @@ import { forwardRef, Inject, Injectable } from "@nestjs/common";
 import { ServerInfoDto } from "@headbase-app/contracts";
 
 import { DatabaseService } from "@services/database/database.service";
-import { CacheStoreService } from "@services/cache-store/cache-store.service";
 import { AccessControlService } from "@modules/auth/access-control.service";
 import { RequestUser } from "@common/request-context";
 import { SystemError } from "@services/errors/base/system.error";
@@ -18,7 +17,6 @@ export interface HealthCheckResult {
 	status: HealthStatus;
 	services: {
 		database: HealthStatus;
-		dataStore: HealthStatus;
 		objectStore: HealthStatus;
 	};
 }
@@ -38,7 +36,6 @@ export type UpdateServerSettingsDto = z.infer<typeof UpdateServerSettingsDto>;
 export class ServerManagementService {
 	constructor(
 		private readonly databaseService: DatabaseService,
-		private readonly dataStoreService: CacheStoreService,
 		private readonly objectStoreService: ObjectStoreService,
 		@Inject(forwardRef(() => AccessControlService))
 		private readonly accessControlService: AccessControlService,
@@ -46,9 +43,8 @@ export class ServerManagementService {
 
 	async runHealthCheck(): Promise<HealthCheckResult> {
 		const databaseStatus = await this.databaseService.healthCheck();
-		const dataStoreStatus = await this.dataStoreService.healthCheck();
 		const objectStoreStatus = await this.objectStoreService.healthCheck();
-		const allStatuses = [databaseStatus, dataStoreStatus];
+		const allStatuses = [databaseStatus, objectStoreStatus];
 
 		let overallStatus: HealthStatus;
 		if (allStatuses.includes("error")) {
@@ -63,7 +59,6 @@ export class ServerManagementService {
 			status: overallStatus,
 			services: {
 				database: databaseStatus,
-				dataStore: dataStoreStatus,
 				objectStore: objectStoreStatus,
 			},
 		};

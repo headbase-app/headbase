@@ -45,7 +45,11 @@ export type FileChunkDto = z.infer<typeof FileChunkDto>;
 export const CreateFileChunkDto = FileChunkDto.omit({versionId: true})
 export type CreateFileChunkDto = z.infer<typeof CreateFileChunkDto>;
 
-export const CreateFileDto = FileDto.extend({
-	chunks: z.array(CreateFileChunkDto)
-});
+export const CreateFileDto = FileDto
+	.omit({
+		committedAt: true,
+	})
+	.extend({
+		chunks: z.array(CreateFileChunkDto)
+	});
 export type CreateFileDto = z.infer<typeof CreateFileDto>;

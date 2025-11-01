@@ -45,7 +45,7 @@ export class DatabaseService {
 	}
 
 	async onApplicationBootstrap() {
-		await migrate(this.db, { migrationsFolder: "./migrations", migrationsSchema: "public", migrationsTable: "migrations" });
+		await migrate(this.db, { migrationsFolder: "./migrations", migrationsSchema: "public", migrationsTable: "_migrations" });
 	}
 
 	getSQL(): Sql {

@@ -3,8 +3,7 @@ import { describe, expect, test, beforeAll, beforeEach, afterAll } from "@jest/g
 import { ErrorIdentifiers } from "@headbase-app/contracts";
 
 import { TestHelper } from "@testing/test-helper";
-import { testAdminUser2Unverified, testUser1, testUser2Unverified } from "@testing/data/users";
-import { exampleVault1 } from "@testing/data/vaults";
+import { testAdminUser2Unverified, testUser2Unverified } from "@testing/data/users";
 import { expectForbidden } from "@testing/common/expect-forbidden";
 
 const testHelper = new TestHelper();
@@ -22,7 +21,7 @@ describe("Email Verification - /v1/auth/verify-email [GET, POST]", () => {
 	// Testing success cases/happy paths work.
 	describe("Success Cases", () => {
 		test("authenticated user can request email verification", async () => {
-			const accessToken = await testHelper.getUserAccessToken(testUser2Unverified.id);
+			const accessToken = await testHelper.getSessionToken(testUser2Unverified.id);
 
 			const { statusCode } = await testHelper.client.get("/v1/auth/verify-email").set("Authorization", `Bearer ${accessToken}`).send();
 
@@ -30,7 +29,7 @@ describe("Email Verification - /v1/auth/verify-email [GET, POST]", () => {
 		});
 
 		test("authenticated admin can request email verification", async () => {
-			const accessToken = await testHelper.getUserAccessToken(testAdminUser2Unverified.id);
+			const accessToken = await testHelper.getSessionToken(testAdminUser2Unverified.id);
 
 			const { statusCode } = await testHelper.client.get("/v1/auth/verify-email").set("Authorization", `Bearer ${accessToken}`).send();
 
@@ -38,7 +37,7 @@ describe("Email Verification - /v1/auth/verify-email [GET, POST]", () => {
 		});
 
 		test("authenticated user can verify their email", async () => {
-			const accessToken = await testHelper.getUserAccessToken(testUser2Unverified.id);
+			const accessToken = await testHelper.getSessionToken(testUser2Unverified.id);
 			const token = testHelper.getEmailVerificationToken(testUser2Unverified.id);
 
 			const { statusCode, body } = await testHelper.client.post("/v1/auth/verify-email").set("Authorization", `Bearer ${accessToken}`).send({
@@ -67,7 +66,7 @@ describe("Email Verification - /v1/auth/verify-email [GET, POST]", () => {
 		});
 
 		test("authenticated admin can verify their email", async () => {
-			const accessToken = await testHelper.getUserAccessToken(testAdminUser2Unverified.id);
+			const accessToken = await testHelper.getSessionToken(testAdminUser2Unverified.id);
 			const token = testHelper.getEmailVerificationToken(testAdminUser2Unverified.id);
 
 			const { statusCode, body } = await testHelper.client.post("/v1/auth/verify-email").set("Authorization", `Bearer ${accessToken}`).send({
@@ -96,22 +95,22 @@ describe("Email Verification - /v1/auth/verify-email [GET, POST]", () => {
 		});
 
 		test("user can perform actions once verified ", async () => {
-			const accessToken = await testHelper.getUserAccessToken(testUser2Unverified.id);
+			const sessionToken = await testHelper.getSessionToken(testUser2Unverified.id);
 			const verificationToken = testHelper.getEmailVerificationToken(testUser2Unverified.id);
 
 			// Initial attempt to fetch own user should fail as unverified
 			const { statusCode: initialCreateStatusCode, body: initialCreateBody } = await testHelper.client
 				// ignoring prettier
 				.get(`/v1/users/${testUser2Unverified.id}`)
-				.set("Authorization", `Bearer ${accessToken}`)
+				.set("Authorization", `Bearer ${sessionToken}`)
 				.send();
 			expectForbidden(initialCreateBody, initialCreateStatusCode, ErrorIdentifiers.AUTH_NOT_VERIFIED);
 
 			// Now verify user
-			const { statusCode: verifyStatusCode, body: verifyBody } = await testHelper.client
+			const { statusCode: verifyStatusCode } = await testHelper.client
 				// ignoring prettier
 				.post("/v1/auth/verify-email")
-				.set("Authorization", `Bearer ${accessToken}`)
+				.set("Authorization", `Bearer ${sessionToken}`)
 				.send({
 					token: verificationToken,
 				});
@@ -121,7 +120,7 @@ describe("Email Verification - /v1/auth/verify-email [GET, POST]", () => {
 			const { statusCode: verifiedCreateStatusCode } = await testHelper.client
 				// ignoring prettier
 				.get(`/v1/users/${testUser2Unverified.id}`)
-				.set("Authorization", `Bearer ${verifyBody.tokens.accessToken}`)
+				.set("Authorization", `Bearer ${sessionToken}`)
 				.send();
 			expect(verifiedCreateStatusCode).toEqual(200);
 		});

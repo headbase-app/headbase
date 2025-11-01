@@ -26,7 +26,7 @@ describe("Delete Profile - /v1/vaults/:userId [DELETE]", () => {
 	// Testing success cases/happy paths work.
 	describe("Success Cases", () => {
 		test("Given user with 'user' role, When deleting their own vault, Then the vault should be deleted", async () => {
-			const accessToken = await testHelper.getUserAccessToken(testUser1.id);
+			const accessToken = await testHelper.getSessionToken(testUser1.id);
 
 			const { statusCode } = await testHelper.client.delete(`/v1/vaults/${testUser1Vault1.id}`).set("Authorization", `Bearer ${accessToken}`).send();
 			expect(statusCode).toEqual(HttpStatus.OK);
@@ -36,7 +36,7 @@ describe("Delete Profile - /v1/vaults/:userId [DELETE]", () => {
 		});
 
 		test("Given user with 'admin' role, When deleting their own vault, Then the vault should be deleted", async () => {
-			const accessToken = await testHelper.getUserAccessToken(testAdminUser1.id);
+			const accessToken = await testHelper.getSessionToken(testAdminUser1.id);
 
 			const { statusCode } = await testHelper.client.delete(`/v1/vaults/${testAdminUser1Vault1.id}`).set("Authorization", `Bearer ${accessToken}`).send();
 			expect(statusCode).toEqual(HttpStatus.OK);
@@ -46,7 +46,7 @@ describe("Delete Profile - /v1/vaults/:userId [DELETE]", () => {
 		});
 
 		test("Given user with 'admin' role, When deleting a different user vault, Then the vault should be deleted", async () => {
-			const accessToken = await testHelper.getUserAccessToken(testAdminUser1.id);
+			const accessToken = await testHelper.getSessionToken(testAdminUser1.id);
 
 			const { statusCode } = await testHelper.client.delete(`/v1/vaults/${testUser1Vault1.id}`).set("Authorization", `Bearer ${accessToken}`).send();
 			expect(statusCode).toEqual(HttpStatus.OK);
@@ -65,7 +65,7 @@ describe("Delete Profile - /v1/vaults/:userId [DELETE]", () => {
 		});
 
 		test("Given user with 'user' role, When deleting a different users vault, Then response should be '403 - forbidden'", async () => {
-			const accessToken = await testHelper.getUserAccessToken(testUser1.id);
+			const accessToken = await testHelper.getSessionToken(testUser1.id);
 
 			const { statusCode, body } = await testHelper.client.delete(`/v1/vaults/${testAdminUser1Vault1.id}`).set("Authorization", `Bearer ${accessToken}`).send();
 
@@ -75,7 +75,7 @@ describe("Delete Profile - /v1/vaults/:userId [DELETE]", () => {
 
 	describe("Logical Validation", () => {
 		test("When deleting vault with invalid id, Then response should be '400 - bad request'", async () => {
-			const accessToken = await testHelper.getUserAccessToken(testUser1.id);
+			const accessToken = await testHelper.getSessionToken(testUser1.id);
 
 			const { body, statusCode } = await testHelper.client.delete("/v1/vaults/random").set("Authorization", `Bearer ${accessToken}`).send();
 
@@ -83,7 +83,7 @@ describe("Delete Profile - /v1/vaults/:userId [DELETE]", () => {
 		});
 
 		test("When attempting to delete a none existent vault, Then response should be '404 - not found'", async () => {
-			const accessToken = await testHelper.getUserAccessToken(testUser1.id);
+			const accessToken = await testHelper.getSessionToken(testUser1.id);
 
 			const { body, statusCode } = await testHelper.client.delete("/v1/vaults/b283f9e5-f386-4503-abc3-a31729f333e1").set("Authorization", `Bearer ${accessToken}`).send({});
 
