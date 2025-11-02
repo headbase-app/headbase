@@ -7,7 +7,7 @@ export const ConfigSchema = z.object({
 	general: z.object({
 		applicationName: z.string(),
 		port: z.number(),
-		allowedOrigins: z.array(z.string().url()),
+		allowedOrigins: z.union([z.string(), z.array(z.string())]),
 		logLevel: z.union([z.literal("debug"), z.literal("minimal")]),
 	}),
 	database: z.object({

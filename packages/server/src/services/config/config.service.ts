@@ -17,7 +17,7 @@ export class ConfigService {
 		general: {
 			applicationName: process.env.APPLICATION_NAME,
 			port: parseInt(process.env.PORT as string),
-			allowedOrigins: process.env.ALLOWED_ORIGINS ? process.env.ALLOWED_ORIGINS.split(",") : [],
+			allowedOrigins: process.env.ALLOWED_ORIGINS?.includes(",") ? process.env.ALLOWED_ORIGINS.split(",") : (process.env.ALLOWED_ORIGINS ?? []),
 			logLevel: process.env.LOG_LEVEL ?? "minimal",
 		},
 		database: {

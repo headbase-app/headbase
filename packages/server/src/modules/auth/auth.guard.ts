@@ -17,21 +17,19 @@ export class AuthenticationGuard implements CanActivate {
 		const request = context.switchToHttp().getRequest<RequestWithContext>();
 
 		const authorizationHeader = request.header("authorization");
-		if (authorizationHeader) {
-			const sessionToken = authorizationHeader.split(" ")[1];
+		const sessionToken = authorizationHeader?.split(" ")[1];
 
+		if (sessionToken) {
 			// todo: this is reused in AuthGatewayGuard. Should be a separate function?
-			if (sessionToken) {
-				const sessionDetails = await this.authService.validateSession(sessionToken);
-				if (sessionDetails) {
-					this.attachRequestContext(request, {
-						id: sessionDetails.userId,
-						sessionId: sessionDetails.id,
-						verifiedAt: sessionDetails.verifiedAt,
-						role: sessionDetails.role,
-					});
-					return true;
-				}
+			const sessionDetails = await this.authService.validateSession(sessionToken);
+			if (sessionDetails) {
+				this.attachRequestContext(request, {
+					id: sessionDetails.userId,
+					sessionId: sessionDetails.id,
+					verifiedAt: sessionDetails.verifiedAt,
+					role: sessionDetails.role,
+				});
+				return true;
 			}
 		}
 
