@@ -1,7 +1,6 @@
 import { CanActivate, ExecutionContext, Injectable } from "@nestjs/common";
 import { AccessUnauthorizedError } from "@services/errors/access/access-unauthorized.error";
 import { RequestWithContext, UserContext } from "@common/request-context";
-import { AccessControlService } from "@modules/auth/access-control.service";
 import { AuthService } from "@modules/auth/auth.service";
 
 /**
@@ -29,8 +28,7 @@ export class AuthenticationGuard implements CanActivate {
 						id: sessionDetails.userId,
 						sessionId: sessionDetails.id,
 						verifiedAt: sessionDetails.verifiedAt,
-						// todo: should depend on service not static method, or method should be moved?
-						permissions: AccessControlService.resolveRolePermissions(sessionDetails.role),
+						role: sessionDetails.role,
 					});
 					return true;
 				}

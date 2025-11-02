@@ -7,7 +7,6 @@ If you just want to self-host a sever instance, it's recommended to use Docker a
 
 ### 0. Prerequisites
 - [Postgres](https://www.postgresql.org/download/) is used for the application database.
-- [Redis](https://redis.io/docs/latest/operate/oss_and_stack/install/install-redis/) is used for caching and token storage.
 - An S3/S3-compatible object storage is used for storing file chunks, for example [Cloudflare R2](https://www.cloudflare.com/en-gb/developer-platform/products/r2/).
 - Emails are sent using SMTP, so an email provider supporting SMTP is required (local dev can log emails without sending).
 

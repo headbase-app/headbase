@@ -1,5 +1,5 @@
 import {z} from "zod";
-import {Roles} from "../auth/permissions";
+import {Roles} from "../auth/roles";
 import {createIdField, createDateField} from "../common/fields";
 
 export const UserDto = z.object({

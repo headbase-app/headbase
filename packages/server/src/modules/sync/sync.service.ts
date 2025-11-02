@@ -113,14 +113,14 @@ export class SyncService {
 	// eslint-disable-next-line
 	async validateTicket(connectionTicket: string, existingConnection?: ConnectionData): Promise<InitialConnection> {
 		// const item = await this.dataStoreService.getItem(connectionTicket);
-		const item = {};
+		const connectionTicketData = "";
 
-		if (!item) {
+		if (!connectionTicketData) {
 			throw new AccessUnauthorizedError({ identifier: ErrorIdentifiers.REQUEST_INVALID, message: "No matching connection ticket found" });
 		}
 
 		// todo: add ability to save/load json data to data store
-		const parsedData = ConnectionTicketData.safeParse(JSON.parse(item));
+		const parsedData = ConnectionTicketData.safeParse(JSON.parse(connectionTicketData));
 		if (!parsedData.success) {
 			throw new SystemError({ message: "No matching connection ticket found" });
 		}
@@ -151,7 +151,7 @@ export class SyncService {
 		for (const vaultId of vaults) {
 			// todo: should this be done via the AccessControlService? can't be right now as doesn't have full RequestUser details
 			// this is not checking access permissions for vaults too
-			const vault = await this.vaultsService.get({ id: userId, sessionId: "", verifiedAt: "", permissions: [] }, vaultId);
+			const vault = await this.vaultsService.get({ id: userId, sessionId: "", verifiedAt: "", role: "user" }, vaultId);
 			if (vault.ownerId !== userId) {
 				throw new AccessForbiddenError({
 					userMessage: "You do not have the permissions required to perform this action.",

@@ -6,7 +6,6 @@ import { CreateUserDto, ErrorIdentifiers, UpdateUserDto, UserDto } from "@headba
 import { UserContext } from "@common/request-context";
 import { AccessForbiddenError } from "@services/errors/access/access-forbidden.error";
 import { PasswordService } from "@services/password/password.service";
-import { AccessControlService } from "@modules/auth/access-control.service";
 import { EventsService } from "@services/events/events.service";
 import { EventIdentifiers } from "@services/events/events";
 import { ServerManagementService } from "@modules/server/server.service";
@@ -18,13 +17,14 @@ import { ResourceRelationshipError } from "@services/errors/resource/resource-re
 import { SystemError } from "@services/errors/base/system.error";
 import { isoFormat } from "@services/database/schema/iso-format-date";
 import { DatabaseUserDto } from "@modules/users/database-user";
+import { AuthService } from "@modules/auth/auth.service";
 
 @Injectable()
 export class UsersService {
 	constructor(
 		private readonly databaseService: DatabaseService,
-		@Inject(forwardRef(() => AccessControlService))
-		private readonly accessControlService: AccessControlService,
+		@Inject(forwardRef(() => AuthService))
+		private readonly authService: AuthService,
 		private readonly eventsService: EventsService,
 		@Inject(forwardRef(() => ServerManagementService))
 		private readonly serverManagementService: ServerManagementService,
@@ -55,11 +55,10 @@ export class UsersService {
 	}
 
 	async get(userContext: UserContext, userId: string): Promise<UserDto> {
-		await this.accessControlService.validateAccessControlRules({
-			userScopedPermissions: ["users:retrieve"],
-			unscopedPermissions: ["users:retrieve:all"],
-			requestingUserContext: userContext,
-			targetUserId: userId,
+		await this.authService.guardOwnership({
+			userContext,
+			ownerId: userId,
+			allowAdminBypass: true,
 		});
 
 		const result = await this._UNSAFE_getById(userId);
@@ -167,11 +166,10 @@ export class UsersService {
 	}
 
 	async update(userContext: UserContext, userId: string, updateUserDto: UpdateUserDto): Promise<UserDto> {
-		await this.accessControlService.validateAccessControlRules({
-			userScopedPermissions: ["users:update"],
-			unscopedPermissions: ["users:update:all"],
-			requestingUserContext: userContext,
-			targetUserId: userId,
+		await this.authService.guardOwnership({
+			userContext,
+			ownerId: userId,
+			allowAdminBypass: true,
 		});
 
 		const db = this.databaseService.getDatabase();
@@ -209,11 +207,10 @@ export class UsersService {
 	}
 
 	async delete(userContext: UserContext, userId: string): Promise<void> {
-		await this.accessControlService.validateAccessControlRules({
-			userScopedPermissions: ["users:delete"],
-			unscopedPermissions: ["users:delete:all"],
-			requestingUserContext: userContext,
-			targetUserId: userId,
+		await this.authService.guardOwnership({
+			userContext,
+			ownerId: userId,
+			allowAdminBypass: true,
 		});
 
 		const db = this.databaseService.getDatabase();

@@ -4,7 +4,6 @@ import { DrizzleQueryError, eq, getTableColumns, inArray } from "drizzle-orm";
 import { ErrorIdentifiers, UpdateVaultDto, VaultDto, VaultsQueryParams } from "@headbase-app/contracts";
 
 import { UserContext } from "@common/request-context";
-import { AccessControlService } from "@modules/auth/access-control.service";
 import { EventsService } from "@services/events/events.service";
 import { EventIdentifiers } from "@services/events/events";
 import { DatabaseService } from "@services/database/database.service";
@@ -15,13 +14,14 @@ import { PG_FOREIGN_KEY_VIOLATION, PG_UNIQUE_VIOLATION } from "@services/databas
 import { ResourceNotFoundError } from "@services/errors/resource/resource-not-found.error";
 import { isoFormat } from "@services/database/schema/iso-format-date";
 import { ChunksService } from "@modules/chunks/chunks.service";
+import { AuthService } from "@modules/auth/auth.service";
 
 @Injectable()
 export class VaultsService {
 	constructor(
 		private readonly databaseService: DatabaseService,
 		private readonly eventsService: EventsService,
-		private readonly accessControlService: AccessControlService,
+		private readonly authService: AuthService,
 		@Inject(forwardRef(() => ChunksService))
 		private readonly chunksService: ChunksService,
 	) {}
@@ -80,11 +80,10 @@ export class VaultsService {
 			});
 		}
 
-		await this.accessControlService.validateAccessControlRules({
-			userScopedPermissions: ["vaults:retrieve"],
-			unscopedPermissions: ["vaults:retrieve:all"],
-			requestingUserContext: userContext,
-			targetUserId: result[0].ownerId,
+		await this.authService.guardOwnership({
+			userContext,
+			ownerId: result[0].ownerId,
+			allowAdminBypass: true,
 		});
 
 		return result[0];
@@ -97,11 +96,10 @@ export class VaultsService {
 	 * // todo: use separate verbs like "push" and "sync" rather than "create" and "update" to distinguish resources managed by the server vs local devices?
 	 */
 	async create(userContext: UserContext, vaultDto: VaultDto): Promise<VaultDto> {
-		await this.accessControlService.validateAccessControlRules({
-			userScopedPermissions: ["vaults:create"],
-			unscopedPermissions: ["vaults:create:all"],
-			requestingUserContext: userContext,
-			targetUserId: vaultDto.ownerId,
+		await this.authService.guardOwnership({
+			userContext,
+			ownerId: vaultDto.ownerId,
+			allowAdminBypass: true,
 		});
 
 		const db = this.databaseService.getDatabase();
@@ -135,14 +133,8 @@ export class VaultsService {
 	}
 
 	async update(userContext: UserContext, vaultId: string, updateVaultDto: UpdateVaultDto): Promise<VaultDto> {
-		const vault = await this.get(userContext, vaultId);
-
-		await this.accessControlService.validateAccessControlRules({
-			userScopedPermissions: ["vaults:update"],
-			unscopedPermissions: ["vaults:update:all"],
-			requestingUserContext: userContext,
-			targetUserId: vault.ownerId,
-		});
+		// Fetching vault checks ownership permissions.
+		await this.get(userContext, vaultId);
 
 		const db = this.databaseService.getDatabase();
 
@@ -176,14 +168,8 @@ export class VaultsService {
 	}
 
 	async delete(userContext: UserContext, vaultId: string): Promise<void> {
+		// Fetching vault checks ownership permissions.
 		const vault = await this.get(userContext, vaultId);
-
-		await this.accessControlService.validateAccessControlRules({
-			userScopedPermissions: ["vaults:delete"],
-			unscopedPermissions: ["vaults:delete:all"],
-			requestingUserContext: userContext,
-			targetUserId: vault.ownerId,
-		});
 
 		const db = this.databaseService.getDatabase();
 		await db.delete(vaults).where(eq(vaults.id, vaultId));
@@ -202,11 +188,10 @@ export class VaultsService {
 		const ownerIds = query.ownerIds || [userContext.id];
 
 		for (const ownerId of ownerIds) {
-			await this.accessControlService.validateAccessControlRules({
-				userScopedPermissions: ["vaults:retrieve"],
-				unscopedPermissions: ["vaults:retrieve:all"],
-				requestingUserContext: userContext,
-				targetUserId: ownerId,
+			await this.authService.guardOwnership({
+				userContext,
+				ownerId: ownerId,
+				allowAdminBypass: true,
 			});
 		}
 

@@ -10,7 +10,7 @@ export * from "./schemas/users/users";
 export * from "./schemas/users/users-params"
 
 export * from "./schemas/auth/tokens";
-export * from "./schemas/auth/permissions";
+export * from "./schemas/auth/roles";
 export * from "./schemas/auth/request/login.auth.request";
 export * from "./schemas/auth/request/logout.auth.request";
 export * from "./schemas/auth/request/refresh.auth.request";

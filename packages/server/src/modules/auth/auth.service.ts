@@ -30,6 +30,13 @@ export interface SessionWithUser extends Session {
 	role: Roles;
 }
 
+export interface OwnershipGuardOptions {
+	userContext: UserContext;
+	ownerId: string;
+	allowAdminBypass?: boolean;
+	allowUnverifiedUser?: boolean;
+}
+
 @Injectable()
 export class AuthService {
 	constructor(
@@ -224,5 +231,33 @@ export class AuthService {
 				sessionId: userContext.sessionId,
 			},
 		});
+	}
+
+	async guardOwnership({ userContext, ownerId, allowAdminBypass, allowUnverifiedUser }: OwnershipGuardOptions): Promise<void> {
+		// If allowed, admin users bypass all checks and can access everything.
+		if (allowAdminBypass && userContext.role === "admin" && userContext.verifiedAt) return;
+
+		// Unverified users should not be allowed to perform any actions (unless bypassed)
+		if (!allowUnverifiedUser && !userContext.verifiedAt) {
+			throw new AccessForbiddenError({
+				identifier: ErrorIdentifiers.AUTH_NOT_VERIFIED,
+				userMessage: "You are unverified and unable to perform this action.",
+			});
+		}
+
+		// Users should only be able to access resources they own.
+		if (userContext.id == ownerId) return;
+
+		throw new AccessForbiddenError({
+			userMessage: "You do not have the permissions required to perform this action.",
+		});
+	}
+
+	async guardAdminAction(userContext: UserContext): Promise<void> {
+		if (userContext.role !== "admin") {
+			throw new AccessForbiddenError({
+				userMessage: "You do not have the permissions required to perform this action.",
+			});
+		}
 	}
 }

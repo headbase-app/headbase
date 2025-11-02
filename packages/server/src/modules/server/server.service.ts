@@ -1,14 +1,14 @@
 import { z } from "zod";
-import { forwardRef, Inject, Injectable } from "@nestjs/common";
+import { Injectable } from "@nestjs/common";
 
 import { ServerInfoDto } from "@headbase-app/contracts";
 
 import { DatabaseService } from "@services/database/database.service";
-import { AccessControlService } from "@modules/auth/access-control.service";
-import { RequestUser } from "@common/request-context";
+import { UserContext } from "@common/request-context";
 import { SystemError } from "@services/errors/base/system.error";
 import { settings } from "@services/database/schema/schema";
 import { ObjectStoreService } from "@services/object-store/object-store.service";
+import { AuthService } from "@modules/auth/auth.service";
 
 export type HealthStatus = "ok" | "degraded" | "error";
 
@@ -37,8 +37,7 @@ export class ServerManagementService {
 	constructor(
 		private readonly databaseService: DatabaseService,
 		private readonly objectStoreService: ObjectStoreService,
-		@Inject(forwardRef(() => AccessControlService))
-		private readonly accessControlService: AccessControlService,
+		private readonly authService: AuthService,
 	) {}
 
 	async runHealthCheck(): Promise<HealthCheckResult> {
@@ -111,26 +110,14 @@ export class ServerManagementService {
 		return result[0];
 	}
 
-	async getSettings(requestUser: RequestUser): Promise<ServerSettingsDto> {
-		await this.accessControlService.validateAccessControlRules({
-			requestingUserContext: requestUser,
-			unscopedPermissions: ["server-settings:retrieve"],
-			// todo: update access control handling to not require targetUserId and/or userScopedPermissions
-			targetUserId: requestUser.id,
-			userScopedPermissions: [],
-		});
+	async getSettings(userContext: UserContext): Promise<ServerSettingsDto> {
+		await this.authService.guardAdminAction(userContext);
 
 		return this._UNSAFE_getSettings();
 	}
 
-	async updateSettings(requestUser: RequestUser, updateDto: UpdateServerSettingsDto): Promise<ServerSettingsDto> {
-		await this.accessControlService.validateAccessControlRules({
-			requestingUserContext: requestUser,
-			unscopedPermissions: ["server-settings:update"],
-			// todo: update access control handling to not require targetUserId and/or userScopedPermissions
-			targetUserId: requestUser.id,
-			userScopedPermissions: [],
-		});
+	async updateSettings(userContext: UserContext, updateDto: UpdateServerSettingsDto): Promise<ServerSettingsDto> {
+		await this.authService.guardAdminAction(userContext);
 
 		return this._UNSAFE_updateSettings(updateDto);
 	}

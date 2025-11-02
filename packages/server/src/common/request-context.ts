@@ -1,5 +1,5 @@
 import { Request } from "express";
-import { Permissions } from "@headbase-app/contracts";
+import { Roles } from "@headbase-app/contracts";
 import { createParamDecorator, ExecutionContext } from "@nestjs/common";
 
 /**
@@ -9,7 +9,7 @@ export interface RequestUser {
 	id: string;
 	sessionId: string;
 	verifiedAt: string | null;
-	permissions: Permissions[];
+	role: Roles;
 }
 
 /**

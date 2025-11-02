@@ -11,7 +11,6 @@ import { ResourceRelationshipError } from "@services/errors/resource/resource-re
 import { SystemError } from "@services/errors/base/system.error";
 import { DatabaseService } from "@services/database/database.service";
 import { EventsService } from "@services/events/events.service";
-import { AccessControlService } from "@modules/auth/access-control.service";
 import { files, filesChunks, vaults } from "@services/database/schema/schema";
 import { isoFormat } from "@services/database/schema/iso-format-date";
 import { ResourceNotFoundError } from "@services/errors/resource/resource-not-found.error";
@@ -20,13 +19,14 @@ import { VaultsService } from "@modules/vaults/vaults.service";
 import { EventIdentifiers } from "@services/events/events";
 import { UserRequestError } from "@services/errors/base/user-request.error";
 import { ChunksService } from "@modules/chunks/chunks.service";
+import { AuthService } from "@modules/auth/auth.service";
 
 @Injectable()
 export class FilesService {
 	constructor(
 		private readonly databaseService: DatabaseService,
 		private readonly eventsService: EventsService,
-		private readonly accessControlService: AccessControlService,
+		private readonly authService: AuthService,
 		private readonly vaultsService: VaultsService,
 		private readonly chunksService: ChunksService,
 	) {}
@@ -96,11 +96,10 @@ export class FilesService {
 	async get(userContext: UserContext, versionId: string) {
 		const fileWithOwner = await this.#getWithOwner(versionId);
 
-		await this.accessControlService.validateAccessControlRules({
-			userScopedPermissions: ["files:retrieve"],
-			unscopedPermissions: ["files:retrieve:all"],
-			requestingUserContext: userContext,
-			targetUserId: fileWithOwner.ownerId,
+		await this.authService.guardOwnership({
+			userContext,
+			ownerId: fileWithOwner.ownerId,
+			allowAdminBypass: true,
 		});
 
 		return this.convertFileWithOwner(fileWithOwner);
@@ -109,11 +108,10 @@ export class FilesService {
 	async create(userContext: UserContext, createFileDto: CreateFileDto) {
 		const vault = await this.vaultsService.get(userContext, createFileDto.vaultId);
 
-		await this.accessControlService.validateAccessControlRules({
-			userScopedPermissions: ["files:create"],
-			unscopedPermissions: ["files:create:all"],
-			requestingUserContext: userContext,
-			targetUserId: vault.ownerId,
+		await this.authService.guardOwnership({
+			userContext,
+			ownerId: vault.ownerId,
+			allowAdminBypass: true,
 		});
 
 		const { chunks: fileChunks, ...fileDto } = createFileDto;
@@ -168,12 +166,10 @@ export class FilesService {
 
 	async delete(userContext: UserContext, versionId: string) {
 		const file = await this.#getWithOwner(versionId);
-
-		await this.accessControlService.validateAccessControlRules({
-			userScopedPermissions: ["files:delete"],
-			unscopedPermissions: ["files:delete:all"],
-			requestingUserContext: userContext,
-			targetUserId: file.ownerId,
+		await this.authService.guardOwnership({
+			userContext,
+			ownerId: file.ownerId,
+			allowAdminBypass: true,
 		});
 
 		const db = this.databaseService.getDatabase();
@@ -239,11 +235,10 @@ export class FilesService {
 
 		const results: FileDto[] = [];
 		for (const result of resultsWithOwner) {
-			await this.accessControlService.validateAccessControlRules({
-				userScopedPermissions: ["files:retrieve"],
-				unscopedPermissions: ["files:retrieve"],
-				requestingUserContext: userContext,
-				targetUserId: result.ownerId,
+			await this.authService.guardOwnership({
+				userContext,
+				ownerId: result.ownerId,
+				allowAdminBypass: true,
 			});
 			results.push(this.convertFileWithOwner(result));
 		}
@@ -261,13 +256,10 @@ export class FilesService {
 
 	async commit(userContext: UserContext, versionId: string) {
 		const file = await this.#getWithOwner(versionId);
-
-		// File exists but "commit" is confirming creation, so validate access control against create permissions.
-		await this.accessControlService.validateAccessControlRules({
-			userScopedPermissions: ["files:create"],
-			unscopedPermissions: ["files:create:all"],
-			requestingUserContext: userContext,
-			targetUserId: file.ownerId,
+		await this.authService.guardOwnership({
+			userContext,
+			ownerId: file.ownerId,
+			allowAdminBypass: true,
 		});
 
 		if (file.committedAt) {
@@ -306,13 +298,10 @@ export class FilesService {
 
 	async getChunks(userContext: UserContext, versionId: string) {
 		const file = await this.#getWithOwner(versionId);
-
-		// todo: remove chunk permissions, they aren't needed.
-		await this.accessControlService.validateAccessControlRules({
-			userScopedPermissions: ["files:retrieve"],
-			unscopedPermissions: ["files:retrieve:all"],
-			requestingUserContext: userContext,
-			targetUserId: file.ownerId,
+		await this.authService.guardOwnership({
+			userContext,
+			ownerId: file.ownerId,
+			allowAdminBypass: true,
 		});
 
 		const db = this.databaseService.getDatabase();

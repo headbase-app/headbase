@@ -5,6 +5,7 @@ import { expectForbidden } from "@testing/common/expect-forbidden";
 import { expectBadRequest } from "@testing/common/expect-bad-request";
 import { testAdminUser1, testUser1, testUser2Unverified } from "@testing/data/users";
 import { describe, test, expect, afterAll, beforeAll, beforeEach } from "@jest/globals";
+import { expectNotFound } from "@testing/common/expect-not-found";
 
 const testHelper: TestHelper = new TestHelper();
 beforeAll(async () => {
@@ -31,10 +32,10 @@ describe("Delete User - /v1/users/:id [DELETE]", () => {
 		const { statusCode: deleteStatusCode } = await testHelper.client.delete(`/v1/users/${testUser1.id}`).set("Authorization", `Bearer ${sessionToken}`);
 		expect(deleteStatusCode).toEqual(200);
 
-		// Re-fetch the user to ensure its been deleted
+		// Re-fetch the user to ensure they have been deleted
 		const adminSessionToken = await testHelper.getSessionToken(testAdminUser1.id);
 		const { statusCode: getStatusCode, body: getBody } = await testHelper.client.get(`/v1/users/${testUser1.id}`).set("Authorization", `Bearer ${adminSessionToken}`);
-		expectBadRequest(getBody, getStatusCode, ErrorIdentifiers.USER_NOT_FOUND);
+		expectNotFound(getBody, getStatusCode, ErrorIdentifiers.USER_NOT_FOUND);
 	});
 
 	// todo: add role access control tests
