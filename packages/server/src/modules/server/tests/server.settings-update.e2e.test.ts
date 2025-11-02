@@ -22,10 +22,10 @@ describe("Update Settings - /v1/server/settings [PATCH]", () => {
 	// Testing success cases/happy paths work.
 	describe("Success Cases", () => {
 		test("When authorized as admin, the settings should be updated", async () => {
-			const accessToken = await testHelper.getSessionToken(testAdminUser1.id);
+			const sessionToken = await testHelper.getSessionToken(testAdminUser1.id);
 
 			// Disable registration and check that change has been made
-			const { body: disabledBody, statusCode: disabledStatusCode } = await testHelper.client.patch("/v1/server/settings").set("Authorization", `Bearer ${accessToken}`).send({
+			const { body: disabledBody, statusCode: disabledStatusCode } = await testHelper.client.patch("/v1/server/settings").set("Authorization", `Bearer ${sessionToken}`).send({
 				registrationEnabled: false,
 			});
 			expect(disabledStatusCode).toEqual(200);
@@ -37,7 +37,7 @@ describe("Update Settings - /v1/server/settings [PATCH]", () => {
 			);
 
 			// Enable registration again and check that change has been made
-			const { body: enabledBody, statusCode: enabledStatusCode } = await testHelper.client.patch("/v1/server/settings").set("Authorization", `Bearer ${accessToken}`).send({
+			const { body: enabledBody, statusCode: enabledStatusCode } = await testHelper.client.patch("/v1/server/settings").set("Authorization", `Bearer ${sessionToken}`).send({
 				registrationEnabled: true,
 			});
 			expect(enabledStatusCode).toEqual(200);
@@ -53,9 +53,9 @@ describe("Update Settings - /v1/server/settings [PATCH]", () => {
 	// Testing auth & permissions work.
 	describe("Invalid Authentication", () => {
 		test("When authorized as regular user, the request should be forbidden", async () => {
-			const accessToken = await testHelper.getSessionToken(testUser1.id);
+			const sessionToken = await testHelper.getSessionToken(testUser1.id);
 
-			const { body, statusCode } = await testHelper.client.patch("/v1/server/settings").set("Authorization", `Bearer ${accessToken}`).send({
+			const { body, statusCode } = await testHelper.client.patch("/v1/server/settings").set("Authorization", `Bearer ${sessionToken}`).send({
 				registrationEnabled: true,
 			});
 
@@ -90,11 +90,11 @@ describe("Update Settings - /v1/server/settings [PATCH]", () => {
 		});
 
 		test("When supplying invalid JSON data, the request should fail", async () => {
-			const accessToken = await testHelper.getSessionToken(testAdminUser1.id);
+			const sessionToken = await testHelper.getSessionToken(testAdminUser1.id);
 
 			await testMalformedData({
 				clientFunction: testHelper.client.patch.bind(testHelper.client),
-				accessToken: accessToken,
+				sessionToken: sessionToken,
 				endpoint: "/v1/server/settings",
 			});
 		});

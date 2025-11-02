@@ -26,16 +26,16 @@ describe("Update Vaults - /v1/vaults [PATCH]", () => {
 			const name = "updatedName";
 			const protectedEncryptionKey = "updatedProtectedEncryptionKey";
 			const protectedData = "updatedProtectedData";
-			const accessToken = await testHelper.getSessionToken(testUser1.id);
+			const sessionToken = await testHelper.getSessionToken(testUser1.id);
 
-			const response = await testHelper.client.patch(`/v1/vaults/${testUser1Vault1.id}`).set("Authorization", `Bearer ${accessToken}`).send({
+			const response = await testHelper.client.patch(`/v1/vaults/${testUser1Vault1.id}`).set("Authorization", `Bearer ${sessionToken}`).send({
 				name,
 				protectedEncryptionKey,
 				protectedData,
 			});
 			expect(response.statusCode).toEqual(HttpStatus.OK);
 
-			const { statusCode: checkStatusCode, body: checkBody } = await testHelper.client.get(`/v1/vaults/${testUser1Vault1.id}`).set("Authorization", `Bearer ${accessToken}`).send();
+			const { statusCode: checkStatusCode, body: checkBody } = await testHelper.client.get(`/v1/vaults/${testUser1Vault1.id}`).set("Authorization", `Bearer ${sessionToken}`).send();
 
 			expect(checkStatusCode).toEqual(HttpStatus.OK);
 			expect(checkBody).toEqual(
@@ -54,16 +54,16 @@ describe("Update Vaults - /v1/vaults [PATCH]", () => {
 			const name = "updatedName";
 			const protectedEncryptionKey = "updatedProtectedEncryptionKey";
 			const protectedData = "updatedProtectedData";
-			const accessToken = await testHelper.getSessionToken(testAdminUser1.id);
+			const sessionToken = await testHelper.getSessionToken(testAdminUser1.id);
 
-			const { statusCode } = await testHelper.client.patch(`/v1/vaults/${testAdminUser1Vault1.id}`).set("Authorization", `Bearer ${accessToken}`).send({
+			const { statusCode } = await testHelper.client.patch(`/v1/vaults/${testAdminUser1Vault1.id}`).set("Authorization", `Bearer ${sessionToken}`).send({
 				name,
 				protectedEncryptionKey,
 				protectedData,
 			});
 			expect(statusCode).toEqual(HttpStatus.OK);
 
-			const { statusCode: checkStatusCode, body: checkBody } = await testHelper.client.get(`/v1/vaults/${testAdminUser1Vault1.id}`).set("Authorization", `Bearer ${accessToken}`).send();
+			const { statusCode: checkStatusCode, body: checkBody } = await testHelper.client.get(`/v1/vaults/${testAdminUser1Vault1.id}`).set("Authorization", `Bearer ${sessionToken}`).send();
 
 			expect(checkStatusCode).toEqual(HttpStatus.OK);
 			expect(checkBody).toEqual(
@@ -81,16 +81,16 @@ describe("Update Vaults - /v1/vaults [PATCH]", () => {
 			const name = "updatedName";
 			const protectedEncryptionKey = "updatedProtectedEncryptionKey";
 			const protectedData = "updatedProtectedData";
-			const accessToken = await testHelper.getSessionToken(testAdminUser1.id);
+			const sessionToken = await testHelper.getSessionToken(testAdminUser1.id);
 
-			const { statusCode } = await testHelper.client.patch(`/v1/vaults/${testUser1Vault1.id}`).set("Authorization", `Bearer ${accessToken}`).send({
+			const { statusCode } = await testHelper.client.patch(`/v1/vaults/${testUser1Vault1.id}`).set("Authorization", `Bearer ${sessionToken}`).send({
 				name,
 				protectedEncryptionKey,
 				protectedData,
 			});
 			expect(statusCode).toEqual(HttpStatus.OK);
 
-			const { statusCode: checkStatusCode, body: checkBody } = await testHelper.client.get(`/v1/vaults/${testUser1Vault1.id}`).set("Authorization", `Bearer ${accessToken}`).send();
+			const { statusCode: checkStatusCode, body: checkBody } = await testHelper.client.get(`/v1/vaults/${testUser1Vault1.id}`).set("Authorization", `Bearer ${sessionToken}`).send();
 
 			expect(checkStatusCode).toEqual(HttpStatus.OK);
 			expect(checkBody).toEqual(
@@ -116,9 +116,9 @@ describe("Update Vaults - /v1/vaults [PATCH]", () => {
 		});
 
 		test("Given user with 'user' role, When updating a different users vault, Then response should be '403 - forbidden'", async () => {
-			const accessToken = await testHelper.getSessionToken(testUser1.id);
+			const sessionToken = await testHelper.getSessionToken(testUser1.id);
 
-			const { statusCode, body } = await testHelper.client.patch(`/v1/vaults/${testAdminUser1Vault1.id}`).set("Authorization", `Bearer ${accessToken}`).send({
+			const { statusCode, body } = await testHelper.client.patch(`/v1/vaults/${testAdminUser1Vault1.id}`).set("Authorization", `Bearer ${sessionToken}`).send({
 				name: "updatedName",
 			});
 
@@ -135,9 +135,9 @@ describe("Update Vaults - /v1/vaults [PATCH]", () => {
 	// Testing internal/system fields are not user editable (timestamps, id, owner relationships etc).
 	describe("Forbidden Field Validation", () => {
 		test("When attempting to update vault owner, Then response should be '400 - bad request'", async () => {
-			const accessToken = await testHelper.getSessionToken(testUser1.id);
+			const sessionToken = await testHelper.getSessionToken(testUser1.id);
 
-			const { statusCode, body } = await testHelper.client.patch(`/v1/vaults/${testUser1Vault1.id}`).set("Authorization", `Bearer ${accessToken}`).send({
+			const { statusCode, body } = await testHelper.client.patch(`/v1/vaults/${testUser1Vault1.id}`).set("Authorization", `Bearer ${sessionToken}`).send({
 				ownerId: testUser2Unverified.id,
 			});
 

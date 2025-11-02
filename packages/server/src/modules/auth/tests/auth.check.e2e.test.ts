@@ -1,11 +1,8 @@
 import { describe, expect, test, beforeAll, beforeEach, afterAll } from "@jest/globals";
 
-import { sign } from "jsonwebtoken";
-
 import { TestHelper } from "@testing/test-helper";
 import { testUser1 } from "@testing/data/users";
 import { expectUnauthorized } from "@testing/common/expect-unauthorized";
-import { ConfigService } from "@services/config/config.service";
 
 const testHelper = new TestHelper();
 beforeAll(async () => {
@@ -22,9 +19,9 @@ beforeEach(async () => {
 
 describe("Check Auth", () => {
 	test("authenticated request with session token succeeds", async () => {
-		const accessToken = await testHelper.getSessionToken(testUser1.id);
+		const sessionToken = await testHelper.getSessionToken(testUser1.id);
 
-		const { statusCode } = await testHelper.client.get("/v1/auth/check").set("Authorization", `Bearer ${accessToken}`);
+		const { statusCode } = await testHelper.client.get("/v1/auth/check").set("Authorization", `Bearer ${sessionToken}`);
 
 		expect(statusCode).toEqual(200);
 	});
@@ -35,25 +32,8 @@ describe("Check Auth", () => {
 		expectUnauthorized(body, statusCode);
 	});
 
-	test("incorrectly signed access token is unauthorized", async () => {
-		const accessToken = sign({ type: "accessToken", userId: testUser1.id, role: testUser1.role }, "qethwrthwrthr", { expiresIn: "1hr" });
-
-		const { body, statusCode } = await testHelper.client.get("/v1/auth/check").set("Authorization", `Bearer ${accessToken}`);
-
-		expectUnauthorized(body, statusCode);
-	});
-
-	test("invalid access token is unauthorized", async () => {
+	test("invalid session token is unauthorized", async () => {
 		const { body, statusCode } = await testHelper.client.get("/v1/auth/check").set("Authorization", "Bearer SWFubawgrlkx");
-
-		expectUnauthorized(body, statusCode);
-	});
-
-	test("expired access token is unauthorized", async () => {
-		const configService = testHelper.getAppDependency<ConfigService>(ConfigService);
-		const accessToken = sign({ type: "accessToken", userId: testUser1.id, role: testUser1.role }, configService.vars.auth.accessToken.secret, { expiresIn: 0 });
-
-		const { body, statusCode } = await testHelper.client.get("/v1/auth/check").set("Authorization", `Bearer ${accessToken}`);
 
 		expectUnauthorized(body, statusCode);
 	});

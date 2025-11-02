@@ -16,12 +16,7 @@ export const ConfigSchema = z.object({
 	auth: z.object({
 		issuer: z.string().optional(),
 		audience: z.string().optional(),
-		accessToken: z.object({
-			secret: z.string(),
-			expiry: z.string(),
-		}),
-		refreshToken: z.object({
-			secret: z.string(),
+		sessionToken: z.object({
 			expiry: z.string(),
 		}),
 		emailVerification: z.object({

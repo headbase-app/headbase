@@ -40,25 +40,25 @@ describe("Delete User - /v1/users/:id [DELETE]", () => {
 
 	// todo: add role access control tests
 	test("When authorized as a different user to the one to delete, the request should fail", async () => {
-		const accessToken = await testHelper.getSessionToken(testUser1.id);
+		const sessionToken = await testHelper.getSessionToken(testUser1.id);
 
-		const { body, statusCode } = await testHelper.client.delete(`/v1/users/${testUser2Unverified.id}`).set("Authorization", `Bearer ${accessToken}`);
+		const { body, statusCode } = await testHelper.client.delete(`/v1/users/${testUser2Unverified.id}`).set("Authorization", `Bearer ${sessionToken}`);
 
 		expectForbidden(body, statusCode);
 	});
 
 	test("When attempting to delete a none existent user, the request should fail", async () => {
-		const accessToken = await testHelper.getSessionToken(testUser1.id);
+		const sessionToken = await testHelper.getSessionToken(testUser1.id);
 
-		const { body, statusCode } = await testHelper.client.delete("/v1/users/82f7d7a4-e094-4f15-9de0-5b5621376714").set("Authorization", `Bearer ${accessToken}`);
+		const { body, statusCode } = await testHelper.client.delete("/v1/users/82f7d7a4-e094-4f15-9de0-5b5621376714").set("Authorization", `Bearer ${sessionToken}`);
 
 		expectForbidden(body, statusCode);
 	});
 
 	test("When passing an invalid user ID, the request should fail", async () => {
-		const accessToken = await testHelper.getSessionToken(testUser1.id);
+		const sessionToken = await testHelper.getSessionToken(testUser1.id);
 
-		const { body, statusCode } = await testHelper.client.delete("/v1/users/invalid").set("Authorization", `Bearer ${accessToken}`);
+		const { body, statusCode } = await testHelper.client.delete("/v1/users/invalid").set("Authorization", `Bearer ${sessionToken}`);
 
 		expectBadRequest(body, statusCode, ErrorIdentifiers.REQUEST_INVALID);
 	});

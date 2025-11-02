@@ -151,9 +151,8 @@ export class AuthService {
 	async createSession(userId: string): Promise<{ token: string; id: string }> {
 		const db = this.databaseService.getDatabase();
 
-		// todo: this is probably very wrong due to JS Date/timezone things, need to double check
 		const currentTime = new Date().getTime();
-		const timeToExpiry = ms("7 days" as ms.StringValue);
+		const timeToExpiry = ms(this.configService.vars.auth.sessionToken.expiry as ms.StringValue);
 		const expiresAt = new Date(currentTime + timeToExpiry).toISOString();
 
 		const sessionId = randomUUID();

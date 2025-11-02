@@ -20,9 +20,9 @@ describe("Get Settings - /v1/server/settings [GET]", () => {
 	// Testing success cases/happy paths work.
 	describe("Success Cases", () => {
 		test("When authorized as admin, the server settings should be returned", async () => {
-			const accessToken = await testHelper.getSessionToken(testAdminUser1.id);
+			const sessionToken = await testHelper.getSessionToken(testAdminUser1.id);
 
-			const { body, statusCode } = await testHelper.client.get("/v1/server/settings").set("Authorization", `Bearer ${accessToken}`).send();
+			const { body, statusCode } = await testHelper.client.get("/v1/server/settings").set("Authorization", `Bearer ${sessionToken}`).send();
 
 			expect(statusCode).toEqual(200);
 			expect(body).toEqual(
@@ -37,9 +37,9 @@ describe("Get Settings - /v1/server/settings [GET]", () => {
 	// Testing auth & user permissions work.
 	describe("Authentication & Permissions", () => {
 		test("When authorized as regular user, the request should be forbidden", async () => {
-			const accessToken = await testHelper.getSessionToken(testUser1.id);
+			const sessionToken = await testHelper.getSessionToken(testUser1.id);
 
-			const { body, statusCode } = await testHelper.client.get("/v1/server/settings").set("Authorization", `Bearer ${accessToken}`).send();
+			const { body, statusCode } = await testHelper.client.get("/v1/server/settings").set("Authorization", `Bearer ${sessionToken}`).send();
 
 			expectForbidden(body, statusCode);
 		});

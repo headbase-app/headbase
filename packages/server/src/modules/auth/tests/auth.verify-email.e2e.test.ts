@@ -21,26 +21,26 @@ describe("Email Verification - /v1/auth/verify-email [GET, POST]", () => {
 	// Testing success cases/happy paths work.
 	describe("Success Cases", () => {
 		test("authenticated user can request email verification", async () => {
-			const accessToken = await testHelper.getSessionToken(testUser2Unverified.id);
+			const sessionToken = await testHelper.getSessionToken(testUser2Unverified.id);
 
-			const { statusCode } = await testHelper.client.get("/v1/auth/verify-email").set("Authorization", `Bearer ${accessToken}`).send();
+			const { statusCode } = await testHelper.client.get("/v1/auth/verify-email").set("Authorization", `Bearer ${sessionToken}`).send();
 
 			expect(statusCode).toEqual(200);
 		});
 
 		test("authenticated admin can request email verification", async () => {
-			const accessToken = await testHelper.getSessionToken(testAdminUser2Unverified.id);
+			const sessionToken = await testHelper.getSessionToken(testAdminUser2Unverified.id);
 
-			const { statusCode } = await testHelper.client.get("/v1/auth/verify-email").set("Authorization", `Bearer ${accessToken}`).send();
+			const { statusCode } = await testHelper.client.get("/v1/auth/verify-email").set("Authorization", `Bearer ${sessionToken}`).send();
 
 			expect(statusCode).toEqual(200);
 		});
 
 		test("authenticated user can verify their email", async () => {
-			const accessToken = await testHelper.getSessionToken(testUser2Unverified.id);
+			const sessionToken = await testHelper.getSessionToken(testUser2Unverified.id);
 			const token = testHelper.getEmailVerificationToken(testUser2Unverified.id);
 
-			const { statusCode, body } = await testHelper.client.post("/v1/auth/verify-email").set("Authorization", `Bearer ${accessToken}`).send({
+			const { statusCode, body } = await testHelper.client.post("/v1/auth/verify-email").set("Authorization", `Bearer ${sessionToken}`).send({
 				token,
 			});
 
@@ -60,10 +60,10 @@ describe("Email Verification - /v1/auth/verify-email [GET, POST]", () => {
 		});
 
 		test("authenticated admin can verify their email", async () => {
-			const accessToken = await testHelper.getSessionToken(testAdminUser2Unverified.id);
+			const sessionToken = await testHelper.getSessionToken(testAdminUser2Unverified.id);
 			const token = testHelper.getEmailVerificationToken(testAdminUser2Unverified.id);
 
-			const { statusCode, body } = await testHelper.client.post("/v1/auth/verify-email").set("Authorization", `Bearer ${accessToken}`).send({
+			const { statusCode, body } = await testHelper.client.post("/v1/auth/verify-email").set("Authorization", `Bearer ${sessionToken}`).send({
 				token,
 			});
 

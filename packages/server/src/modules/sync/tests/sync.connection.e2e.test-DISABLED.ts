@@ -32,8 +32,8 @@ describe("/v1/sync [WEBSOCKET]", () => {
 	});
 
 	test("When a connection attempt is made with a valid ticket, it should be accepted", async () => {
-		const accessToken = await testHelper.getSessionToken(testUser1.id);
-		const { status, body } = await testHelper.client.get("/v1/sync/ticket").set("Authorization", `Bearer ${accessToken}`).send();
+		const sessionToken = await testHelper.getSessionToken(testUser1.id);
+		const { status, body } = await testHelper.client.get("/v1/sync/ticket").set("Authorization", `Bearer ${sessionToken}`).send();
 
 		expect(status).toEqual(HttpStatus.OK);
 		expect(body).toEqual(
@@ -52,8 +52,8 @@ describe("/v1/sync [WEBSOCKET]", () => {
 	});
 
 	test("When client makes connection, it should receive welcome message from server", async () => {
-		const accessToken = await testHelper.getSessionToken(testUser1.id);
-		const { status, body } = await testHelper.client.get("/v1/sync/ticket").set("Authorization", `Bearer ${accessToken}`).send();
+		const sessionToken = await testHelper.getSessionToken(testUser1.id);
+		const { status, body } = await testHelper.client.get("/v1/sync/ticket").set("Authorization", `Bearer ${sessionToken}`).send();
 
 		expect(status).toEqual(HttpStatus.OK);
 		expect(body).toEqual(

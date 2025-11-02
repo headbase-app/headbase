@@ -19,12 +19,12 @@ describe("Query Files - /v1/files [GET]", () => {
 	// Testing success cases/happy paths work.
 	describe("Success Cases", () => {
 		test("When fetching vault with 0 files, empty results should be returned.", async () => {
-			const accessToken = await testHelper.getSessionToken(testUser1.id);
+			const sessionToken = await testHelper.getSessionToken(testUser1.id);
 
 			const { body, statusCode } = await testHelper.client
 				// query string used as supertest/agent doesn't seem to handle arrays
 				.get(`/v1/files?offset=0&limit=42&vaultIds[]=${testUser1Vault2.id}`)
-				.set("Authorization", `Bearer ${accessToken}`)
+				.set("Authorization", `Bearer ${sessionToken}`)
 				.send();
 
 			expect(statusCode).toEqual(200);

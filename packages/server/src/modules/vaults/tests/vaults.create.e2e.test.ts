@@ -25,11 +25,11 @@ beforeEach(async () => {
 describe("Create Vaults - /v1/vaults [POST]", () => {
 	describe("Success Cases", () => {
 		test("Given user with `user` role, When creating vault with matching ownerId, Then vault should be created & returned", async () => {
-			const accessToken = await testHelper.getSessionToken(testUser1.id);
+			const sessionToken = await testHelper.getSessionToken(testUser1.id);
 
 			const { body, statusCode } = await testHelper.client
 				.post("/v1/vaults")
-				.set("Authorization", `Bearer ${accessToken}`)
+				.set("Authorization", `Bearer ${sessionToken}`)
 				.send({ ...exampleVault1, ownerId: testUser1.id });
 
 			expect(statusCode).toEqual(201);
@@ -42,11 +42,11 @@ describe("Create Vaults - /v1/vaults [POST]", () => {
 		});
 
 		test("Given user with `admin` role, When creating vault with matching ownerId, Then vault should be created & returned", async () => {
-			const accessToken = await testHelper.getSessionToken(testAdminUser1.id);
+			const sessionToken = await testHelper.getSessionToken(testAdminUser1.id);
 
 			const { body, statusCode } = await testHelper.client
 				.post("/v1/vaults")
-				.set("Authorization", `Bearer ${accessToken}`)
+				.set("Authorization", `Bearer ${sessionToken}`)
 				.send({ ...exampleVault1, ownerId: testAdminUser1.id });
 
 			expect(statusCode).toEqual(201);
@@ -54,11 +54,11 @@ describe("Create Vaults - /v1/vaults [POST]", () => {
 		});
 
 		test("Given user with `admin` role, When creating vault with different ownerId, Then vault should be created & returned", async () => {
-			const accessToken = await testHelper.getSessionToken(testAdminUser1.id);
+			const sessionToken = await testHelper.getSessionToken(testAdminUser1.id);
 
 			const { body, statusCode } = await testHelper.client
 				.post("/v1/vaults")
-				.set("Authorization", `Bearer ${accessToken}`)
+				.set("Authorization", `Bearer ${sessionToken}`)
 				.send({ ...exampleVault1, ownerId: testUser1.id });
 
 			expect(statusCode).toEqual(201);
@@ -66,11 +66,11 @@ describe("Create Vaults - /v1/vaults [POST]", () => {
 		});
 
 		test("When creating vault with null protectedData, Then vault should be created & returned", async () => {
-			const accessToken = await testHelper.getSessionToken(testUser1.id);
+			const sessionToken = await testHelper.getSessionToken(testUser1.id);
 
 			const { body, statusCode } = await testHelper.client
 				.post("/v1/vaults")
-				.set("Authorization", `Bearer ${accessToken}`)
+				.set("Authorization", `Bearer ${sessionToken}`)
 				.send({
 					...exampleVault1,
 					ownerId: testUser1.id,
@@ -87,11 +87,11 @@ describe("Create Vaults - /v1/vaults [POST]", () => {
 		});
 
 		test("Given user A with existing vault, When user B creates vault with matching name, Then vault should be created & returned", async () => {
-			const accessToken = await testHelper.getSessionToken(testUser1.id);
+			const sessionToken = await testHelper.getSessionToken(testUser1.id);
 
 			const { body, statusCode } = await testHelper.client
 				.post("/v1/vaults")
-				.set("Authorization", `Bearer ${accessToken}`)
+				.set("Authorization", `Bearer ${sessionToken}`)
 				.send({
 					...testAdminUser1Vault1,
 					ownerId: testUser1.id,
@@ -111,11 +111,11 @@ describe("Create Vaults - /v1/vaults [POST]", () => {
 
 	describe("Authentication & Permissions", () => {
 		test("Given user with `user` role, When creating vault with different ownerId, Then request should be '403 - forbidden'", async () => {
-			const accessToken = await testHelper.getSessionToken(testUser1.id);
+			const sessionToken = await testHelper.getSessionToken(testUser1.id);
 
 			const { body, statusCode } = await testHelper.client
 				.post("/v1/vaults")
-				.set("Authorization", `Bearer ${accessToken}`)
+				.set("Authorization", `Bearer ${sessionToken}`)
 				.send({
 					...exampleVault1,
 					ownerId: testUser2Unverified.id,
@@ -125,11 +125,11 @@ describe("Create Vaults - /v1/vaults [POST]", () => {
 		});
 
 		test("Given unverified user with `user` role, When creating vault, Then request should be '403 - forbidden'", async () => {
-			const accessToken = await testHelper.getSessionToken(testUser2Unverified.id);
+			const sessionToken = await testHelper.getSessionToken(testUser2Unverified.id);
 
 			const { body, statusCode } = await testHelper.client
 				.post("/v1/vaults")
-				.set("Authorization", `Bearer ${accessToken}`)
+				.set("Authorization", `Bearer ${sessionToken}`)
 				.send({
 					...exampleVault1,
 					ownerId: testUser2Unverified.id,
@@ -139,11 +139,11 @@ describe("Create Vaults - /v1/vaults [POST]", () => {
 		});
 
 		test("Given unverified user with `admin` role, When creating vault, Then request should be '403 - forbidden'", async () => {
-			const accessToken = await testHelper.getSessionToken(testAdminUser2Unverified.id);
+			const sessionToken = await testHelper.getSessionToken(testAdminUser2Unverified.id);
 
 			const { body, statusCode } = await testHelper.client
 				.post("/v1/vaults")
-				.set("Authorization", `Bearer ${accessToken}`)
+				.set("Authorization", `Bearer ${sessionToken}`)
 				.send({
 					...exampleVault1,
 					ownerId: testAdminUser2Unverified.id,
@@ -153,11 +153,11 @@ describe("Create Vaults - /v1/vaults [POST]", () => {
 		});
 
 		test("Given unverified user with `admin` role, When creating vault with different ownerId, Then request should be '403 - forbidden", async () => {
-			const accessToken = await testHelper.getSessionToken(testAdminUser2Unverified.id);
+			const sessionToken = await testHelper.getSessionToken(testAdminUser2Unverified.id);
 
 			const { body, statusCode } = await testHelper.client
 				.post("/v1/vaults")
-				.set("Authorization", `Bearer ${accessToken}`)
+				.set("Authorization", `Bearer ${sessionToken}`)
 				.send({ ...exampleVault1, ownerId: testUser1.id });
 
 			expectForbidden(body, statusCode, ErrorIdentifiers.AUTH_NOT_VERIFIED);
@@ -169,11 +169,11 @@ describe("Create Vaults - /v1/vaults [POST]", () => {
 	describe("Unique Validation", () => {
 		// todo: add test that name constraint should only apply at a user level
 		test("Given user with existing vault and `user` role, When creating vault with matching name, Then response should be 'HTTP 400 - bad request'", async () => {
-			const accessToken = await testHelper.getSessionToken(testUser1.id);
+			const sessionToken = await testHelper.getSessionToken(testUser1.id);
 
 			const { body, statusCode } = await testHelper.client
 				.post("/v1/vaults")
-				.set("Authorization", `Bearer ${accessToken}`)
+				.set("Authorization", `Bearer ${sessionToken}`)
 				.send({
 					...testUser1Vault1,
 					id: "561b9baa-0e9f-4354-8f93-931437169c24",
@@ -183,11 +183,11 @@ describe("Create Vaults - /v1/vaults [POST]", () => {
 		});
 
 		test("Given user with existing vault and `user` role, When creating vault with matching id, Then response should be 'HTTP 400 - bad request'", async () => {
-			const accessToken = await testHelper.getSessionToken(testUser1.id);
+			const sessionToken = await testHelper.getSessionToken(testUser1.id);
 
 			const { body, statusCode } = await testHelper.client
 				.post("/v1/vaults")
-				.set("Authorization", `Bearer ${accessToken}`)
+				.set("Authorization", `Bearer ${sessionToken}`)
 				.send({
 					...testUser1Vault1,
 					name: "uniqueName1",
@@ -197,11 +197,11 @@ describe("Create Vaults - /v1/vaults [POST]", () => {
 		});
 
 		test("Given user A with existing vault and user B with `admin` role, When user B creates vault for user A with matching name, Then response should be 'HTTP 400 - bad request'", async () => {
-			const accessToken = await testHelper.getSessionToken(testAdminUser1.id);
+			const sessionToken = await testHelper.getSessionToken(testAdminUser1.id);
 
 			const { body, statusCode } = await testHelper.client
 				.post("/v1/vaults")
-				.set("Authorization", `Bearer ${accessToken}`)
+				.set("Authorization", `Bearer ${sessionToken}`)
 				.send({
 					...testUser1Vault1,
 					id: "561b9baa-0e9f-4354-8f93-931437169c24",
@@ -211,11 +211,11 @@ describe("Create Vaults - /v1/vaults [POST]", () => {
 		});
 
 		test("Given user A with existing vault and user B with `admin` role, When user B creates vault for user A with matching id, Then response should be 'HTTP 400 - bad request'", async () => {
-			const accessToken = await testHelper.getSessionToken(testAdminUser1.id);
+			const sessionToken = await testHelper.getSessionToken(testAdminUser1.id);
 
 			const { body, statusCode } = await testHelper.client
 				.post("/v1/vaults")
-				.set("Authorization", `Bearer ${accessToken}`)
+				.set("Authorization", `Bearer ${sessionToken}`)
 				.send({
 					...testUser1Vault1,
 					name: "uniqueName1",
@@ -227,11 +227,11 @@ describe("Create Vaults - /v1/vaults [POST]", () => {
 
 	describe("Required Field Validation", () => {
 		test("When creating vault without an id, Then response should be 'HTTP 400 - bad request'", async () => {
-			const accessToken = await testHelper.getSessionToken(testUser1.id);
+			const sessionToken = await testHelper.getSessionToken(testUser1.id);
 
 			await testMissingField({
 				clientFunction: testHelper.client.post.bind(testHelper.client),
-				accessToken: accessToken,
+				sessionToken: sessionToken,
 				endpoint: "/v1/vaults",
 				data: exampleVault1,
 				testFieldKey: "id",
@@ -239,11 +239,11 @@ describe("Create Vaults - /v1/vaults [POST]", () => {
 		});
 
 		test("When creating vault without ownerId, Then response should be 'HTTP 400 - bad request'", async () => {
-			const accessToken = await testHelper.getSessionToken(testUser1.id);
+			const sessionToken = await testHelper.getSessionToken(testUser1.id);
 
 			await testMissingField({
 				clientFunction: testHelper.client.post.bind(testHelper.client),
-				accessToken: accessToken,
+				sessionToken: sessionToken,
 				endpoint: "/v1/vaults",
 				data: exampleVault1,
 				testFieldKey: "ownerId",
@@ -251,11 +251,11 @@ describe("Create Vaults - /v1/vaults [POST]", () => {
 		});
 
 		test("When creating vault without protectedEncryptionKey, Then response should be 'HTTP 400 - bad request'", async () => {
-			const accessToken = await testHelper.getSessionToken(testUser1.id);
+			const sessionToken = await testHelper.getSessionToken(testUser1.id);
 
 			await testMissingField({
 				clientFunction: testHelper.client.post.bind(testHelper.client),
-				accessToken: accessToken,
+				sessionToken: sessionToken,
 				endpoint: "/v1/vaults",
 				data: exampleVault1,
 				testFieldKey: "protectedEncryptionKey",
@@ -263,11 +263,11 @@ describe("Create Vaults - /v1/vaults [POST]", () => {
 		});
 
 		test("When creating vault without protectedData, Then response should be 'HTTP 400 - bad request'", async () => {
-			const accessToken = await testHelper.getSessionToken(testUser1.id);
+			const sessionToken = await testHelper.getSessionToken(testUser1.id);
 
 			await testMissingField({
 				clientFunction: testHelper.client.post.bind(testHelper.client),
-				accessToken: accessToken,
+				sessionToken: sessionToken,
 				endpoint: "/v1/vaults",
 				data: exampleVault1,
 				testFieldKey: "protectedData",
@@ -275,11 +275,11 @@ describe("Create Vaults - /v1/vaults [POST]", () => {
 		});
 
 		test("When creating vault without name, Then response should be 'HTTP 400 - bad request'", async () => {
-			const accessToken = await testHelper.getSessionToken(testUser1.id);
+			const sessionToken = await testHelper.getSessionToken(testUser1.id);
 
 			await testMissingField({
 				clientFunction: testHelper.client.post.bind(testHelper.client),
-				accessToken: accessToken,
+				sessionToken: sessionToken,
 				endpoint: "/v1/vaults",
 				data: exampleVault1,
 				testFieldKey: "name",
@@ -287,11 +287,11 @@ describe("Create Vaults - /v1/vaults [POST]", () => {
 		});
 
 		test("When creating vault without createdAt, Then response should be 'HTTP 400 - bad request'", async () => {
-			const accessToken = await testHelper.getSessionToken(testUser1.id);
+			const sessionToken = await testHelper.getSessionToken(testUser1.id);
 
 			await testMissingField({
 				clientFunction: testHelper.client.post.bind(testHelper.client),
-				accessToken: accessToken,
+				sessionToken: sessionToken,
 				endpoint: "/v1/vaults",
 				data: exampleVault1,
 				testFieldKey: "createdAt",
@@ -299,11 +299,11 @@ describe("Create Vaults - /v1/vaults [POST]", () => {
 		});
 
 		test("When creating vault without updatedAt, Then response should be 'HTTP 400 - bad request'", async () => {
-			const accessToken = await testHelper.getSessionToken(testUser1.id);
+			const sessionToken = await testHelper.getSessionToken(testUser1.id);
 
 			await testMissingField({
 				clientFunction: testHelper.client.post.bind(testHelper.client),
-				accessToken: accessToken,
+				sessionToken: sessionToken,
 				endpoint: "/v1/vaults",
 				data: exampleVault1,
 				testFieldKey: "updatedAt",
@@ -313,11 +313,11 @@ describe("Create Vaults - /v1/vaults [POST]", () => {
 
 	describe("Relationship Validation", () => {
 		test("Given user with `admin` role, When creating vault with ownerId for none existent user, Then request should be '400 - bad request'", async () => {
-			const accessToken = await testHelper.getSessionToken(testAdminUser1.id);
+			const sessionToken = await testHelper.getSessionToken(testAdminUser1.id);
 
 			const { body, statusCode } = await testHelper.client
 				.post("/v1/vaults")
-				.set("Authorization", `Bearer ${accessToken}`)
+				.set("Authorization", `Bearer ${sessionToken}`)
 				.send({
 					...exampleVault1,
 					ownerId: "40244ffe-8920-4014-86a8-2205b2104184",
@@ -333,11 +333,11 @@ describe("Create Vaults - /v1/vaults [POST]", () => {
 
 	describe("Type Validation", () => {
 		test("When creating vault with invalid JSON data, Then response should be 'HTTP 400 - bad request'", async () => {
-			const accessToken = await testHelper.getSessionToken(testUser1.id);
+			const sessionToken = await testHelper.getSessionToken(testUser1.id);
 
 			await testMalformedData({
 				clientFunction: testHelper.client.post.bind(testHelper.client),
-				accessToken: accessToken,
+				sessionToken: sessionToken,
 				endpoint: "/v1/vaults",
 			});
 		});

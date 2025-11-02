@@ -112,12 +112,12 @@ describe("Login Auth", () => {
 
 	describe("Invalid Data", () => {
 		test("When supplying invalid JSON data, the request should fail", async () => {
-			const accessToken = await testHelper.getSessionToken(testUser1.id);
+			const sessionToken = await testHelper.getSessionToken(testUser1.id);
 
 			await testMalformedData({
 				clientFunction: testHelper.client.post.bind(testHelper.client),
 				endpoint: "/v1/auth/login",
-				accessToken: accessToken,
+				sessionToken: sessionToken,
 			});
 		});
 

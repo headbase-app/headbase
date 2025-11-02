@@ -38,10 +38,7 @@ describe("Create User - /v1/users [POST]", () => {
 						createdAt: expect.any(String),
 						updatedAt: expect.any(String),
 					},
-					tokens: {
-						accessToken: expect.any(String),
-						refreshToken: expect.any(String),
-					},
+					sessionToken: expect.any(String),
 				}),
 			);
 		});
@@ -79,7 +76,7 @@ describe("Create User - /v1/users [POST]", () => {
 		//       createdAt: expect.any(String),
 		//       updatedAt: expect.any(String)
 		//     },
-		//     accessToken: expect.any(String),
+		//     sessionToken: expect.any(String),
 		//     refreshToken: expect.any(String)
 		//   }))
 		// })
@@ -104,7 +101,7 @@ describe("Create User - /v1/users [POST]", () => {
 		//       createdAt: expect.any(String),
 		//       updatedAt: expect.any(String)
 		//     },
-		//     accessToken: expect.any(String),
+		//     sessionToken: expect.any(String),
 		//     refreshToken: expect.any(String)
 		//   }))
 		// })
@@ -164,11 +161,11 @@ describe("Create User - /v1/users [POST]", () => {
 
 	describe("Required Fields", () => {
 		test("When not supplying an email, the request should fail", async () => {
-			const accessToken = await testHelper.getSessionToken(testUser1.id);
+			const sessionToken = await testHelper.getSessionToken(testUser1.id);
 
 			await testMissingField({
 				clientFunction: testHelper.client.post.bind(testHelper.client),
-				accessToken: accessToken,
+				sessionToken: sessionToken,
 				endpoint: "/v1/users",
 				data: exampleUser1,
 				testFieldKey: "email",
@@ -176,11 +173,11 @@ describe("Create User - /v1/users [POST]", () => {
 		});
 
 		test("When not supplying a password, the request should fail", async () => {
-			const accessToken = await testHelper.getSessionToken(testUser1.id);
+			const sessionToken = await testHelper.getSessionToken(testUser1.id);
 
 			await testMissingField({
 				clientFunction: testHelper.client.post.bind(testHelper.client),
-				accessToken: accessToken,
+				sessionToken: sessionToken,
 				endpoint: "/v1/users",
 				data: exampleUser1,
 				testFieldKey: "password",
@@ -188,11 +185,11 @@ describe("Create User - /v1/users [POST]", () => {
 		});
 
 		test("When not supplying a displayName, the request should fail", async () => {
-			const accessToken = await testHelper.getSessionToken(testUser1.id);
+			const sessionToken = await testHelper.getSessionToken(testUser1.id);
 
 			await testMissingField({
 				clientFunction: testHelper.client.post.bind(testHelper.client),
-				accessToken: accessToken,
+				sessionToken: sessionToken,
 				endpoint: "/v1/users",
 				data: exampleUser1,
 				testFieldKey: "displayName",
@@ -270,11 +267,11 @@ describe("Create User - /v1/users [POST]", () => {
 
 	describe("Invalid Data", () => {
 		test("When supplying invalid JSON data, the request should fail", async () => {
-			const accessToken = await testHelper.getSessionToken(testUser1.id);
+			const sessionToken = await testHelper.getSessionToken(testUser1.id);
 
 			await testMalformedData({
 				clientFunction: testHelper.client.post.bind(testHelper.client),
-				accessToken: accessToken,
+				sessionToken: sessionToken,
 				endpoint: "/v1/users",
 			});
 		});
@@ -330,10 +327,10 @@ describe("Create User - /v1/users [POST]", () => {
 
 	describe("Registration Enabled", () => {
 		test("When registration is disabled, adding a new user should fail", async () => {
-			const accessToken = await testHelper.getSessionToken(testAdminUser1.id);
+			const sessionToken = await testHelper.getSessionToken(testAdminUser1.id);
 
 			// Update settings to disable registration
-			await testHelper.client.patch("/v1/server/settings").set("Authorization", `Bearer ${accessToken}`).send({
+			await testHelper.client.patch("/v1/server/settings").set("Authorization", `Bearer ${sessionToken}`).send({
 				registrationEnabled: false,
 			});
 

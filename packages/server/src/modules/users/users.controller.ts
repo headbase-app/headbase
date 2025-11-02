@@ -1,6 +1,6 @@
 import { Body, Controller, Get, Post, UseGuards, Param, Patch, Delete } from "@nestjs/common";
 
-import { CreateUserDto, UpdateUserDto, UsersURLParams } from "@headbase-app/contracts";
+import { AuthUserResponse, CreateUserDto, UpdateUserDto, UsersURLParams } from "@headbase-app/contracts";
 import { UsersService } from "@modules/users/users.service";
 import { ZodValidationPipe } from "@common/zod-validator.pipe";
 import { AuthenticationGuard } from "@modules/auth/auth.guard";
@@ -18,13 +18,13 @@ export class UsersHttpController {
 	) {}
 
 	@Post()
-	async createUser(@Body(new ZodValidationPipe(CreateUserDto)) createUserDto: CreateUserDto) {
+	async createUser(@Body(new ZodValidationPipe(CreateUserDto)) createUserDto: CreateUserDto): Promise<AuthUserResponse> {
 		const newUser = await this.usersService.create(createUserDto);
 		const session = await this.authService.createSession(newUser.id);
 
 		return {
 			user: newUser,
-			tokens: { accessToken: session.token, refreshToken: "" },
+			sessionToken: session.token,
 		};
 	}
 

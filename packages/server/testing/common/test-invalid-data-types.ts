@@ -26,8 +26,8 @@ export function testInvalidDataTypes(config: TestInvalidDataTypesConfig) {
 
 		const req = config.testHelper.client[config.req.clientMethod](config.req.endpoint);
 		if (config.auth) {
-			const accessToken = await config.testHelper.getSessionToken(config.auth.userId);
-			req.set("Authorization", `Bearer ${accessToken}`);
+			const sessionToken = await config.testHelper.getSessionToken(config.auth.userId);
+			req.set("Authorization", `Bearer ${sessionToken}`);
 		}
 
 		const { body, statusCode } = await req.send(testData);

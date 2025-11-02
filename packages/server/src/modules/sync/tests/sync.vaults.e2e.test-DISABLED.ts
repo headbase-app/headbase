@@ -25,10 +25,10 @@ afterEach(() => {
 describe("Sync Module - Vault Events", () => {
 	describe("/v1/sync [WEBSOCKET]", () => {
 		test("When a vault is created by the same user with different sessions, an event should be received", async () => {
-			const accessToken = await testHelper.getSessionToken(testUser1.id);
-			const accessToken2 = await testHelper.getSessionToken(testUser1.id);
+			const sessionToken = await testHelper.getSessionToken(testUser1.id);
+			const sessionToken2 = await testHelper.getSessionToken(testUser1.id);
 
-			const { body } = await testHelper.client.get("/v1/sync/ticket").set("Authorization", `Bearer ${accessToken}`).send();
+			const { body } = await testHelper.client.get("/v1/sync/ticket").set("Authorization", `Bearer ${sessionToken}`).send();
 
 			const protocol = `headbase.ticket.${body.ticket}`;
 
@@ -40,7 +40,7 @@ describe("Sync Module - Vault Events", () => {
 					// Create example vault
 					await testHelper.client
 						.post("/v1/vaults")
-						.set("Authorization", `Bearer ${accessToken2}`)
+						.set("Authorization", `Bearer ${sessionToken2}`)
 						.send({ ...exampleVault1, ownerId: testUser1.id });
 				})
 				.expectJson((event) => {
@@ -61,8 +61,8 @@ describe("Sync Module - Vault Events", () => {
 		});
 
 		test("When a vault is created by the same user using the same session, no event should be received", async () => {
-			const accessToken = await testHelper.getSessionToken(testUser1.id);
-			const { body } = await testHelper.client.get("/v1/sync/ticket").set("Authorization", `Bearer ${accessToken}`).send();
+			const sessionToken = await testHelper.getSessionToken(testUser1.id);
+			const { body } = await testHelper.client.get("/v1/sync/ticket").set("Authorization", `Bearer ${sessionToken}`).send();
 
 			const protocol = `headbase.ticket.${body.ticket}`;
 			await testSocket(server)
@@ -84,7 +84,7 @@ describe("Sync Module - Vault Events", () => {
 					// Create example vault
 					await testHelper.client
 						.post("/v1/vaults")
-						.set("Authorization", `Bearer ${accessToken}`)
+						.set("Authorization", `Bearer ${sessionToken}`)
 						.send({ ...exampleVault1, ownerId: testUser1.id });
 				})
 				// We wait just to make sure that the event is not going to be returned

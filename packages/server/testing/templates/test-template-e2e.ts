@@ -18,9 +18,9 @@ describe("Short Description - /v1/path [METHOD]", () => {
 	// Testing success cases/happy paths work.
 	describe("Success Cases", () => {
 		test("Given CONTEXT, When ACTION, Then RESULT", async () => {
-			const accessToken = await testHelper.getSessionToken(testUser1.id);
+			const sessionToken = await testHelper.getSessionToken(testUser1.id);
 
-			const { body, statusCode } = await testHelper.client.post("/v1/ROUTE").set("Authorization", `Bearer ${accessToken}`).send({});
+			const { body, statusCode } = await testHelper.client.post("/v1/ROUTE").set("Authorization", `Bearer ${sessionToken}`).send({});
 
 			expect(statusCode).toEqual(200);
 			expect(body).toEqual(

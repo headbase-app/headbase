@@ -26,9 +26,9 @@ describe("Retrieve Vaults - /v1/vaults/:vaultId [GET]", () => {
 	// Testing success cases/happy paths work.
 	describe("Success Cases", () => {
 		test("Given user with `user` role, When retrieving their own vault, Then the vault should be returned", async () => {
-			const accessToken = await testHelper.getSessionToken(testUser1.id);
+			const sessionToken = await testHelper.getSessionToken(testUser1.id);
 
-			const { body, statusCode } = await testHelper.client.get(`/v1/vaults/${testUser1Vault1.id}`).set("Authorization", `Bearer ${accessToken}`).send();
+			const { body, statusCode } = await testHelper.client.get(`/v1/vaults/${testUser1Vault1.id}`).set("Authorization", `Bearer ${sessionToken}`).send();
 
 			expect(statusCode).toEqual(HttpStatus.OK);
 			expect(body).toEqual(
@@ -40,17 +40,17 @@ describe("Retrieve Vaults - /v1/vaults/:vaultId [GET]", () => {
 
 		// todo: should be moved to different test section?
 		test("Given user with `user` role, When retrieving vault that doesn't exist, Then response should be '404 - not found'", async () => {
-			const accessToken = await testHelper.getSessionToken(testUser1.id);
+			const sessionToken = await testHelper.getSessionToken(testUser1.id);
 
-			const { body, statusCode } = await testHelper.client.get("/v1/vaults/99b8ffa1-411e-4cbc-bda0-ce5cb0749459").set("Authorization", `Bearer ${accessToken}`).send();
+			const { body, statusCode } = await testHelper.client.get("/v1/vaults/99b8ffa1-411e-4cbc-bda0-ce5cb0749459").set("Authorization", `Bearer ${sessionToken}`).send();
 
 			expectNotFound(body, statusCode, ErrorIdentifiers.VAULT_NOT_FOUND);
 		});
 
 		test("Given user with 'admin' role, When retrieving their own vault, Then the vault should be returned", async () => {
-			const accessToken = await testHelper.getSessionToken(testAdminUser1.id);
+			const sessionToken = await testHelper.getSessionToken(testAdminUser1.id);
 
-			const { body, statusCode } = await testHelper.client.get(`/v1/vaults/${testAdminUser1Vault1.id}`).set("Authorization", `Bearer ${accessToken}`).send();
+			const { body, statusCode } = await testHelper.client.get(`/v1/vaults/${testAdminUser1Vault1.id}`).set("Authorization", `Bearer ${sessionToken}`).send();
 
 			expect(statusCode).toEqual(HttpStatus.OK);
 			expect(body).toEqual(
@@ -61,9 +61,9 @@ describe("Retrieve Vaults - /v1/vaults/:vaultId [GET]", () => {
 		});
 
 		test("Given user with 'admin' role, When retrieving vault owned by different user, Then the vault should be returned", async () => {
-			const accessToken = await testHelper.getSessionToken(testAdminUser1.id);
+			const sessionToken = await testHelper.getSessionToken(testAdminUser1.id);
 
-			const { body, statusCode } = await testHelper.client.get(`/v1/vaults/${testUser1Vault1.id}`).set("Authorization", `Bearer ${accessToken}`).send();
+			const { body, statusCode } = await testHelper.client.get(`/v1/vaults/${testUser1Vault1.id}`).set("Authorization", `Bearer ${sessionToken}`).send();
 
 			expect(statusCode).toEqual(HttpStatus.OK);
 			expect(body).toEqual(
@@ -83,17 +83,17 @@ describe("Retrieve Vaults - /v1/vaults/:vaultId [GET]", () => {
 		});
 
 		test("Given user with 'user' role, When retrieving vault owned by different user, Then response should be '403 - forbidden'", async () => {
-			const accessToken = await testHelper.getSessionToken(testUser1.id);
+			const sessionToken = await testHelper.getSessionToken(testUser1.id);
 
-			const { body, statusCode } = await testHelper.client.get(`/v1/vaults/${testAdminUser1Vault1.id}`).set("Authorization", `Bearer ${accessToken}`).send();
+			const { body, statusCode } = await testHelper.client.get(`/v1/vaults/${testAdminUser1Vault1.id}`).set("Authorization", `Bearer ${sessionToken}`).send();
 
 			expectForbidden(body, statusCode);
 		});
 
 		test("Given unverified admin, When retrieving a vault, Then response should be '403 - forbidden'", async () => {
-			const accessToken = await testHelper.getSessionToken(testAdminUser2Unverified.id);
+			const sessionToken = await testHelper.getSessionToken(testAdminUser2Unverified.id);
 
-			const { body, statusCode } = await testHelper.client.get(`/v1/vaults/${testUser1Vault1.id}`).set("Authorization", `Bearer ${accessToken}`).send();
+			const { body, statusCode } = await testHelper.client.get(`/v1/vaults/${testUser1Vault1.id}`).set("Authorization", `Bearer ${sessionToken}`).send();
 
 			expectForbidden(body, statusCode, ErrorIdentifiers.AUTH_NOT_VERIFIED);
 		});
@@ -101,9 +101,9 @@ describe("Retrieve Vaults - /v1/vaults/:vaultId [GET]", () => {
 
 	describe("Logical Validation", () => {
 		test("When retrieving vault with invalid id, Then response should be '400 - bad request'", async () => {
-			const accessToken = await testHelper.getSessionToken(testUser1.id);
+			const sessionToken = await testHelper.getSessionToken(testUser1.id);
 
-			const { body, statusCode } = await testHelper.client.get("/v1/vaults/random").set("Authorization", `Bearer ${accessToken}`).send({});
+			const { body, statusCode } = await testHelper.client.get("/v1/vaults/random").set("Authorization", `Bearer ${sessionToken}`).send({});
 
 			expectBadRequest(body, statusCode);
 		});

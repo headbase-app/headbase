@@ -26,13 +26,8 @@ export class ConfigService {
 		auth: {
 			issuer: process.env.AUTH_ISSUER ?? null,
 			audience: process.env.AUTH_AUDIENCE ?? null,
-			accessToken: {
-				secret: process.env.AUTH_ACCESS_TOKEN_SECRET,
-				expiry: "15 mins",
-			},
-			refreshToken: {
-				secret: process.env.AUTH_REFRESH_TOKEN_SECRET,
-				expiry: "14 days",
+			sessionToken: {
+				expiry: "7 days",
 			},
 			emailVerification: {
 				secret: process.env.AUTH_EMAIL_VERIFICATION_SECRET,

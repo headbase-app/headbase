@@ -19,9 +19,9 @@ beforeEach(async () => {
 // todo: add further tests, including auth checks, invalid data etc
 describe("Chunk Download - /v1/chunks/:vaultId/:hash [GET]", () => {
 	test("When object exist, download URL should be returned", async () => {
-		const accessToken = await testHelper.getSessionToken(testUser1.id);
+		const sessionToken = await testHelper.getSessionToken(testUser1.id);
 
-		const { body } = await testHelper.client.get(`/v1/chunks/${testUser1Vault1.id}/exists`).set("Authorization", `Bearer ${accessToken}`).send();
+		const { body } = await testHelper.client.get(`/v1/chunks/${testUser1Vault1.id}/exists`).set("Authorization", `Bearer ${sessionToken}`).send();
 
 		expect(body).toEqual(
 			expect.objectContaining({
@@ -31,9 +31,9 @@ describe("Chunk Download - /v1/chunks/:vaultId/:hash [GET]", () => {
 	});
 
 	test("When object doesn't exist, 404 not found error should be returned", async () => {
-		const accessToken = await testHelper.getSessionToken(testUser1.id);
+		const sessionToken = await testHelper.getSessionToken(testUser1.id);
 
-		const { body, statusCode } = await testHelper.client.get(`/v1/chunks/${testUser1Vault1.id}/noexists`).set("Authorization", `Bearer ${accessToken}`).send();
+		const { body, statusCode } = await testHelper.client.get(`/v1/chunks/${testUser1Vault1.id}/noexists`).set("Authorization", `Bearer ${sessionToken}`).send();
 
 		// todo: should be returning.expecting specific error code?
 		expectNotFound(body, statusCode, ErrorIdentifiers.RESOURCE_NOT_FOUND);
