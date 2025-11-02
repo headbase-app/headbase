@@ -21,7 +21,7 @@ beforeEach(async () => {
 
 describe("Login Auth", () => {
 	describe("Success Cases", () => {
-		test("login returns user data and token pair", async () => {
+		test("login returns user data and session token", async () => {
 			const { body, statusCode } = await testHelper.client.post("/v1/auth/login").send({
 				email: testUser1.email,
 				password: testUser1.password,
@@ -40,10 +40,7 @@ describe("Login Auth", () => {
 						createdAt: testUser1.createdAt,
 						updatedAt: testUser1.updatedAt,
 					},
-					tokens: {
-						accessToken: expect.any(String),
-						refreshToken: expect.any(String),
-					},
+					sessionToken: expect.any(String),
 				}),
 			);
 

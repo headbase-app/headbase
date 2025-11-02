@@ -29,7 +29,11 @@ export enum ErrorIdentifiers {
 
   // Vault Errors
   VAULT_NOT_FOUND = "vault-not-found",
-  VAULT_NAME_EXISTS = 'vault-name-exists'
+  VAULT_NAME_EXISTS = 'vault-name-exists',
 
 	// Files and Chunks
+	FILE_NOT_FOUND = "file-not-found",
+	FILE_NOT_COMMITTED = "file-not-committed",
+	FILE_ALREADY_COMMITTED = "file-already-committed",
+	CHUNK_NOT_FOUND = "chunk-not-found",
 }

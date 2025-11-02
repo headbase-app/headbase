@@ -47,20 +47,14 @@ describe("Email Verification - /v1/auth/verify-email [GET, POST]", () => {
 			expect(statusCode).toEqual(200);
 			expect(body).toEqual(
 				expect.objectContaining({
-					user: {
-						id: testUser2Unverified.id,
-						email: testUser2Unverified.email,
-						displayName: testUser2Unverified.displayName,
-						verifiedAt: expect.any(String),
-						firstVerifiedAt: expect.any(String),
-						role: testUser2Unverified.role,
-						createdAt: testUser2Unverified.createdAt,
-						updatedAt: expect.any(String),
-					},
-					tokens: {
-						accessToken: expect.any(String),
-						refreshToken: expect.any(String),
-					},
+					id: testUser2Unverified.id,
+					email: testUser2Unverified.email,
+					displayName: testUser2Unverified.displayName,
+					verifiedAt: expect.any(String),
+					firstVerifiedAt: expect.any(String),
+					role: testUser2Unverified.role,
+					createdAt: testUser2Unverified.createdAt,
+					updatedAt: expect.any(String),
 				}),
 			);
 		});
@@ -76,20 +70,14 @@ describe("Email Verification - /v1/auth/verify-email [GET, POST]", () => {
 			expect(statusCode).toEqual(200);
 			expect(body).toEqual(
 				expect.objectContaining({
-					user: {
-						id: testAdminUser2Unverified.id,
-						email: testAdminUser2Unverified.email,
-						displayName: testAdminUser2Unverified.displayName,
-						verifiedAt: expect.any(String),
-						firstVerifiedAt: expect.any(String),
-						role: testAdminUser2Unverified.role,
-						createdAt: testAdminUser2Unverified.createdAt,
-						updatedAt: expect.any(String),
-					},
-					tokens: {
-						accessToken: expect.any(String),
-						refreshToken: expect.any(String),
-					},
+					id: testAdminUser2Unverified.id,
+					email: testAdminUser2Unverified.email,
+					displayName: testAdminUser2Unverified.displayName,
+					verifiedAt: expect.any(String),
+					firstVerifiedAt: expect.any(String),
+					role: testAdminUser2Unverified.role,
+					createdAt: testAdminUser2Unverified.createdAt,
+					updatedAt: expect.any(String),
 				}),
 			);
 		});

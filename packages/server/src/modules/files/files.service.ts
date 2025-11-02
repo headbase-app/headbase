@@ -124,10 +124,10 @@ export class FilesService {
 		// todo: validate chunk integrity, at least that filePosition values are sequential and complete.
 
 		const db = this.databaseService.getDatabase();
-		let result: FileDto[];
+		let createdFile: FileDto | null;
 		try {
 			// Wrapping file + chunks creation into transaction to ensure data integrity.
-			result = await db.transaction(async (tx) => {
+			const result = await db.transaction(async (tx) => {
 				const newFile = (await tx
 					.insert(files)
 					.values(fileDto)
@@ -142,11 +142,12 @@ export class FilesService {
 				await tx.insert(filesChunks).values(chunksToCreate);
 				return newFile;
 			});
+			createdFile = result[0];
 		} catch (e) {
 			throw FilesService.getContextualError(e);
 		}
 
-		if (!result[0]) {
+		if (!createdFile) {
 			throw new SystemError({
 				identifier: ErrorIdentifiers.SYSTEM_UNEXPECTED,
 				userMessage: "Returning file after creation failed",
@@ -157,11 +158,11 @@ export class FilesService {
 			type: EventIdentifiers.FILES_CREATE,
 			detail: {
 				sessionId: userContext.sessionId,
-				file: fileDto,
+				file: createdFile,
 			},
 		});
 
-		return result[0];
+		return createdFile;
 	}
 
 	async delete(userContext: UserContext, versionId: string) {

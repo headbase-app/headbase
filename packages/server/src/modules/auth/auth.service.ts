@@ -3,7 +3,7 @@ import ms from "ms";
 import { eq, getTableColumns } from "drizzle-orm";
 import { randomBytes, randomUUID } from "node:crypto";
 
-import { AuthUserResponse, ErrorIdentifiers, Roles } from "@headbase-app/contracts";
+import { AuthUserResponse, ErrorIdentifiers, Roles, UserDto } from "@headbase-app/contracts";
 
 import { TokenService } from "@services/token/token.service";
 import { EmailService } from "@services/email/email.service";
@@ -90,11 +90,7 @@ export class AuthService {
 
 		return {
 			user: userDto,
-			// todo: remove
-			tokens: {
-				accessToken: session.token,
-				refreshToken: "",
-			},
+			sessionToken: session.token,
 		};
 	}
 
@@ -123,7 +119,7 @@ export class AuthService {
 		});
 	}
 
-	async verifyEmail(userContext: UserContext, actionToken: string): Promise<AuthUserResponse> {
+	async verifyEmail(userContext: UserContext, actionToken: string): Promise<UserDto> {
 		const user = await this.usersService._UNSAFE_getById(userContext.id);
 
 		if (user.verifiedAt) {
@@ -148,16 +144,7 @@ export class AuthService {
 			});
 		}
 
-		const updatedUser = await this.usersService.verifyUser(user.id);
-
-		return {
-			user: updatedUser,
-			// todo: remove
-			tokens: {
-				accessToken: "",
-				refreshToken: "",
-			},
-		};
+		return this.usersService.verifyUser(user.id);
 	}
 
 	async createSession(userId: string): Promise<{ token: string; id: string }> {

@@ -12,8 +12,6 @@ export * from "./schemas/users/users-params"
 export * from "./schemas/auth/tokens";
 export * from "./schemas/auth/roles";
 export * from "./schemas/auth/request/login.auth.request";
-export * from "./schemas/auth/request/logout.auth.request";
-export * from "./schemas/auth/request/refresh.auth.request";
 export * from "./schemas/auth/request/verify-email.auth.request";
 export * from "./schemas/auth/response/auth-user-response";
 
