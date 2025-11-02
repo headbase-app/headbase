@@ -1,6 +1,6 @@
 import { Injectable } from "@nestjs/common";
 import ms from "ms";
-import { eq, getTableColumns } from "drizzle-orm";
+import { eq, getTableColumns, lte } from "drizzle-orm";
 import { randomBytes, randomUUID } from "node:crypto";
 
 import { AuthUserResponse, ErrorIdentifiers, Roles, UserDto } from "@headbase-app/contracts";
@@ -19,6 +19,7 @@ import { ConfigService } from "@services/config/config.service";
 import { DatabaseService } from "@services/database/database.service";
 import { sessions, users } from "@services/database/schema/schema";
 import { SystemError } from "@services/errors/base/system.error";
+import { Cron } from "@nestjs/schedule";
 
 export interface Session {
 	id: string;
@@ -197,7 +198,21 @@ export class AuthService {
 			});
 		}
 
-		return session ?? null;
+		if (!session) return null;
+
+		const now = new Date().toISOString();
+		if (session.expiresAt > now) return session;
+
+		try {
+			await db.delete(sessions).where(eq(sessions.token, sessionToken));
+		} catch (error) {
+			throw new SystemError({
+				message: `An unexpected error occurred while removing the expired session: ${session.id}.`,
+				cause: error,
+			});
+		}
+
+		return null;
 	}
 
 	async revokeSession(userContext: UserContext): Promise<void> {
@@ -244,6 +259,21 @@ export class AuthService {
 		if (userContext.role !== "admin") {
 			throw new AccessForbiddenError({
 				userMessage: "You do not have the permissions required to perform this action.",
+			});
+		}
+	}
+
+	@Cron("@hourly")
+	async removeOldSessions() {
+		const db = this.databaseService.getDatabase();
+		const now = new Date().toISOString();
+
+		try {
+			await db.delete(sessions).where(lte(sessions.expiresAt, now));
+		} catch (error) {
+			throw new SystemError({
+				message: "An unexpected error occurred while removing expired sessions.",
+				cause: error,
 			});
 		}
 	}
