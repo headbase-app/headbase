@@ -14,12 +14,14 @@
 
 ## About
 > [!WARNING]
-> This app is in active development and not ready for everyday use. You're welcome to explore at your own risk, but expect bugs, missing docs, incomplete features etc!
+> This project is in active development and not ready for general use. You're welcome to explore at your own risk, but expect bugs, missing docs, incomplete features etc!
 
 Headbase is a lot of different things...
 - **A file editor** built around the concept of a "vault" where you read and write files to your device, and optionally sync that vault between devices.
-- **A database** where you can query your files and display the results as a list, kanban board, calendar, canvas or graph.
+- **A file database** where you query your files and display the results as a list, kanban board, calendar, canvas or graph.
 - **An exploration** of [local-first software](https://www.inkandswitch.com/essay/local-first) and [malleable systems](https://malleable.systems). The goal isn't to create a "notes app" or a "task management" app, but to provide building blocks for users to adapt as they wish while retaining ownership of their data.
+
+The goal is for the application to support all major platforms, however the priority order for development and testing is as follows: desktop, android, web, iOS.
 
 **For users:**
 - [Getting started](docs/user-guide/getting-started/README.md)
