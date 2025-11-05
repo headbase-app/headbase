@@ -1,5 +1,5 @@
-import enTranslations from "../../translations/en.json";
-import esTranslations from "../../translations/es.json";
+import enTranslations from "../../../translations/en.json";
+import esTranslations from "../../../translations/es.json";
 
 const translations = {
 	en: enTranslations,
@@ -7,7 +7,7 @@ const translations = {
 } as const
 
 
-export class I18nService {
+export class I18nAPI {
 	currentLanguage: string;
 	fallbackLanguage: string;
 

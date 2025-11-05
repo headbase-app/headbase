@@ -1,7 +1,6 @@
 {
   "compilerOptions": {
     "target": "ES2022",
-    "useDefineForClassFields": true,
     "module": "ESNext",
     "lib": ["ES2022", "DOM", "DOM.Iterable"],
     "types": ["vite/client"],
@@ -22,7 +21,32 @@
     "noUncheckedSideEffectImports": true,
 
 		/* Disabled from default Vite config, to allow dependency declarations in class constructors */
-		"erasableSyntaxOnly": false
+		"erasableSyntaxOnly": false,
+
+		/* Enabling decorators  */
+		"experimentalDecorators": true,
+		"useDefineForClassFields": false,
+
+		"paths": {
+			"@/*": [
+				"./src/*"
+			],
+			"@contracts/*": [
+				"./src/contracts/*"
+			],
+			"@api/*": [
+				"./src/api/*"
+			],
+			"@services/*": [
+				"./src/services/*"
+			],
+			"@ui/*": [
+				"./src/ui/*"
+			],
+			"@utils/*": [
+				"./src/utils/*"
+			]
+		}
 	},
-  "include": ["src"]
+  "include": ["src"],
 }

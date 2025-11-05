@@ -1,54 +1,84 @@
-import {html, render} from "lit-html";
-import {I18nService} from "../../services/i18n.ts";
+import {html, type TemplateResult} from "lit";
+import {customElement, property, state} from "lit/decorators.js";
+import {consume} from "@lit/context";
 import {createRef, type Ref, ref} from "lit-html/directives/ref.js";
 
-export class VaultManager {
-	dialog: Ref<HTMLDialogElement> = createRef<HTMLDialogElement>();
+import {i18nAPIContext} from "@/framework/context.ts";
+import type {I18nAPI} from "@api/i18n/i18n.api.ts";
+import {LightDomLitElement} from "@utils/light-dom-lit-element.ts";
 
-	constructor(
-		private readonly i18n: I18nService
-	) {}
+import "@ui/vault-manager/vault-list.ts";
+import "@ui/vault-manager/create-vault.ts";
+import "@ui/vault-manager/edit-vault.ts";
 
-	init(){
-		this.render()
-		document.addEventListener("VaultManager_trigger", this.onTrigger.bind(this))
+export type VaultManagerPage = {type: "list"} | {type: "create"} | {type: "edit", id: string};
+
+@customElement("vault-manager")
+export class VaultManager extends LightDomLitElement {
+	#dialog: Ref<HTMLDialogElement> = createRef<HTMLDialogElement>();
+
+	@consume({context: i18nAPIContext})
+	@property({ attribute: false })
+	private i18nAPI!: I18nAPI;
+
+	@state() currentPage: VaultManagerPage
+
+	constructor() {
+		super();
+		this.currentPage = {type: "list"};
+		this.onTriggerBound = this.onTrigger.bind(this);
+	}
+	private readonly onTriggerBound: VaultManager['onTrigger']
+
+	connectedCallback(){
+		super.connectedCallback();
+		document.addEventListener("VaultManager_trigger", this.onTriggerBound)
 	}
 
-	destroy(){
-		document.removeEventListener("VaultManager_trigger", this.onTrigger.bind(this))
+	disconnectedCallback(){
+		super.disconnectedCallback();
+		document.removeEventListener("VaultManager_trigger", this.onTriggerBound)
 	}
 
-	onTrigger() {
-		this.dialog?.value?.showModal()
+	private onTrigger(e: CustomEvent<VaultManagerPage>) {
+		this.#dialog?.value?.showModal()
+		this.currentPage = e.detail ?? "other"
 	}
 
-	onClose() {
-		this.dialog?.value?.close()
+	private onClose() {
+		this.currentPage = {type: "list"};
+		this.#dialog?.value?.close()
 	}
 
-	render() {
-		const modal = html`
-			<dialog ${ref(this.dialog)}>
-				<button autofocus @click=${this.onClose.bind(this)}>${this.i18n.t("vaultModal.close")}</button>
-				<p>This modal dialog has a groovy backdrop!</p>
+	protected override render() {
+		let page: TemplateResult;
+		switch (this.currentPage.type) {
+			case "create":
+				page = html`<create-vault></create-vault>`
+				break;
+			case "edit":
+				page = html`<edit-vault .vaultId=${this.currentPage.id}></edit-vault>`
+				break;
+			default:
+				page = html`<vault-list></vault-list>`
+				break;
+		}
+
+		return html`
+			<dialog ${ref(this.#dialog)}>
+				<button autofocus @click=${() => this.onClose()}>${this.i18nAPI.t("Close")}</button>
 				<div>
-					<p>This is a test</p>
-					<div>
-						<label for="name">Name</label>
-						<input id="name" name="name" placeholder=${this.i18n.t("Name here")} />
-					</div>
-					<div>
-						<label for="description">Description</label>
-						<div id="description-popover" popover>${this.i18n.t("The description is used to provide extra info.")}</div>
-						<button aria-label="What is the description for?" popovertarget="description-popover">?</button>
-						<textarea id="description" name="description" placeholder=${this.i18n.t("Description Here")}></textarea>
-					</div>
-					<div>
-						<button>Submit</button>
-					</div>
+					${page}
 				</div>
 			</dialog>
 		`
-		render(modal, document.body)
+	}
+}
+
+export type VaultManagerProps = Omit<Omit<VaultManager, keyof HTMLElement>, keyof LightDomLitElement>
+
+declare global {
+	interface HTMLElementTagNameMap {
+		'vault-manager': VaultManager
 	}
 }

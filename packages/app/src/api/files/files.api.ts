@@ -1,0 +1,134 @@
+import type {IEventsAPI} from "@api/events/events.interface";
+import {EventTypes} from "@api/events/events";
+import {LiveQueryStatus, type LiveQuerySubscriber, type LiveQuerySubscription} from "@contracts/query";
+import type {IFileBuffer, IFilesAPI} from "@api/files/files.interface";
+
+export interface FileSystemDirectory {
+	type: 'directory',
+	name: string,
+	path: string,
+	children: TreeItem[]
+}
+export interface FileSystemFile {
+	type: 'file',
+	name: string,
+	path: string,
+}
+type TreeItem = FileSystemDirectory | FileSystemFile
+
+export class FilesAPI implements IFilesAPI {
+	constructor(
+		private readonly eventsService: IEventsAPI
+	) {
+		window.platformAPI?.files_on_change((event: string, path: string) => {
+			this.eventsService.dispatch(EventTypes.FILE_SYSTEM_CHANGE, {
+				context: {
+					id: ""
+				},
+				data: {
+					vaultId: '',
+					// @ts-ignore -- todo: fix type issue
+					action: event,
+					path: path,
+				}
+			})
+		})
+	}
+
+	async tree(): Promise<FileSystemDirectory | null> {
+		const result = await window.platformAPI.files_tree()
+		if (result.error) {
+			throw result
+		}
+
+		return result.result;
+	}
+
+	liveTree(subscriber: LiveQuerySubscriber<FileSystemDirectory | null>): LiveQuerySubscription {
+		const runQuery = async () => {
+			subscriber({status: LiveQueryStatus.LOADING})
+
+			try {
+				const result = await this.tree()
+				subscriber({status: LiveQueryStatus.SUCCESS, result: result })
+			}
+			catch (error) {
+				subscriber({status: LiveQueryStatus.ERROR, errors: [error] })
+			}
+		}
+
+		const handleEvent = async () => {
+			runQuery()
+		}
+
+		this.eventsService.subscribe(EventTypes.DATABASE_OPEN, handleEvent)
+		this.eventsService.subscribe(EventTypes.DATABASE_CLOSE, handleEvent)
+		this.eventsService.subscribe(EventTypes.FILE_SYSTEM_CHANGE, handleEvent)
+		runQuery()
+
+		return {
+			unsubscribe: () => {
+				this.eventsService.unsubscribe(EventTypes.DATABASE_OPEN, handleEvent)
+				this.eventsService.unsubscribe(EventTypes.DATABASE_CLOSE, handleEvent)
+				this.eventsService.unsubscribe(EventTypes.FILE_SYSTEM_CHANGE, handleEvent)
+			}
+		}
+	}
+
+	async read(path: string) {
+		const result = await window.platformAPI.files_read(path)
+		if (result.error) {
+			throw result
+		}
+
+		return result.result;
+	}
+
+	async readStream(path: string) {
+		const result = await window.platformAPI.files_readStream(path)
+		if (result.error) {
+			throw result
+		}
+
+		return result.result;
+	}
+
+	async write(path: string, data: ArrayBuffer) {
+		const result = await window.platformAPI.files_write(path, data)
+		if (result.error) {
+			throw result
+		}
+
+		return result.result;
+	}
+
+	async openExternal(path: string) {
+		const result = await window.platformAPI.files_open_external(path)
+		if (result.error) {
+			throw result
+		}
+
+		return result.result;
+	}
+
+	// @ts-ignore
+	cp(sourcePath: string, targetPath: string): Promise<void> {
+		return Promise.resolve(undefined);
+	}
+
+	// @ts-ignore
+	liveRead(path: string): Promise<IFileBuffer> {
+		// @ts-ignore
+		return Promise.resolve(undefined);
+	}
+
+	// @ts-ignore
+	mv(sourcePath: string, targetPath: string): Promise<void> {
+		return Promise.resolve(undefined);
+	}
+
+	// @ts-ignore
+	rm(path: string): Promise<void> {
+		return Promise.resolve(undefined);
+	}
+}

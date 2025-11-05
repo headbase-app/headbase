@@ -8,18 +8,35 @@
     "start:android": "cap run android",
     "start:ios": "cap run ios",
     "build": "tsc && vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "start:storybook": "storybook dev -p 6006",
+    "build:storybook": "storybook build"
   },
   "devDependencies": {
     "@capacitor/android": "^7.4.4",
     "@capacitor/cli": "^7.4.4",
     "@capacitor/core": "^7.4.4",
     "@capacitor/ios": "^7.4.4",
+    "@chromatic-com/storybook": "^4.1.2",
+    "@storybook/addon-a11y": "^10.0.4",
+    "@storybook/addon-docs": "^10.0.4",
+    "@storybook/addon-vitest": "^10.0.4",
+    "@storybook/web-components-vite": "^10.0.4",
+    "@types/js-yaml": "^4.0.9",
+    "@vitest/browser-playwright": "^4.0.7",
+    "@vitest/coverage-v8": "^4.0.7",
+    "playwright": "^1.56.1",
+    "storybook": "^10.0.4",
     "typescript": "~5.9.3",
-    "vite": "^7.1.7"
+    "vite": "^7.1.7",
+    "vitest": "^4.0.7"
   },
   "dependencies": {
-    "lit-html": "^3.3.1",
-    "lucide": "^0.552.0"
+    "@capawesome/capacitor-file-picker": "^7.2.0",
+    "@lit/context": "^1.1.6",
+    "js-yaml": "^4.1.0",
+    "lit": "^3.3.1",
+    "lucide": "^0.552.0",
+    "zod": "^4.1.12"
   }
 }

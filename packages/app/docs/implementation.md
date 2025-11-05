@@ -37,7 +37,7 @@ be used for dialog behaviours, with no external dependencies required.
 - The dialog can be activated via `HTMLDialogElement.show()` or `HTMLDialogElement.showDialog()`
 - The dialog doesn't completely focus trap and the user can still access browser controls. This is expected, see discussion on: https://github.com/whatwg/html/issues/8339.
 
-### Tooltips
+### Tooltips / Context Menus / Popovers etc
 The [Popover API](https://developer.mozilla.org/en-US/docs/Web/API/Popover_API/Using) can be used to implement tooltips.
 
 Popover positioning can be done via [CSS anchor positioning](https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_anchor_positioning).
@@ -48,5 +48,5 @@ As of 04 Nov 2025 this feature is not yet available in stable Firefox, so option
 The desktop app uses Electron, so firefox is not relevant there and Android/iOS use capacitor which renders
 to the platform web view. TBC if CSS anchor positioning works there, but the web app requires polyfill or the Firefox flag.
 
-### Context Menus / Popovers etc
-These can also be implemented using the Popover API and/or dialogs as required.
+### Forms
+
