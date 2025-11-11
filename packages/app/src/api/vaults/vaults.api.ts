@@ -4,6 +4,14 @@ import type {IVaultsAPI} from "@api/vaults/vaults.interface";
 import type {IDeviceAPI} from "@api/device/device.interface";
 import {type DatabaseChangeEvent, EventTypes} from "@api/events/events";
 import {LiveQueryStatus, type LiveQuerySubscriber, type LiveQuerySubscription} from "@contracts/query";
+import {z, ZodError} from "zod";
+import * as opfsx from "opfsx";
+import {ErrorIdentifiers} from "@headbase-app/contracts";
+
+export const VaultsList = z.array(LocalVaultDto)
+export type VaultsList = z.infer<typeof VaultsList>
+
+const VAULTS_FILE_PATH = "/headbase-v1/app/vaults.json"
 
 export class VaultsAPI implements IVaultsAPI {
 	constructor(
@@ -12,46 +20,65 @@ export class VaultsAPI implements IVaultsAPI {
 	) {}
 
 	async create(createVaultDto: CreateVaultDto) {
-		const result = await window.platformAPI.vaults_create({
-			// @ts-ignore -- fix api interface
-			id: window.crypto.randomUUID(),
+		const vaults = await this.query();
+
+		const id = window.crypto.randomUUID()
+		const newVault = {
+			id,
 			...createVaultDto,
-		})
-		if (result.error) {
-			throw result
 		}
+		vaults.push(newVault)
+
+		await opfsx.write(VAULTS_FILE_PATH, JSON.stringify(vaults));
 
 		this.eventsService.dispatch(EventTypes.DATABASE_CHANGE, {
 			context: this.deviceService.getCurrentContext(),
 			data: {
-				id: result.result.id,
+				id: id,
 				action: "create"
 			}
 		})
-		return result.result;
+		return newVault;
 	}
 
 	async update(vaultId: string, updateVaultDto: UpdateVaultDto) {
-		const result = await window.platformAPI.vaults_update(vaultId, updateVaultDto)
-		if (result.error) {
-			throw result
+		const vaults = await this.query();
+
+		let updatedVault: LocalVaultDto|null = null;
+		const updatedVaults = vaults.map((v) => {
+			if (v.id == vaultId) {
+				updatedVault = {...v, ...updateVaultDto}
+				return updatedVault;
+			}
+			return v;
+		})
+
+		if (!updatedVault) {
+			throw new Error(ErrorIdentifiers.VAULT_NOT_FOUND)
 		}
+
+		await opfsx.write(VAULTS_FILE_PATH, JSON.stringify(updatedVaults));
 
 		this.eventsService.dispatch(EventTypes.DATABASE_CHANGE, {
 			context: this.deviceService.getCurrentContext(),
 			data: {
-				id: result.result.id,
+				id: vaultId,
 				action: "update"
 			}
 		})
-		return result.result;
+
+		return updatedVault;
 	}
 
 	async delete(vaultId: string) {
-		const result = await window.platformAPI.vaults_delete(vaultId)
-		if (result.error) {
-			throw result
+		const vaults = await this.query();
+
+		const updatedVaults = vaults.filter(v => v.id !== vaultId);
+		if (updatedVaults.length === vaults.length) {
+			throw new Error(ErrorIdentifiers.VAULT_NOT_FOUND)
 		}
+
+		await opfsx.write(VAULTS_FILE_PATH, JSON.stringify(updatedVaults));
 
 		this.eventsService.dispatch(EventTypes.DATABASE_CHANGE, {
 			context: this.deviceService.getCurrentContext(),
@@ -63,21 +90,32 @@ export class VaultsAPI implements IVaultsAPI {
 	}
 
 	async get(vaultId: string): Promise<LocalVaultDto | null> {
-		const result = await window.platformAPI.vaults_get(vaultId)
-		if (result.error) {
-			throw result
+		const vaults = await this.query();
+
+		for (const vault of vaults) {
+			if (vault.id == vaultId) {
+				return vault;
+			}
 		}
 
-		return result.result;
+		return null;
 	}
 
 	async query(): Promise<LocalVaultDto[]> {
-		const result = await window.platformAPI.vaults_query()
-		if (result.error) {
-			throw result
+		try {
+			const vaultsFile = await opfsx.read(VAULTS_FILE_PATH);
+			const content = await vaultsFile.text();
+			return VaultsList.parse(JSON.parse(content));
 		}
-
-		return result.result;
+		catch (error) {
+			if (error instanceof DOMException && error.message === "Entry not found") {
+				return []
+			}
+			else if (error instanceof ZodError) {
+				throw new Error("Vault file is corrupted.", {cause: error})
+			}
+			throw new Error("Unexpected error.", {cause: error});
+		}
 	}
 
 	liveQuery(subscriber: LiveQuerySubscriber<LocalVaultDto[]>): LiveQuerySubscription {

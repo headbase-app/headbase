@@ -7,6 +7,10 @@
     "src/contracts"
   ],
   "compilerOptions": {
+		/* Enabling decorators  */
+		"experimentalDecorators": true,
+		"useDefineForClassFields": false,
+
     "composite": true,
     "jsx": "react-jsx",
     "baseUrl": ".",

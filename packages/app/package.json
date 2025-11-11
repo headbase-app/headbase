@@ -1,42 +1,37 @@
 {
-  "name": "mobile",
-  "private": true,
-  "version": "0.0.0",
-  "type": "module",
-  "scripts": {
-    "start": "vite",
-    "start:android": "cap run android",
-    "start:ios": "cap run ios",
-    "build": "tsc && vite build",
-    "preview": "vite preview",
-    "start:storybook": "storybook dev -p 6006",
-    "build:storybook": "storybook build"
-  },
-  "devDependencies": {
-    "@capacitor/android": "^7.4.4",
-    "@capacitor/cli": "^7.4.4",
-    "@capacitor/core": "^7.4.4",
-    "@capacitor/ios": "^7.4.4",
-    "@chromatic-com/storybook": "^4.1.2",
-    "@storybook/addon-a11y": "^10.0.4",
-    "@storybook/addon-docs": "^10.0.4",
-    "@storybook/addon-vitest": "^10.0.4",
-    "@storybook/web-components-vite": "^10.0.4",
-    "@types/js-yaml": "^4.0.9",
-    "@vitest/browser-playwright": "^4.0.7",
-    "@vitest/coverage-v8": "^4.0.7",
-    "playwright": "^1.56.1",
-    "storybook": "^10.0.4",
-    "typescript": "~5.9.3",
-    "vite": "^7.1.7",
-    "vitest": "^4.0.7"
-  },
-  "dependencies": {
-    "@capawesome/capacitor-file-picker": "^7.2.0",
-    "@lit/context": "^1.1.6",
-    "js-yaml": "^4.1.0",
-    "lit": "^3.3.1",
-    "lucide": "^0.552.0",
-    "zod": "^4.1.12"
-  }
+	"name": "@headbase-app/app",
+	"private": true,
+	"version": "0.0.0",
+	"type": "module",
+	"scripts": {
+		"start": "vite",
+		"dev": "vite",
+		"start:sb": "storybook dev -p 6006",
+		"start:android": "cap run android",
+		"start:ios": "cap run ios",
+		"build": "tsc -b && vite build",
+		"build:sb": "storybook build",
+		"preview": "vite preview"
+	},
+	"dependencies": {
+		"@capacitor/core": "^7.4.4",
+		"@capawesome/capacitor-file-picker": "^7.2.0",
+		"@headbase-app/contracts": "^0.11.0",
+		"drizzle-orm": "^0.44.7",
+		"js-yaml": "^4.1.0",
+		"lucide-solid": "^0.553.0",
+		"opfsx": "^0.1.0",
+		"solid-js": "^1.9.10",
+		"zod": "^4.1.12"
+	},
+	"devDependencies": {
+		"@capacitor/android": "^7.4.4",
+		"@capacitor/cli": "^7.4.4",
+		"@capacitor/ios": "^7.4.4",
+		"@types/js-yaml": "^4.0.9",
+		"@types/node": "^24.10.0",
+		"typescript": "~5.9.3",
+		"vite": "^7.2.2",
+		"vite-plugin-solid": "^2.11.10"
+	}
 }

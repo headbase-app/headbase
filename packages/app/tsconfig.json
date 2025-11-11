@@ -1,52 +1,7 @@
 {
-  "compilerOptions": {
-    "target": "ES2022",
-    "module": "ESNext",
-    "lib": ["ES2022", "DOM", "DOM.Iterable"],
-    "types": ["vite/client"],
-    "skipLibCheck": true,
-
-    /* Bundler mode */
-    "moduleResolution": "bundler",
-    "allowImportingTsExtensions": true,
-    "verbatimModuleSyntax": true,
-    "moduleDetection": "force",
-    "noEmit": true,
-
-    /* Linting */
-    "strict": true,
-    "noUnusedLocals": true,
-    "noUnusedParameters": true,
-    "noFallthroughCasesInSwitch": true,
-    "noUncheckedSideEffectImports": true,
-
-		/* Disabled from default Vite config, to allow dependency declarations in class constructors */
-		"erasableSyntaxOnly": false,
-
-		/* Enabling decorators  */
-		"experimentalDecorators": true,
-		"useDefineForClassFields": false,
-
-		"paths": {
-			"@/*": [
-				"./src/*"
-			],
-			"@contracts/*": [
-				"./src/contracts/*"
-			],
-			"@api/*": [
-				"./src/api/*"
-			],
-			"@services/*": [
-				"./src/services/*"
-			],
-			"@ui/*": [
-				"./src/ui/*"
-			],
-			"@utils/*": [
-				"./src/utils/*"
-			]
-		}
-	},
-  "include": ["src"],
+  "files": [],
+  "references": [
+    { "path": "./tsconfig.app.json" },
+    { "path": "./tsconfig.node.json" }
+  ]
 }

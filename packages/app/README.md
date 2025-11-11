@@ -1,8 +1,8 @@
 # `@headbase-app/app`
 
-The cross-platform Headbase app deploying to Android, iOS and the web ([headbase.app](https://headbase.app)).
+The cross-platform Headbase app deploying to [headbase.app](https://headbase.app), Android and iOS.
 
-The core web application is developed and built using [Vite](https://vitejs.dev/), with [Capacitor](https://capacitorjs.com/docs/basics/workflow) to provide cross-platform support.
+The core web application is built using [Vite](https://vitejs.dev/) and [Solid](https://www.solidjs.com/), with [Capacitor](https://capacitorjs.com/docs/basics/workflow) to provide cross-platform support.
 
 ## Prerequisites
 - Node.js/NPM installed at the latest LTS version
@@ -21,7 +21,7 @@ Vitest is used for unit testing and Playwright is used for E2E browser testing.
 
 ### Setup
 1. Run `npm run test:e2e:setup` to ensure Playwright is installed correctly.
-   - If you're using Linux, you may also have to run `npx playwright install-deps`
+	- If you're using Linux, you may also have to run `npx playwright install-deps`
 
 ### Usage
 - `npm run test:unit` to run all unit tests

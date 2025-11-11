@@ -1,0 +1,266 @@
+/**
+Base Variables
+ */
+:root {
+    --j-space-1: 2px;
+    --j-space-2: 4px;
+    --j-space-3: 6px;
+    --j-space-4: 8px;
+    --j-space-5: 10px;
+    --j-space-6: 12px;
+    --j-space-7: 14px;
+    --j-space-8: 16px;
+    --j-space-12: 24px;
+    --j-space-14: 28px;
+    --j-space-16: 32px;
+    --j-space-18: 36px;
+    --j-space-24: 48px;
+    --j-space-32: 64px;
+    --j-space-48: 96px;
+    --j-space-64: 128px;
+
+    --j-border-radius-sm: 4px;
+    --j-border-radius-md: 6px;
+    --j-border-radius-lg: 8px;
+    --j-border-radius-xl: 10px;
+
+    --j-border-width-sm: 1px;
+    --j-border-width-md: 2px;
+    --j-border-width-lg: 4px;
+    --j-border-width-xl: 8px;
+
+    --j-text-size-xs: 12px;
+    --j-text-size-sm: 14px;
+    --j-text-size-rg: 16px;
+    --j-text-size-md: 18px;
+    --j-text-size-lg: 20px;
+    --j-text-size-xl: 24px;
+    --j-text-size-2xl: 30px;
+    --j-text-size-3xl: 36px;
+    --j-text-size-4xl: 48px;
+
+    --j-text-weight-normal: 400;
+    --j-text-weight-medium: 500;
+    --j-text-weight-bold: 700;
+
+    --j-text-font-primary: "Open Sans", sans-serif;
+    --j-text-font-monospace: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, Liberation Mono, Courier New, monospace;
+
+    --j-text-letter-spacing: 0px;
+
+    --j-shadow-sm: 0 1px 3px hsla(0, 0%, 0%, 0.2);
+    --j-shadow-md: 0 4px 6px hsla(0, 0%, 0%, 0.2);
+    --j-shadow-lg: 0 5px 15px hsla(0, 0%, 0%, 0.2);
+    --j-shadow-xl: 0 10px 25px hsla(0, 0%, 0%, 0.2);
+
+    --j-z-layer-1: 20;
+    --j-z-layer-2: 40;
+    --j-z-layer-3: 60;
+    --j-z-layer-4: 80;
+    --j-z-layer-5: 100;
+
+    --j-motion-ease-in: cubic-bezier(0.4, 0, 0.7, 0.2);
+    --j-motion-ease-out: cubic-bezier(0, 0, 0.2, 1);
+    --j-motion-ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
+    --j-motion-linear: linear;
+
+    --j-motion-duration-fast: 0.15s;
+    --j-motion-duration-medium: 0.3s;
+    --j-motion-duration-slow: 0.6s;
+
+    --j-c-teal-200: #259f94;
+    --j-c-teal-300: #0d9488;
+    --j-c-teal-400: #0c857a;
+    --j-c-teal-500: #0a766d;
+    --j-c-teal-600: #09685f;
+    --j-c-teal-700: #07564f;
+
+    --j-c-navy-50: #3D4053;
+    --j-c-navy-100: #383B4C;
+    --j-c-navy-200: #333545;
+    --j-c-navy-300: #2D303E;
+    --j-c-navy-400: #282A37;
+    --j-c-navy-500: #232530;
+    --j-c-navy-600: #20222C;
+    --j-c-navy-700: #1D1F28;
+    --j-c-navy-800: #191B23;
+    --j-c-navy-900: #121419;
+
+    --j-c-atom-50: #3D4053;
+    --j-c-atom-100: #383B4C;
+    --j-c-atom-200: #333545;
+    --j-c-atom-300: #2D303E;
+    --j-c-atom-400: #282A37;
+    --j-c-atom-500: #232530;
+    --j-c-atom-600: #20222C;
+    --j-c-atom-700: #1D1F28;
+    --j-c-atom-800: #191B23;
+    --j-c-atom-900: #121419;
+
+    --j-c-blueGrey-50: #9CA7B8;
+    --j-c-blueGrey-100: #919CAD;
+    --j-c-blueGrey-200: #8690A1;
+    --j-c-blueGrey-300: #7A8596;
+    --j-c-blueGrey-400: #6F7A8A;
+    --j-c-blueGrey-500: #646E7F;
+    --j-c-blueGrey-600: #596373;
+    --j-c-blueGrey-700: #4D5868;
+    --j-c-blueGrey-800: #424C5C;
+    --j-c-blueGrey-900: #374151;
+
+    --j-c-mono-50: #fff;
+    --j-c-mono-100: #eee;
+    --j-c-mono-200: #ccc;
+    --j-c-mono-300: #aaa;
+    --j-c-mono-400: #666;
+    --j-c-mono-500: #444;
+    --j-c-mono-600: #333;
+    --j-c-mono-700: #222;
+    --j-c-mono-800: #1a1a1a;
+    --j-c-mono-900: #111;
+
+    --j-c-red-200: #e55c5c;
+    --j-c-red-300: #e24747;
+    --j-c-red-400: #df3333;
+    --j-c-red-500: #c92e2e;
+    --j-c-red-600: #b22929;
+    --j-c-red-700: #a22525;
+
+    --j-c-green-200: #649d71;
+    --j-c-green-300: #50915f;
+    --j-c-green-400: #3d854d;
+    --j-c-green-500: #377845;
+    --j-c-green-600: #316a3e;
+    --j-c-green-700: #2b5d36;
+
+    --j-c-orange-200: #e79155;
+    --j-c-orange-300: #e48440;
+    --j-c-orange-400: #e1762b;
+    --j-c-orange-500: #cb6a27;
+    --j-c-orange-600: #b45e22;
+    --j-c-orange-700: #a4551f;
+
+    --j-c-yellow-200: #fccc50;
+    --j-c-yellow-300: #fbc53a;
+    --j-c-yellow-400: #fbbf24;
+    --j-c-yellow-500: #e2ac20;
+    --j-c-yellow-600: #c9991d;
+    --j-c-yellow-700: #b88c1b;
+
+    --j-c-blue-200: #4998c0;
+    --j-c-blue-300: #328bb8;
+    --j-c-blue-400: #1b7eb0;
+    --j-c-blue-500: #18719e;
+    --j-c-blue-600: #16658d;
+    --j-c-blue-700: #13597c;
+
+    --j-c-purple-200: #9d7ee5;
+    --j-c-purple-300: #916ee1;
+    --j-c-purple-400: #855ede;
+    --j-c-purple-500: #7855c8;
+    --j-c-purple-600: #6a4bb2;
+    --j-c-purple-700: #6245a4;
+
+    --j-c-pink-200: #d85797;
+    --j-c-pink-300: #d3428a;
+    --j-c-pink-400: #ce2d7d;
+    --j-c-pink-500: #b92971;
+    --j-c-pink-600: #a52464;
+    --j-c-pink-700: #95205a;
+}
+
+/**
+Default Colour Variants
+ */
+:root {
+    --j-c-variant-teal: var(--j-c-teal-500);
+    --j-c-variant-teal-text: var(--j-c-mono-100);
+    --j-c-variant-teal-interaction: var(--j-c-teal-700);
+    --j-c-variant-teal-text-interaction: var(--j-c-mono-100);
+
+    --j-c-variant-white: var(--j-c-mono-100);
+    --j-c-variant-white-text: var(--j-c-mono-800);
+    --j-c-variant-white-interaction: var(--j-c-mono-300);
+    --j-c-variant-white-text-interaction: var(--j-c-mono-800);
+
+    --j-c-variant-blueGrey: var(--j-c-blueGrey-700);
+    --j-c-variant-blueGrey-text: var(--j-c-mono-100);
+    --j-c-variant-blueGrey-interaction: var(--j-c-blueGrey-900);
+    --j-c-variant-blueGrey-text-interaction: var(--j-c-mono-100);
+
+    --j-c-variant-red: var(--j-c-red-500);
+    --j-c-variant-red-text: var(--j-c-mono-100);
+    --j-c-variant-red-interaction: var(--j-c-red-700);
+    --j-c-variant-red-text-interaction: var(--j-c-mono-100);
+
+    --j-c-variant-green: var(--j-c-green-500);
+    --j-c-variant-green-text: var(--j-c-mono-100);
+    --j-c-variant-green-interaction: var(--j-c-green-700);
+    --j-c-variant-green-text-interaction: var(--j-c-mono-100);
+
+    --j-c-variant-orange: var(--j-c-orange-400);
+    --j-c-variant-orange-text: var(--j-c-mono-900);
+    --j-c-variant-orange-interaction: var(--j-c-orange-700);
+    --j-c-variant-orange-text-interaction: var(--j-c-mono-900);
+
+    --j-c-variant-yellow: var(--j-c-yellow-400);
+    --j-c-variant-yellow-text: var(--j-c-mono-900);
+    --j-c-variant-yellow-interaction: var(--j-c-yellow-700);
+    --j-c-variant-yellow-text-interaction: var(--j-c-mono-900);
+
+    --j-c-variant-blue: var(--j-c-blue-500);
+    --j-c-variant-blue-text: var(--j-c-mono-100);
+    --j-c-variant-blue-interaction: var(--j-c-blue-700);
+    --j-c-variant-blue-text-interaction: var(--j-c-mono-100);
+
+    --j-c-variant-purple: var(--j-c-purple-500);
+    --j-c-variant-purple-text: var(--j-c-mono-100);
+    --j-c-variant-purple-interaction: var(--j-c-purple-700);
+    --j-c-variant-purple-text-interaction: var(--j-c-mono-100);
+
+    --j-c-variant-pink: var(--j-c-pink-500);
+    --j-c-variant-pink-text: var(--j-c-mono-100);
+    --j-c-variant-pink-interaction: var(--j-c-pink-700);
+    --j-c-variant-pink-text-interaction: var(--j-c-mono-100);
+}
+
+/**
+Default Theme
+ */
+:root {
+    --j-c-primary: var(--j-c-teal-500);
+    --j-c-primary-text: var(--j-c-mono-100);
+    --j-c-primary-interaction: var(--j-c-teal-700);
+    --j-c-primary-text-interaction: var(--j-c-mono-100);
+
+    --j-c-secondary: var(--j-c-mono-100);
+    --j-c-secondary-text: var(--j-c-mono-800);
+    --j-c-secondary-interaction: var(--j-c-mono-300);
+    --j-c-secondary-text-interaction: var(--j-c-mono-800);
+
+    --j-c-disabled: var(--j-c-mono-300);
+    --j-c-disabled-text: var(--j-c-mono-600);
+
+    --j-c-tertiary: var(--j-c-mono-50);
+
+    --j-c-background-b2: var(--j-c-navy-900);
+    --j-c-background-b1: var(--j-c-navy-800);
+    --j-c-background: var(--j-c-navy-500);
+    --j-c-background-f1: var(--j-c-navy-300);
+    --j-c-background-f2: var(--j-c-navy-100);
+
+    --j-c-text: var(--j-c-mono-200);
+    --j-c-text-emphasis: var(--j-c-mono-100);
+    --j-c-text-heading: var(--j-c-mono-100);
+
+    --j-c-destructive: #c82d2d;
+    --j-c-destructive-text: var(--j-c-mono-50);
+    --j-c-destructive-interaction: #a02828;
+    --j-c-destructive-text-interaction: var(--j-c-mono-50);
+
+    --j-c-info: var(--j-c-blue-500);
+    --j-c-warning: var(--j-c-orange-500);
+    --j-c-danger: var(--j-c-red-500);
+    --j-c-error: var(--j-c-red-500);
+    --j-c-success: var(--j-c-green-500);
+}

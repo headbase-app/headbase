@@ -1,45 +1,24 @@
-/// <reference types="vitest/config" />
-import { defineConfig } from "vite";
-import { resolve } from "node:path";
-import path from 'node:path';
-import { fileURLToPath } from 'node:url';
-import { storybookTest } from '@storybook/addon-vitest/vitest-plugin';
-import { playwright } from '@vitest/browser-playwright';
-const dirname = typeof __dirname !== 'undefined' ? __dirname : path.dirname(fileURLToPath(import.meta.url));
+import { defineConfig } from 'vite'
+import solid from 'vite-plugin-solid'
+import {resolve} from "node:path";
+import {fileURLToPath} from "node:url";
 
-// More info at: https://storybook.js.org/docs/next/writing-tests/integrations/vitest-addon
 export default defineConfig({
-  plugins: [],
-  resolve: {
-    alias: {
-      '@': resolve('src'),
-      '@contracts': resolve('src/contracts'),
-      '@api': resolve('src/api'),
-      '@ui': resolve('src/ui'),
-      '@utils': resolve('src/utils')
-    }
-  },
-  test: {
-    projects: [{
-      extends: true,
-      plugins: [
-      // The plugin will run tests for the stories defined in your Storybook config
-      // See options at: https://storybook.js.org/docs/next/writing-tests/integrations/vitest-addon#storybooktest
-      storybookTest({
-        configDir: path.join(dirname, '.storybook')
-      })],
-      test: {
-        name: 'storybook',
-        browser: {
-          enabled: true,
-          headless: true,
-          provider: playwright({}),
-          instances: [{
-            browser: 'chromium'
-          }]
-        },
-        setupFiles: ['.storybook/vitest.setup.ts']
-      }
-    }]
-  }
-});
+  plugins: [solid()],
+	resolve: {
+		alias: {
+			'@': resolve('src'),
+			'@contracts': resolve('src/contracts'),
+			'@api': resolve('src/api'),
+			'@ui': resolve('src/ui'),
+			'@utils': resolve('src/utils'),
+			// Ensure icons can be tree-shaken in dev mode (see docs/technical-debt.md, thanks to https://christopher.engineering/en/blog/lucide-icons-with-vite-dev-server/)
+			"lucide-solid/icons": fileURLToPath(
+				new URL(
+					"./node_modules/lucide-solid/dist/source/icons",
+					import.meta.url,
+				),
+			),
+		}
+	},
+})

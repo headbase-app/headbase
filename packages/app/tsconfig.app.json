@@ -1,0 +1,53 @@
+{
+  "compilerOptions": {
+    "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.app.tsbuildinfo",
+    "target": "ES2022",
+    "useDefineForClassFields": true,
+    "module": "ESNext",
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "types": ["vite/client"],
+    "skipLibCheck": true,
+
+    /* Bundler mode */
+    "moduleResolution": "bundler",
+    "allowImportingTsExtensions": true,
+    "verbatimModuleSyntax": true,
+    "moduleDetection": "force",
+    "noEmit": true,
+    "jsx": "preserve",
+    "jsxImportSource": "solid-js",
+
+    /* Linting */
+    "strict": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noFallthroughCasesInSwitch": true,
+    "noUncheckedSideEffectImports": true,
+
+		/* Overwritten from default to allow 'private readonly' when typing constructor injection  */
+		"erasableSyntaxOnly": false,
+
+		/* Adding custom path aliases for cleaner imports */
+		"paths": {
+			"@/*": [
+				"./src/*"
+			],
+			"@contracts/*": [
+				"./src/contracts/*"
+			],
+			"@api/*": [
+				"./src/api/*"
+			],
+			"@services/*": [
+				"./src/services/*"
+			],
+			"@ui/*": [
+				"./src/ui/*"
+			],
+			"@utils/*": [
+				"./src/utils/*"
+			]
+		}
+  },
+  "include": ["src"]
+}

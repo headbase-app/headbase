@@ -92,7 +92,7 @@ async function createWindow(vaultId?: string) {
 	// Create a window, hidden by default
 	const window = new BrowserWindow({
 		show: false,
-		titleBarStyle: 'hidden',
+		//titleBarStyle: 'hidden',
 		autoHideMenuBar: true,
 		...(process.platform !== 'darwin' ? {
 			titleBarOverlay: {
