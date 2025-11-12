@@ -23,3 +23,10 @@ export type CreateVaultDto = z.infer<typeof CreateVaultDto>
 
 export const UpdateVaultDto = CreateVaultDto.pick({name: true}).partial()
 export type UpdateVaultDto = z.infer<typeof UpdateVaultDto>
+
+export const UpdateVaultPasswordDto = z.object({
+	// Don't need to validate existing password.
+	password: z.string(),
+	newPassword: CreateVaultDto.shape.password,
+})
+export type UpdateVaultPasswordDto = z.infer<typeof UpdateVaultPasswordDto>

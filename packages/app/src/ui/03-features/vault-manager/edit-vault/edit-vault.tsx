@@ -96,8 +96,6 @@ export function EditVault(props: EditVaultProps) {
 							</div>
 							{error() && (<p>{error()}</p>)}
 							<div>
-								<button type="button">Change password</button>
-								<button type="button" onClick={() => {props.navigate({type: "delete", id: props.vaultId})}}>Delete</button>
 								<button type="submit">Save</button>
 							</div>
 						</form>

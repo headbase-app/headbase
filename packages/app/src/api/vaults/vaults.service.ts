@@ -37,7 +37,7 @@ export class VaultsService implements IVaultsService {
 
 		const id = EncryptionService.generateUUID();
 		const timestamp = new Date().toISOString();
-		const {protectedEncryptionKey, encryptionKey} = await EncryptionService.createProtectedEncryptionKey(createVaultDto.name);
+		const {protectedEncryptionKey, encryptionKey} = await EncryptionService.createProtectedEncryptionKey(createVaultDto.password);
 		await this.keyValueStoreService.save(id, encryptionKey)
 
 		const newVault: LocalVaultDto = {
@@ -126,6 +126,42 @@ export class VaultsService implements IVaultsService {
 				action: "delete"
 			}
 		})
+	}
+
+	async changePassword(id: string, currentPassword: string, newPassword: string) {
+		const currentVault = await this.get(id)
+		console.debug(id, currentPassword, newPassword)
+
+		const { protectedEncryptionKey } = await EncryptionService.updateProtectedEncryptionKey(
+			currentVault.protectedEncryptionKey,
+			currentPassword,
+			newPassword
+		)
+
+		const timestamp = new Date().toISOString();
+		const db = await this.databaseService.getDatabase()
+
+		await db
+			.update(vaults)
+			.set({
+				protectedEncryptionKey,
+				updatedAt: timestamp
+			})
+			.where(eq(vaults.id, id))
+
+		this.eventsService.dispatch(EventTypes.DATABASE_CHANGE, {
+			context: this.deviceService.getCurrentContext(),
+			data: {
+				id: id,
+				action: 'change-password',
+			}
+		})
+
+		return {
+			...currentVault,
+			protectedEncryptionKey,
+			updatedAt: timestamp
+		}
 	}
 
 	async get(id: string): Promise<LocalVaultDto> {

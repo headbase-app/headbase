@@ -45,6 +45,7 @@ export function VaultsList(props: VaultListProps) {
 									<li>
 										<h3>{vault.name}</h3>
 										<button onClick={() => {props.navigate({type: "delete", id: vault.id})}}>Delete</button>
+										<button type="button" onClick={() => {props.navigate({type: "change-password", id: vault.id})}}>Change password</button>
 										<button onClick={() => {props.navigate({type: "edit", id: vault.id})}}>Edit</button>
 									</li>
 								)}

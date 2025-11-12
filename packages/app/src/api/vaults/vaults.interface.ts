@@ -5,6 +5,7 @@ export interface IVaultsService {
 	create: (createVaultDto: CreateVaultDto) => Promise<LocalVaultDto>
 	update: (vaultId: string, updateVaultDto: UpdateVaultDto) => Promise<LocalVaultDto>
 	delete: (vaultId: string) => Promise<void>
+	changePassword: (vaultId: string, oldPassword: string, newPassword: string) => Promise<LocalVaultDto>
 	get: (vaultId: string) => Promise<LocalVaultDto|null>;
 	query: () => Promise<LocalVaultDto[]>;
 	liveGet: (vaultId: string, subscriber: LiveQuerySubscriber<LocalVaultDto | null>) => LiveQuerySubscription;
