@@ -1,7 +1,10 @@
 import type { Environment } from './environment'
-import {CreateVaultDto, UpdateVaultDto, LocalVaultDto} from './vaults'
 import type {FileSystemDirectory} from "@api/files/files.api.ts";
 import type {IFileBuffer, IFileStream} from "@api/files/files.interface.ts";
+import type {CreateVaultDto, LocalVaultDto} from "@api/vaults/local-vault.ts";
+import type {UpdateVaultDto} from "@headbase-app/contracts";
+
+// todo: remove and replace with higher level service interfaces
 
 export type PlatformResponse<T> = {
 	error: false,

@@ -3,7 +3,7 @@ import {createStore} from "solid-js/store";
 import CloseIcon from "lucide-solid/icons/x"
 
 import "./vault-manager.css";
-import {CreateVault} from "@ui/03-features/vault-manager/create-vault.tsx";
+import {CreateVault} from "@ui/03-features/vault-manager/create-vault/create-vault.tsx";
 import {VaultsList} from "@ui/03-features/vault-manager/vaults-list.tsx";
 import {EditVault} from "@ui/03-features/vault-manager/edit-vault.tsx";
 import {DeleteVault} from "@ui/03-features/vault-manager/delete-vault.tsx";

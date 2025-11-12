@@ -23,5 +23,7 @@ dist-ssr
 *.sln
 *.sw?
 
-# Tests
+# Storybook & Tests
 /test-results
+*storybook.log
+storybook-static

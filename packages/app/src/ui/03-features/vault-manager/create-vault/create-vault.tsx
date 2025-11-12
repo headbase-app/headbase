@@ -1,9 +1,11 @@
-import {useVaultsService} from "@/framework/vaults.context.ts";
 import {createSignal} from "solid-js";
-import type {VaultManagerPage} from "@ui/03-features/vault-manager/vault-manager.tsx";
-import {CreateVaultDto} from "@api/vaults/local-vault.ts";
 import {z} from "zod";
 import {createStore} from "solid-js/store";
+
+import {useVaultsService} from "@/framework/vaults.context.ts";
+import type {VaultManagerPage} from "@ui/03-features/vault-manager/vault-manager.tsx";
+import {CreateVaultDto} from "@api/vaults/local-vault.ts";
+
 
 export type FieldErrors<Fields> = {
 	[field in keyof Fields]: string | null;

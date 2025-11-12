@@ -2,6 +2,7 @@ import { z } from "zod";
 import { ErrorTypes, HeadbaseError } from "@api/control-flow";
 
 // todo: handle errors better, such as re-throwing web crypto errors with extra app specific context?
+// todo: review use of "as BufferSource" suddenly required to satisfy typescript.
 
 export const UnlockKeyMetadata = z.object({
 	algo: z.literal("PBKDF2"),
@@ -129,10 +130,10 @@ export class EncryptionService {
 	}
 
 	private static _getEncryptionCryptoKey(encryptionKeyString: string): Promise<CryptoKey> {
-		let keyMaterial
+		let keyMaterial: BufferSource
 		try {
 			const [_version, base64Key] = encryptionKeyString.split('.')
-			keyMaterial = EncryptionService._hexStringToBytes(base64Key)
+			keyMaterial = EncryptionService._hexStringToBytes(base64Key) as BufferSource
 		}
 		catch (e) {
 			throw new HeadbaseError({type: ErrorTypes.INVALID_OR_CORRUPTED_DATA, originalError: e})
@@ -168,7 +169,7 @@ export class EncryptionService {
 		const derivedKey = await window.crypto.subtle.deriveKey(
 			{
 				name: "PBKDF2",
-				salt: salt,
+				salt: salt as BufferSource,
 				iterations: 100000,
 				hash: "SHA-256",
 			},
@@ -240,12 +241,12 @@ export class EncryptionService {
 		const [_version, base64Metadata, base64CipherText] = ciphertext.split(".")
 
 		let cipherText: Uint8Array
-		let iv: Uint8Array
+		let iv: BufferSource
 		try {
 			const decodedMetadata = EncryptionService._hexStringToBytes(base64Metadata)
 			const metadata = EncryptionMetadata.parse(JSON.parse(new TextDecoder().decode(decodedMetadata)))
 			cipherText = EncryptionService._hexStringToBytes(base64CipherText)
-			iv = EncryptionService._hexStringToBytes(metadata.iv)
+			iv = EncryptionService._hexStringToBytes(metadata.iv) as BufferSource
 		}
 		catch (e) {
 			throw new HeadbaseError({type: ErrorTypes.INVALID_OR_CORRUPTED_DATA, originalError: e})
@@ -258,7 +259,7 @@ export class EncryptionService {
 					iv,
 				},
 				key,
-				cipherText
+				cipherText as BufferSource
 			)
 
 			return JSON.parse(new TextDecoder().decode(decryptedData))
