@@ -1,12 +1,12 @@
 import {createContext, useContext} from "solid-js";
-import type {VaultsAPI} from "@api/vaults/vaults.api.ts";
+import type {VaultsService} from "@api/vaults/vaults.service.ts";
 
-export const VaultsAPIContext = createContext<VaultsAPI>();
+export const VaultsServiceContext = createContext<VaultsService>();
 
-export function useVaultsAPI() {
-	const context = useContext(VaultsAPIContext)
+export function useVaultsService() {
+	const context = useContext(VaultsServiceContext)
 	if (!context) {
-		throw new Error("VaultsAPI context requested but no value was provided.")
+		throw new Error("VaultsService context requested but no value was provided.")
 	}
 
 	return context

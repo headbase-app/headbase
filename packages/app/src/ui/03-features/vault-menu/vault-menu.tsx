@@ -2,14 +2,14 @@ import {createEffect, For, Match, Switch} from "solid-js";
 import {createStore} from "solid-js/store";
 import ChevronDown from "lucide-solid/icons/chevron-down"
 
-import {useVaultsAPI} from "@/framework/vaults.context.ts";
+import {useVaultsService} from "@/framework/vaults.context.ts";
 import {LIVE_QUERY_LOADING_STATE, type LiveQueryResult} from "@contracts/query.ts";
-import type {VaultsList as VaultListDto} from "@api/vaults/vaults.api.ts";
+import type {VaultsList as VaultListDto} from "@api/vaults/vaults.service.ts";
 
 import "./vault-menu.css"
 
 export function VaultMenu() {
-	const vaultsAPI = useVaultsAPI()
+	const vaultsAPI = useVaultsService()
 
 	const [vaultsQuery, setVaultsQuery] = createStore<LiveQueryResult<VaultListDto>>(LIVE_QUERY_LOADING_STATE)
 	createEffect(() => {
@@ -39,7 +39,7 @@ export function VaultMenu() {
 								</>
 							)}
 						</Match>
-						<Match when={vaultsQuery.status === "success" && !vaultsQuery.result}>
+						<Match when={vaultsQuery.status === "success" && vaultsQuery.result.length === 0}>
 							<p>No vaults found.</p>
 						</Match>
 						<Match when={vaultsQuery.status === "success" && vaultsQuery.result} keyed>
@@ -48,7 +48,7 @@ export function VaultMenu() {
 									<For each={vaults}>
 										{(vault) => (
 											<li>
-												<h3>{vault.displayName}</h3>
+												<h3>{vault.name}</h3>
 												<button>Open</button>
 											</li>
 										)}

@@ -1,17 +1,17 @@
 import {type EventMap, EventTypes, type HeadbaseEvent} from "./events";
-import type {IEventListener, IEventsAPI} from "./events.interface";
-import type {IDeviceAPI} from "@api/device/device.interface";
+import type {IEventListener, IEventsService} from "./events.interface";
+import type {IDeviceService} from "@api/device/device.interface";
 
 type ListenerStore = {
 	[Event in keyof EventMap]?: IEventListener<Event>[];
 };
 
-export class EventsAPI implements IEventsAPI {
+export class EventsService implements IEventsService {
 	private readonly localBroadcastChannel: BroadcastChannel | undefined
 	private listenerStore: ListenerStore
 
 	constructor(
-		private readonly deviceService: IDeviceAPI,
+		private readonly deviceService: IDeviceService,
 	) {
 		this.listenerStore = {}
 

@@ -25,7 +25,7 @@ export interface DeviceContext {
 	id: string
 }
 
-export interface IDeviceAPI {
+export interface IDeviceService {
 	getIdentity: () => DeviceIdentity
 	getCurrentContext: () => DeviceContext
 	getEnvironment: () => Promise<Environment>

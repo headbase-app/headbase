@@ -1,7 +1,7 @@
-import {CreateVaultDto, UpdateVaultDto, LocalVaultDto} from "@contracts/vaults";
 import type {LiveQuerySubscriber, LiveQuerySubscription} from "@contracts/query";
+import type {CreateVaultDto, LocalVaultDto, UpdateVaultDto} from "@api/vaults/local-vault.ts";
 
-export interface IVaultsAPI {
+export interface IVaultsService {
 	create: (createVaultDto: CreateVaultDto) => Promise<LocalVaultDto>
 	update: (vaultId: string, updateVaultDto: UpdateVaultDto) => Promise<LocalVaultDto>
 	delete: (vaultId: string) => Promise<void>

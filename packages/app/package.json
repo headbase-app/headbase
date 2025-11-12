@@ -11,7 +11,14 @@
 		"start:ios": "cap run ios",
 		"build": "tsc -b && vite build",
 		"build:sb": "storybook build",
-		"preview": "vite preview"
+		"preview": "vite preview",
+		"test": "npm run test:unit && npm run test:e2e",
+		"test:unit": "vitest run",
+		"test:unit:ui": "vitest --ui",
+		"test:e2e": "npx playwright test",
+		"test:e2e:ui": "npx playwright test --ui",
+		"test:e2e:report": "npx playwright show-report",
+		"test:e2e:setup": "npx playwright install"
 	},
 	"dependencies": {
 		"@capacitor/core": "^7.4.4",
@@ -22,6 +29,7 @@
 		"lucide-solid": "^0.553.0",
 		"opfsx": "^0.1.0",
 		"solid-js": "^1.9.10",
+		"sqlocal": "^0.16.0",
 		"zod": "^4.1.12"
 	},
 	"devDependencies": {
@@ -30,8 +38,12 @@
 		"@capacitor/ios": "^7.4.4",
 		"@types/js-yaml": "^4.0.9",
 		"@types/node": "^24.10.0",
+		"@vitest/browser-playwright": "^4.0.8",
+		"happy-dom": "^20.0.10",
+		"lightningcss": "^1.30.2",
 		"typescript": "~5.9.3",
 		"vite": "^7.2.2",
-		"vite-plugin-solid": "^2.11.10"
+		"vite-plugin-solid": "^2.11.10",
+		"vitest": "^4.0.8"
 	}
 }

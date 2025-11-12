@@ -1,14 +1,14 @@
-import {LocalVaultDto} from "@contracts/vaults";
-import type {IEventsAPI} from "@api/events/events.interface";
+import type {IEventsService} from "@api/events/events.interface";
 import {EventTypes} from "@api/events/events";
-import type {IDeviceAPI} from "@api/device/device.interface";
-import type {ICurrentVaultAPI} from "@api/current-vault/current-vault.interface";
+import type {IDeviceService} from "@api/device/device.interface";
+import type {ICurrentVaultService} from "@api/current-vault/current-vault.interface";
 import {LiveQueryStatus, type LiveQuerySubscriber, type LiveQuerySubscription} from "@contracts/query";
+import type {LocalVaultDto} from "@api/vaults/local-vault.ts";
 
-export class CurrentVaultAPI implements ICurrentVaultAPI {
+export class CurrentVaultService implements ICurrentVaultService {
 	constructor(
-		private readonly deviceService: IDeviceAPI,
-		private readonly eventsService: IEventsAPI
+		private readonly deviceService: IDeviceService,
+		private readonly eventsService: IEventsService
 	) {}
 
 	async open(vaultId: string) {

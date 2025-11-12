@@ -1,8 +1,8 @@
 import {Match, For, Switch, createEffect} from "solid-js";
-import {useVaultsAPI} from "@/framework/vaults.context.ts";
+import {useVaultsService} from "@/framework/vaults.context.ts";
 import {LIVE_QUERY_LOADING_STATE, type LiveQueryResult} from "@contracts/query.ts";
 import {createStore} from "solid-js/store";
-import type {VaultsList as VaultListDto} from "@api/vaults/vaults.api.ts";
+import type {VaultsList as VaultListDto} from "@api/vaults/vaults.service.ts";
 import type {VaultManagerPage} from "@ui/03-features/vault-manager/vault-manager.tsx";
 
 export interface VaultListProps {
@@ -10,7 +10,7 @@ export interface VaultListProps {
 }
 
 export function VaultsList(props: VaultListProps) {
-	const vaultsAPI = useVaultsAPI()
+	const vaultsAPI = useVaultsService()
 
 	const [vaultsQuery, setVaultsQuery] = createStore<LiveQueryResult<VaultListDto>>(LIVE_QUERY_LOADING_STATE)
 	createEffect(() => {
@@ -34,7 +34,7 @@ export function VaultsList(props: VaultListProps) {
 						</>
 					)}
 				</Match>
-				<Match when={vaultsQuery.status === "success" && !vaultsQuery.result}>
+				<Match when={vaultsQuery.status === "success" && vaultsQuery.result.length === 0}>
 					<p>No vaults found.</p>
 				</Match>
 				<Match when={vaultsQuery.status === "success" && vaultsQuery.result} keyed>
@@ -43,7 +43,7 @@ export function VaultsList(props: VaultListProps) {
 							<For each={vaults}>
 								{(vault) => (
 									<li>
-										<h3>{vault.displayName}</h3>
+										<h3>{vault.name}</h3>
 										<button onClick={() => {props.navigate({type: "delete", id: vault.id})}}>Delete</button>
 										<button onClick={() => {props.navigate({type: "edit", id: vault.id})}}>Edit</button>
 									</li>

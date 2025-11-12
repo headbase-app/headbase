@@ -1,9 +1,8 @@
 # APIs
-This folder contains API services used by the core application UI and plugins.
-These are vanilla javascript services which then integrate with platform-specific code to provide functionality.
+This folder contains internal and external services used by the application and plugins.
+These are "vanilla" javascript services which are then separately integrated with framework-specific code.
 
-For this Electron application, the services integrate with each other and call `window.platformApi` which is exposed
-via Electron in `src/main` and `src/preload` for accessing the desktop file system, native OS integrations etc
+The naming convention pattern used is "<x>Service" for internal services and "<x>API" for services exposed to plugins.
 
 ## Reference
 - VaultsAPI

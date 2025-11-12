@@ -1,4 +1,4 @@
-import type {IEventsAPI} from "@api/events/events.interface";
+import type {IEventsService} from "@api/events/events.interface";
 import {EventTypes} from "@api/events/events";
 import {LiveQueryStatus, type LiveQuerySubscriber, type LiveQuerySubscription} from "@contracts/query";
 import type {IFileBuffer, IFilesAPI} from "@api/files/files.interface";
@@ -18,7 +18,7 @@ type TreeItem = FileSystemDirectory | FileSystemFile
 
 export class FilesAPI implements IFilesAPI {
 	constructor(
-		private readonly eventsService: IEventsAPI
+		private readonly eventsService: IEventsService
 	) {
 		window.platformAPI?.files_on_change((event: string, path: string) => {
 			this.eventsService.dispatch(EventTypes.FILE_SYSTEM_CHANGE, {

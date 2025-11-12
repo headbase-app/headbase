@@ -1,7 +1,7 @@
 import {createSignal, onMount, Show} from "solid-js";
-import {useVaultsAPI} from "@/framework/vaults.context.ts";
+import {useVaultsService} from "@/framework/vaults.context.ts";
 import type {VaultManagerPage} from "@ui/03-features/vault-manager/vault-manager.tsx";
-import type {LocalVaultDto} from "@contracts/vaults.ts";
+import type {LocalVaultDto} from "@api/vaults/local-vault.ts";
 
 export interface DeleteVaultProps {
 	vaultId: string;
@@ -9,7 +9,7 @@ export interface DeleteVaultProps {
 }
 
 export function DeleteVault(props: DeleteVaultProps) {
-	const vaultsAPI = useVaultsAPI()
+	const vaultsAPI = useVaultsService()
 
 	const [vault, setVault] = createSignal<LocalVaultDto|null>(null)
 	onMount(async () => {
@@ -38,7 +38,7 @@ export function DeleteVault(props: DeleteVaultProps) {
 			<Show when={vault()} fallback={<p>Loading vault....</p>} keyed>
 				{vault => (
 					<form onSubmit={onDelete}>
-						<p>Are you sure you want to delete vault '{vault.displayName}'?</p>
+						<p>Are you sure you want to delete vault '{vault.name}'?</p>
 						<p>This is a irreversible action, your vault and all files will be permanently lost.</p>
 						<button type="submit" >Confirm Deletion</button>
 					</form>

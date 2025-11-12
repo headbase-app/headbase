@@ -21,4 +21,25 @@ export default defineConfig({
 			),
 		}
 	},
+	optimizeDeps: {
+		exclude: ['sqlocal'],
+	},
+	css: {
+		transformer: "lightningcss",
+		lightningcss: {
+			drafts: {
+				customMedia: true
+			}
+		}
+	},
+	build: {
+		cssMinify: "lightningcss"
+	},
+	server: {
+		port: 42101,
+		headers: {
+			'Cross-Origin-Opener-Policy': 'same-origin',
+			'Cross-Origin-Embedder-Policy': 'require-corp',
+		},
+	},
 })

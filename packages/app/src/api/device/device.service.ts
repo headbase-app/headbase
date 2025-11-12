@@ -1,6 +1,6 @@
-import type {DeviceContext, DeviceIdentity, IDeviceAPI} from "@api/device/device.interface";
+import type {DeviceContext, DeviceIdentity, IDeviceService} from "@api/device/device.interface";
 
-export class DeviceAPI implements IDeviceAPI {
+export class DeviceService implements IDeviceService {
 	readonly contextId: string
 
 	constructor() {
