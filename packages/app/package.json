@@ -7,7 +7,7 @@
     "start": "vite",
     "dev": "vite",
     "start:sb": "storybook dev -p 6006",
-		"start:android": "cap run android",
+    "start:android": "cap run android",
     "start:ios": "cap run ios",
     "build": "tsc -b && vite build",
     "build:sb": "storybook build",
@@ -28,6 +28,7 @@
     "js-yaml": "^4.1.0",
     "lucide-solid": "^0.553.0",
     "opfsx": "^0.1.0",
+    "pdfjs-dist": "^5.4.394",
     "solid-js": "^1.9.10",
     "sqlocal": "^0.16.0",
     "zod": "^4.1.12"

@@ -6,25 +6,50 @@ import {
 } from "./workspace.context";
 import {createSignal, type ParentProps} from "solid-js";
 import {createStore} from "solid-js/store";
+import {parsePath} from "opfsx"
+
 
 export function WorkspaceProvider(props: ParentProps) {
 	const [tabs, setTabs] = createStore<WorkspaceTabs>([])
 	const [activeTabId, setActiveTabId] = createSignal<string | null>(null)
 
 	function openTab(tabData: TabData, options?: OpenTabOptions) {
+		// If file is already open, switch to it instead of opening a new instance.
+		if (tabData.type === 'file') {
+			const existingTab = tabs.find((tab) => tab.type === "file" && tab.filePath === tabData.filePath)
+			if (existingTab) {
+				setActiveTabId(existingTab.id)
+				return;
+			}
+		}
+
 		const id = window.crypto.randomUUID()
+		let tabName: string;
+		if (tabData.type === 'search') {
+			tabName = "Search"
+		}
+		else if (tabData.type === "file-explorer") {
+			tabName = "File explorer"
+		}
+		else if (tabData.type === "file-new") {
+			tabName = "New file"
+		}
+		else {
+			const parsedPath = parsePath(tabData.filePath)
+			tabName = parsedPath.name
+		}
 
 		setTabs((currentTabs) => [
 			...currentTabs,
 			{
 				...tabData,
 				id,
-				name: tabData.type,
+				name: tabName,
 				isChanged: false
 			},
 		])
 
-		// todo: is .length the most up to date value?
+		// todo: will .length always be the most up to date signal value?
 		if (typeof options?.switch === "undefined" || options.switch) {
 			setActiveTabId(id)
 		}

@@ -77,7 +77,10 @@ export class FilesAPI implements IFilesAPI {
 
 	async read(vaultId: string, path: string) {
 		const parsedPath = opfsx.parsePath(path)
-		const platformPath = join( this.#getVaultPath(vaultId), path)
+		const platformPath = join(this.#getVaultPath(vaultId), path)
+
+		console.debug(path)
+		console.debug(platformPath)
 
 		const file = await opfsx.read(platformPath)
 		const buffer = await file.arrayBuffer()

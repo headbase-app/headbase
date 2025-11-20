@@ -13,10 +13,8 @@ import {DatabaseService} from "@api/database/database.service.ts";
 import {CurrentVaultServiceContext} from "@/framework/current-vault.context.ts";
 import {FileSystemExplorer} from "@ui/03-features/file-system-explorer/file-system-explorer.tsx";
 import {FilesAPIContext} from "@/framework/files.context.ts";
-import {useWorkspace} from "@/framework/workspace/workspace.context.ts";
 import {WorkspaceProvider} from "@/framework/workspace/workspace.provider.tsx";
-import {For, Show} from "solid-js";
-
+import {Workspace} from "@ui/03-features/workspace/workspace.tsx";
 
 const deviceService = new DeviceService();
 const eventsService = new EventsService(deviceService);
@@ -42,23 +40,12 @@ export function App() {
 }
 
 function MainPage() {
-	const { tabs, activeTabId } = useWorkspace()
-
 	return (
 		<>
 			<VaultMenu />
 			<VaultManager />
 			<FileSystemExplorer />
-			<For each={tabs}>
-				{(tab) => (
-					<div>
-						<p>{tab.type} | {tab.id}{tab.name}{tab.isChanged}</p>
-					</div>
-				)}
-			</For>
-			<Show when={tabs.length === 0}>
-				<p>No open tabs</p>
-			</Show>
+			<Workspace />
 		</>
 	)
 }
