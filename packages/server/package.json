@@ -21,7 +21,7 @@
 		"test": "jest --runInBand",
 		"test:unit": "jest \".*\\.unit.test\\.ts$\" --runInBand",
 		"test:e2e": "jest \".*\\.e2e.test\\.ts$\" --runInBand",
-		"test:cov": "jest --coverage",
+		"test:cov": "jest --runInBand --coverage",
 		"test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
 		"lint": "eslint \"{src,apps,libs,test}/**/*.ts\" --fix",
 		"format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
