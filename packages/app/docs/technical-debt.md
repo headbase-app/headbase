@@ -13,3 +13,13 @@ References:
 - https://github.com/lucide-icons/lucide/issues/2398
 - https://github.com/vitejs/vite/issues/8237
 - https://github.com/lucide-icons/lucide/issues/2398
+
+### SolidJS - Uses of `createStore`/`createMultable` don't seem to work correctly, leaking unrelated content between them.
+This issue is caused by internal implementation details of Solid where `createStore`/`createMutable` proxy handlers are exclusively bound to an object reference.
+That means that if you use the same object reference across multiple create calls, the same underlying proxy is used which screws up all your expectations and isn't caught by typing.
+
+If you want to share the same object reference, such as a default loading state exported from some shared utility, you can
+use something like `structuredClone` to ensure you get a unique object reference.
+
+References:
+- https://github.com/solidjs/solid/issues/1396

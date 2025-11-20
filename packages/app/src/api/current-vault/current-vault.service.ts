@@ -3,53 +3,74 @@ import {EventTypes} from "@api/events/events";
 import type {IDeviceService} from "@api/device/device.interface";
 import type {ICurrentVaultService} from "@api/current-vault/current-vault.interface";
 import {LiveQueryStatus, type LiveQuerySubscriber, type LiveQuerySubscription} from "@contracts/query";
-import type {LocalVaultDto} from "@api/vaults/local-vault.ts";
+import {LocalVaultDto} from "@api/vaults/local-vault.ts";
+import type {IVaultsService} from "@api/vaults/vaults.interface.ts";
 
 export class CurrentVaultService implements ICurrentVaultService {
 	constructor(
 		private readonly deviceService: IDeviceService,
-		private readonly eventsService: IEventsService
-	) {}
-
-	async open(vaultId: string) {
-		console.debug(`[vaults] requested open for ${vaultId}`)
-
-		const result = await window.platformAPI.currentVault_open(vaultId)
-		if (result.error) {
-			throw result
-		}
-
-		this.eventsService.dispatch(EventTypes.DATABASE_OPEN, {
-			context: this.deviceService.getCurrentContext(),
-			data: {
-				id: vaultId
-			}
-		})
+		private readonly eventsService: IEventsService,
+		private readonly vaultsService: IVaultsService,
+	) {
+		this.setup()
 	}
 
-	async openNewWindow(vaultId: string) {
-		const result = await window.platformAPI.currentVault_openNewWindow(vaultId)
-		if (result.error) {
-			throw result
+	async setup() {
+		const params = new URLSearchParams(window.location.search);
+		const vaultId = params.get("vaultId");
+		const currentVault = await this.get()
+
+		if (vaultId) {
+			await this.open(vaultId)
 		}
+		else if (currentVault) {
+			document.title = `${currentVault.name} | Headbase`
+		}
+	}
 
-		this.eventsService.dispatch(EventTypes.DATABASE_OPEN, {
-			context: this.deviceService.getCurrentContext(),
-			data: {
-				id: vaultId
-			}
-		})
+	async open(vaultId: string) {
+		const currentVault = await this.get()
+		const vaultToOpen = await this.vaultsService.get(vaultId)
 
-		return result.result;
+		if (currentVault) {
+			this.eventsService.dispatch(EventTypes.DATABASE_CLOSE, {
+				context: this.deviceService.getCurrentContext(),
+				data: {
+					id: currentVault.id
+				}
+			})
+		}
+		if (vaultToOpen) {
+			sessionStorage.setItem("hb_current_vault", JSON.stringify(vaultToOpen));
+			document.title = `${vaultToOpen.name} | Headbase`
+			this.eventsService.dispatch(EventTypes.DATABASE_OPEN, {
+				context: this.deviceService.getCurrentContext(),
+				data: {
+					id: vaultId
+				}
+			})
+		}
+	}
+
+	async openNewContext(vaultId: string) {
+		// todo: trigger open in new tab (?vaultId=<uuid>)
+		console.debug(`Triggered open in new context for ${vaultId}`)
 	}
 
 	async get(): Promise<LocalVaultDto | null> {
-		const result = await window.platformAPI.currentVault_get()
-		if (result.error) {
-			throw result
+		const currentVaultString = sessionStorage.getItem("hb_current_vault");
+		let currentVault: LocalVaultDto | null
+		if (currentVaultString) {
+			try {
+				currentVault = LocalVaultDto.parse(JSON.parse(currentVaultString))
+				return currentVault;
+			}
+			catch (error) {
+				console.error("hb_current_vault found to be corrupted, ignoring.");
+				sessionStorage.removeItem("hb_current_vault");
+			}
 		}
-
-		return result.result;
+		return null;
 	}
 
 	async close() {
@@ -58,11 +79,7 @@ export class CurrentVaultService implements ICurrentVaultService {
 			throw new Error(`no vault is currently open`)
 		}
 
-		const result = await window.platformAPI.currentVault_close()
-		if (result.error) {
-			throw result
-		}
-
+		sessionStorage.removeItem("hb_current_vault");
 		this.eventsService.dispatch(EventTypes.DATABASE_CLOSE, {
 			context: this.deviceService.getCurrentContext(),
 			data: {

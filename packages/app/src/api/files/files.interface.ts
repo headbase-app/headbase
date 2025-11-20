@@ -1,19 +1,22 @@
 import type {LiveQuerySubscriber, LiveQuerySubscription} from "@contracts/query";
-import type {FileSystemDirectory} from "@api/files/files.api.ts";
 
 interface IFileBase {
 	/**
-	 * The filename such as 'example.md' in '/path/to/example.md'
+	 * The filename, such as 'example.md'
 	 */
-	fileName: string
+	name: string
 	/**
-	 * The folder path such as 'example.md' in '/path/to'
+	 * The path relative to the vault root, such as '/path/to/example.md'
 	 */
-	folderPath: string
+	path: string
 	/**
-	 * The full platform path such as '/home/example/documents/vault1/path/to/example.md'
+	 * The parent folder path such as '/path/to' in '/path/to/example.md'
 	 */
-	platformPath: string
+	parentPath: string
+	/**
+	 * The full platform path where the file is stored, such as '/home/example/documents/vault1/path/to/example.md'.
+	 */
+	_platformPath: string
 }
 
 export interface IFileBuffer extends IFileBase {
@@ -30,19 +33,29 @@ export interface IFileStream extends IFileBase {
 	url: string
 }
 
+export interface FileSystemDirectory extends IFileBase {
+	type: 'directory',
+	children: FileSystemItem[]
+}
+export interface FileSystemFile extends IFileBase {
+	type: 'file',
+}
+export type FileSystemItem = FileSystemDirectory | FileSystemFile
+
+
 export interface IFilesAPI {
 	// Read / Write
-	read: (path: string) => Promise<IFileBuffer>
-	readStream: (path: string) => Promise<IFileStream>
-	write: (path: string, buffer: ArrayBuffer) => Promise<void>
-	liveRead: (path: string) => Promise<IFileBuffer>
+	read: (vaultId: string, path: string) => Promise<IFileBuffer>
+	readStream: (vaultId: string, path: string) => Promise<IFileStream>
+	liveRead: (vaultId: string, path: string) => Promise<IFileBuffer>
+	write: (vaultId: string, path: string, buffer: ArrayBuffer) => Promise<void>
 	// Tree
-	tree: () => Promise<FileSystemDirectory | null>
-	liveTree: (subscriber: LiveQuerySubscriber<FileSystemDirectory | null>) => LiveQuerySubscription
+	tree: (vaultId: string) => Promise<FileSystemDirectory | null>
+	liveTree: (vaultId: string, subscriber: LiveQuerySubscriber<FileSystemDirectory | null>) => LiveQuerySubscription
 	// File System Operations
-	rm: (path: string) => Promise<void>
-	mv: (sourcePath: string, targetPath: string) => Promise<void>
-	cp: (sourcePath: string, targetPath: string) => Promise<void>
+	rm: (vaultId: string, path: string) => Promise<void>
+	mv: (vaultId: string, sourcePath: string, targetPath: string) => Promise<void>
+	cp: (vaultId: string, sourcePath: string, targetPath: string) => Promise<void>
 	// Open
-	openExternal: (path: string) => Promise<void>
+	openExternal: (vaultId: string, path: string) => Promise<void>
 }

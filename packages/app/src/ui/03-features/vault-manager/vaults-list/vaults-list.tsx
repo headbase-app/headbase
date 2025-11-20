@@ -12,9 +12,12 @@ export interface VaultListProps {
 export function VaultsList(props: VaultListProps) {
 	const vaultsAPI = useVaultsService()
 
-	const [vaultsQuery, setVaultsQuery] = createStore<LiveQueryResult<VaultListDto>>(LIVE_QUERY_LOADING_STATE)
+	const [vaultsQuery, setVaultsQuery] = createStore<LiveQueryResult<VaultListDto>>(structuredClone(LIVE_QUERY_LOADING_STATE))
 	createEffect(() => {
-		const subscription = vaultsAPI.liveQuery(setVaultsQuery)
+		const subscription = vaultsAPI.liveQuery((result) => {
+			console.debug("VaultsList/vaultsQuery", result)
+			setVaultsQuery(result)
+		})
 		return () => {subscription.unsubscribe()}
 	})
 

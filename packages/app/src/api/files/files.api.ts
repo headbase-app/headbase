@@ -1,25 +1,20 @@
 import type {IEventsService} from "@api/events/events.interface";
 import {EventTypes} from "@api/events/events";
 import {LiveQueryStatus, type LiveQuerySubscriber, type LiveQuerySubscription} from "@contracts/query";
-import type {IFileBuffer, IFilesAPI} from "@api/files/files.interface";
+import type {FileSystemDirectory, IFileBuffer, IFilesAPI} from "@api/files/files.interface";
+import * as opfsx from "opfsx";
+import {processTree} from "@api/files/process-tree.ts";
 
-export interface FileSystemDirectory {
-	type: 'directory',
-	name: string,
-	path: string,
-	children: TreeItem[]
+// todo: add to opfsx
+function join(...pathParts: string[]) {
+	return pathParts.join("/")
 }
-export interface FileSystemFile {
-	type: 'file',
-	name: string,
-	path: string,
-}
-type TreeItem = FileSystemDirectory | FileSystemFile
 
 export class FilesAPI implements IFilesAPI {
 	constructor(
 		private readonly eventsService: IEventsService
 	) {
+		window.opfsx = opfsx
 		window.platformAPI?.files_on_change((event: string, path: string) => {
 			this.eventsService.dispatch(EventTypes.FILE_SYSTEM_CHANGE, {
 				context: {
@@ -35,21 +30,26 @@ export class FilesAPI implements IFilesAPI {
 		})
 	}
 
-	async tree(): Promise<FileSystemDirectory | null> {
-		const result = await window.platformAPI.files_tree()
-		if (result.error) {
-			throw result
-		}
-
-		return result.result;
+	#getVaultPath(vaultId: string) {
+		return `/headbase-v1/vaults/${vaultId}/files/`;
 	}
 
-	liveTree(subscriber: LiveQuerySubscriber<FileSystemDirectory | null>): LiveQuerySubscription {
+	async tree(vaultId: string) {
+		const vaultPath = this.#getVaultPath(vaultId)
+
+		// Ensure the base directory exists as tree will fail without it
+		await opfsx.mkdir(vaultPath)
+
+		const tree = await opfsx.tree(vaultPath)
+		return processTree(tree)
+	}
+
+	liveTree(vaultId: string, subscriber: LiveQuerySubscriber<FileSystemDirectory | null>): LiveQuerySubscription {
 		const runQuery = async () => {
 			subscriber({status: LiveQueryStatus.LOADING})
 
 			try {
-				const result = await this.tree()
+				const result = await this.tree(vaultId)
 				subscriber({status: LiveQueryStatus.SUCCESS, result: result })
 			}
 			catch (error) {
@@ -75,40 +75,59 @@ export class FilesAPI implements IFilesAPI {
 		}
 	}
 
-	async read(path: string) {
-		const result = await window.platformAPI.files_read(path)
-		if (result.error) {
-			throw result
-		}
+	async read(vaultId: string, path: string) {
+		const parsedPath = opfsx.parsePath(path)
+		const platformPath = join( this.#getVaultPath(vaultId), path)
 
-		return result.result;
+		const file = await opfsx.read(platformPath)
+		const buffer = await file.arrayBuffer()
+
+		return {
+			name: parsedPath.name,
+			path: parsedPath.path,
+			parentPath: parsedPath.parentPath,
+			_platformPath: platformPath,
+			buffer
+		}
 	}
 
-	async readStream(path: string) {
-		const result = await window.platformAPI.files_readStream(path)
-		if (result.error) {
-			throw result
-		}
+	/**
+	 * Return a "stream" for the given file.
+	 * Note that currently this doesn't actually use streams for the web implementation, it loads
+	 * the full array buffer and creates a URL.
+	 *
+	 * @param vaultId
+	 * @param path
+	 */
+	async readStream(vaultId: string, path: string) {
+		const parsedPath = opfsx.parsePath(path)
+		const platformPath = join( this.#getVaultPath(vaultId), path)
 
-		return result.result;
+		const file = await opfsx.read(platformPath)
+		const buffer = await file.arrayBuffer()
+		const blob = new Blob([buffer])
+		const url = URL.createObjectURL(blob)
+
+		return {
+			name: parsedPath.name,
+			path: parsedPath.path,
+			parentPath: parsedPath.parentPath,
+			_platformPath: platformPath,
+			url
+		}
 	}
 
-	async write(path: string, data: ArrayBuffer) {
-		const result = await window.platformAPI.files_write(path, data)
-		if (result.error) {
-			throw result
-		}
+	async write(vaultId: string, path: string, data: ArrayBuffer) {
+		const platformPath = join( this.#getVaultPath(vaultId), path)
 
-		return result.result;
+		// todo: this doesn't support binary files, can remove TextDecoder once opfsx supports binary data.
+		const content = new TextDecoder().decode(data)
+		await opfsx.write(platformPath, content)
 	}
 
-	async openExternal(path: string) {
-		const result = await window.platformAPI.files_open_external(path)
-		if (result.error) {
-			throw result
-		}
-
-		return result.result;
+	async openExternal(vaultId: string, path: string) {
+		const platformPath = join( this.#getVaultPath(vaultId), path)
+		console.debug("open external triggered for:", platformPath)
 	}
 
 	// @ts-ignore

@@ -1,7 +1,6 @@
 import * as opfsx from "opfsx"
 import {parseMarkdownFrontMatter} from "./frontmatter.ts";
 import {EventsService} from "../events/events.service.ts";
-// import {EventTypes} from "../events/events.ts";
 import {DeviceContext} from "../../interfaces.ts";
 import {relativeTree} from "./relative-tree.ts";
 import {featureFlags} from "../../../flags.ts";
@@ -10,7 +9,6 @@ import {joinPathParts} from "./join-path-parts.ts";
 import {EventMap, EventTypes} from "../events/events.ts";
 import {Observable} from "rxjs";
 import {LiveQueryResult} from "../../control-flow.ts";
-import {LocalDocumentVersion} from "../documents/types.ts";
 
 
 export interface MarkdownFile {
