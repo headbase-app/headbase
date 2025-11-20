@@ -2,10 +2,10 @@ import { Controller, Get, HttpCode, HttpStatus, Param, Post, UseGuards } from "@
 
 import { ChunksURLParams } from "@headbase-app/contracts";
 
-import { ChunksService } from "@modules/chunks/chunks.service";
-import { AuthenticationGuard } from "@modules/auth/auth.guard";
-import { RequestContext } from "@common/request-context";
-import { ZodValidationPipe } from "@common/zod-validator.pipe";
+import { ChunksService } from "@modules/chunks/chunks.service.js";
+import { AuthenticationGuard } from "@modules/auth/auth.guard.js";
+import { RequestContext } from "@common/request-context.js";
+import { ZodValidationPipe } from "@common/zod-validator.pipe.js";
 
 @Controller({
 	path: "/chunks",

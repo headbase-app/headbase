@@ -1,5 +1,6 @@
-import { EventMap, EventIdentifiers, ServerEvent } from "@services/events/events";
 import { Injectable } from "@nestjs/common";
+
+import { EventMap, EventIdentifiers, ServerEvent } from "@services/events/events.js";
 
 // todo: can uses of this.eventTarget.addEventListener be made typesafe without using ts-expect-error.
 

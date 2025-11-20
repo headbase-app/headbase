@@ -1,10 +1,10 @@
 import { Body, Controller, Delete, Get, Param, Patch, Post, Query, UseGuards } from "@nestjs/common";
 
 import { UpdateVaultDto, VaultsURLParams, VaultsQueryParams, VaultDto } from "@headbase-app/contracts";
-import { VaultsService } from "@modules/vaults/vaults.service";
-import { AuthenticationGuard } from "@modules/auth/auth.guard";
-import { ZodValidationPipe } from "@common/zod-validator.pipe";
-import { RequestContext } from "@common/request-context";
+import { VaultsService } from "@modules/vaults/vaults.service.js";
+import { AuthenticationGuard } from "@modules/auth/auth.guard.js";
+import { ZodValidationPipe } from "@common/zod-validator.pipe.js";
+import { RequestContext } from "@common/request-context.js";
 
 @Controller({
 	path: "/vaults",

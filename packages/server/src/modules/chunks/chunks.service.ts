@@ -1,17 +1,18 @@
 import { forwardRef, Inject, Injectable } from "@nestjs/common";
 
-import { ObjectStoreService } from "@services/object-store/object-store.service";
-import { UserContext } from "@common/request-context";
-import { VaultsService } from "@modules/vaults/vaults.service";
-import { UserRequestError } from "@services/errors/base/user-request.error";
-import { ResourceNotFoundError } from "@services/errors/resource/resource-not-found.error";
+import { ObjectStoreService } from "@services/object-store/object-store.service.js";
+import { UserContext } from "@common/request-context.js";
+import { VaultsService } from "@modules/vaults/vaults.service.js";
+import { UserRequestError } from "@services/errors/base/user-request.error.js";
+import { ResourceNotFoundError } from "@services/errors/resource/resource-not-found.error.js";
+import type { WrapperType } from "@common/wrapper-type.js";
 
 @Injectable()
 export class ChunksService {
 	constructor(
 		private readonly objectStoreService: ObjectStoreService,
 		@Inject(forwardRef(() => VaultsService))
-		private readonly vaultsService: VaultsService,
+		private readonly vaultsService: WrapperType<VaultsService>,
 	) {}
 
 	private getChunkObjectKey(vaultId: string, hash: string) {

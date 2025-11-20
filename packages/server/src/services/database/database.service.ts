@@ -4,9 +4,9 @@ import { migrate } from "drizzle-orm/postgres-js/migrator";
 import { drizzle, PostgresJsDatabase } from "drizzle-orm/postgres-js";
 import { Injectable } from "@nestjs/common";
 
-import { schema } from "./schema/schema";
-import { ConfigService } from "@services/config/config.service";
-import { HealthStatus } from "@modules/server/server.service";
+import { schema } from "./schema/schema.js";
+import { ConfigService } from "@services/config/config.service.js";
+import { HealthStatus } from "@modules/server/server.service.js";
 
 @Injectable()
 export class DatabaseService {

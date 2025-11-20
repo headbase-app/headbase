@@ -1,11 +1,12 @@
 import { WebSocketServer, WebSocket } from "ws";
 import { IncomingMessage, Server } from "node:http";
-import { ConnectionData, InitialConnection, SyncAction, SyncService } from "@modules/sync/sync.service.js";
 import internal from "node:stream";
+import { ErrorIdentifiers } from "@headbase-app/contracts";
+
+import { ConnectionData, InitialConnection, SyncAction, SyncService } from "@modules/sync/sync.service.js";
 import { ClientSentEvents, ServerSentEvents, ServerWelcomeEvent } from "@modules/sync/events.js";
 import { AccessError } from "@services/errors/access/access.error.js";
-import { ErrorIdentifiers } from "@headbase-app/contracts";
-import { ConfigService } from "@services/config/config.service";
+import { ConfigService } from "@services/config/config.service.js";
 
 export interface SyncWebsocketControllerConfig {
 	path: string;

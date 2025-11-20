@@ -1,8 +1,8 @@
 import { Module } from "@nestjs/common";
-import { ServerManagementService } from "@modules/server/server.service";
-import { ServerManagementHttpController } from "@modules/server/server.controller";
-import { ServicesModule } from "@services/services.module";
-import { AuthModule } from "@modules/auth/auth.module";
+import { ServerManagementService } from "@modules/server/server.service.js";
+import { ServerManagementHttpController } from "@modules/server/server.controller.js";
+import { ServicesModule } from "@services/services.module.js";
+import { AuthModule } from "@modules/auth/auth.module.js";
 
 @Module({
 	imports: [ServicesModule, AuthModule],

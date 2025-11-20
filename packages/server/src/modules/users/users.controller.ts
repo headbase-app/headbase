@@ -1,11 +1,11 @@
 import { Body, Controller, Get, Post, UseGuards, Param, Patch, Delete } from "@nestjs/common";
 
 import { AuthUserResponse, CreateUserDto, UpdateUserDto, UsersURLParams } from "@headbase-app/contracts";
-import { UsersService } from "@modules/users/users.service";
-import { ZodValidationPipe } from "@common/zod-validator.pipe";
-import { AuthenticationGuard } from "@modules/auth/auth.guard";
-import { RequestContext } from "@common/request-context";
-import { AuthService } from "@modules/auth/auth.service";
+import { UsersService } from "@modules/users/users.service.js";
+import { ZodValidationPipe } from "@common/zod-validator.pipe.js";
+import { AuthenticationGuard } from "@modules/auth/auth.guard.js";
+import { RequestContext } from "@common/request-context.js";
+import { AuthService } from "@modules/auth/auth.service.js";
 
 @Controller({
 	path: "/users",

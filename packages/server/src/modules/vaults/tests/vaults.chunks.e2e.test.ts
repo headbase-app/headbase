@@ -1,7 +1,7 @@
-import { describe, expect, test, beforeAll, beforeEach, afterAll } from "@jest/globals";
+import { describe, expect, test, beforeAll, beforeEach, afterAll } from "vitest";
 import { HttpStatus } from "@nestjs/common";
 
-import { TestHelper } from "@testing/test-helper";
+import { TestHelper } from "@testing/test-helper.js";
 import { testUser1 } from "@testing/data/users";
 import { testUser1Vault1, testUser1Vault2 } from "@testing/data/vaults";
 

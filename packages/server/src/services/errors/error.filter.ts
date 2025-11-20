@@ -1,8 +1,9 @@
 import { ExceptionFilter, Catch, ArgumentsHost, HttpException, HttpStatus } from "@nestjs/common";
 import { Response } from "express";
-import { BaseError } from "./base/base.error";
-import { fallbackMapping, errorHttpMapping } from "./error-http-mappings";
+
 import { ErrorIdentifiers } from "@headbase-app/contracts";
+import { BaseError } from "./base/base.error.js";
+import { fallbackMapping, errorHttpMapping } from "./error-http-mappings.js";
 
 @Catch(BaseError, HttpException)
 export class ErrorFilter implements ExceptionFilter {

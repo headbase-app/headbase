@@ -1,5 +1,5 @@
-import { afterAll, beforeAll, beforeEach, describe, expect, test } from "@jest/globals";
-import { TestHelper } from "@testing/test-helper";
+import { afterAll, beforeAll, beforeEach, describe, expect, test } from "vitest";
+import { TestHelper } from "@testing/test-helper.js";
 import { testUser1 } from "@testing/data/users";
 import { testUser1Vault1 } from "@testing/data/vaults";
 import { expectNotFound } from "@testing/common/expect-not-found";

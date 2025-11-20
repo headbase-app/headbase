@@ -3,18 +3,19 @@ import postgres from "postgres";
 import { DrizzleQueryError, eq, getTableColumns, inArray } from "drizzle-orm";
 import { ErrorIdentifiers, UpdateVaultDto, VaultDto, VaultsQueryParams } from "@headbase-app/contracts";
 
-import { UserContext } from "@common/request-context";
-import { EventsService } from "@services/events/events.service";
-import { EventIdentifiers } from "@services/events/events";
-import { DatabaseService } from "@services/database/database.service";
-import { vaults } from "@services/database/schema/schema";
-import { SystemError } from "@services/errors/base/system.error";
-import { ResourceRelationshipError } from "@services/errors/resource/resource-relationship.error";
-import { PG_FOREIGN_KEY_VIOLATION, PG_UNIQUE_VIOLATION } from "@services/database/database-error-codes";
-import { ResourceNotFoundError } from "@services/errors/resource/resource-not-found.error";
-import { isoFormat } from "@services/database/schema/iso-format-date";
-import { ChunksService } from "@modules/chunks/chunks.service";
-import { AuthService } from "@modules/auth/auth.service";
+import { UserContext } from "@common/request-context.js";
+import { EventsService } from "@services/events/events.service.js";
+import { EventIdentifiers } from "@services/events/events.js";
+import { DatabaseService } from "@services/database/database.service.js";
+import { vaults } from "@services/database/schema/schema.js";
+import { SystemError } from "@services/errors/base/system.error.js";
+import { ResourceRelationshipError } from "@services/errors/resource/resource-relationship.error.js";
+import { PG_FOREIGN_KEY_VIOLATION, PG_UNIQUE_VIOLATION } from "@services/database/database-error-codes.js";
+import { ResourceNotFoundError } from "@services/errors/resource/resource-not-found.error.js";
+import { isoFormat } from "@services/database/schema/iso-format-date.js";
+import { ChunksService } from "@modules/chunks/chunks.service.js";
+import { AuthService } from "@modules/auth/auth.service.js";
+import type { WrapperType } from "@common/wrapper-type.js";
 
 @Injectable()
 export class VaultsService {
@@ -23,7 +24,7 @@ export class VaultsService {
 		private readonly eventsService: EventsService,
 		private readonly authService: AuthService,
 		@Inject(forwardRef(() => ChunksService))
-		private readonly chunksService: ChunksService,
+		private readonly chunksService: WrapperType<ChunksService>,
 	) {}
 
 	private static getContextualError(e: any) {

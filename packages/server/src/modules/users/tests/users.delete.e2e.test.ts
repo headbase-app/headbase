@@ -1,11 +1,12 @@
+import { describe, test, expect, afterAll, beforeAll, beforeEach } from "vitest";
+
 import { ErrorIdentifiers } from "@headbase-app/contracts";
-import { TestHelper } from "@testing/test-helper";
-import { expectUnauthorized } from "@testing/common/expect-unauthorized";
-import { expectForbidden } from "@testing/common/expect-forbidden";
-import { expectBadRequest } from "@testing/common/expect-bad-request";
-import { testAdminUser1, testUser1, testUser2Unverified } from "@testing/data/users";
-import { describe, test, expect, afterAll, beforeAll, beforeEach } from "@jest/globals";
-import { expectNotFound } from "@testing/common/expect-not-found";
+import { TestHelper } from "@testing/test-helper.js";
+import { expectUnauthorized } from "@testing/common/expect-unauthorized.js";
+import { expectForbidden } from "@testing/common/expect-forbidden.js";
+import { expectBadRequest } from "@testing/common/expect-bad-request.js";
+import { testAdminUser1, testUser1, testUser2Unverified } from "@testing/data/users.js";
+import { expectNotFound } from "@testing/common/expect-not-found.js";
 
 const testHelper: TestHelper = new TestHelper();
 beforeAll(async () => {

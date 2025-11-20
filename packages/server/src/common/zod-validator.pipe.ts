@@ -1,7 +1,7 @@
 import { Schema } from "zod";
 import { PipeTransform, Injectable, ArgumentMetadata } from "@nestjs/common";
 
-import { UserRequestError } from "@services/errors/base/user-request.error";
+import { UserRequestError } from "@services/errors/base/user-request.error.js";
 
 // todo: use as global pipe?
 @Injectable()

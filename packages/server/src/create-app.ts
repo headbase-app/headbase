@@ -4,10 +4,10 @@ import helmet from "helmet";
 import { NextFunction, Request, Response } from "express";
 import { NestExpressApplication } from "@nestjs/platform-express";
 
-import { AppModule } from "./app.module";
-import { ErrorFilter } from "@services/errors/error.filter";
-import { ConfigService } from "@services/config/config.service";
-import { queryParser } from "@common/qs-query-parser";
+import { AppModule } from "./app.module.js";
+import { ErrorFilter } from "@services/errors/error.filter.js";
+import { ConfigService } from "@services/config/config.service.js";
+import { queryParser } from "@common/qs-query-parser.js";
 
 export async function createApp(options?: NestApplicationOptions) {
 	const app = await NestFactory.create<NestExpressApplication>(AppModule, options || {});

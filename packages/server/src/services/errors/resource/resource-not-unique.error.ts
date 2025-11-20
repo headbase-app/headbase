@@ -1,4 +1,4 @@
-import { ResourceError } from "./resource.error";
+import { ResourceError } from "./resource.error.js";
 
 /**
  * For when a resource is not unique or would become not unique.

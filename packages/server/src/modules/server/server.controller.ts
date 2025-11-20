@@ -1,9 +1,9 @@
 import { Body, Controller, Get, Patch, UseGuards } from "@nestjs/common";
 
-import { ServerManagementService, UpdateServerSettingsDto } from "@modules/server/server.service";
-import { RequestContext } from "@common/request-context";
-import { ZodValidationPipe } from "@common/zod-validator.pipe";
-import { AuthenticationGuard } from "@modules/auth/auth.guard";
+import { ServerManagementService, UpdateServerSettingsDto } from "@modules/server/server.service.js";
+import { RequestContext } from "@common/request-context.js";
+import { ZodValidationPipe } from "@common/zod-validator.pipe.js";
+import { AuthenticationGuard } from "@modules/auth/auth.guard.js";
 
 @Controller({
 	path: "/server",

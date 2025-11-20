@@ -1,14 +1,15 @@
 import { z } from "zod";
-import { Injectable } from "@nestjs/common";
+import { forwardRef, Inject, Injectable } from "@nestjs/common";
 
 import { ServerInfoDto } from "@headbase-app/contracts";
 
-import { DatabaseService } from "@services/database/database.service";
-import { UserContext } from "@common/request-context";
-import { SystemError } from "@services/errors/base/system.error";
-import { settings } from "@services/database/schema/schema";
-import { ObjectStoreService } from "@services/object-store/object-store.service";
-import { AuthService } from "@modules/auth/auth.service";
+import { DatabaseService } from "@services/database/database.service.js";
+import { UserContext } from "@common/request-context.js";
+import { SystemError } from "@services/errors/base/system.error.js";
+import { settings } from "@services/database/schema/schema.js";
+import { ObjectStoreService } from "@services/object-store/object-store.service.js";
+import { AuthService } from "@modules/auth/auth.service.js";
+import type { WrapperType } from "@common/wrapper-type.js";
 
 export type HealthStatus = "ok" | "degraded" | "error";
 
@@ -37,7 +38,8 @@ export class ServerManagementService {
 	constructor(
 		private readonly databaseService: DatabaseService,
 		private readonly objectStoreService: ObjectStoreService,
-		private readonly authService: AuthService,
+		@Inject(forwardRef(() => AuthService))
+		private readonly authService: WrapperType<AuthService>,
 	) {}
 
 	async runHealthCheck(): Promise<HealthCheckResult> {

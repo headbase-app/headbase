@@ -5,21 +5,21 @@ import { Cron } from "@nestjs/schedule";
 
 import { CreateFileDto, ErrorIdentifiers, FileChunkDto, FileDto, FilesQueryParams } from "@headbase-app/contracts";
 
-import { UserContext } from "@common/request-context";
-import { PG_FOREIGN_KEY_VIOLATION, PG_UNIQUE_VIOLATION } from "@services/database/database-error-codes";
-import { ResourceRelationshipError } from "@services/errors/resource/resource-relationship.error";
-import { SystemError } from "@services/errors/base/system.error";
-import { DatabaseService } from "@services/database/database.service";
-import { EventsService } from "@services/events/events.service";
-import { files, filesChunks, vaults } from "@services/database/schema/schema";
-import { isoFormat } from "@services/database/schema/iso-format-date";
-import { ResourceNotFoundError } from "@services/errors/resource/resource-not-found.error";
-import { FileWithOwnerDto } from "@modules/files/file-with-owner";
-import { VaultsService } from "@modules/vaults/vaults.service";
-import { EventIdentifiers } from "@services/events/events";
-import { UserRequestError } from "@services/errors/base/user-request.error";
-import { ChunksService } from "@modules/chunks/chunks.service";
-import { AuthService } from "@modules/auth/auth.service";
+import { UserContext } from "@common/request-context.js";
+import { PG_FOREIGN_KEY_VIOLATION, PG_UNIQUE_VIOLATION } from "@services/database/database-error-codes.js";
+import { ResourceRelationshipError } from "@services/errors/resource/resource-relationship.error.js";
+import { SystemError } from "@services/errors/base/system.error.js";
+import { DatabaseService } from "@services/database/database.service.js";
+import { EventsService } from "@services/events/events.service.js";
+import { files, filesChunks, vaults } from "@services/database/schema/schema.js";
+import { isoFormat } from "@services/database/schema/iso-format-date.js";
+import { ResourceNotFoundError } from "@services/errors/resource/resource-not-found.error.js";
+import { FileWithOwnerDto } from "@modules/files/file-with-owner.js";
+import { VaultsService } from "@modules/vaults/vaults.service.js";
+import { EventIdentifiers } from "@services/events/events.js";
+import { UserRequestError } from "@services/errors/base/user-request.error.js";
+import { ChunksService } from "@modules/chunks/chunks.service.js";
+import { AuthService } from "@modules/auth/auth.service.js";
 
 @Injectable()
 export class FilesService {

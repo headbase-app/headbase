@@ -2,10 +2,10 @@ import { Body, Controller, Delete, Get, Param, Post, Query, UseGuards } from "@n
 
 import { CreateFileDto, FilesURLParams, FilesQueryParams } from "@headbase-app/contracts";
 
-import { AuthenticationGuard } from "@modules/auth/auth.guard";
-import { FilesService } from "@modules/files/files.service";
-import { RequestContext } from "@common/request-context";
-import { ZodValidationPipe } from "@common/zod-validator.pipe";
+import { AuthenticationGuard } from "@modules/auth/auth.guard.js";
+import { FilesService } from "@modules/files/files.service.js";
+import { RequestContext } from "@common/request-context.js";
+import { ZodValidationPipe } from "@common/zod-validator.pipe.js";
 
 @Controller({
 	path: "/files",
