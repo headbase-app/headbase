@@ -1,4 +1,4 @@
-import { BaseError } from "./base.error";
+import { BaseError } from "./base.error.js";
 
 /**
  * An unexpected error thrown by the application.

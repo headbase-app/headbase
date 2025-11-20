@@ -1,25 +1,26 @@
-import { Injectable } from "@nestjs/common";
+import { forwardRef, Inject, Injectable } from "@nestjs/common";
 import ms from "ms";
 import { eq, getTableColumns, lte } from "drizzle-orm";
 import { randomBytes, randomUUID } from "node:crypto";
+import { Cron } from "@nestjs/schedule";
 
 import { AuthUserResponse, ErrorIdentifiers, Roles, UserDto } from "@headbase-app/contracts";
 
-import { TokenService } from "@services/token/token.service";
-import { EmailService } from "@services/email/email.service";
-import { DatabaseUserDto } from "@modules/users/database-user";
-import { AccessForbiddenError } from "@services/errors/access/access-forbidden.error";
-import { PasswordService } from "@services/password/password.service";
-import { UserRequestError } from "@services/errors/base/user-request.error";
-import { UserContext } from "@common/request-context";
-import { EventsService } from "@services/events/events.service";
-import { EventIdentifiers } from "@services/events/events";
-import { UsersService } from "@modules/users/users.service";
-import { ConfigService } from "@services/config/config.service";
-import { DatabaseService } from "@services/database/database.service";
-import { sessions, users } from "@services/database/schema/schema";
-import { SystemError } from "@services/errors/base/system.error";
-import { Cron } from "@nestjs/schedule";
+import { TokenService } from "@services/token/token.service.js";
+import { EmailService } from "@services/email/email.service.js";
+import { DatabaseUserDto } from "@modules/users/database-user.js";
+import { AccessForbiddenError } from "@services/errors/access/access-forbidden.error.js";
+import { PasswordService } from "@services/password/password.service.js";
+import { UserRequestError } from "@services/errors/base/user-request.error.js";
+import { UserContext } from "@common/request-context.js";
+import { EventsService } from "@services/events/events.service.js";
+import { EventIdentifiers } from "@services/events/events.js";
+import { UsersService } from "@modules/users/users.service.js";
+import { ConfigService } from "@services/config/config.service.js";
+import { DatabaseService } from "@services/database/database.service.js";
+import { sessions, users } from "@services/database/schema/schema.js";
+import { SystemError } from "@services/errors/base/system.error.js";
+import type { WrapperType } from "@common/wrapper-type.js";
 
 export interface Session {
 	id: string;
@@ -41,7 +42,8 @@ export interface OwnershipGuardOptions {
 @Injectable()
 export class AuthService {
 	constructor(
-		private readonly usersService: UsersService,
+		@Inject(forwardRef(() => UsersService))
+		private readonly usersService: WrapperType<UsersService>,
 		private readonly tokenService: TokenService,
 		private readonly configService: ConfigService,
 		private readonly emailService: EmailService,

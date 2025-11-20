@@ -1,5 +1,5 @@
 import * as dotenv from "dotenv";
-import { ConfigSchema } from "./config-schema";
+import { ConfigSchema } from "./config-schema.js";
 import { Injectable } from "@nestjs/common";
 
 dotenv.config({ quiet: true });

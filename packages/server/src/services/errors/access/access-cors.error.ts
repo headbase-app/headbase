@@ -1,4 +1,4 @@
-import { AccessError } from "./access.error";
+import { AccessError } from "./access.error.js";
 
 /**
  * For use when the request has not passed CORS checks.

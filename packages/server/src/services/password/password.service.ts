@@ -1,7 +1,7 @@
 import { hash, compare } from "bcrypt";
-
-import { SystemError } from "@services/errors/base/system.error";
 import { Injectable } from "@nestjs/common";
+
+import { SystemError } from "@services/errors/base/system.error.js";
 
 @Injectable()
 export class PasswordService {

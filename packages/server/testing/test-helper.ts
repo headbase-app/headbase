@@ -1,16 +1,16 @@
 import { agent } from "supertest";
-import TestAgent from "supertest/lib/agent";
+import TestAgent from "supertest/lib/agent.js";
 import { Server } from "node:http";
 import { INestApplication } from "@nestjs/common";
-
-import { ConfigService } from "@services/config/config.service";
-import { TokenService } from "@services/token/token.service";
-import { DatabaseService } from "@services/database/database.service";
-import { ServerManagementService } from "@modules/server/server.service";
-import { resetTestData, ScriptOptions } from "./database-scripts";
-import { createApp } from "../src/create-app";
-import { AuthService } from "@modules/auth/auth.service";
 import { SchedulerRegistry } from "@nestjs/schedule";
+
+import { ConfigService } from "@services/config/config.service.js";
+import { TokenService } from "@services/token/token.service.js";
+import { DatabaseService } from "@services/database/database.service.js";
+import { ServerManagementService } from "@modules/server/server.service.js";
+import { resetTestData, ScriptOptions } from "./database-scripts.js";
+import { createApp } from "../src/create-app.js";
+import { AuthService } from "@modules/auth/auth.service.js";
 
 export class TestHelper {
 	private application!: INestApplication<Server>;

@@ -1,7 +1,7 @@
 // todo: move into common package
 
 import { z } from "zod";
-import { ExternalServerEvent } from "@services/events/events";
+import { ExternalServerEvent } from "@services/events/events.js";
 
 export const ClientSentEvent = z
 	.object({

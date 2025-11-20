@@ -3,31 +3,32 @@ import postgres from "postgres";
 import { DrizzleQueryError, eq, getTableColumns } from "drizzle-orm";
 
 import { CreateUserDto, ErrorIdentifiers, UpdateUserDto, UserDto } from "@headbase-app/contracts";
-import { UserContext } from "@common/request-context";
-import { AccessForbiddenError } from "@services/errors/access/access-forbidden.error";
-import { PasswordService } from "@services/password/password.service";
-import { EventsService } from "@services/events/events.service";
-import { EventIdentifiers } from "@services/events/events";
-import { ServerManagementService } from "@modules/server/server.service";
-import { DatabaseService } from "@services/database/database.service";
-import { users } from "@services/database/schema/schema";
-import { ResourceNotFoundError } from "@services/errors/resource/resource-not-found.error";
-import { PG_UNIQUE_VIOLATION } from "@services/database/database-error-codes";
-import { ResourceRelationshipError } from "@services/errors/resource/resource-relationship.error";
-import { SystemError } from "@services/errors/base/system.error";
-import { isoFormat } from "@services/database/schema/iso-format-date";
-import { DatabaseUserDto } from "@modules/users/database-user";
-import { AuthService } from "@modules/auth/auth.service";
+import { UserContext } from "@common/request-context.js";
+import { AccessForbiddenError } from "@services/errors/access/access-forbidden.error.js";
+import { PasswordService } from "@services/password/password.service.js";
+import { EventsService } from "@services/events/events.service.js";
+import { EventIdentifiers } from "@services/events/events.js";
+import { ServerManagementService } from "@modules/server/server.service.js";
+import { DatabaseService } from "@services/database/database.service.js";
+import { users } from "@services/database/schema/schema.js";
+import { ResourceNotFoundError } from "@services/errors/resource/resource-not-found.error.js";
+import { PG_UNIQUE_VIOLATION } from "@services/database/database-error-codes.js";
+import { ResourceRelationshipError } from "@services/errors/resource/resource-relationship.error.js";
+import { SystemError } from "@services/errors/base/system.error.js";
+import { isoFormat } from "@services/database/schema/iso-format-date.js";
+import { DatabaseUserDto } from "@modules/users/database-user.js";
+import { AuthService } from "@modules/auth/auth.service.js";
+import type { WrapperType } from "@common/wrapper-type.js";
 
 @Injectable()
 export class UsersService {
 	constructor(
 		private readonly databaseService: DatabaseService,
 		@Inject(forwardRef(() => AuthService))
-		private readonly authService: AuthService,
+		private readonly authService: WrapperType<AuthService>,
 		private readonly eventsService: EventsService,
 		@Inject(forwardRef(() => ServerManagementService))
-		private readonly serverManagementService: ServerManagementService,
+		private readonly serverManagementService: WrapperType<ServerManagementService>,
 	) {}
 
 	static getContextualError(e: any) {

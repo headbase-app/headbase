@@ -2,10 +2,10 @@ import { Body, Controller, Get, HttpCode, HttpStatus, Post, UseGuards } from "@n
 
 import { LoginRequest, VerifyEmailDto } from "@headbase-app/contracts";
 
-import { AuthService } from "@modules/auth/auth.service";
-import { ZodValidationPipe } from "@common/zod-validator.pipe";
-import { RequestContext } from "@common/request-context";
-import { AuthenticationGuard } from "@modules/auth/auth.guard";
+import { AuthService } from "@modules/auth/auth.service.js";
+import { ZodValidationPipe } from "@common/zod-validator.pipe.js";
+import { RequestContext } from "@common/request-context.js";
+import { AuthenticationGuard } from "@modules/auth/auth.guard.js";
 
 @Controller({
 	path: "/auth",

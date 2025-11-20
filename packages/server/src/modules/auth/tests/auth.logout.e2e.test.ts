@@ -1,8 +1,7 @@
-import { describe, expect, test, beforeAll, beforeEach, afterAll } from "@jest/globals";
-import { TestHelper } from "@testing/test-helper";
-import { testUser1 } from "@testing/data/users";
-import { expectBadRequest } from "@testing/common/expect-bad-request";
-import { expectUnauthorized } from "@testing/common/expect-unauthorized";
+import { describe, expect, test, beforeAll, beforeEach, afterAll } from "vitest";
+import { TestHelper } from "@testing/test-helper.js";
+import { testUser1 } from "@testing/data/users.js";
+import { expectUnauthorized } from "@testing/common/expect-unauthorized.js";
 
 const testHelper = new TestHelper();
 beforeAll(async () => {

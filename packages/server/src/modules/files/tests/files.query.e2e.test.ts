@@ -1,8 +1,8 @@
-import { test, describe, afterAll, beforeAll, beforeEach, expect } from "@jest/globals";
+import { test, describe, afterAll, beforeAll, beforeEach, expect } from "vitest";
 
-import { TestHelper } from "@testing/test-helper";
-import { testUser1 } from "@testing/data/users";
-import { testUser1Vault2 } from "@testing/data/vaults";
+import { TestHelper } from "@testing/test-helper.js";
+import { testUser1 } from "@testing/data/users.js";
+import { testUser1Vault2 } from "@testing/data/vaults.js";
 
 const testHelper = new TestHelper();
 beforeAll(async () => {
@@ -41,20 +41,20 @@ describe("Query Files - /v1/files [GET]", () => {
 	});
 
 	// Testing auth & permissions work.
-	describe("Invalid Authentication", () => {});
+	describe.todo("Invalid Authentication", () => {});
 
 	// Testing all unique constraint work.
-	describe("None Unique Data", () => {});
+	describe.todo("None Unique Data", () => {});
 
 	// Data validation .
-	describe("Data Validation", () => {});
+	describe.todo("Data Validation", () => {});
 
 	// Testing relationship validation works (fails on invalid foreign keys).
-	describe("Relationship Validation", () => {});
+	describe.todo("Relationship Validation", () => {});
 
 	// Testing internal/system fields are not user editable (timestamps, id, owner relationships etc).
-	describe("Forbidden Fields", () => {});
+	describe.todo("Forbidden Fields", () => {});
 
 	// Testing invalid type validation works (pass number to sting field, malformed data etc).
-	describe("Invalid Data", () => {});
+	describe.todo("Invalid Data", () => {});
 });

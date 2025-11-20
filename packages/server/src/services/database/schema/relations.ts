@@ -1,5 +1,5 @@
 import { relations } from "drizzle-orm/relations";
-import { users, vaults, files, filesChunks } from "./schema";
+import { users, vaults, files, filesChunks } from "./schema.js";
 
 export const vaultsRelations = relations(vaults, ({ one, many }) => ({
 	user: one(users, {

@@ -5,7 +5,7 @@ import { Injectable } from "@nestjs/common";
 
 import { ActionTokenOptions, ActionTokenPayload } from "@headbase-app/contracts";
 
-import { ConfigService } from "@services/config/config.service";
+import { ConfigService } from "@services/config/config.service.js";
 
 /**
  * Provides functionality to sign and verify json web tokens (JWTs).

@@ -1,10 +1,10 @@
-import { describe, expect, test, beforeAll, beforeEach, afterAll } from "@jest/globals";
+import { describe, expect, test, beforeAll, beforeEach, afterAll } from "vitest";
 
 import { ErrorIdentifiers } from "@headbase-app/contracts";
 
-import { TestHelper } from "@testing/test-helper";
-import { testAdminUser2Unverified, testUser2Unverified } from "@testing/data/users";
-import { expectForbidden } from "@testing/common/expect-forbidden";
+import { TestHelper } from "@testing/test-helper.js";
+import { testAdminUser2Unverified, testUser2Unverified } from "@testing/data/users.js";
+import { expectForbidden } from "@testing/common/expect-forbidden.js";
 
 const testHelper = new TestHelper();
 beforeAll(async () => {

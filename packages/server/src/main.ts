@@ -1,7 +1,7 @@
 import { Logger } from "@nestjs/common";
-import { createApp } from "./create-app";
+import { createApp } from "./create-app.js";
 
-import { ConfigService } from "@services/config/config.service";
+import { ConfigService } from "@services/config/config.service.js";
 
 async function bootstrap() {
 	const app = await createApp();

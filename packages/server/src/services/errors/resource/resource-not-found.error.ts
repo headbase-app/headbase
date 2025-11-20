@@ -1,4 +1,4 @@
-import { ResourceError } from "./resource.error";
+import { ResourceError } from "./resource.error.js";
 
 /**
  * For when a resource could not be found.

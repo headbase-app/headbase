@@ -1,4 +1,4 @@
-import { expect } from "@jest/globals";
+import { expect } from "vitest";
 import { HttpStatus } from "@nestjs/common";
 import { ErrorIdentifiers } from "@headbase-app/contracts";
 

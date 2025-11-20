@@ -1,4 +1,4 @@
-import { RequestContext } from "./request-context";
+import { RequestContext } from "./request-context.js";
 
 /**
  * There is no absolute guarantee that the context will

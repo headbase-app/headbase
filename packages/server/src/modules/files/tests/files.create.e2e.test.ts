@@ -1,8 +1,6 @@
-import { test, describe, afterAll, beforeAll, beforeEach, expect } from "@jest/globals";
+import { test, describe, afterAll, beforeAll, beforeEach } from "vitest";
 
-import { TestHelper } from "@testing/test-helper";
-import { testUser1 } from "@testing/data/users";
-import { testUser1Vault2 } from "@testing/data/vaults";
+import { TestHelper } from "@testing/test-helper.js";
 
 const testHelper = new TestHelper();
 beforeAll(async () => {
@@ -15,7 +13,7 @@ beforeEach(async () => {
 	await testHelper.beforeEach();
 });
 
-describe("Create File - /v1/files [POST]", () => {
+describe.todo("Create File - /v1/files [POST]", () => {
 	// Testing success cases/happy paths work.
 	describe("Success Cases", () => {});
 

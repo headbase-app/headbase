@@ -14,9 +14,9 @@ import {
 
 import { ErrorIdentifiers } from "@headbase-app/contracts";
 
-import { ConfigService } from "@services/config/config.service";
-import { SystemError } from "@services/errors/base/system.error";
-import { HealthStatus } from "@modules/server/server.service";
+import { ConfigService } from "@services/config/config.service.js";
+import { SystemError } from "@services/errors/base/system.error.js";
+import { HealthStatus } from "@modules/server/server.service.js";
 
 @Injectable()
 export class ObjectStoreService {

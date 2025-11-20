@@ -1,15 +1,11 @@
-import { describe, expect, test, beforeAll, beforeEach, afterAll } from "@jest/globals";
-
-import { sign } from "jsonwebtoken";
-
-import { TestHelper } from "@testing/test-helper";
-import { testAdminUser1, testUser1 } from "@testing/data/users";
-import { expectUnauthorized } from "@testing/common/expect-unauthorized";
-import { ConfigService } from "@services/config/config.service";
-import { DatabaseService } from "@services/database/database.service";
-import { sessions } from "@services/database/schema/schema";
+import { describe, expect, test, beforeAll, beforeEach, afterAll } from "vitest";
 import { eq } from "drizzle-orm";
-import { AuthService } from "@modules/auth/auth.service";
+
+import { TestHelper } from "@testing/test-helper.js";
+import { testAdminUser1, testUser1 } from "@testing/data/users.js";
+import { DatabaseService } from "@services/database/database.service.js";
+import { sessions } from "@services/database/schema/schema.js";
+import { AuthService } from "@modules/auth/auth.service.js";
 
 const testHelper = new TestHelper();
 beforeAll(async () => {

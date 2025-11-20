@@ -1,7 +1,8 @@
-import { SyncService } from "@modules/sync/sync.service";
 import { Controller, Get, UseGuards } from "@nestjs/common";
-import { AuthenticationGuard } from "@modules/auth/auth.guard";
-import { RequestContext } from "@common/request-context";
+
+import { SyncService } from "@modules/sync/sync.service.js";
+import { AuthenticationGuard } from "@modules/auth/auth.guard.js";
+import { RequestContext } from "@common/request-context.js";
 
 @Controller({
 	path: "/sync",

@@ -1,5 +1,6 @@
-import { expectBadRequest } from "./expect-bad-request";
 import { SuperAgentRequest } from "superagent";
+
+import { expectBadRequest } from "./expect-bad-request.js";
 
 export interface TestInvalidDataTypesConfig {
 	clientFunction: (url: string) => SuperAgentRequest;

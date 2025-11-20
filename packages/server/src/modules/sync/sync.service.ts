@@ -3,14 +3,15 @@ import { z } from "zod";
 import crypto from "node:crypto";
 import ms from "ms";
 
-import { EventsService } from "@services/events/events.service";
-import { RequestUser } from "@common/request-context";
-import { AccessUnauthorizedError } from "@services/errors/access/access-unauthorized.error";
 import { ErrorIdentifiers } from "@headbase-app/contracts";
-import { SystemError } from "@services/errors/base/system.error";
-import { AccessForbiddenError } from "@services/errors/access/access-forbidden.error";
-import { EventIdentifiers, ExternalServerEvent, ServerEvent } from "@services/events/events";
-import { VaultsService } from "@modules/vaults/vaults.service";
+
+import { EventsService } from "@services/events/events.service.js";
+import { RequestUser } from "@common/request-context.js";
+import { AccessUnauthorizedError } from "@services/errors/access/access-unauthorized.error.js";
+import { SystemError } from "@services/errors/base/system.error.js";
+import { AccessForbiddenError } from "@services/errors/access/access-forbidden.error.js";
+import { EventIdentifiers, ExternalServerEvent, ServerEvent } from "@services/events/events.js";
+import { VaultsService } from "@modules/vaults/vaults.service.js";
 
 // Actions which are sent by the sync service to the websocket controller.
 // The websocket controller stores sockets and rooms, but relies on the service for all logic.

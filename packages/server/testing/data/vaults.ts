@@ -1,5 +1,5 @@
 import { VaultDto } from "@headbase-app/contracts";
-import { testAdminUser1, testUser1 } from "./users";
+import { testAdminUser1, testUser1 } from "./users.js";
 
 /**
  * Test vaults.

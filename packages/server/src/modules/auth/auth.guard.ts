@@ -1,7 +1,8 @@
 import { CanActivate, ExecutionContext, Injectable } from "@nestjs/common";
-import { AccessUnauthorizedError } from "@services/errors/access/access-unauthorized.error";
-import { RequestWithContext, UserContext } from "@common/request-context";
-import { AuthService } from "@modules/auth/auth.service";
+
+import { AccessUnauthorizedError } from "@services/errors/access/access-unauthorized.error.js";
+import { RequestWithContext, UserContext } from "@common/request-context.js";
+import { AuthService } from "@modules/auth/auth.service.js";
 
 /**
  * An authentication guard which sits at the controller layer.

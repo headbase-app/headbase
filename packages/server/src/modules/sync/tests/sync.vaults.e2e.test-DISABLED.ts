@@ -1,10 +1,10 @@
-import { describe, test, beforeAll, beforeEach, afterAll, expect, afterEach } from "@jest/globals";
+import { describe, test, beforeAll, beforeEach, afterAll, expect, afterEach } from "vitest";
 import { Server } from "node:http";
 import testSocket from "superwstest";
 
-import { TestHelper } from "@testing/test-helper";
-import { testUser1 } from "@testing/data/users";
-import { exampleVault1 } from "@testing/data/vaults";
+import { TestHelper } from "@testing/test-helper.js";
+import { testUser1 } from "@testing/data/users.js";
+import { exampleVault1 } from "@testing/data/vaults.js";
 
 let server: Server;
 const testHelper = new TestHelper();

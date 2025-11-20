@@ -1,7 +1,7 @@
-import { describe, test, beforeAll, beforeEach, afterAll } from "@jest/globals";
+import { describe, test, beforeAll, beforeEach, afterAll } from "vitest";
 
-import { TestHelper } from "@testing/test-helper";
-import { expectNotFound } from "@testing/common/expect-not-found";
+import { TestHelper } from "@testing/test-helper.js";
+import { expectNotFound } from "@testing/common/expect-not-found.js";
 
 const testHelper = new TestHelper();
 beforeAll(async () => {
