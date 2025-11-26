@@ -1,4 +1,4 @@
-import { describe, expect, test, beforeAll, beforeEach, afterAll } from "@jest/globals";
+import { describe, expect, test, beforeAll, beforeEach, afterAll, jest } from "@jest/globals";
 
 import { ErrorIdentifiers, Roles } from "@headbase-app/contracts";
 import { TestHelper } from "@testing/test-helper";
@@ -8,6 +8,8 @@ import { testMalformedData } from "@testing/common/test-malformed-data";
 import { testInvalidDataTypes } from "@testing/common/test-invalid-data-types";
 import { exampleUser1, testAdminUser1, testUser1 } from "@testing/data/users";
 import { expectForbidden } from "@testing/common/expect-forbidden";
+import { EventsService } from "@services/events/events.service";
+import { EventIdentifiers } from "@services/events/events";
 
 const testHelper: TestHelper = new TestHelper();
 beforeAll(async () => {
@@ -19,6 +21,8 @@ afterAll(async () => {
 beforeEach(async () => {
 	await testHelper.beforeEach();
 });
+
+const eventsDispatchSpy = jest.spyOn(EventsService.prototype, "dispatch");
 
 describe("Create User - /v1/users [POST]", () => {
 	describe("Success Cases", () => {
@@ -43,7 +47,15 @@ describe("Create User - /v1/users [POST]", () => {
 			);
 		});
 
-		test.todo("When adding a valid new user, the returned access and refresh tokens should be valid");
+		// This event is then used for triggering verification emails etc, but that is not a concern of user service tests.
+		test("When a new users is added, Then a create user event should be dispatched", async () => {
+			const { body, statusCode } = await testHelper.client.post("/v1/users").send(exampleUser1);
+
+			expect(statusCode).toEqual(201);
+			expect(eventsDispatchSpy).toHaveBeenCalledWith(expect.objectContaining({ type: EventIdentifiers.USER_CREATE }));
+		});
+
+		test.todo("When adding a valid new user, the returned session token should be for an unverified user");
 
 		test("When using a password that's 12 characters, the new user should be added & returned", async () => {
 			const newUser = {
@@ -325,7 +337,7 @@ describe("Create User - /v1/users [POST]", () => {
 		});
 	});
 
-	describe("Registration Enabled", () => {
+	describe("Registration Disabled", () => {
 		test("When registration is disabled, adding a new user should fail", async () => {
 			const sessionToken = await testHelper.getSessionToken(testAdminUser1.id);
 

@@ -1,10 +1,12 @@
-import { describe, expect, test, beforeAll, beforeEach, afterAll } from "@jest/globals";
+import { describe, expect, test, beforeAll, beforeEach, afterAll, jest } from "@jest/globals";
 
 import { ErrorIdentifiers } from "@headbase-app/contracts";
 
 import { TestHelper } from "@testing/test-helper";
-import { testAdminUser2Unverified, testUser2Unverified } from "@testing/data/users";
+import { exampleUser1, testAdminUser2Unverified, testUser2Unverified } from "@testing/data/users";
 import { expectForbidden } from "@testing/common/expect-forbidden";
+import { UsersService } from "@modules/users/users.service";
+import { EmailService } from "@services/email/email.service";
 
 const testHelper = new TestHelper();
 beforeAll(async () => {
@@ -16,6 +18,8 @@ afterAll(async () => {
 beforeEach(async () => {
 	await testHelper.beforeEach();
 });
+
+const emailSendSpy = jest.spyOn(EmailService.prototype, "sendEmail");
 
 describe("Email Verification - /v1/auth/verify-email [GET, POST]", () => {
 	// Testing success cases/happy paths work.
@@ -111,6 +115,21 @@ describe("Email Verification - /v1/auth/verify-email [GET, POST]", () => {
 				.set("Authorization", `Bearer ${sessionToken}`)
 				.send();
 			expect(verifiedCreateStatusCode).toEqual(200);
+		});
+
+		// todo: test feels full of code smells to improve? Testing verification email in auth service, but relies on user service to create user and spying on EmailService.
+		test("When a USER_CREATE event is dispatched, Then auth service should trigger sending a verification email", async () => {
+			const usersService = testHelper.getAppDependency<UsersService>(UsersService);
+			await usersService.create(exampleUser1);
+
+			// Timeout to given time for event to be dispatch and handled.
+			await new Promise<void>((resolve) => {
+				setTimeout(() => {
+					resolve();
+				}, 100);
+			});
+
+			expect(emailSendSpy).toHaveBeenCalledWith(expect.objectContaining({ to: exampleUser1.email }));
 		});
 	});
 
