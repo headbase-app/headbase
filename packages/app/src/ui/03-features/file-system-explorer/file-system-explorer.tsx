@@ -1,15 +1,12 @@
-import {createEffect, For, Show} from "solid-js";
-import {createStore} from "solid-js/store";
+import {For, Show} from "solid-js";
 
-import type {FileSystemDirectory, FileSystemItem} from "@api/files/files.interface.ts";
-import {useFilesAPI} from "@/framework/files.context.ts";
-import {useCurrentVaultService} from "@/framework/current-vault.context.ts";
-import {LIVE_QUERY_LOADING_STATE, type LiveQueryResult} from "@contracts/query.ts";
-import type {LocalVaultDto} from "@api/vaults/local-vault.ts";
+import type {FileSystemItem} from "@api/files/files.interface.ts";
 
 import "./file-system-explorer.css"
 import {useWorkspace} from "@/framework/workspace/workspace.context.ts";
-
+import {ImportFileForm} from "@ui/03-features/file-system-explorer/import-file-form.tsx";
+import {useCurrentVault} from "@/framework/use-current-vault.ts";
+import {useFileTree} from "@/framework/use-file-tree.ts";
 
 export function FileSystemItem(props: FileSystemItem) {
 	const { openTab } = useWorkspace()
@@ -44,38 +41,21 @@ export function FileSystemItem(props: FileSystemItem) {
 }
 
 export function FileSystemExplorer() {
-	const currentVaultService = useCurrentVaultService();
-	const [openVaultQuery, setOpenVaultQuery] = createStore<LiveQueryResult<LocalVaultDto|null>>(structuredClone(LIVE_QUERY_LOADING_STATE))
-	createEffect(() => {
-		const subscription = currentVaultService.liveGet((result) => {
-			console.debug("FileSystemExplorer/openVaultQuery", result)
-			setOpenVaultQuery(result)
-		})
-		return () => {subscription.unsubscribe()}
-	})
-	const openVault = () => {return openVaultQuery.status === "success" ? openVaultQuery.result : null}
+	const currentVault = useCurrentVault()
+	const fileTree = useFileTree()
 
-
-	const filesApi = useFilesAPI()
-	const [fileTree, setFileTree] = createStore<LiveQueryResult<FileSystemDirectory | null>>(structuredClone(LIVE_QUERY_LOADING_STATE))
-	createEffect(() => {
-		const vaultId = openVault()?.id
-		if (vaultId) {
-			const filesSubscription = filesApi.liveTree(vaultId, (result) => {
-				console.debug("FileSystemExplorer/fileTree", result)
-				setFileTree(result)
-			})
-			return () => filesSubscription.unsubscribe()
-		}
-	})
+	let importDialog!: HTMLDialogElement;
+	const openImportDialog = () => {importDialog?.showModal()}
+	const closeImportDialog = () => {importDialog?.close()}
 
 	return (
 		<div>
-			<p>File explorer:</p>
-			<Show when={!openVault()?.id}>
-				<p>Open vault to display files</p>
-			</Show>
-			<Show when={openVault()?.id && fileTree.status === 'loading'}>
+			<button onClick={openImportDialog}>import</button>
+			<dialog ref={importDialog}>
+				<ImportFileForm onClose={closeImportDialog}/>
+			</dialog>
+
+			<Show when={currentVault.status === 'success' && currentVault.result && fileTree.status === 'loading'}>
 				<p>Loading files...</p>
 			</Show>
 			<Show when={fileTree.status === 'error' && fileTree} keyed>
@@ -86,13 +66,21 @@ export function FileSystemExplorer() {
 					</>
 				)}
 			</Show>
+			<Show when={currentVault.status === 'success' && !currentVault.result}>
+				<p>Open vault to display files</p>
+			</Show>
+			<Show when={fileTree.status === 'success' && fileTree.result?.children.length === 0} keyed>
+				<p>No files found</p>
+			</Show>
 			<Show when={fileTree.status === 'success' && fileTree} keyed>
 				{(fileTree) => (
-					<For each={fileTree.result?.children}>
-						{(item) => (
-							<FileSystemItem {...item} />
-						)}
-					</For>
+					<div>
+						<For each={fileTree.result?.children}>
+							{(item) => (
+								<FileSystemItem {...item} />
+							)}
+						</For>
+					</div>
 				)}
 			</Show>
 		</div>

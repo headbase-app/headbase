@@ -2,15 +2,15 @@ import {
 	type OpenTabOptions,
 	WorkspaceContext,
 	type TabData,
-	type WorkspaceTabs
+	type WorkspaceTabs, type WorkspaceTabStates
 } from "./workspace.context";
 import {createSignal, type ParentProps} from "solid-js";
 import {createStore} from "solid-js/store";
 import {parsePath} from "opfsx"
 
-
 export function WorkspaceProvider(props: ParentProps) {
 	const [tabs, setTabs] = createStore<WorkspaceTabs>([])
+	const [tabsState, setTabsState] = createStore<WorkspaceTabStates>([])
 	const [activeTabId, setActiveTabId] = createSignal<string | null>(null)
 
 	function openTab(tabData: TabData, options?: OpenTabOptions) {
@@ -41,8 +41,11 @@ export function WorkspaceProvider(props: ParentProps) {
 
 		setTabs((currentTabs) => [
 			...currentTabs,
+			{...tabData, id},
+		])
+		setTabsState((currentTabs) => [
+			...currentTabs,
 			{
-				...tabData,
 				id,
 				name: tabName,
 				isChanged: false
@@ -59,10 +62,14 @@ export function WorkspaceProvider(props: ParentProps) {
 		setTabs((currentTabs) => {
 			return currentTabs.filter(tab => tab.id !== tabId)
 		})
+		setTabsState((currentTabs) => {
+			return currentTabs.filter(tab => tab.id !== tabId)
+		})
 	}
 
 	function closeAllTabs() {
 		setTabs([])
+		setTabsState([])
 	}
 
 	function replaceTab(tabId: string, tabData: TabData) {
@@ -71,8 +78,15 @@ export function WorkspaceProvider(props: ParentProps) {
 		setTabs((currentTabs) => {
 			return currentTabs.map(existingTab => {
 				if (existingTab.id === tabId) {
+					return {...tabData, id}
+				}
+				return existingTab
+			})
+		})
+		setTabsState((currentTabs) => {
+			return currentTabs.map(existingTab => {
+				if (existingTab.id === tabId) {
 					return {
-						...tabData,
 						id,
 						name: existingTab.name,
 						isChanged: false
@@ -84,7 +98,7 @@ export function WorkspaceProvider(props: ParentProps) {
 	}
 
 	function setTabIsChanged(tabId: string, isChanged: boolean) {
-		setTabs((currentTabs) => {
+		setTabsState((currentTabs) => {
 			return currentTabs.map(existingTab => {
 				if (existingTab.id === tabId) {
 					return {
@@ -98,7 +112,7 @@ export function WorkspaceProvider(props: ParentProps) {
 	}
 
 	function setTabName(tabId: string, name: string) {
-		setTabs((currentTabs) => {
+		setTabsState((currentTabs) => {
 			return currentTabs.map(existingTab => {
 				if (existingTab.id === tabId) {
 					return {
@@ -115,6 +129,7 @@ export function WorkspaceProvider(props: ParentProps) {
 	return (
 		<WorkspaceContext.Provider value={{
 			tabs,
+			tabsState,
 			activeTabId,
 			setActiveTabId,
 			openTab,

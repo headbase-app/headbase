@@ -3,16 +3,19 @@ import {For, Show} from "solid-js";
 import {WorkspaceTab} from "@ui/03-features/workspace/workspace-tab.tsx";
 
 export function Workspace() {
-	const { tabs, setActiveTabId, activeTabId, closeTab } = useWorkspace()
+	const { tabs, tabsState, setActiveTabId, activeTabId, closeTab } = useWorkspace()
 
 	return (
 		<>
 			<p>Workspace:</p>
 			<For each={tabs}>
-				{(tab) => (
+				{(tab, index) => (
 					<div>
 						<button onClick={() => {setActiveTabId(tab.id)}}>
-							{tab.name}
+							{tabsState[index()].name}
+							<Show when={tabsState[index()].isChanged}>
+								<span>[UNSAVED]</span>
+							</Show>
 							<Show when={tab.id === activeTabId()}>
 								<span>[ACTIVE]</span>
 							</Show>

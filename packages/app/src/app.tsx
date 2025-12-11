@@ -22,7 +22,7 @@ const keyValueService = new KeyValueStoreService();
 const databaseService = new DatabaseService();
 const vaultsService = new VaultsService(deviceService, eventsService, keyValueService, databaseService);
 const currentVaultService = new CurrentVaultService(deviceService, eventsService, vaultsService);
-const filesAPI = new FilesAPI(eventsService);
+const filesAPI = new FilesAPI(deviceService, eventsService);
 // const i18nAPI = new I18nAPI();
 
 export function App() {

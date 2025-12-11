@@ -15,7 +15,6 @@ export function VaultsList(props: VaultListProps) {
 	const [vaultsQuery, setVaultsQuery] = createStore<LiveQueryResult<VaultListDto>>(structuredClone(LIVE_QUERY_LOADING_STATE))
 	createEffect(() => {
 		const subscription = vaultsAPI.liveQuery((result) => {
-			console.debug("VaultsList/vaultsQuery", result)
 			setVaultsQuery(result)
 		})
 		return () => {subscription.unsubscribe()}

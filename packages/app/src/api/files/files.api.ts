@@ -1,9 +1,10 @@
 import type {IEventsService} from "@api/events/events.interface";
 import {EventTypes} from "@api/events/events";
 import {LiveQueryStatus, type LiveQuerySubscriber, type LiveQuerySubscription} from "@contracts/query";
-import type {FileSystemDirectory, IFileBuffer, IFilesAPI} from "@api/files/files.interface";
+import type {FileSystemDirectory, IFilesAPI} from "@api/files/files.interface";
 import * as opfsx from "opfsx";
 import {processTree} from "@api/files/process-tree.ts";
+import type {IDeviceService} from "@api/device/device.interface.ts";
 
 // todo: add to opfsx
 function join(...pathParts: string[]) {
@@ -12,6 +13,7 @@ function join(...pathParts: string[]) {
 
 export class FilesAPI implements IFilesAPI {
 	constructor(
+		private readonly deviceService: IDeviceService,
 		private readonly eventsService: IEventsService
 	) {
 		window.opfsx = opfsx
@@ -61,15 +63,11 @@ export class FilesAPI implements IFilesAPI {
 			runQuery()
 		}
 
-		this.eventsService.subscribe(EventTypes.DATABASE_OPEN, handleEvent)
-		this.eventsService.subscribe(EventTypes.DATABASE_CLOSE, handleEvent)
 		this.eventsService.subscribe(EventTypes.FILE_SYSTEM_CHANGE, handleEvent)
 		runQuery()
 
 		return {
 			unsubscribe: () => {
-				this.eventsService.unsubscribe(EventTypes.DATABASE_OPEN, handleEvent)
-				this.eventsService.unsubscribe(EventTypes.DATABASE_CLOSE, handleEvent)
 				this.eventsService.unsubscribe(EventTypes.FILE_SYSTEM_CHANGE, handleEvent)
 			}
 		}
@@ -78,9 +76,6 @@ export class FilesAPI implements IFilesAPI {
 	async read(vaultId: string, path: string) {
 		const parsedPath = opfsx.parsePath(path)
 		const platformPath = join(this.#getVaultPath(vaultId), path)
-
-		console.debug(path)
-		console.debug(platformPath)
 
 		const file = await opfsx.read(platformPath)
 		const buffer = await file.arrayBuffer()
@@ -123,9 +118,14 @@ export class FilesAPI implements IFilesAPI {
 	async write(vaultId: string, path: string, data: ArrayBuffer) {
 		const platformPath = join( this.#getVaultPath(vaultId), path)
 
-		// todo: this doesn't support binary files, can remove TextDecoder once opfsx supports binary data.
-		const content = new TextDecoder().decode(data)
-		await opfsx.write(platformPath, content)
+		// todo: fix in opfsx library
+		// @ts-ignore -- type is wrong in opfsx but does work
+		await opfsx.write(platformPath, data)
+
+		this.eventsService.dispatch(
+			EventTypes.FILE_SYSTEM_CHANGE,
+			{context: this.deviceService.getCurrentContext(), data: {vaultId: vaultId, path: path, action: "save"}}
+		)
 	}
 
 	async openExternal(vaultId: string, path: string) {

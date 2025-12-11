@@ -17,7 +17,6 @@ export function VaultMenu() {
 	const [vaultsQuery, setVaultsQuery] = createStore<LiveQueryResult<VaultListDto>>(structuredClone(LIVE_QUERY_LOADING_STATE))
 	createEffect(() => {
 		const subscription = vaultsService.liveQuery((result) => {
-			console.debug("VaultMenu/vaultsQuery", result)
 			setVaultsQuery(result)
 		})
 		return () => {subscription.unsubscribe()}
@@ -26,7 +25,6 @@ export function VaultMenu() {
 	const [openVaultQuery, setOpenVaultQuery] = createStore<LiveQueryResult<LocalVaultDto|null>>(structuredClone(LIVE_QUERY_LOADING_STATE))
 	createEffect(() => {
 		const subscription = currentVaultService.liveGet((result) => {
-			console.debug("VaultMenu/openVaultQuery", result)
 			setOpenVaultQuery(result)
 		})
 		return () => {subscription.unsubscribe()}

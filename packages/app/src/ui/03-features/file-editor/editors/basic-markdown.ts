@@ -2,6 +2,7 @@ import type {IPluginEditorProps, IPluginEditorReturn} from "@ui/03-features/file
 
 export async function MarkdownEditor({ vaultId, apis, filePath, container, setTabIsChanged }: IPluginEditorProps): Promise<IPluginEditorReturn> {
 	const file = await apis.files.read(vaultId, filePath)
+	console.debug("MarkdownEditor load")
 
 	const decoder = new TextDecoder()
 	let content = decoder.decode(file.buffer)

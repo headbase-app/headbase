@@ -13,12 +13,17 @@ export type TabData = {
 
 export interface TabMetadata {
 	id: string
-	name: string,
-	isChanged: boolean
 }
 
 export type WorkspaceTab = TabMetadata & TabData
 export type WorkspaceTabs = WorkspaceTab[]
+
+export interface WorkspaceTabState {
+	id: string
+	name: string
+	isChanged: boolean
+}
+export type WorkspaceTabStates = WorkspaceTabState[]
 
 export interface OpenTabOptions {
 	switch: boolean
@@ -26,6 +31,7 @@ export interface OpenTabOptions {
 
 export interface WorkspaceData {
 	tabs: WorkspaceTabs
+	tabsState: WorkspaceTabStates
 	activeTabId: Accessor<string | null>
 	setActiveTabId: (tabId: string) => void
 	openTab: (tabData: TabData, options?: OpenTabOptions) => void

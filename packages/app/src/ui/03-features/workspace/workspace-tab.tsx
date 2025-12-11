@@ -8,6 +8,8 @@ export interface WorkspaceTabProps {
 }
 
 export function WorkspaceTab(props: WorkspaceTabProps) {
+	console.debug("WorkspaceTab render")
+
 	return (
 		<div style={{display: props.isActive ? "block" : "none"}}>
 			<Switch fallback={<p>{props.tab.name} - TAB TYPE TO IMPLEMENT</p>}>
