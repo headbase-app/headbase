@@ -12,8 +12,8 @@ export function Workspace() {
 				{(tab, index) => (
 					<div>
 						<button onClick={() => {setActiveTabId(tab.id)}}>
-							{tabsState[index()].name}
-							<Show when={tabsState[index()].isChanged}>
+							{tabsState[index()]?.name}
+							<Show when={tabsState[index()]?.isChanged}>
 								<span>[UNSAVED]</span>
 							</Show>
 							<Show when={tab.id === activeTabId()}>

@@ -1,4 +1,4 @@
-import {onCleanup, createEffect, splitProps, onMount} from "solid-js";
+import {onCleanup, createEffect} from "solid-js";
 
 import type {IFilesAPI} from "@api/files/files.interface.ts";
 import {useFilesAPI} from "@/framework/files.context.ts";
@@ -37,7 +37,6 @@ export interface FileEditorTabProps {
 }
 
 export function FileEditorTab(props: FileEditorTabProps) {
-	console.debug("FileEditorTab render")
 	const filesAPI = useFilesAPI()
 	const currentVaultService = useCurrentVaultService()
 	const { setTabName, setTabIsChanged } = useWorkspace()
@@ -61,35 +60,22 @@ export function FileEditorTab(props: FileEditorTabProps) {
 	const openVault = () => {return openVaultQuery.status === "success" ? openVaultQuery.result : null}
 
 	let editorCleanup: () => void
-
-	onMount(() => {
-		console.debug("FileEditorTab mount")
-	})
-
-	const [localProps] = splitProps(props, ["filePath"])
-	let hasSetupRan = false;
 	createEffect(async () => {
-		console.debug("createEffect tab")
-		if (hasSetupRan) {
-			console.debug("createEffect setup skip")
-			return
-		}
-
 		const currentVault = openVault()
 		if (!currentVault) return
 
 		// Get editor to user based on file.
 		let editor: IPluginEditor;
-		if (localProps.filePath.endsWith(".md")) {
+		if (props.filePath.endsWith(".md")) {
 			editor = MarkdownEditor
 		}
-		else if (localProps.filePath.endsWith(".pdf")) {
+		else if (props.filePath.endsWith(".pdf")) {
 			editor = PDFViewer
 		}
 		else if (
-			localProps.filePath.endsWith(".png") ||
-			localProps.filePath.endsWith(".jpeg") ||
-			localProps.filePath.endsWith(".jpg")
+			props.filePath.endsWith(".png") ||
+			props.filePath.endsWith(".jpeg") ||
+			props.filePath.endsWith(".jpg")
 		) {
 			editor = ImageViewer
 		}
@@ -101,12 +87,11 @@ export function FileEditorTab(props: FileEditorTabProps) {
 			apis: {files: filesAPI},
 			vaultId: openVault()?.id!,
 			container,
-			filePath: localProps.filePath,
+			filePath: props.filePath,
 			setTabName: _setTabName,
 			setTabIsChanged: _setTabIsChanged,
 		})
 		editorCleanup = editorActions.unmount
-		hasSetupRan = true
 	})
 
 	onCleanup(async () => {

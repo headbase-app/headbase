@@ -8,11 +8,9 @@ export interface WorkspaceTabProps {
 }
 
 export function WorkspaceTab(props: WorkspaceTabProps) {
-	console.debug("WorkspaceTab render")
-
 	return (
 		<div style={{display: props.isActive ? "block" : "none"}}>
-			<Switch fallback={<p>{props.tab.name} - TAB TYPE TO IMPLEMENT</p>}>
+			<Switch fallback={<p>{props.tab.type} - TAB TYPE TO IMPLEMENT</p>}>
 				<Match when={props.tab.type === "file" && props.tab} keyed>
 					{(tab) => (
 						<FileEditorTab tabId={tab.id} filePath={tab.filePath} />
