@@ -1,4 +1,3 @@
-import type {Environment} from "@contracts/environment";
 
 /**
  * The "identity" of the given device, providing a stable id and optional user-defined
@@ -28,5 +27,5 @@ export interface DeviceContext {
 export interface IDeviceService {
 	getIdentity: () => DeviceIdentity
 	getCurrentContext: () => DeviceContext
-	getEnvironment: () => Promise<Environment>
+	getEnvironment: () => Promise<string>
 }

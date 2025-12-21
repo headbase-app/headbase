@@ -23,3 +23,67 @@ use something like `structuredClone` to ensure you get a unique object reference
 
 References:
 - https://github.com/solidjs/solid/issues/1396
+
+### SolidJS - Type narrowing discriminating unions in `Show`/`Match`
+Solid uses accessor functions like `signal()` and control flow primitives in JSX like `Show` and `Match`, for example:
+
+```tsx
+function Example() {
+	const query = useQuery()
+
+	return (
+		<Switch fallback={<p>Loading...</p>}>
+			<Match when={query().status === "loading"}>
+				<p>Loading...</p>
+			</Match>
+			<Match when={query().status === "error"}>
+				// ISSUE: Typescript can't narrow to error status, as seperate function call is used to access signal.
+				<p>Error: ${query().error}</p>
+			</Match>
+			// ISSUE: keyed allows types to narrow, but still doesn't work when having to re-use accessor function.
+			<Match when={query().status === "success" && query().result} keyed>
+				{(result) => {
+					<p>Result: ${result}</p>
+				}}
+			</Match>
+		</Switch>
+	)
+}
+```
+
+There are lots of discussions about this, but I've personally not found a solution which appears to work nicely.
+The "best" solution I've found so far is to use `keyed` with an IIFE so that the accessor can be called once and all logic
+and types can be narrowed correctly from the function return:
+
+```tsx
+function Example() {
+	const query = useQuery()
+
+	return (
+		<Switch fallback={<p>Loading...</p>}>
+			<Match when={query().status === "loading"}>
+				<p>Loading...</p>
+			</Match>
+			<Match when={(() => {const q = query(); return query?.status === 'error' ? query.errors : false})()} keyed>
+				{(error) => {
+					<p>Error: ${error}</p>
+				}}
+			</Match>
+			<Match when={(() => {const q = query(); return query?.status === 'success' ? query.result : false})()} keyed>
+				{(result) => {
+					<p>Result: ${result}</p>
+				}}
+			</Match>
+		</Switch>
+	)
+}
+```
+
+I'm still too new to Solid to understand if there are any performance or other considerations to bear in mind with this
+approach, and I remain convinced that there must be a cleaner way to handle these cases.
+Perhaps relying on props/children components so the signal can be "unwrapped" in the parent and the child doesn't have
+to worry about the type issues on narrowing the accessor.
+
+References:
+- https://github.com/solidjs/solid/discussions/1527
+- https://github.com/solidjs/solid/discussions/1575

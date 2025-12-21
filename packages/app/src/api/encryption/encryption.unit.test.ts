@@ -1,7 +1,6 @@
-import { expect, test } from 'vitest'
-
-import {EncryptionService} from "./encryption.service.ts";
+import { expect, test } from 'vitest';
 import {z} from "zod";
+import {EncryptionService} from "./encryption.service.ts";
 
 test('encrypt and decrypt a string', async () => {
 	const key = await EncryptionService._createEncryptionKey()
@@ -35,17 +34,17 @@ test('encrypt and decrypt an object with schema validation', async () => {
 		name: z.string(),
 		isDeleted: z.union([z.literal(0), z.literal(1)]),
 	})
-    type Schema = z.infer<typeof Schema>
+	type Schema = z.infer<typeof Schema>
 
-    const inputData: Schema = {
-    	id: '73193bf6-b592-4b1b-9256-001484723e15',
-    	name: 'example',
-    	isDeleted: 0
-    }
+	const inputData: Schema = {
+		id: '73193bf6-b592-4b1b-9256-001484723e15',
+		name: 'example',
+		isDeleted: 0
+	}
 
-    const encrypted = await EncryptionService.encrypt(key, inputData);
+	const encrypted = await EncryptionService.encrypt(key, inputData);
 
-    await expect(EncryptionService.decrypt<Schema>(key, encrypted, Schema)).resolves.not.toThrow()
+	await expect(EncryptionService.decrypt<Schema>(key, encrypted, Schema)).resolves.not.toThrow()
 })
 
 test('encrypt and decrypt an object with schema validation that should fail', async () => {
@@ -56,16 +55,16 @@ test('encrypt and decrypt an object with schema validation that should fail', as
 		name: z.string(),
 		isDeleted: z.union([z.literal(0), z.literal(1)]),
 	}).strict()
-    type Schema = z.infer<typeof Schema>
+	type Schema = z.infer<typeof Schema>
 
-    const inputData = {
-    	name: 'master',
-    	isDeleted: true
-    }
+	const inputData = {
+		name: 'master',
+		isDeleted: true
+	}
 
-    const encrypted = await EncryptionService.encrypt(key, inputData);
+	const encrypted = await EncryptionService.encrypt(key, inputData);
 
-    await expect(EncryptionService.decrypt<Schema>(key, encrypted, Schema)).rejects.toThrow()
+	await expect(EncryptionService.decrypt<Schema>(key, encrypted, Schema)).rejects.toThrow()
 })
 
 test('create and then decrypted a protected encryption key', async () => {

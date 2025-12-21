@@ -1,5 +1,6 @@
-import type {LiveQuerySubscriber, LiveQuerySubscription} from "@contracts/query";
+import type {LiveQueryResult} from "@api/control-flow.ts";
 import type {CreateVaultDto, LocalVaultDto, UpdateVaultDto} from "@api/vaults/local-vault.ts";
+import {Observable} from "rxjs";
 
 export interface IVaultsService {
 	create: (createVaultDto: CreateVaultDto) => Promise<LocalVaultDto>
@@ -8,6 +9,6 @@ export interface IVaultsService {
 	changePassword: (vaultId: string, oldPassword: string, newPassword: string) => Promise<LocalVaultDto>
 	get: (vaultId: string) => Promise<LocalVaultDto|null>;
 	query: () => Promise<LocalVaultDto[]>;
-	liveGet: (vaultId: string, subscriber: LiveQuerySubscriber<LocalVaultDto | null>) => LiveQuerySubscription;
-	liveQuery: (subscriber: LiveQuerySubscriber<LocalVaultDto[]>) => LiveQuerySubscription;
+	liveGet: (vaultId: string) => Observable<LiveQueryResult<LocalVaultDto | null>>;
+	liveQuery: () => Observable<LiveQueryResult<LocalVaultDto[]>>;
 }

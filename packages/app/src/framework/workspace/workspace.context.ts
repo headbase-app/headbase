@@ -3,12 +3,13 @@ import {type Accessor, createContext, useContext} from "solid-js";
 export type TabData = {
 	type: 'search'
 } | {
-	type: 'file-explorer'
+	type: 'types'
 } | {
-	type: 'file-new'
+	type: 'object-new'
+	typeObjectId?: string
 } | {
-	type: 'file',
-	filePath: string
+	type: 'object',
+	objectId: string
 }
 
 export interface TabMetadata {

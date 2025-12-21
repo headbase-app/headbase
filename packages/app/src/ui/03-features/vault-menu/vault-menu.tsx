@@ -1,44 +1,30 @@
-import {createEffect, For, Match, Show, Switch} from "solid-js";
-import {createStore} from "solid-js/store";
+import {For, from, Match, Show, Switch} from "solid-js";
 import ChevronDown from "lucide-solid/icons/chevron-down"
 
 import {useVaultsService} from "@/framework/vaults.context.ts";
-import {LIVE_QUERY_LOADING_STATE, type LiveQueryResult} from "@contracts/query.ts";
-import type {VaultsList as VaultListDto} from "@api/vaults/vaults.service.ts";
-
-import "./vault-menu.css"
 import {useCurrentVaultService} from "@/framework/current-vault.context.ts";
-import type {LocalVaultDto} from "@api/vaults/local-vault.ts";
+import "./vault-menu.css"
+import {useWorkspace} from "@/framework/workspace/workspace.context.ts";
 
 export function VaultMenu() {
 	const vaultsService = useVaultsService()
 	const currentVaultService = useCurrentVaultService()
+	const {openTab} = useWorkspace()
 
-	const [vaultsQuery, setVaultsQuery] = createStore<LiveQueryResult<VaultListDto>>(structuredClone(LIVE_QUERY_LOADING_STATE))
-	createEffect(() => {
-		const subscription = vaultsService.liveQuery((result) => {
-			setVaultsQuery(result)
-		})
-		return () => {subscription.unsubscribe()}
-	})
-
-	const [openVaultQuery, setOpenVaultQuery] = createStore<LiveQueryResult<LocalVaultDto|null>>(structuredClone(LIVE_QUERY_LOADING_STATE))
-	createEffect(() => {
-		const subscription = currentVaultService.liveGet((result) => {
-			setOpenVaultQuery(result)
-		})
-		return () => {subscription.unsubscribe()}
-	})
-	const openVault = () => {return openVaultQuery.status === "success" ? openVaultQuery.result : null}
+	const vaultsQuery = from(vaultsService.liveQuery())
+	const openVaultQuery = from(currentVaultService.liveGet())
+	const openVault = () => {
+		const query = openVaultQuery()
+		if (query?.status === "success") return query.result
+		return null
+	}
 
 	function dispatchOpenVaultManager() {
 		document.dispatchEvent(new CustomEvent("vault-manager-open", {}))
 	}
-
 	function dispatchOpenVault(vaultId: string) {
 		currentVaultService.open(vaultId)
 	}
-
 	function dispatchCloseVault() {
 		currentVaultService.close()
 	}
@@ -50,21 +36,26 @@ export function VaultMenu() {
 				<div>
 					<h3>Switch vaults</h3>
 					<Switch>
-						<Match when={vaultsQuery.status === "loading"}>
+						<Match when={vaultsQuery()?.status === "loading"}>
 							<p>Loading vaults...</p>
 						</Match>
-						<Match when={vaultsQuery.status === "error" && vaultsQuery} keyed>
-							{(result) => (
+						<Match
+							when={(() => {
+								const query= vaultsQuery(); return query?.status === 'error' ? query.errors : false
+							})()} keyed
+						>
+							{(errors) => (
 								<>
 									<p>An unexpected error occurred while loading vaults, please refresh and/or report this issue on GitHub.</p>
-									<p>{result.errors.join(",")}</p>
+									<p>{errors?.join(",")}</p>
 								</>
 							)}
 						</Match>
-						<Match when={vaultsQuery.status === "success" && vaultsQuery.result?.length === 0}>
-							<p>No vaults found.</p>
-						</Match>
-						<Match when={vaultsQuery.status === "success" && vaultsQuery.result} keyed>
+						<Match
+							when={(() => {
+								const query= vaultsQuery(); return query?.status === 'success' ? query.result : false
+							})()} keyed
+						>
 							{(vaults) => (
 								<ul>
 									<For each={vaults}>
@@ -90,6 +81,9 @@ export function VaultMenu() {
 				</div>
 				<button onClick={dispatchOpenVaultManager}>manage vaults</button>
 			</div>
+			<button disabled={!openVault()} onClick={() => {openTab({type: "search"})}}>search</button>
+			<button disabled={!openVault()} onClick={() => {openTab({type: "types"})}}>types</button>
+			<button disabled={!openVault()} onClick={() => {openTab({type: "object-new"})}}>create object</button>
 		</div>
 	)
 }

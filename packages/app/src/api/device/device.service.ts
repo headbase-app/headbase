@@ -21,10 +21,6 @@ export class DeviceService implements IDeviceService {
 	}
 
 	async getEnvironment() {
-		const versionsResult = await window.platformAPI.device_getEnvironment()
-		if (versionsResult.error) {
-			throw versionsResult.error
-		}
-		return versionsResult.result
+		return "pwa"
 	}
 }

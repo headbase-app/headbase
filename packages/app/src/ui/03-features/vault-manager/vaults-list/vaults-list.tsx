@@ -1,8 +1,5 @@
-import {Match, For, Switch, createEffect} from "solid-js";
+import {Match, For, Switch, from, Show} from "solid-js";
 import {useVaultsService} from "@/framework/vaults.context.ts";
-import {LIVE_QUERY_LOADING_STATE, type LiveQueryResult} from "@contracts/query.ts";
-import {createStore} from "solid-js/store";
-import type {VaultsList as VaultListDto} from "@api/vaults/vaults.service.ts";
 import type {VaultManagerPage} from "@ui/03-features/vault-manager/vault-manager.tsx";
 
 export interface VaultListProps {
@@ -11,37 +8,38 @@ export interface VaultListProps {
 
 export function VaultsList(props: VaultListProps) {
 	const vaultsAPI = useVaultsService()
-
-	const [vaultsQuery, setVaultsQuery] = createStore<LiveQueryResult<VaultListDto>>(structuredClone(LIVE_QUERY_LOADING_STATE))
-	createEffect(() => {
-		const subscription = vaultsAPI.liveQuery((result) => {
-			setVaultsQuery(result)
-		})
-		return () => {subscription.unsubscribe()}
-	})
+	const vaultsQuery = from(vaultsAPI.liveQuery())
 
 	return (
 		<div>
 			<button onClick={() => {props.navigate({type: "create"})}}>Create</button>
 			<h3>All vaults</h3>
 			<Switch>
-				<Match when={vaultsQuery.status === "loading"}>
+				<Match when={vaultsQuery()?.status === "loading"}>
 					<p>Loading vaults...</p>
 				</Match>
-				<Match when={vaultsQuery.status === "error" && vaultsQuery} keyed>
-					{(result) => (
+				<Match
+					when={(() => {
+						const vaults= vaultsQuery(); return vaults?.status === 'error' ? vaults.errors : false
+					})()} keyed
+				>
+					{(errors) => (
 						<>
 							<p>An unexpected error occurred while loading vaults, please refresh and/or report this issue on GitHub.</p>
-							<p>{result.errors.join(",")}</p>
+							<p>{errors.join(",")}</p>
 						</>
 					)}
 				</Match>
-				<Match when={vaultsQuery.status === "success" && vaultsQuery.result.length === 0}>
-					<p>No vaults found.</p>
-				</Match>
-				<Match when={vaultsQuery.status === "success" && vaultsQuery.result} keyed>
+				<Match
+					when={(() => {
+						const vaults= vaultsQuery(); return vaults?.status === 'success' ? vaults.result : false
+					})()} keyed
+				>
 					{(vaults) => (
 						<ul>
+							<Show when={vaults.length === 0}>
+								<p>No vaults found</p>
+							</Show>
 							<For each={vaults}>
 								{(vault) => (
 									<li>

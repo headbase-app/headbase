@@ -6,7 +6,6 @@ import {
 } from "./workspace.context";
 import {createSignal, type ParentProps} from "solid-js";
 import {createStore} from "solid-js/store";
-import {parsePath} from "opfsx"
 
 export function WorkspaceProvider(props: ParentProps) {
 	const [tabs, setTabs] = createStore<WorkspaceTabs>([])
@@ -14,9 +13,16 @@ export function WorkspaceProvider(props: ParentProps) {
 	const [activeTabId, setActiveTabId] = createSignal<string | null>(null)
 
 	function openTab(tabData: TabData, options?: OpenTabOptions) {
-		// If file is already open, switch to it instead of opening a new instance.
-		if (tabData.type === 'file') {
-			const existingTab = tabs.find((tab) => tab.type === "file" && tab.filePath === tabData.filePath)
+		// If object is already open, switch to it instead of opening a new instance.
+		if (tabData.type === 'object') {
+			const existingTab = tabs.find((tab) => tab.type === "object" && tab.objectId === tabData.objectId)
+			if (existingTab) {
+				setActiveTabId(existingTab.id)
+				return;
+			}
+		}
+		else if (tabData.type === 'types') {
+			const existingTab = tabs.find((tab) => tab.type === "types")
 			if (existingTab) {
 				setActiveTabId(existingTab.id)
 				return;
@@ -26,17 +32,16 @@ export function WorkspaceProvider(props: ParentProps) {
 		const id = window.crypto.randomUUID()
 		let tabName: string;
 		if (tabData.type === 'search') {
-			tabName = "Search"
+			tabName = "New Search"
 		}
-		else if (tabData.type === "file-explorer") {
-			tabName = "File explorer"
+		else if (tabData.type === 'types') {
+			tabName = "Types"
 		}
-		else if (tabData.type === "file-new") {
-			tabName = "New file"
+		else if (tabData.type === "object-new") {
+			tabName = "New Object"
 		}
 		else {
-			const parsedPath = parsePath(tabData.filePath)
-			tabName = parsedPath.name
+			tabName = tabData.objectId
 		}
 
 		setTabs((currentTabs) => [
@@ -73,12 +78,10 @@ export function WorkspaceProvider(props: ParentProps) {
 	}
 
 	function replaceTab(tabId: string, tabData: TabData) {
-		const id = window.crypto.randomUUID()
-
 		setTabs((currentTabs) => {
 			return currentTabs.map(existingTab => {
 				if (existingTab.id === tabId) {
-					return {...tabData, id}
+					return {id: tabId, ...tabData}
 				}
 				return existingTab
 			})
@@ -87,7 +90,7 @@ export function WorkspaceProvider(props: ParentProps) {
 			return currentTabs.map(existingTab => {
 				if (existingTab.id === tabId) {
 					return {
-						id,
+						id: tabId,
 						name: existingTab.name,
 						isChanged: false
 					}

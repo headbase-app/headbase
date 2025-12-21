@@ -5,10 +5,7 @@
   "type": "module",
   "scripts": {
     "start": "vite",
-    "dev": "vite",
     "start:sb": "storybook dev -p 6006",
-    "start:android": "cap run android",
-    "start:ios": "cap run ios",
     "build": "tsc -b && vite build",
     "build:sb": "storybook build",
     "preview": "vite preview",
@@ -21,22 +18,17 @@
     "test:e2e:setup": "npx playwright install"
   },
   "dependencies": {
-    "@capacitor/core": "^7.4.4",
-    "@capawesome/capacitor-file-picker": "^7.2.0",
     "@headbase-app/contracts": "^0.11.0",
     "drizzle-orm": "^0.44.7",
-    "js-yaml": "^4.1.0",
     "lucide-solid": "^0.553.0",
     "opfsx": "^0.1.0",
     "pdfjs-dist": "^5.4.394",
+    "rxjs": "^7.8.2",
     "solid-js": "^1.9.10",
     "sqlocal": "^0.16.0",
     "zod": "^4.1.12"
   },
   "devDependencies": {
-    "@capacitor/android": "^7.4.4",
-    "@capacitor/cli": "^7.4.4",
-    "@capacitor/ios": "^7.4.4",
     "@storybook/addon-docs": "^10.0.7",
     "@types/js-yaml": "^4.0.9",
     "@types/node": "^24.10.0",
