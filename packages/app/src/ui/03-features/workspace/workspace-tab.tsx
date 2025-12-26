@@ -4,6 +4,7 @@ import {SearchTab} from "@ui/03-features/search/search-tab.tsx";
 import {TypesTab} from "@ui/03-features/types/types-tab.tsx";
 import {CreateObjectTab} from "@ui/03-features/create-object-tab/create-object-tab.tsx";
 import {ObjectEditorTab} from "@ui/03-features/object-editor/object-editor-tab.tsx";
+import {ObjectHistoryTab} from "@ui/03-features/object-history/object-history-tab.tsx";
 
 export interface BaseTabProps {
 	tabId: string
@@ -40,6 +41,12 @@ export function WorkspaceTab(props: WorkspaceTabProps) {
 					when={props.tab.type === "object" && props.tab} keyed>
 					{(tab) => (
 						<ObjectEditorTab tabId={tab.id} objectId={tab.objectId} />
+					)}
+				</Match>
+				<Match
+					when={props.tab.type === "object-history" && props.tab} keyed>
+					{(tab) => (
+						<ObjectHistoryTab tabId={tab.id} objectId={tab.objectId} />
 					)}
 				</Match>
 			</Switch>

@@ -11,6 +11,7 @@ export interface ObjectEditorProps {
 	saveText: string
 	data: ObjectEditorData
 	onSave: (data: ObjectEditorData) => void
+	onOpenHistory?: () => void
 }
 
 export function ObjectEditor(props: ObjectEditorProps) {
@@ -33,6 +34,11 @@ export function ObjectEditor(props: ObjectEditorProps) {
 
 	return (
 		<div>
+			<div>
+				<Show when={props.onOpenHistory}>
+					<button onClick={props.onOpenHistory}>View history</button>
+				</Show>
+			</div>
 			<form ref={form} onSubmit={onSubmit}>
 				<div>
 					<label for="type">Type</label>

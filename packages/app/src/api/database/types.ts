@@ -32,6 +32,8 @@ export interface ObjectVersionDto {
 	previousVersionId: string | null,
 	createdAt: string,
 	createdBy: string,
+	updatedAt: string,
+	updatedBy: string,
 	deletedAt: string | null,
 	deletedBy: string | null,
 	fields: ObjectFields

@@ -10,6 +10,9 @@ export type TabData = {
 } | {
 	type: 'object',
 	objectId: string
+} | {
+	type: 'object-history',
+	objectId: string
 }
 
 export interface TabMetadata {

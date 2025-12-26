@@ -10,7 +10,7 @@ export interface ObjectEditorTabProps extends BaseTabProps {
 }
 
 export function ObjectEditorTab(props: ObjectEditorTabProps) {
-	const { setTabName } = useWorkspace()
+	const { setTabName, openTab } = useWorkspace()
 	const database = useDatabase();
 	const [objectData, setObjectData] = createSignal<ObjectEditorData>({type: "", fields: {}})
 
@@ -61,12 +61,17 @@ export function ObjectEditorTab(props: ObjectEditorTabProps) {
 		setTabData(updatedObject)
 	}
 
+	function onOpenHistory() {
+		openTab({type: "object-history", objectId: props.objectId})
+	}
+
 	return (
 		<div>
 			<ObjectEditor
 				saveText="Save"
 				data={objectData()}
 				onSave={onSave}
+				onOpenHistory={onOpenHistory}
 			/>
 		</div>
 	)

@@ -16,7 +16,7 @@ const typedBlob = customType<{ data: ArrayBuffer }>({
 		return value
 	},
 	fromDriver(value) {
-		// todo: nees converting from Uint8Array to ArrayBuffer?
+		// todo: need converting from Uint8Array to ArrayBuffer?
 		return value as ArrayBuffer
 	}
 });
@@ -67,7 +67,7 @@ export const historyTable = sqliteTable("history", {
 	deletedAt: text().default(sql`strftime('%FT%R:%fZ'`),
 	deletedBy: text(),
 	// Data
-	fields: typedFields({ mode: 'json' }),
+	fields: typedFields({ mode: 'json' }).notNull(),
 	blob: typedBlob()
 });
 

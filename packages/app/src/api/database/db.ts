@@ -1,11 +1,11 @@
-import {drizzle, SqliteRemoteDatabase} from 'drizzle-orm/sqlite-proxy';
+import 	{drizzle, SqliteRemoteDatabase} from 'drizzle-orm/sqlite-proxy';
 import {DatabaseSchema, historyTable, objectsTable} from "./schema.ts";
 import {asc, desc, eq, sql} from "drizzle-orm";
-import type {CreateObjectDto, ObjectDto, Query, UpdateObjectDto} from "./types.ts";
+import type {CreateObjectDto, ObjectDto, ObjectVersionDto, Query, UpdateObjectDto} from "./types.ts";
 import {ALLOWED_OBJECT_FIELDS, convertDataJsonPath, parseWhereQuery} from "./utils.ts";
 import {Observable} from "rxjs";
 import type {LiveQueryResult} from "@api/control-flow.ts";
-import {EventTypes, type ObjectChangeEvent} from "@api/events/events.ts";
+import {EventTypes, type ObjectChangeEvent, type VersionChangeEvent} from "@api/events/events.ts";
 import type {IEventsService} from "@api/events/events.interface.ts";
 import {SQLocalDrizzle} from "sqlocal/drizzle";
 import setupScript from "./migrations/00-setup.sql?raw"
@@ -269,6 +269,85 @@ export class HeadbaseDatabase {
 			runQuery()
 
 			return () => {
+				this.eventsService.unsubscribe(EventTypes.OBJECT_CHANGE, handleEvent)
+			}
+		})
+	}
+
+	async getHistory(versionId: string): Promise<ObjectVersionDto> {
+		const {db} = await this.getDatabase()
+		const results = await db.select().from(historyTable).where(eq(historyTable.id, versionId));
+		if (results[0]) {
+			return results[0]
+		}
+
+		throw new Error(`Cannot find history with id ${versionId}`)
+	}
+
+	async deleteHistory(versionId: string, deletedBy: string): Promise<void> {
+		const currentVersion = await this.getHistory(versionId)
+		const currentObject = await this.get(currentVersion.objectId)
+
+		if (currentObject.versionId === versionId) {
+			throw new Error('Cannot delete the current version')
+		}
+
+		const timestamp = new Date().toISOString()
+		const {db, transaction} = await this.getDatabase()
+		await transaction(async (tx) => {
+			await tx.query(db.update(historyTable)
+				.set({deletedAt: timestamp, deletedBy})
+				.where(eq(historyTable.id, versionId))
+			)
+		})
+
+		this.eventsService.dispatch(EventTypes.VERSION_CHANGE, {
+			context: this.deviceService.getCurrentContext(),
+			data: {
+				vaultId: "",
+				action: "delete",
+				id: currentObject.versionId,
+				objectId: currentVersion.objectId,
+			}
+		})
+	}
+
+	async queryHistory(objectId: string): Promise<ObjectVersionDto[]> {
+		const {db} = await this.getDatabase()
+		return db.query.historyTable.findMany({
+			where: eq(historyTable.objectId, objectId),
+			orderBy: desc(historyTable.updatedAt)
+		})
+	}
+
+	liveQueryHistory(objectId: string) {
+		return new Observable<LiveQueryResult<ObjectVersionDto[]>>((subscriber) => {
+			subscriber.next({status: 'loading'})
+
+			const runQuery = async () => {
+				subscriber.next({status: 'loading'})
+				const results = await this.queryHistory(objectId);
+				subscriber.next({status: 'success', result: results})
+			}
+
+			const handleEvent = (e: ObjectChangeEvent | VersionChangeEvent) => {
+				if (e.type === EventTypes.OBJECT_CHANGE && e.detail.data.id === objectId) {
+					console.debug(`[liveQueryHistory] Received object event that requires re-query`)
+					runQuery()
+				}
+				else if (e.type === EventTypes.VERSION_CHANGE && e.detail.data.objectId === objectId) {
+					console.debug(`[liveQueryHistory] Received version event that requires re-query`)
+					runQuery()
+				}
+			}
+
+			this.eventsService.subscribe(EventTypes.VERSION_CHANGE, handleEvent)
+			this.eventsService.subscribe(EventTypes.OBJECT_CHANGE, handleEvent)
+
+			runQuery()
+
+			return () => {
+				this.eventsService.unsubscribe(EventTypes.VERSION_CHANGE, handleEvent)
 				this.eventsService.unsubscribe(EventTypes.OBJECT_CHANGE, handleEvent)
 			}
 		})
