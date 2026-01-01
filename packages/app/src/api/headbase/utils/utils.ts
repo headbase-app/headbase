@@ -1,5 +1,5 @@
 import {and, eq, gt, gte, ilike, inArray, like, lt, lte, ne, notIlike, notInArray, notLike, or, sql, type SQL } from "drizzle-orm";
-import type { WhereQuery } from "./types";
+import type { WhereQuery } from "../types.ts";
 
 export const ALLOWED_OBJECT_FIELDS = ["spec", "type", "createdAt", "createdBy", "updatedAt", "updatedBy"]
 

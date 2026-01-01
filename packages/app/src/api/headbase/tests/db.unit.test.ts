@@ -1,12 +1,12 @@
 import { expect, test } from 'vitest'
-import {HeadbaseDatabase} from "../db.ts";
-import {EventsService} from "@api/events/events.service.ts";
-import {DeviceService} from "@api/device/device.service.ts";
+import {Headbase} from "../headbase.ts";
+import {EventsService} from "@api/headbase/services/events/events.service.ts";
+import {DeviceService} from "@api/headbase/services/device/device.service.ts";
 
 test('database should work', async () => {
 	const device = new DeviceService()
 	const events = new EventsService(device)
-	const hb = new HeadbaseDatabase(events, device, {databasePath: "/tests/test.hb"})
+	const hb = new Headbase(events, device, {filePath: "/tests/test.hb"})
 
 	const results = await hb.query()
 	expect(Array.isArray(results)).toEqual(true)

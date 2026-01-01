@@ -1,4 +1,4 @@
-import type {DeviceContext, DeviceIdentity, IDeviceService} from "@api/device/device.interface";
+import type {DeviceContext, DeviceIdentity, IDeviceService} from "@api/headbase/services/device/device.interface.ts";
 
 export class DeviceService implements IDeviceService {
 	readonly contextId: string

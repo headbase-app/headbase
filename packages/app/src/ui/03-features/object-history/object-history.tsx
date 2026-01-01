@@ -1,5 +1,5 @@
 import {createSignal, For, Show} from "solid-js";
-import type {ObjectVersionDto} from "@api/database/types.ts";
+import type {ObjectVersionDto} from "@api/headbase/types.ts";
 import {useHistoryQuery} from "@/framework/use-history-query.ts";
 import {useDatabase} from "@/framework/use-database.ts";
 

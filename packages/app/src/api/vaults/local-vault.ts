@@ -21,7 +21,11 @@ export const CreateVaultDto = LocalVaultDto
 	})
 export type CreateVaultDto = z.infer<typeof CreateVaultDto>
 
-export const UpdateVaultDto = CreateVaultDto.pick({name: true}).partial()
+export const UpdateVaultDto = VaultDto.pick({
+	name: true, protectedEncryptionKey: true, protectedData: true,
+	// included to allow local base to be updated with timestamp from server
+	updatedAt: true
+}).partial()
 export type UpdateVaultDto = z.infer<typeof UpdateVaultDto>
 
 export const UpdateVaultPasswordDto = z.object({

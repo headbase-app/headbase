@@ -1,6 +1,6 @@
 import {sqliteTable, text, customType} from "drizzle-orm/sqlite-core";
 import {sql} from "drizzle-orm";
-import type {ObjectFields} from "./types.ts";
+import type {ObjectFields} from "../types.ts";
 
 /**
  * A custom "blob" field providing types and correct driver value conversions.

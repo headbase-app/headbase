@@ -3,13 +3,12 @@ import * as opfsx from "opfsx"
 import {VaultMenu} from "./ui/03-features/vault-menu/vault-menu.tsx";
 import {VaultManager} from "@ui/03-features/vault-manager/vault-manager.tsx";
 
-// import {I18nAPI} from "@api/i18n/i18n.api.ts";
-import {DeviceService} from "@api/device/device.service.ts";
-import {EventsService} from "@api/events/events.service.ts";
+import {DeviceService} from "@api/headbase/services/device/device.service.ts";
+import {EventsService} from "@api/headbase/services/events/events.service.ts";
 import {VaultsService} from "@api/vaults/vaults.service.ts";
 import {CurrentVaultService} from "@api/current-vault/current-vault.service.ts";
 import {VaultsServiceContext} from "@/framework/vaults.context.ts";
-import {KvStoreService} from "@api/kv-store/kv-store.service.ts";
+import {KvStoreService} from "@api/headbase/services/kv-store/kv-store.service.ts";
 import {CurrentVaultServiceContext} from "@/framework/current-vault.context.ts";
 import {WorkspaceProvider} from "@/framework/workspace/workspace.provider.tsx";
 import {Workspace} from "@ui/03-features/workspace/workspace.tsx";
@@ -19,7 +18,6 @@ const eventsService = new EventsService(deviceService);
 const keyValueService = new KvStoreService();
 const vaultsService = new VaultsService(deviceService, eventsService, keyValueService);
 const currentVaultService = new CurrentVaultService(deviceService, eventsService, vaultsService);
-// const i18nAPI = new I18nAPI();
 
 // Allows for easier managing/debugging of the OPFS in Firefox where no tools/extensions exist to easily  do this.
 // @ts-ignore --- adding custom property for debugging purposes.

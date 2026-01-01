@@ -2,19 +2,19 @@ import {eq} from "drizzle-orm";
 import {z} from "zod";
 
 import {ErrorIdentifiers} from "@headbase-app/contracts";
-import type {IEventsService} from "@api/events/events.interface";
+import type {IEventsService} from "@api/headbase/services/events/events.interface.ts";
 import type {IVaultsService} from "@api/vaults/vaults.interface.ts";
-import type {IDeviceService} from "@api/device/device.interface";
-import {type VaultChangeEvent, EventTypes} from "@api/events/events";
+import type {IDeviceService} from "@api/headbase/services/device/device.interface.ts";
+import {type VaultChangeEvent, EventTypes} from "@api/headbase/services/events/events.ts";
 import {
 	LIVE_QUERY_LOADING_STATE,
 	type LiveQueryResult,
 	LiveQueryStatus
-} from "@api/control-flow.ts";
-import {EncryptionService} from "@api/encryption/encryption.service.ts";
-import type {KvStoreService} from "@api/kv-store/kv-store.service.ts";
+} from "@api/headbase/control-flow.ts";
+import {EncryptionService} from "@api/headbase/services/encryption/encryption.service.ts";
+import type {KvStoreService} from "@api/headbase/services/kv-store/kv-store.service.ts";
 import {type CreateVaultDto, LocalVaultDto, type UpdateVaultDto} from "@api/vaults/local-vault.ts";
-import {ErrorTypes, HeadbaseError} from "@api/control-flow.ts";
+import {ErrorTypes, HeadbaseError} from "@api/headbase/control-flow.ts";
 import {SQLocalDrizzle} from "sqlocal/drizzle";
 import {featureFlags} from "@/feature-flags.ts";
 import {drizzle, type SqliteRemoteDatabase} from "drizzle-orm/sqlite-proxy";

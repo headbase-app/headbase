@@ -1,6 +1,6 @@
 import type {LocalVaultDto} from "@api/vaults/local-vault.ts";
 import type {Observable} from "rxjs";
-import type {LiveQueryResult} from "@api/control-flow.ts";
+import type {LiveQueryResult} from "@api/headbase/control-flow.ts";
 
 export interface ICurrentVaultService {
 	open: (vaultId: string) => Promise<void>;

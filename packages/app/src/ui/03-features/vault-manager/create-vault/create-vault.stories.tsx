@@ -2,9 +2,9 @@ import {type Meta, type StoryObj} from "storybook-solidjs-vite";
 import { CreateVault } from "./create-vault"
 import type {VaultManagerPage} from "@ui/03-features/vault-manager/vault-manager.tsx";
 import {VaultsServiceContext} from "@/framework/vaults.context.ts";
-import {DeviceService} from "@api/device/device.service.ts";
-import {EventsService} from "@api/events/events.service.ts";
-import {KvStoreService} from "@api/kv-store/kv-store.service.ts";
+import {DeviceService} from "@api/headbase/services/device/device.service.ts";
+import {EventsService} from "@api/headbase/services/events/events.service.ts";
+import {KvStoreService} from "@api/headbase/services/kv-store/kv-store.service.ts";
 import {VaultsService} from "@api/vaults/vaults.service.ts";
 
 // todo: UI level tests should rely on props, no need to inject services with external dependencies.

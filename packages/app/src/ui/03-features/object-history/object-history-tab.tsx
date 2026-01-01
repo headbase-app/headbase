@@ -1,7 +1,7 @@
 import type {BaseTabProps} from "@ui/03-features/workspace/workspace-tab.tsx";
 import {ObjectHistory} from "@ui/03-features/object-history/object-history.tsx";
 import {createEffect} from "solid-js";
-import type {ObjectDto} from "@api/database/types.ts";
+import type {ObjectDto} from "@api/headbase/types.ts";
 import {useWorkspace} from "@/framework/workspace/workspace.context.ts";
 import {useDatabase} from "@/framework/use-database.ts";
 

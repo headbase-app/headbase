@@ -1,54 +1,64 @@
 import 	{drizzle, SqliteRemoteDatabase} from 'drizzle-orm/sqlite-proxy';
-import {DatabaseSchema, historyTable, objectsTable} from "./schema.ts";
+import {DatabaseSchema, historyTable, objectsTable} from "./migrations/schema.ts";
 import {asc, desc, eq, sql} from "drizzle-orm";
 import type {CreateObjectDto, ObjectDto, ObjectVersionDto, Query, UpdateObjectDto} from "./types.ts";
-import {ALLOWED_OBJECT_FIELDS, convertDataJsonPath, parseWhereQuery} from "./utils.ts";
+import {ALLOWED_OBJECT_FIELDS, convertDataJsonPath, parseWhereQuery} from "./utils/utils.ts";
 import {Observable} from "rxjs";
-import type {LiveQueryResult} from "@api/control-flow.ts";
-import {EventTypes, type ObjectChangeEvent, type VersionChangeEvent} from "@api/events/events.ts";
-import type {IEventsService} from "@api/events/events.interface.ts";
+import type {LiveQueryResult} from "@api/headbase/control-flow.ts";
+import {EventTypes, type ObjectChangeEvent, type VersionChangeEvent} from "@api/headbase/services/events/events.ts";
 import {SQLocalDrizzle} from "sqlocal/drizzle";
-import setupScript from "./migrations/00-setup.sql?raw"
-import type {IDeviceService} from "@api/device/device.interface.ts";
+import setupScript from "@api/headbase/migrations/00-setup.sql?raw"
+import {EventsService} from "@api/headbase/services/events/events.service.ts";
+import {DeviceService} from "@api/headbase/services/device/device.service.ts";
+// import type {SyncService} from "@api/headbase/services/sync/sync.service.ts";
 
-export const SPEC_V1 = "https://spec.headbase.app/v1"
+export const SPEC_V1_URL = "https://spec.headbase.app/v1"
 
 export interface DatabaseConfig {
-	databasePath: string
+	filePath: string
+	syncServerUrl?: string
+	syncServerSecret?: string
 }
 
-export interface DatabaseConnection {
+interface DatabaseConnection {
 	db: SqliteRemoteDatabase<DatabaseSchema>
 	transaction: SQLocalDrizzle['transaction']
 }
 
 // todo: blob data is currently supplied as ArrayBuffer but might be returned from SQLite/Drizzle as Uint8Array
-export class HeadbaseDatabase {
+export class HeadbaseDB {
 	#config: DatabaseConfig
+
+	#sqlocal: SQLocalDrizzle
 	#connection?: DatabaseConnection
 
+	#device: DeviceService
+	events: EventsService
+	// sync: SyncService
+
 	constructor(
-		private readonly eventsService: IEventsService,
-		private readonly deviceService: IDeviceService,
 		config: DatabaseConfig
 	) {
 		this.#config = config
+		this.#device = new DeviceService()
+		this.events = new EventsService(this.#device)
+		this.#sqlocal = new SQLocalDrizzle(this.#config.filePath)
+		//this.sync = new SyncService(this.#device, this.events, this.s)
 	}
 
-	async getDatabase(): Promise<DatabaseConnection> {
+	async #getDatabase(): Promise<DatabaseConnection> {
 		if (this.#connection) {
 			return this.#connection;
 		}
 
-		const { driver, batchDriver, transaction } = new SQLocalDrizzle(this.#config.databasePath)
-		const db = drizzle(driver, batchDriver, {casing: "snake_case", schema: DatabaseSchema});
-		this.#connection = {db, transaction}
+		const db = drizzle(this.#sqlocal.driver, this.#sqlocal.batchDriver, {casing: "snake_case", schema: DatabaseSchema});
+		this.#connection = {db, transaction: this.#sqlocal.transaction}
 		await this.#connection.db.run(setupScript);
 		return this.#connection;
 	}
 
 	async create(createObjectDto: CreateObjectDto): Promise<ObjectDto> {
-		const {db, transaction} = await this.getDatabase()
+		const {db, transaction} = await this.#getDatabase()
 
 		const id = createObjectDto.id || globalThis.crypto.randomUUID()
 		const versionId = globalThis.crypto.randomUUID()
@@ -56,7 +66,7 @@ export class HeadbaseDatabase {
 
 		await transaction(async (tx) => {
 			await tx.query(db.insert(objectsTable).values({
-					spec: SPEC_V1,
+					spec: SPEC_V1_URL,
 					type: createObjectDto.type,
 					id: id,
 					versionId: versionId,
@@ -71,7 +81,7 @@ export class HeadbaseDatabase {
 			))
 
 			await tx.query(db.insert(historyTable).values({
-				spec: SPEC_V1,
+				spec: SPEC_V1_URL,
 				type: createObjectDto.type,
 				id: versionId,
 				objectId: id,
@@ -87,8 +97,8 @@ export class HeadbaseDatabase {
 			}))
 		})
 
-		this.eventsService.dispatch(EventTypes.OBJECT_CHANGE, {
-			context: this.deviceService.getCurrentContext(),
+		this.events.dispatch(EventTypes.OBJECT_CHANGE, {
+			context: this.#device.getCurrentContext(),
 			data: {
 				vaultId: "",
 				action: "create",
@@ -107,7 +117,7 @@ export class HeadbaseDatabase {
 		const versionId = self.crypto.randomUUID()
 		const timestamp = new Date().toISOString()
 
-		const {db, transaction} = await this.getDatabase()
+		const {db, transaction} = await this.#getDatabase()
 
 		await transaction(async (tx) => {
 			await tx.query(db.update(objectsTable)
@@ -122,7 +132,7 @@ export class HeadbaseDatabase {
 			)
 
 			await tx.query(db.insert(historyTable).values({
-					spec: SPEC_V1,
+					spec: SPEC_V1_URL,
 					type: updateObjectDto.type || currentObject.type,
 					objectId: id,
 					id: versionId,
@@ -141,8 +151,8 @@ export class HeadbaseDatabase {
 		})
 
 		const types =  updateObjectDto.type ? [currentObject.type, updateObjectDto.type] : [currentObject.type]
-		this.eventsService.dispatch(EventTypes.OBJECT_CHANGE, {
-			context: this.deviceService.getCurrentContext(),
+		this.events.dispatch(EventTypes.OBJECT_CHANGE, {
+			context: this.#device.getCurrentContext(),
 			data: {
 				vaultId: "",
 				action: "update",
@@ -160,7 +170,7 @@ export class HeadbaseDatabase {
 		const currentObject = await this.get(id)
 		const timestamp = new Date().toISOString()
 
-		const {db, transaction} = await this.getDatabase()
+		const {db, transaction} = await this.#getDatabase()
 
 		await transaction(async (tx) => {
 			await tx.query(db.delete(objectsTable).where(eq(objectsTable.id, id)))
@@ -171,8 +181,8 @@ export class HeadbaseDatabase {
 			)
 		})
 
-		this.eventsService.dispatch(EventTypes.OBJECT_CHANGE, {
-			context: this.deviceService.getCurrentContext(),
+		this.events.dispatch(EventTypes.OBJECT_CHANGE, {
+			context: this.#device.getCurrentContext(),
 			data: {
 				vaultId: "",
 				action: "delete",
@@ -184,7 +194,7 @@ export class HeadbaseDatabase {
 	}
 
 	async get(id: string): Promise<ObjectDto> {
-		const {db} = await this.getDatabase()
+		const {db} = await this.#getDatabase()
 		const results = await db.select().from(objectsTable).where(eq(objectsTable.id, id));
 		if (results[0]) {
 			return results[0]
@@ -194,7 +204,7 @@ export class HeadbaseDatabase {
 	}
 
 	async query(query?: Query) {
-		const {db} = await this.getDatabase()
+		const {db} = await this.#getDatabase()
 
 		const orderBy = [];
 		if (query?.order) {
@@ -240,11 +250,11 @@ export class HeadbaseDatabase {
 				}
 			}
 
-			this.eventsService.subscribe(EventTypes.OBJECT_CHANGE, handleEvent)
+			this.events.subscribe(EventTypes.OBJECT_CHANGE, handleEvent)
 			runQuery()
 
 			return () => {
-				this.eventsService.unsubscribe(EventTypes.OBJECT_CHANGE, handleEvent)
+				this.events.unsubscribe(EventTypes.OBJECT_CHANGE, handleEvent)
 			}
 		})
 	}
@@ -264,18 +274,18 @@ export class HeadbaseDatabase {
 				runQuery()
 			}
 
-			this.eventsService.subscribe(EventTypes.OBJECT_CHANGE, handleEvent)
+			this.events.subscribe(EventTypes.OBJECT_CHANGE, handleEvent)
 
 			runQuery()
 
 			return () => {
-				this.eventsService.unsubscribe(EventTypes.OBJECT_CHANGE, handleEvent)
+				this.events.unsubscribe(EventTypes.OBJECT_CHANGE, handleEvent)
 			}
 		})
 	}
 
 	async getHistory(versionId: string): Promise<ObjectVersionDto> {
-		const {db} = await this.getDatabase()
+		const {db} = await this.#getDatabase()
 		const results = await db.select().from(historyTable).where(eq(historyTable.id, versionId));
 		if (results[0]) {
 			return results[0]
@@ -293,7 +303,7 @@ export class HeadbaseDatabase {
 		}
 
 		const timestamp = new Date().toISOString()
-		const {db, transaction} = await this.getDatabase()
+		const {db, transaction} = await this.#getDatabase()
 		await transaction(async (tx) => {
 			await tx.query(db.update(historyTable)
 				.set({deletedAt: timestamp, deletedBy})
@@ -301,8 +311,8 @@ export class HeadbaseDatabase {
 			)
 		})
 
-		this.eventsService.dispatch(EventTypes.VERSION_CHANGE, {
-			context: this.deviceService.getCurrentContext(),
+		this.events.dispatch(EventTypes.VERSION_CHANGE, {
+			context: this.#device.getCurrentContext(),
 			data: {
 				vaultId: "",
 				action: "delete",
@@ -313,7 +323,7 @@ export class HeadbaseDatabase {
 	}
 
 	async queryHistory(objectId: string): Promise<ObjectVersionDto[]> {
-		const {db} = await this.getDatabase()
+		const {db} = await this.#getDatabase()
 		return db.query.historyTable.findMany({
 			where: eq(historyTable.objectId, objectId),
 			orderBy: desc(historyTable.updatedAt)
@@ -341,19 +351,20 @@ export class HeadbaseDatabase {
 				}
 			}
 
-			this.eventsService.subscribe(EventTypes.VERSION_CHANGE, handleEvent)
-			this.eventsService.subscribe(EventTypes.OBJECT_CHANGE, handleEvent)
+			this.events.subscribe(EventTypes.VERSION_CHANGE, handleEvent)
+			this.events.subscribe(EventTypes.OBJECT_CHANGE, handleEvent)
 
 			runQuery()
 
 			return () => {
-				this.eventsService.unsubscribe(EventTypes.VERSION_CHANGE, handleEvent)
-				this.eventsService.unsubscribe(EventTypes.OBJECT_CHANGE, handleEvent)
+				this.events.unsubscribe(EventTypes.VERSION_CHANGE, handleEvent)
+				this.events.unsubscribe(EventTypes.OBJECT_CHANGE, handleEvent)
 			}
 		})
 	}
 
 	async destroy() {
-		// todo: preform any cleanup actions
+		await this.#sqlocal.destroy()
+		await this.events.destroy()
 	}
 }

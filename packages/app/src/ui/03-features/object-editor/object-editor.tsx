@@ -1,4 +1,4 @@
-import type {ObjectBlobData, ObjectFields} from "@api/database/types.ts";
+import type {ObjectBlobData, ObjectFields} from "@api/headbase/types.ts";
 import {Show} from "solid-js";
 
 export interface ObjectEditorData {

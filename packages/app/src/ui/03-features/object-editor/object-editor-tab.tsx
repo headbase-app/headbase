@@ -3,7 +3,7 @@ import {useDatabase} from "@/framework/use-database.ts";
 import {createEffect, createSignal} from "solid-js";
 import {ObjectEditor, type ObjectEditorData} from "@ui/03-features/object-editor/object-editor.tsx";
 import {useWorkspace} from "@/framework/workspace/workspace.context.ts";
-import type {ObjectDto} from "@api/database/types.ts";
+import type {ObjectDto} from "@api/headbase/types.ts";
 
 export interface ObjectEditorTabProps extends BaseTabProps {
 	objectId: string

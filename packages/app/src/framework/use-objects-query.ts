@@ -1,7 +1,7 @@
-import type {ObjectDto, Query} from "@api/database/types.ts";
+import type {ObjectDto, Query} from "@api/headbase/types.ts";
 import {createEffect, createSignal} from "solid-js";
 import {useDatabase} from "@/framework/use-database.ts";
-import {LIVE_QUERY_LOADING_STATE, type LiveQueryResult} from "@api/control-flow.ts";
+import {LIVE_QUERY_LOADING_STATE, type LiveQueryResult} from "@api/headbase/control-flow.ts";
 import {Subscription} from "rxjs";
 
 export function useObjectsQuery(query?: Query) {

@@ -4,7 +4,7 @@ import type {VaultManagerPage} from "@ui/03-features/vault-manager/vault-manager
 import {type LocalVaultDto, UpdateVaultPasswordDto} from "@api/vaults/local-vault.ts";
 import {z} from "zod";
 import {createStore} from "solid-js/store";
-import {ErrorTypes, HeadbaseError} from "@api/control-flow.ts";
+import {ErrorTypes, HeadbaseError} from "@api/headbase/control-flow.ts";
 
 export interface ChangeVaultPasswordProps {
 	vaultId: string;

@@ -1,11 +1,16 @@
 # APIs
-This folder contains internal and external services used by the application and plugins.
+This folder contains services used by the application and plugins.
 These are "vanilla" javascript services which are then separately integrated with framework-specific code.
 
 The naming convention pattern used is "<x>Service" for internal services and "<x>API" for services exposed to plugins.
 
+## Headbase
+
+## Applications
+
+
 ## Reference
-- VaultsAPI
+- Vault
 	- create
 	- update
 	- delete

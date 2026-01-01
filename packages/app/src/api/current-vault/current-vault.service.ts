@@ -1,11 +1,11 @@
-import type {IEventsService} from "@api/events/events.interface";
-import {EventTypes} from "@api/events/events";
-import type {IDeviceService} from "@api/device/device.interface";
+import type {IEventsService} from "@api/headbase/services/events/events.interface";
+import {EventTypes} from "@api/headbase/services/events/events";
+import type {IDeviceService} from "@api/headbase/services/device/device.interface";
 import type {ICurrentVaultService} from "@api/current-vault/current-vault.interface";
 import {
 	type LiveQueryResult,
 	LiveQueryStatus
-} from "@api/control-flow.ts";
+} from "@api/headbase/control-flow.ts";
 import {LocalVaultDto} from "@api/vaults/local-vault.ts";
 import type {IVaultsService} from "@api/vaults/vaults.interface.ts";
 import {Observable} from "rxjs";

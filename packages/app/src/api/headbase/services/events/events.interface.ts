@@ -1,4 +1,4 @@
-import type {EventMap, HeadbaseEvent} from "@api/events/events";
+import type {EventMap, HeadbaseEvent} from "@api/headbase/services/events/events.ts";
 
 export type IEventListener<Event extends keyof EventMap> = (event: EventMap[Event]) => void
 

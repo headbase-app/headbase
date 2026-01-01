@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { ErrorTypes, HeadbaseError } from "@api/control-flow";
+import { ErrorTypes, HeadbaseError } from "@api/headbase/control-flow.ts";
 
 // todo: handle errors better, such as re-throwing web crypto errors with extra app specific context?
 // todo: review use of "as BufferSource" suddenly required to satisfy typescript.

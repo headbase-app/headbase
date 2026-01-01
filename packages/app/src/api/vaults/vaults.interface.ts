@@ -1,4 +1,4 @@
-import type {LiveQueryResult} from "@api/control-flow.ts";
+import type {LiveQueryResult} from "@api/headbase/control-flow.ts";
 import type {CreateVaultDto, LocalVaultDto, UpdateVaultDto} from "@api/vaults/local-vault.ts";
 import {Observable} from "rxjs";
 
