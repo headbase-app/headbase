@@ -1,0 +1,32 @@
+/**
+ * Error identifiers
+ */
+export enum ErrorIdentifiers {
+  // General Errors
+  NOT_FOUND = "not-found",
+  SYSTEM_UNEXPECTED = "system-unexpected-error",
+  REQUEST_INVALID = "request-invalid",
+
+  // Access Errors
+  ACCESS_UNAUTHORIZED = "access-unauthorized",
+  ACCESS_FORBIDDEN = "access-forbidden",
+
+  // Resource Errors
+  RESOURCE_NOT_FOUND = "resource-not-found",
+  RESOURCE_NOT_UNIQUE = "resource-not-unique",
+  RESOURCE_RELATIONSHIP_INVALID = "resource-relationship-invalid",
+
+  // Auth Errors
+  AUTH_CREDENTIALS_INVALID = "auth-credentials-invalid",
+  AUTH_TOKEN_INVALID = "auth-token-invalid",
+  AUTH_NOT_VERIFIED = "auth-not-verified",
+  AUTH_ALREADY_VERIFIED = "auth-already-verified",
+
+  // Vault Errors
+  VAULT_NOT_FOUND = "vault-not-found",
+  VAULT_NAME_EXISTS = 'vault-name-exists',
+
+	// Object Errors
+	OBJECT_NOT_FOUND = "object-not-found",
+	OBJECT_EXISTS = "object-exists",
+}

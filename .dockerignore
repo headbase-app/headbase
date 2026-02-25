@@ -1,0 +1,18 @@
+# Environment variables
+**/*.env
+
+# Node modules
+**/node_modules
+
+# Ensure no local builds are included
+**/dist
+**/build
+
+# Git
+.git
+**/.gitignore
+
+docs
+.husky
+.github
+.idea

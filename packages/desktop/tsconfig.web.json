@@ -1,0 +1,37 @@
+{
+  "extends": "@electron-toolkit/tsconfig/tsconfig.web.json",
+  "include": [
+    "src/renderer/src/env.d.ts",
+    "src/renderer/src/**/*",
+    "src/renderer/src/**/*.tsx",
+    "src/contracts"
+  ],
+  "compilerOptions": {
+    "composite": true,
+    "jsx": "react-jsx",
+    "baseUrl": ".",
+    "paths": {
+      "@/*": [
+        "./src/*"
+      ],
+      "@renderer/*": [
+        "./src/renderer/src/*"
+      ],
+			"@contracts/*": [
+				"./src/contracts/*"
+			],
+			"@api/*": [
+				"./src/renderer/src/api/*"
+			],
+			"@framework/*": [
+				"./src/renderer/src/framework/*"
+			],
+			"@ui/*": [
+				"./src/renderer/src/ui/*"
+			],
+			"@utils/*": [
+				"./src/renderer/src/utils/*"
+			]
+    }
+  }
+}

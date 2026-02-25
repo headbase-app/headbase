@@ -1,0 +1,22 @@
+{
+  // [string] Identifies the type of data is being stored.
+  // Recommended pattern is simple strings like "notes" for core user data and URIs like "https://example.com/v1/app/type" for application data.
+  type: "task",
+  // [UUID v4] A unique identifier for the object.
+  id: "f4256bb9-4aaf-4735-a143-b536cbef0959",
+  // [object] Metadata about the object.
+  meta: {
+    versionId: "6f063c15-d8c1-4fb7-aeb2-5ec0dff2c742",
+    createdAt: "2025-03-20T15:48:22.000Z",
+    updatedAt: "2025-03-20T15:48:27.000Z"
+  },
+  // [object] The data being saved.
+  data: {
+    title: "this is an example task...",
+    tags: ["writing", "example"],
+    priority: 1,
+    size: 1,
+    reminders: ["RRULE:FREQ=WEEKLY;COUNT=30;WKST=MO"],
+    due: "2025-03-18T16:04:25.000Z"
+  }
+}

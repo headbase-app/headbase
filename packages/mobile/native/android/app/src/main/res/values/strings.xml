@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Headbase</string>
+    <string name="title_activity_main">Headbase</string>
+    <string name="package_name">app.headbase.mobile</string>
+    <string name="custom_url_scheme">app.headbase.mobile</string>
+</resources>

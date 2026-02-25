@@ -1,0 +1,29 @@
+{
+  "name": "@headbase-app/headbase",
+  "version": "0.0.0",
+  "description": "Supercharge your local markdown files with content types and data views.",
+  "private": true,
+  "main": "index.js",
+  "directories": {
+    "doc": "docs"
+  },
+  "scripts": {
+    "prepare": "husky install"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/headbase-app/headbase.git"
+  },
+  "author": "ben-ryder",
+  "license": "AGPL-3.0-only",
+  "bugs": {
+    "url": "https://github.com/headbase-app/headbase/issues"
+  },
+  "homepage": "https://github.com/headbase-app/headbase#readme",
+  "devDependencies": {
+    "@commitlint/cli": "^18.4.2",
+    "@commitlint/config-conventional": "^18.4.2",
+    "husky": "^8.0.3",
+    "npm-run-all2": "^7.0.1"
+  }
+}

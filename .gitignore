@@ -1,0 +1,14 @@
+# IDEs
+.idea
+
+# Node
+node_modules
+
+# Notes
+/notes
+
+# Databases
+*.sqlite
+
+# Local "notepad" file
+/docs/notepad.md

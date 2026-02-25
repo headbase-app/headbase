@@ -1,0 +1,36 @@
+{
+  "name": "@headbase-app/libweb",
+  "version": "0.12.0",
+  "description": "A package of common web interfaces, services and UI elements for use across Headbase apps.",
+  "author": {
+		"name": "Ben Ryder",
+		"email": "dev@benryder.me"
+	},
+  "homepage": "https://github.com/headbase-app/headbase",
+  "bugs": "https://github.com/headbase-app/headbase/issues",
+  "license": "AGPL-3.0-only",
+  "main": "dist/src/index.js",
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "build": "rimraf ./dist && tsc",
+    "prepublishOnly": "npm run build"
+  },
+  "files": [
+    "dist/**/*",
+    "README.md",
+    "LICENSE.txt"
+  ],
+  "keywords": [],
+  "devDependencies": {
+    "@types/validator": "^13.15.4",
+    "rimraf": "^6.1.0",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.9.3"
+  },
+  "peerDependencies": {
+    "validator": "^13.15.20",
+    "zod": "^4.1.12"
+  }
+}
