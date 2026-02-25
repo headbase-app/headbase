@@ -2,7 +2,7 @@
 
 ![](docs/screenshot.png)
 
-<p align="center"><strong>Headbase</strong> is a personal management and productivity app which supercharges your local files with "content types" for easy editing features and "data sources" to create views like a list, table, kanban board, calendar, canvas or graph.</p>
+<p align="center"><strong>Headbase</strong> is a personal management and productivity app which supercharges your local files with content types for easy editing features and data views like a list, table, kanban board, calendar, canvas and graph.</p>
 
 <p align="center">
   <a href="/docs/install">Install</a> •
@@ -19,12 +19,13 @@
 Headbase is an exploration of [local-first software](https://www.inkandswitch.com/essay/local-first) and [malleable systems](https://malleable.systems). The goal isn't to create a "notes app" or a "task management" app, but to develop primitives that users can build their own experience with while retaining control and agency
 over their own data.
 
-**SUPPORTED PLATFORMS**: The supported platforms are Linux, MacOS and Android. Windows and iOS support is planned, but not a current priority for testing.
+**SUPPORTED PLATFORMS**: The target platforms are Linux, MacOS and Android. Windows and iOS support is planned, but not a current priority for development and testing.
 
 **For users:**
-- [Getting started](docs/user-guide/getting-started/README.md)
+- [Install](docs/user-guide/install.md)
+- [Getting started](docs/user-guide/getting-started.md)
 - [User guide](docs/user-guide/README.md)
-- [FAQs](docs/user-guide/FAQs.md)
+- [FAQs](docs/user-guide/faqs.md)
 - [Feedback](https://github.com/headbase-app/headbase/issues)
 - [Report issue](https://github.com/headbase-app/headbase/issues)
 

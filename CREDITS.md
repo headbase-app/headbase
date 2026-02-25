@@ -2,7 +2,7 @@
 
 ## General
 
-## Mobile (@headbase-app/mobile)
+## Mobile = `@headbase-app/mobile`
 
 ### @apawesome/capacitor-file-picker
 Source: https://github.com/capawesome-team/capacitor-plugins/tree/main/packages/file-picker

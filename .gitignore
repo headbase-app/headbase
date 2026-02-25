@@ -9,6 +9,3 @@ node_modules
 
 # Databases
 *.sqlite
-
-# Local "notepad" file
-/docs/notepad.md
