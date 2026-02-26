@@ -1,6 +1,5 @@
-import {Match, onCleanup, onMount, Switch} from "solid-js";
-import {createStore} from "solid-js/store";
-import CloseIcon from "lucide-solid/icons/x"
+import {Match, Switch} from "solid-js";
+import {type SetStoreFunction} from "solid-js/store";
 
 import {CreateVault} from "@ui/03-features/vault-manager/create-vault/create-vault.tsx";
 import {VaultsList} from "@ui/03-features/vault-manager/vaults-list/vaults-list.tsx";
@@ -9,50 +8,32 @@ import {DeleteVault} from "@ui/03-features/vault-manager/delete-vault/delete-vau
 
 import "./vault-manager.css";
 
-
 export type VaultManagerPage = {type: "list"} | {type: "create"} | {type: "edit", id: string} | {type: "delete", id: string};
 
-export function VaultManager () {
-	let dialog!: HTMLDialogElement
-	const [page, setPage] = createStore<VaultManagerPage>({type: "list"})
+export interface VaultManagerProps {
+	page: VaultManagerPage
+	setPage: SetStoreFunction<VaultManagerPage>
+}
 
-	function openDialog() {
-		dialog?.showModal()
-	}
-
-	function closeDialog() {
-		setPage({type: "list"})
-		dialog?.close()
-	}
-
-	onMount(() => {
-		document.addEventListener("vault-manager-open", openDialog)
-	})
-	onCleanup(() => {
-		document.removeEventListener("vault-manager-open", openDialog)
-	})
-
+export function VaultManager(props: VaultManagerProps) {
 	return (
-		<dialog class="vault-manager" ref={dialog}>
-			<button autofocus aria-label={"Close"} onClick={closeDialog}><CloseIcon/></button>
-			<Switch>
-				<Match when={page.type === "list"}>
-					<VaultsList navigate={setPage} />
-				</Match>
-				<Match when={page.type === "create"}>
-					<CreateVault navigate={setPage} />
-				</Match>
-				<Match when={page.type === "edit" && page} keyed>
-					{(page) => (
-						<EditVault navigate={setPage} vaultId={page.id} />
-					)}
-				</Match>
-				<Match when={page.type === "delete" && page} keyed>
-					{(page) => (
-						<DeleteVault navigate={setPage} vaultId={page.id} />
-					)}
-				</Match>
-			</Switch>
-		</dialog>
+		<Switch>
+			<Match when={props.page.type === "list"}>
+				<VaultsList navigate={props.setPage} />
+			</Match>
+			<Match when={props.page.type === "create"}>
+				<CreateVault navigate={props.setPage} />
+			</Match>
+			<Match when={props.page.type === "edit" && props.page} keyed>
+				{(page) => (
+					<EditVault navigate={props.setPage} vaultId={page.id} />
+				)}
+			</Match>
+			<Match when={props.page.type === "delete" && props.page} keyed>
+				{(page) => (
+					<DeleteVault navigate={props.setPage} vaultId={page.id} />
+				)}
+			</Match>
+		</Switch>
 	)
 }

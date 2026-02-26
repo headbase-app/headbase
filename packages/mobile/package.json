@@ -31,6 +31,7 @@
 		"@capacitor/core": "^8.1.0",
 		"@capacitor/filesystem": "^8.1.2",
 		"@capacitor/ios": "^8.1.0",
+		"@solidjs/router": "^0.15.4",
 		"drizzle-orm": "^0.45.1",
 		"lucide-solid": "^0.574.0",
 		"opfsx": "^0.1.0",
