@@ -12,6 +12,9 @@ const config: CapacitorConfig = {
 		path: join(__dirname, "native/ios")
 	},
 	plugins: {
+		SystemBars: {
+			insetsHandling: "css",
+		},
 		CapacitorSQLite: {
 			iosIsEncryption: false,
 			androidIsEncryption: false,

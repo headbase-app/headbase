@@ -1,7 +1,8 @@
-import * as opfsx from "opfsx"
-import {Capacitor} from "@capacitor/core";
 import {createEffect, from} from "solid-js";
 import {Route, createMemoryHistory, MemoryRouter, useNavigate} from "@solidjs/router";
+import {createStore} from "solid-js/store";
+import * as opfsx from "opfsx"
+import {Capacitor} from "@capacitor/core";
 
 import {CommonVaultsAPI, CommonEventsService, type IFilesAPI} from "@headbase-app/libweb";
 import type {IDatabaseService, IDeviceAPI, IEventsService, IVaultsAPI, IWorkspaceVaultAPI} from "@headbase-app/libweb";
@@ -10,20 +11,20 @@ import {WebDeviceApi} from "@apis/web/device/web-device.api.ts";
 import {WebDatabaseService} from "@apis/web/database/web-database.service.ts";
 import {WebWorkspaceVaultAPI} from "@apis/web/workspace-vault/workspace-vault.api.ts";
 import MobileDatabaseService from "@apis/mobile/database/mobile-database.service.ts";
+import {WebFilesAPI} from "@apis/web/files/web-files.api.ts";
+import {MobileFilesAPI} from "@apis/mobile/files/mobile-files.api.ts";
 
+import {FilesAPIContext, useFilesAPI} from "@framework/files-api.context.ts";
 import {VaultsServiceContext} from "@framework/vaults.context.ts";
 import {CurrentVaultServiceContext, useCurrentVaultService} from "@framework/current-vault.context.ts";
-import {WorkspaceProvider} from "@ui/03-features/workspace/workspace.provider.tsx";
 
+import {WorkspaceProvider} from "@ui/03-features/workspace/workspace.provider.tsx";
 import {Workspace} from "@ui/03-features/workspace/workspace.tsx";
 import {VaultMenu} from "@ui/03-features/vault-menu/vault-menu.tsx";
 import {VaultManager, type VaultManagerPage} from "@ui/03-features/vault-manager/vault-manager.tsx";
-import {WebFilesAPI} from "@apis/web/files/web-files.api.ts";
-import {MobileFilesAPI} from "@apis/mobile/files/mobile-files.api.ts";
-import {FilesAPIContext, useFilesAPI} from "@framework/files-api.context.ts";
 import {VaultManagerDialog} from "@ui/03-features/vault-manager/vault-manager-dialog.tsx";
-import {createStore} from "solid-js/store";
 
+import "./app.css"
 
 let databaseService: IDatabaseService
 let deviceAPI: IDeviceAPI;
