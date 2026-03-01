@@ -41,7 +41,7 @@ export function WorkspaceTab(props: WorkspaceTabProps) {
 				<Match
 					when={props.tab.type === "file" && props.tab} keyed>
 					{(tab) => (
-						<FileEditorTab tabId={tab.id} objectId={tab.path} />
+						<FileEditorTab tabId={tab.id} filePath={tab.path} />
 					)}
 				</Match>
 			</Switch>

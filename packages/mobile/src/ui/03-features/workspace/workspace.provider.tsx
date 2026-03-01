@@ -39,7 +39,7 @@ export function WorkspaceProvider(props: ParentProps) {
 			tabName = "New Search"
 		}
 		else if (tabData.type === "file-explorer") {
-			tabName = tabData.path ? filesAPI.getPathName(tabData.path) : "File Explorer"
+			tabName = tabData.path ? filesAPI.getFileName(tabData.path) : "File Explorer"
 		}
 		else if (tabData.type === 'content-types') {
 			tabName = "Content Types"
@@ -48,7 +48,7 @@ export function WorkspaceProvider(props: ParentProps) {
 			tabName = "New File"
 		}
 		else {
-			tabName = filesAPI.getPathName(tabData.path)
+			tabName = filesAPI.getFileName(tabData.path)
 		}
 
 		setTabs((currentTabs) => [

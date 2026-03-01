@@ -1,6 +1,6 @@
 import {type EventMap, EventTypes, type HeadbaseEvent} from "./events";
 import type {IEventListener, IEventsService} from "./events.service";
-import type {IDeviceAPI} from "../../apis/device.api";
+import type {IDeviceAPI} from "../device/device.api.ts";
 
 type ListenerStore = {
 	[Event in keyof EventMap]?: IEventListener<Event>[];

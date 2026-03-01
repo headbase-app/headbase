@@ -1,4 +1,4 @@
-import {useCurrentVaultService} from "@framework/current-vault.context.ts";
+import {useWorkspaceVaultAPI} from "@framework/workspace-vault.context.ts";
 import {from, Switch, Match, createSignal, createEffect, Show, For} from "solid-js";
 import type {IFileSystemTree} from "@headbase-app/libweb";
 import {useFilesAPI} from "@framework/files-api.context.ts";
@@ -11,7 +11,7 @@ export interface FileExplorerProps {
 
 export function FileExplorer(props?: FileExplorerProps) {
 	const {openTab} = useWorkspace()
-	const currentVaultService = useCurrentVaultService()
+	const currentVaultService = useWorkspaceVaultAPI()
 	const filesAPI = useFilesAPI()
 	const openVaultQuery = from(currentVaultService.liveGet())
 	const openVault = () => {

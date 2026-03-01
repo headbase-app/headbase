@@ -4,7 +4,7 @@ import {drizzle, type SqliteRemoteDatabase} from "drizzle-orm/sqlite-proxy";
 import {type IDatabaseService, schema} from "@headbase-app/libweb"
 
 import {featureFlags} from "@common/feature-flags.ts";
-import migration0 from "../../../../lib/services/database/migrations/00-setup.sql?raw";
+import migration0 from "../../../../lib/apis/database/migrations/00-setup.sql?raw";
 
 export class WebDatabaseService implements IDatabaseService {
 	sqLocalDrizzle?: SQLocalDrizzle

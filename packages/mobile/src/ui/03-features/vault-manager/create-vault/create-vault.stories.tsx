@@ -1,7 +1,7 @@
 import {type Meta, type StoryObj} from "storybook-solidjs-vite";
 import { CreateVault } from "./create-vault"
 import type {VaultManagerPage} from "@ui/03-features/vault-manager/vault-manager.tsx";
-import {VaultsServiceContext} from "@framework/vaults.context.ts";
+import {VaultsAPIContext} from "@framework/vaults.context.ts";
 import {WebDeviceApi} from "@apis/web/device/web-device.api.ts";
 import {CommonEventsService, CommonVaultsAPI} from "@headbase-app/libweb";
 import {WebDatabaseService} from "@apis/web/database/web-database.service.ts";
@@ -17,9 +17,9 @@ const meta = {
 	component: CreateVault,
 	decorators: [
 		(Story) => (
-			<VaultsServiceContext.Provider value={vaultsAPI}>
+			<VaultsAPIContext.Provider value={vaultsAPI}>
 				<Story />
-			</VaultsServiceContext.Provider>
+			</VaultsAPIContext.Provider>
 		)
 	]
 } satisfies Meta<typeof CreateVault>;

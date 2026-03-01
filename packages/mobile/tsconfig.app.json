@@ -19,10 +19,12 @@
 
     /* Linting */
     "strict": true,
-    "noUnusedLocals": true,
-    "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true,
     "noUncheckedSideEffectImports": true,
+
+		/* Linting OVERWRITE - Allow for easier local development, rely on eslint warnings for this instead */
+		"noUnusedLocals": false,
+		"noUnusedParameters": false,
 
 		/* Overwritten from default to allow 'private readonly' when typing constructor injection  */
 		"erasableSyntaxOnly": false,

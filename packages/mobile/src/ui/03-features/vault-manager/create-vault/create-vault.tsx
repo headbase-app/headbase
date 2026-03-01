@@ -3,7 +3,7 @@ import {z} from "zod";
 import {createStore} from "solid-js/store";
 
 import {CreateVaultDto} from "@headbase-app/libweb";
-import {useVaultsService} from "@framework/vaults.context.ts";
+import {useVaultsAPI} from "@framework/vaults.context.ts";
 import type {VaultManagerPage} from "@ui/03-features/vault-manager/vault-manager.tsx";
 import {useFilesAPI} from "@framework/files-api.context.ts";
 
@@ -21,7 +21,7 @@ export interface CreateVaultProps {
 
 export function CreateVault(props: CreateVaultProps) {
 	const filesAPI = useFilesAPI()
-	const vaultsAPI = useVaultsService()
+	const vaultsAPI = useVaultsAPI()
 	const [values, setValues] = createStore<CreateVaultDto>({displayName: "", path: ""});
 	const [errors, setErrors] = createStore<FieldErrors<CreateVaultDto>>({displayName: null, path: null});
 	const [touched, setTouched] = createStore<FieldTouched<CreateVaultDto>>({displayName: false, path: false});

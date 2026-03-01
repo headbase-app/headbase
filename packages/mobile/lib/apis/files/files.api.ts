@@ -33,7 +33,7 @@ export interface IFilesAPI {
 	checkPermissions: () => Promise<boolean>
 	requestPermissions: () => Promise<boolean>
 	// Path formatting
-	getPathName: (path: string) => string
+	getFileName: (path: string) => string
 	getPathDisplay: (path: string) => string
 	// File system operations
 	tree: (path: string) => Promise<IFileSystemTree|null>
@@ -42,8 +42,11 @@ export interface IFilesAPI {
 	cp: (sourcePath: string, destinationPath: string) => Promise<void>
 	rm: (path: string) => Promise<void>
 	mkdir: (path: string) => Promise<void>
-	read: (path: string) => Promise<string>
-	write: (path: string, data: string|ArrayBuffer|Uint8Array) => Promise<void>
+	read: (path: string) => Promise<Uint8Array>
+	readAsText: (path: string) => Promise<string>
+	readAsUrl: (path: string) => Promise<string>
+	write: (path: string, data: ArrayBuffer|Uint8Array) => Promise<void>
+	writeText: (path: string, data: string) => Promise<void>
 	// Observable operations
 	liveTree: (path: string) => Observable<LiveQueryResult<IFileSystemTree|null>>
 	liveLs: (path: string) => Observable<LiveQueryResult<IFileSystemItem[]>>

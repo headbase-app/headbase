@@ -2,7 +2,7 @@ import {drizzle, type SqliteRemoteDatabase} from "drizzle-orm/sqlite-proxy";
 import {SQLiteDBConnection, CapacitorSQLite, SQLiteConnection} from "@capacitor-community/sqlite";
 import {type IDatabaseService, schema} from "@headbase-app/libweb"
 
-import migration0 from "../../../../lib/services/database/migrations/00-setup.sql?raw"
+import migration0 from "../../../../lib/apis/database/migrations/00-setup.sql?raw"
 
 type DrizzleDriverMethod = 'run'|'all'|'values'|'get'
 type DrizzleDriverReturn = { rows: any[] | any[][] }

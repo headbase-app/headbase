@@ -1,6 +1,6 @@
 import {Observable} from "rxjs";
 import type {LiveQueryResult} from "../../control-flow.ts";
-import type {CreateVaultDto, VaultList, UpdateVaultDto, VaultDto} from "../../vault.ts";
+import type {CreateVaultDto, VaultList, UpdateVaultDto, VaultDto} from "./vault.ts";
 
 export interface IVaultsAPI {
 	create: (createVaultDto: CreateVaultDto) => Promise<VaultDto>

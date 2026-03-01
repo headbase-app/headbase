@@ -5,8 +5,8 @@ import FileExplorerIcon from "lucide-solid/icons/folder"
 import SearchIcon from "lucide-solid/icons/search"
 import NewFileIcon from "lucide-solid/icons/plus"
 
-import {useVaultsService} from "@framework/vaults.context.ts";
-import {useCurrentVaultService} from "@framework/current-vault.context.ts";
+import {useVaultsAPI} from "@framework/vaults.context.ts";
+import {useWorkspaceVaultAPI} from "@framework/workspace-vault.context.ts";
 import {useWorkspace} from "@ui/03-features/workspace/workspace.context.ts";
 import type {VaultManagerPage} from "@ui/03-features/vault-manager/vault-manager.tsx";
 
@@ -14,8 +14,8 @@ import "./vault-menu.css"
 
 
 export function VaultMenu() {
-	const vaultsService = useVaultsService()
-	const currentVaultService = useCurrentVaultService()
+	const vaultsService = useVaultsAPI()
+	const currentVaultService = useWorkspaceVaultAPI()
 	const workspaceAPI = useWorkspace()
 
 	const vaultsQuery = from(vaultsService.liveQuery())

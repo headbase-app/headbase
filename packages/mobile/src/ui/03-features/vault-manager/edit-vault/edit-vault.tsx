@@ -2,7 +2,7 @@ import {createSignal, onMount, Show} from "solid-js";
 import {createStore} from "solid-js/store";
 import {z} from "zod";
 import {VaultDto, UpdateVaultDto} from "@headbase-app/libweb";
-import {useVaultsService} from "@framework/vaults.context.ts";
+import {useVaultsAPI} from "@framework/vaults.context.ts";
 import type {VaultManagerPage} from "@ui/03-features/vault-manager/vault-manager.tsx";
 
 export interface EditVaultProps {
@@ -19,7 +19,7 @@ export type FieldTouched<Fields> = {
 
 
 export function EditVault(props: EditVaultProps) {
-	const vaultsAPI = useVaultsService()
+	const vaultsAPI = useVaultsAPI()
 	const [values, setValues] = createStore<UpdateVaultDto>({displayName: "", path: ""});
 	const [errors, setErrors] = createStore<FieldErrors<UpdateVaultDto>>({displayName: null, path: null});
 	const [touched, setTouched] = createStore<FieldTouched<UpdateVaultDto>>({displayName: false, path: false});

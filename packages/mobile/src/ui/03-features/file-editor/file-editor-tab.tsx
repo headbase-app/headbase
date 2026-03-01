@@ -2,13 +2,13 @@ import type {BaseTabProps} from "@ui/03-features/workspace/workspace-tab.tsx";
 import {FileEditor} from "@ui/03-features/file-editor/file-editor.tsx";
 
 export interface ObjectEditorTabProps extends BaseTabProps {
-	objectId: string
+	filePath: string
 }
 
-export function FileEditorTab(_props: ObjectEditorTabProps) {
+export function FileEditorTab(props: ObjectEditorTabProps) {
 	return (
 		<div>
-			<FileEditor />
+			<FileEditor filePath={props.filePath} />
 		</div>
 	)
 }

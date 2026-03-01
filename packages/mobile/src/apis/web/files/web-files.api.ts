@@ -24,7 +24,6 @@ export class WebFilesAPI implements IFilesAPI {
 	async checkPermissions(): Promise<boolean> {
 		return true;
 	}
-
 	async requestPermissions(): Promise<boolean> {
 		return true
 	}
@@ -33,7 +32,7 @@ export class WebFilesAPI implements IFilesAPI {
 		return path.replace("/headbase-v1/vaults/", "")
 	}
 
-	getPathName(path: string) {
+	getFileName(path: string): string {
 		const parts = path.split("/")
 		return parts[parts.length-1]
 	}
@@ -42,7 +41,10 @@ export class WebFilesAPI implements IFilesAPI {
 		return []
 	}
 
-	#mapOPFSXItem(treeItem: OPFSXDirectoryTree|OPFSXFile): IFileSystemTreeItem {
+	/**
+	 * Map the tree data structure returned by OPFSX to the Headbase type IFileSystemTreeItem.
+	 */
+	#mapTreeItem(treeItem: OPFSXDirectoryTree|OPFSXFile): IFileSystemTreeItem {
 		if (treeItem.kind === "file") {
 			return {
 				type: "file",
@@ -55,7 +57,7 @@ export class WebFilesAPI implements IFilesAPI {
 			type: "directory",
 			name: treeItem.name,
 			path: treeItem.path,
-			children: treeItem.children.map(this.#mapOPFSXItem.bind(this))
+			children: treeItem.children.map(this.#mapTreeItem.bind(this))
 		}
 	}
 
@@ -63,57 +65,67 @@ export class WebFilesAPI implements IFilesAPI {
 		try {
 			const tree = await opfxs.tree(path)
 			return {
-				name: this.getPathName(path),
+				name: this.getFileName(path),
 				path,
 				type: "directory",
-				children: tree.children.map(this.#mapOPFSXItem.bind(this))
+				children: tree.children.map(this.#mapTreeItem.bind(this))
 			}
 		}
 		catch (e) {
 			console.warn("Called WebFilesAPI.tree and directory wasn't found, returning fake empty dir", e)
 		}
 
+		// fallback to returning an empty directory if there's been an error.
 		return {
-			name: this.getPathName(path),
+			name: this.getFileName(path),
 			path: path,
 			type: "directory",
 			children: []
 		}
 	}
 
-	// @ts-ignore
 	async mv(sourcePath: string, destinationPath: string) {}
 
-	// @ts-ignore
 	async cp(sourcePath: string, destinationPath: string) {}
 
-	// @ts-ignore
 	async rm(path: string) {}
 
-	// @ts-ignore
 	async mkdir(path: string) {}
 
-	// @ts-ignore
-	async read(path: string): Promise<string> {}
+	async read(path: string): Promise<Uint8Array> {
+		const file = await opfxs.read(path)
+		const buffer = await file.arrayBuffer()
+		return new Uint8Array(buffer)
+	}
+	async readAsText(path: string): Promise<string> {
+		const file = await opfxs.read(path)
+		return await file.text()
+	}
+	async readAsUrl(path: string): Promise<string> {
+		const file = await opfxs.read(path)
+		const buffer = await file.arrayBuffer()
+		const blob = new Blob([buffer])
+		return URL.createObjectURL(blob)
+	}
 
-	// @ts-ignore
-	async write(path: string, data: string | ArrayBuffer | Uint8Array) {}
+	async write(path: string, data: ArrayBuffer | Uint8Array) {}
 
-	// @ts-ignore
+	async writeText(path: string, data: string) {
+		await opfxs.write(path, data)
+	}
+
 	liveTree(path: string){
 		return new Observable<LiveQueryResult<IFileSystemTree>>((subscriber) => {
 			subscriber.next(LIVE_QUERY_LOADING_STATE)
 		})
 	}
 
-	// @ts-ignore
 	liveLs(path: string) {
 		return new Observable<LiveQueryResult<IFileSystemItem[]>>((subscriber) => {
 			subscriber.next(LIVE_QUERY_LOADING_STATE)
 		})
 	}
 
-	// @ts-ignore
 	liveRead(path: string) {
 		return new Observable<LiveQueryResult<string>>((subscriber) => {
 			subscriber.next(LIVE_QUERY_LOADING_STATE)

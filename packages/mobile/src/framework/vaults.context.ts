@@ -1,12 +1,12 @@
 import {createContext, useContext} from "solid-js";
 import type {IVaultsAPI} from "@headbase-app/libweb";
 
-export const VaultsServiceContext = createContext<IVaultsAPI>();
+export const VaultsAPIContext = createContext<IVaultsAPI>();
 
-export function useVaultsService() {
-	const context = useContext(VaultsServiceContext)
+export function useVaultsAPI() {
+	const context = useContext(VaultsAPIContext)
 	if (!context) {
-		throw new Error("VaultsService context requested but no value was provided.")
+		throw new Error("VaultsAPI context requested but no value was provided.")
 	}
 
 	return context

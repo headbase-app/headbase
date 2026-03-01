@@ -1,11 +1,12 @@
 import {Capacitor} from "@capacitor/core";
-import {Filesystem} from "@capacitor/filesystem";
+import {Encoding, Filesystem} from "@capacitor/filesystem";
 import {Observable} from "rxjs";
 
 import {
 	type IFilesAPI,
 	type IFileSystemItem,
-	type IFileSystemTree, type IFileSystemTreeItem,
+	type IFileSystemTree,
+	type IFileSystemTreeItem,
 	LIVE_QUERY_LOADING_STATE,
 	type LiveQueryResult
 } from "@headbase-app/libweb";
@@ -23,7 +24,7 @@ export class MobileFilesAPI implements IFilesAPI {
 		return path
 	}
 
-	getPathName(path: string) {
+	getFileName(path: string): string {
 		const parts = path.split("/")
 		return parts[parts.length-1]
 	}
@@ -99,39 +100,58 @@ export class MobileFilesAPI implements IFilesAPI {
 		}))
 	}
 
-	// @ts-ignore
 	async mv(sourcePath: string, destinationPath: string) {}
 
-	// @ts-ignore
 	async cp(sourcePath: string, destinationPath: string) {}
 
-	// @ts-ignore
 	async rm(path: string) {}
 
-	// @ts-ignore
 	async mkdir(path: string) {}
 
-	// @ts-ignore
-	async read(path: string): Promise<string> {}
+	async read(path: string): Promise<Uint8Array> {
+		const url = Capacitor.convertFileSrc(path)
+		const response = await fetch(url)
+		const blob = await response.blob()
+		const buffer = await blob.arrayBuffer()
+		return new Uint8Array(buffer)
+	}
 
-	// @ts-ignore
-	async write(path: string, data: string | ArrayBuffer | Uint8Array) {}
+	async readAsUrl(path: string): Promise<string> {
+		return Capacitor.convertFileSrc(path)
+	}
 
-	// @ts-ignore
+	async readAsText(path: string): Promise<string> {
+		const file = await Filesystem.readFile({path, encoding: Encoding.UTF8})
+		if (file.data instanceof Blob) {
+			console.warn(`[filesystem] File '${path}' loaded as blob, converted via Blob.text()`)
+			return await file.data.text()
+		}
+		return file.data
+	}
+
+	async write(path: string, data: ArrayBuffer | Uint8Array) {
+		// todo: blob should include mime type data where possible?
+		// @ts-ignore -- UInt8Array type is fine here (https://github.com/microsoft/TypeScript/issues/62546)
+		const blob = new Blob([data])
+		await Filesystem.writeFile({path, data: blob})
+	}
+
+	async writeText(path: string, data: string) {
+		await Filesystem.writeFile({path, data, encoding: Encoding.UTF8})
+	}
+
 	liveTree(path: string){
 		return new Observable<LiveQueryResult<IFileSystemTree>>((subscriber) => {
 			subscriber.next(LIVE_QUERY_LOADING_STATE)
 		})
 	}
 
-	// @ts-ignore
 	liveLs(path: string) {
 		return new Observable<LiveQueryResult<IFileSystemItem[]>>((subscriber) => {
 			subscriber.next(LIVE_QUERY_LOADING_STATE)
 		})
 	}
 
-	// @ts-ignore
 	liveRead(path: string) {
 		return new Observable<LiveQueryResult<string>>((subscriber) => {
 			subscriber.next(LIVE_QUERY_LOADING_STATE)

@@ -1,13 +1,13 @@
 import {eq} from "drizzle-orm";
 import {Observable} from "rxjs";
 
-import {vaults} from "../../services/database/schema";
-import type {IDatabaseService} from "../../services/database/database.service";
-import type {IDeviceAPI} from "../device.api";
-import type {IEventsService} from "../../services/events/events.service";
+import {vaults} from "../database/schema";
+import type {IDatabaseService} from "../database/database.service";
+import type {IDeviceAPI} from "../device/device.api.ts";
+import type {IEventsService} from "../events/events.service";
 import type {IVaultsAPI} from "./vaults.api";
-import {CreateVaultDto, VaultDto, UpdateVaultDto, VaultList} from "../../vault";
-import {EventTypes, type VaultChangeEvent} from "../../services/events/events";
+import {CreateVaultDto, VaultDto, UpdateVaultDto, VaultList} from "./vault.ts";
+import {EventTypes, type VaultChangeEvent} from "../events/events";
 import {
 	ErrorTypes,
 	HeadbaseError,
@@ -16,7 +16,7 @@ import {
 	LiveQueryStatus
 } from "../../control-flow";
 import {ErrorIdentifiers} from "../../error-identifiers.ts";
-import {EncryptionService} from "../../services/encryption/encryption.service.ts";
+import {EncryptionService} from "../encryption/encryption.service.ts";
 
 
 export class CommonVaultsAPI implements IVaultsAPI {

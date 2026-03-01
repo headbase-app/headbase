@@ -1,6 +1,6 @@
-import type {VaultDto} from "../vault.ts";
+import type {VaultDto} from "../vaults/vault.ts";
 import type {Observable} from "rxjs";
-import type {LiveQueryResult} from "../control-flow.ts";
+import type {LiveQueryResult} from "../../control-flow.ts";
 
 export interface IWorkspaceVaultAPI {
 	open: (vaultId: string) => Promise<void>;

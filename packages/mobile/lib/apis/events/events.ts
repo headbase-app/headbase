@@ -1,4 +1,4 @@
-import type {DeviceContext} from "../../apis/device.api.ts";
+import type {DeviceContext} from "../device/device.api.ts";
 
 export const EventTypes = {
 	// Object Events

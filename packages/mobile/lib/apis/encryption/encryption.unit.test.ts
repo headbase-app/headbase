@@ -1,6 +1,6 @@
 import { expect, test } from 'vitest';
 import {z} from "zod";
-import {EncryptionService} from "./encryption.service.ts";
+import {EncryptionService} from "./encryption.service";
 
 test('encrypt and decrypt a string', async () => {
 	const key = await EncryptionService._createEncryptionKey()

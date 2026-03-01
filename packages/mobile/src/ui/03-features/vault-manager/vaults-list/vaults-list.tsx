@@ -1,7 +1,7 @@
 import {Match, For, Switch, from, Show} from "solid-js";
-import {useVaultsService} from "@framework/vaults.context.ts";
+import {useVaultsAPI} from "@framework/vaults.context.ts";
 import type {VaultManagerPage} from "@ui/03-features/vault-manager/vault-manager.tsx";
-import {useCurrentVaultService} from "@framework/current-vault.context.ts";
+import {useWorkspaceVaultAPI} from "@framework/workspace-vault.context.ts";
 import {useFilesAPI} from "@framework/files-api.context.ts";
 
 export interface VaultListProps {
@@ -10,8 +10,8 @@ export interface VaultListProps {
 
 export function VaultsList(props: VaultListProps) {
 	const filesAPI = useFilesAPI()
-	const vaultsAPI = useVaultsService()
-	const workspaceVaultAPI = useCurrentVaultService()
+	const vaultsAPI = useVaultsAPI()
+	const workspaceVaultAPI = useWorkspaceVaultAPI()
 	const vaultsQuery = from(vaultsAPI.liveQuery())
 
 	const openVaultQuery = from(workspaceVaultAPI.liveGet())

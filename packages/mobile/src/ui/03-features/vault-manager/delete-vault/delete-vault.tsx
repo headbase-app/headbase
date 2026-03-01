@@ -1,6 +1,6 @@
 import {createSignal, onMount, Show} from "solid-js";
 import type {VaultDto} from "@headbase-app/libweb";
-import {useVaultsService} from "@framework/vaults.context.ts";
+import {useVaultsAPI} from "@framework/vaults.context.ts";
 import type {VaultManagerPage} from "@ui/03-features/vault-manager/vault-manager.tsx";
 
 export interface DeleteVaultProps {
@@ -9,7 +9,7 @@ export interface DeleteVaultProps {
 }
 
 export function DeleteVault(props: DeleteVaultProps) {
-	const vaultsAPI = useVaultsService()
+	const vaultsAPI = useVaultsAPI()
 
 	const [vault, setVault] = createSignal<VaultDto|null>(null)
 	onMount(async () => {
