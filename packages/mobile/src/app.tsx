@@ -25,11 +25,9 @@ import {Workspace} from "@ui/03-features/workspace/workspace.tsx";
 import {VaultMenu} from "@ui/03-features/vault-menu/vault-menu.tsx";
 import {VaultManager, type VaultManagerPage} from "@ui/03-features/vault-manager/vault-manager.tsx";
 import {VaultManagerDialog} from "@ui/03-features/vault-manager/vault-manager-dialog.tsx";
-import {BasicMarkdownEditor} from "@ui/03-features/file-editor/editors/basic-markdown-editor.ts";
-import {ImageViewer} from "@ui/03-features/file-editor/editors/image-viewer.ts";
-import {PDFViewer} from "@ui/03-features/file-editor/editors/pdf-viewer.ts";
 
 import "./app.css"
+import {HeadbaseCorePlugin} from "./plugin.ts";
 
 
 let databaseService: IDatabaseService
@@ -63,9 +61,7 @@ if (Capacitor.getPlatform() === 'web') {
 	pluginAPI = new CommonPluginAPI()
 }
 
-pluginAPI.registerPlugin(BasicMarkdownEditor)
-pluginAPI.registerPlugin(ImageViewer)
-pluginAPI.registerPlugin(PDFViewer)
+pluginAPI.registerPlugin(HeadbaseCorePlugin)
 
 export default function ApplicationWrapper() {
 	return (

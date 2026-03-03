@@ -20,6 +20,6 @@ export * from "./apis/workspace-vault/workspace-vault.api.ts"
 export * from "./apis/files/file-query.ts"
 export * from "./apis/files/files.api.ts"
 
-export * from "./apis/plugin/file-editor-plugins.ts"
+export * from "./apis/plugin/file-plugin.ts"
 export * from "./apis/plugin/plugin.api.ts"
 export * from "./apis/plugin/common-plugin.api.ts"

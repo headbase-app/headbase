@@ -1,8 +1,8 @@
 import {createSignal, onMount, Show, type JSXElement, onCleanup} from "solid-js";
 import {usePluginsAPI} from "@framework/plugins.context.ts";
 import {useFilesAPI} from "@framework/files-api.context.ts";
-import type {AnyFilePlugin} from "@headbase-app/libweb";
 import {useDeviceAPI} from "@framework/device.context.ts";
+import type {FilePlugin, FilePluginReturn} from "@headbase-app/libweb";
 
 export interface FileEditorProps {
 	filePath: string
@@ -15,25 +15,29 @@ export function FileEditor(props: FileEditorProps) {
 
 	let container!: HTMLDivElement
 	const [message, setMessage] = createSignal<JSXElement|null>(null)
-	const [activeEditor, setActiveEditor] = createSignal<InstanceType<AnyFilePlugin> | null>(null)
+	const [editorMethods, setEditorMethods] = createSignal<FilePluginReturn | null>(null)
 
 	onMount(async () => {
-		const editors = await pluginAPI.getFileEditors()
-		// todo: order/priority available editors?
-		const availableEditors = editors.filter(
-			viewer => {
-				// type assertion used to allow access to static 'isFileSupported' method type. todo: is there a better way here?
-				return (viewer as unknown as InstanceType<AnyFilePlugin>).isFileSupported(props.filePath)
+		// todo: order/priority available editors, allow multiple with user selection?
+		const availableFilePlugins = await pluginAPI.getFilePlugins()
+		let filePlugin: FilePlugin|null = null
+		for (const plugin of availableFilePlugins) {
+			for (const supportedExtension of plugin.supportedExtensions) {
+				if (props.filePath.endsWith(supportedExtension)) {
+					filePlugin = plugin
+					break;
+				}
 			}
-		)
-		const EditorPluginClass = availableEditors[0]
+		}
 
-		if (EditorPluginClass) {
-			const instance = new EditorPluginClass({
-				deviceAPI, pluginAPI, filesAPI
+		if (filePlugin) {
+			const pluginInstance = await filePlugin.run({
+				document: document,
+				container,
+				apis: {deviceAPI, pluginAPI, filesAPI},
+				filePath: props.filePath,
 			})
-			await instance.load(props.filePath, container)
-			setActiveEditor(instance)
+			setEditorMethods(pluginInstance)
 		}
 		else {
 			setMessage(
@@ -46,13 +50,13 @@ export function FileEditor(props: FileEditorProps) {
 	})
 
 	async function onSave() {
-		const editor = activeEditor()
-		if (!editor) {
+		const methods = editorMethods()
+		if (!methods) {
 			return alert("Attempted to save file but active editor could not be found.")
 		}
 
-		if ('save' in editor) {
-			const result = await editor.save();
+		if (methods.save) {
+			await methods.save();
 			alert("File saved")
 		}
 		else {
@@ -61,13 +65,13 @@ export function FileEditor(props: FileEditorProps) {
 	}
 
 	onCleanup(async () => {
-		await activeEditor()?.close()
+		await editorMethods()?.close()
 		// todo: should force remove container contents too just in case?
 	})
 
 	return (
 		<div>
-			<Show when={'save' in (activeEditor() ?? {})}>
+			<Show when={editorMethods()?.save}>
 				<div>
 					<button onClick={onSave}>save</button>
 				</div>

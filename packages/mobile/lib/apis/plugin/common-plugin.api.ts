@@ -1,20 +1,24 @@
-import {type IPluginAPI} from "./plugin.api";
-import {type AnyFilePlugin, FileEditorPlugin, FileEditorReadOnlyPlugin} from "./file-editor-plugins";
+import {type IPluginAPI, type Plugin, PLUGIN_TYPES} from "./plugin.api";
+import type {FilePlugin} from "./file-plugin.ts";
 
 export class CommonPluginAPI implements IPluginAPI {
-	private _fileEditors: AnyFilePlugin[] = []
+	private _filePlugins: FilePlugin[] = []
 
-	registerPlugin(plugin: AnyFilePlugin) {
-		if (FileEditorPlugin.isPrototypeOf(plugin) || FileEditorReadOnlyPlugin.isPrototypeOf(plugin)) {
-			console.debug(`[plugins] Registered file editor plugin: ${plugin.name}`)
-			this._fileEditors.push(plugin)
-		}
-		else {
-			console.warn(`Attempted to register plugin but not recognised: ${plugin.name}`)
+	registerPlugin(plugin: Plugin) {
+		console.debug(`[plugins] Registering plugin '${plugin.name}' (${plugin.id})`)
+
+		for (const p of plugin.plugins) {
+			if (p.type === PLUGIN_TYPES.FILE) {
+				console.debug(`[plugins] Registered file plugin '${p.name}' (${p.id})`)
+				this._filePlugins.push(p)
+			}
+			else {
+				console.warn(`[plugins] Ignoring plugin '${p.name}' (${p.id}) with unknown type '${p.type}'`)
+			}
 		}
 	}
 
-	async getFileEditors() {
-		return this._fileEditors
+	async getFilePlugins() {
+		return this._filePlugins
 	}
 }
