@@ -21,6 +21,6 @@ export const HeadbaseViewPlugin: FilePlugin = {
 	id: "headbase--views",
 	name: "Headbase Views",
 	description: "Provides Headbase views functionality via file plugin for opening .hb files",
-	supportedExtensions: [".hb"],
-	run: HeadbaseView,
+	fileExtensions: [".hb"],
+	editor: HeadbaseView,
 }

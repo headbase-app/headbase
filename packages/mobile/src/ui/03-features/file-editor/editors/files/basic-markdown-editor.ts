@@ -1,12 +1,12 @@
 import {
 	type FilePlugin,
-	type FilePluginProps,
-	type FilePluginReturn,
+	type FilePluginEditorProps,
+	type FilePluginEditorMethods,
 	PLUGIN_TYPES
 } from "@headbase-app/libweb";
 
 
-async function BasicMarkdownEditor({document, apis, filePath, container}: FilePluginProps): Promise<FilePluginReturn> {
+async function BasicMarkdownEditor({document, apis, filePath, container}: FilePluginEditorProps): Promise<FilePluginEditorMethods> {
 	const fileContents = await apis.filesAPI.readAsText(filePath)
 	const textarea = document.createElement("textarea")
 	textarea.value = fileContents
@@ -28,9 +28,10 @@ async function BasicMarkdownEditor({document, apis, filePath, container}: FilePl
 
 export const BasicMarkdownEditorPlugin: FilePlugin = {
 	type: PLUGIN_TYPES.FILE,
-	id: "headbase--basic-markdown-editor",
+	id: "headbase--basic-markdown",
 	name: "Basic Markdown Editor",
-	description: "Provides a basic markdown editor without additional EHadbase",
-	supportedExtensions: [".md"],
-	run: BasicMarkdownEditor,
+	description: "Provides basic support for editing markdown files",
+	fileIcon: "markdown",
+	fileExtensions: [".md"],
+	editor: BasicMarkdownEditor,
 }

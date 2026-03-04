@@ -1,7 +1,7 @@
 import {
 	type FilePlugin,
-	type FilePluginProps,
-	type FilePluginReturn,
+	type FilePluginEditorProps,
+	type FilePluginEditorMethods,
 	PLUGIN_TYPES
 } from "@headbase-app/libweb";
 
@@ -10,7 +10,7 @@ import pdfjsWorkerUrl from 'pdfjs-dist/build/pdf.worker?worker&url';
 pdfjs.GlobalWorkerOptions.workerSrc = pdfjsWorkerUrl
 
 
-async function PDFViewer({document, apis, filePath, container}: FilePluginProps): Promise<FilePluginReturn> {
+async function PDFViewer({document, apis, filePath, container}: FilePluginEditorProps): Promise<FilePluginEditorMethods> {
 	const data = await apis.filesAPI.read(filePath)
 
 	const pdfContainer = document.createElement("div");
@@ -68,6 +68,6 @@ export const PDFViewerPlugin: FilePlugin = {
 	id: "headbase--pdf-viewer",
 	name: "PDF Viewer",
 	description: "Provides support for viewing PDF files",
-	supportedExtensions: [".pdf"],
-	run: PDFViewer,
+	fileExtensions: [".pdf"],
+	editor: PDFViewer,
 }

@@ -2,7 +2,7 @@ import {createSignal, onMount, Show, type JSXElement, onCleanup} from "solid-js"
 import {usePluginsAPI} from "@framework/plugins.context.ts";
 import {useFilesAPI} from "@framework/files-api.context.ts";
 import {useDeviceAPI} from "@framework/device.context.ts";
-import type {FilePlugin, FilePluginReturn} from "@headbase-app/libweb";
+import type {FilePlugin, FilePluginEditorMethods} from "@headbase-app/libweb";
 
 export interface FileEditorProps {
 	filePath: string
@@ -15,14 +15,14 @@ export function FileEditor(props: FileEditorProps) {
 
 	let container!: HTMLDivElement
 	const [message, setMessage] = createSignal<JSXElement|null>(null)
-	const [editorMethods, setEditorMethods] = createSignal<FilePluginReturn | null>(null)
+	const [editorMethods, setEditorMethods] = createSignal<FilePluginEditorMethods | null>(null)
 
 	onMount(async () => {
 		// todo: order/priority available editors, allow multiple with user selection?
 		const availableFilePlugins = await pluginAPI.getFilePlugins()
 		let filePlugin: FilePlugin|null = null
 		for (const plugin of availableFilePlugins) {
-			for (const supportedExtension of plugin.supportedExtensions) {
+			for (const supportedExtension of plugin.fileExtensions) {
 				if (props.filePath.endsWith(supportedExtension)) {
 					filePlugin = plugin
 					break;
@@ -31,13 +31,13 @@ export function FileEditor(props: FileEditorProps) {
 		}
 
 		if (filePlugin) {
-			const pluginInstance = await filePlugin.run({
+			const pluginMethods = await filePlugin.editor({
 				document: document,
 				container,
 				apis: {deviceAPI, pluginAPI, filesAPI},
 				filePath: props.filePath,
 			})
-			setEditorMethods(pluginInstance)
+			setEditorMethods(pluginMethods)
 		}
 		else {
 			setMessage(
