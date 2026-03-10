@@ -31,7 +31,7 @@
 
 		/* Adding custom path aliases for cleaner imports */
 		"paths": {
-			"@headbase-app/libweb": [
+			"@headbase-app/lib": [
 				"./lib/index.ts"
 			],
 			"@common/*": [

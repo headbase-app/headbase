@@ -1,0 +1,14 @@
+.vault-menu {
+	anchor-name: --vault-menu;
+}
+
+.vault-switcher {
+	/** Remove default margin so anchor position can work **/
+	margin: 0;
+	margin-top: 10px;
+
+	position: absolute;
+	position-anchor: --vault-menu;
+	top: anchor(bottom);
+	left: anchor(left);
+}

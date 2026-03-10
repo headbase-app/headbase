@@ -1,66 +1,36 @@
 import {createEffect, from} from "solid-js";
 import {Route, createMemoryHistory, MemoryRouter, useNavigate} from "@solidjs/router";
 import {createStore} from "solid-js/store";
-import * as opfsx from "opfsx"
-import {Capacitor} from "@capacitor/core";
 
-import {CommonVaultsAPI, CommonEventsService, type IFilesAPI, CommonPluginAPI} from "@headbase-app/libweb";
-import type {IDatabaseService, IDeviceAPI, IEventsService, IVaultsAPI, IWorkspaceVaultAPI, IPluginAPI} from "@headbase-app/libweb";
+import {
+	CommonEventsService,
+	CommonPluginAPI,
+	WorkspaceProvider,
+	Workspace,
+	HeadbaseCorePlugin,
+	VaultsAPIContext,
+	WorkspaceVaultAPIContext,
+	FilesAPIContext,
+	DeviceAPIContext,
+	PluginAPIContext, useWorkspaceVaultAPI, type VaultManagerPage, VaultManager, useFilesAPI, VaultMenu,
+	VaultManagerDialog
+} from "@headbase-app/lib";
 
-import {WebDeviceApi} from "@apis/web/device/web-device.api.ts";
-import {WebDatabaseService} from "@apis/web/database/web-database.service.ts";
-import {WebWorkspaceVaultAPI} from "@apis/web/workspace-vault/workspace-vault.api.ts";
-import MobileDatabaseService from "@apis/mobile/database/mobile-database.service.ts";
-import {WebFilesAPI} from "@apis/web/files/web-files.api.ts";
-import {MobileFilesAPI} from "@apis/mobile/files/mobile-files.api.ts";
-
-import {FilesAPIContext, useFilesAPI} from "@framework/files-api.context.ts";
-import {VaultsAPIContext} from "@framework/vaults.context.ts";
-import {WorkspaceVaultAPIContext, useWorkspaceVaultAPI} from "@framework/workspace-vault.context.ts";
-import {PluginAPIContext} from "@framework/plugins.context.ts";
-import {DeviceAPIContext} from "@framework/device.context.ts";
-
-import {WorkspaceProvider} from "@ui/03-features/workspace/workspace.provider.tsx";
-import {Workspace} from "@ui/03-features/workspace/workspace.tsx";
-import {VaultMenu} from "@ui/03-features/vault-menu/vault-menu.tsx";
-import {VaultManager, type VaultManagerPage} from "@ui/03-features/vault-manager/vault-manager.tsx";
-import {VaultManagerDialog} from "@ui/03-features/vault-manager/vault-manager-dialog.tsx";
+import {MobileDeviceApi} from "@apis/device/mobile-device.api.ts";
+import MobileDatabaseService from "@apis/database/mobile-database.service.ts";
+import {MobileFilesAPI} from "@apis/files/mobile-files.api.ts";
+import {MobileVaultsAPI} from "@apis/vaults/mobile-vaults.api.ts";
+import {MobileWorkspaceVaultAPI} from "@apis/workspace-vault/mobile-workspace-vault.api.ts";
 
 import "./app.css"
-import {HeadbaseCorePlugin} from "./plugin.ts";
 
-
-let databaseService: IDatabaseService
-let deviceAPI: IDeviceAPI;
-let eventsService: IEventsService;
-let vaultsAPI: IVaultsAPI;
-let workspaceVaultAPI: IWorkspaceVaultAPI;
-let filesAPI: IFilesAPI
-let pluginAPI: IPluginAPI
-
-if (Capacitor.getPlatform() === 'web') {
-	console.log("[init] Welcome to Headbase, starting as web app")
-	databaseService = new WebDatabaseService();
-	deviceAPI = new WebDeviceApi();
-	eventsService = new CommonEventsService(deviceAPI);
-	vaultsAPI = new CommonVaultsAPI(databaseService, deviceAPI, eventsService);
-	workspaceVaultAPI = new WebWorkspaceVaultAPI(deviceAPI, eventsService, vaultsAPI);
-	filesAPI = new WebFilesAPI()
-	// Allows for easier managing/debugging of the OPFS in Firefox where no tools/extensions exist to easily  do this.
-	// @ts-ignore --- adding custom property for debugging purposes.
-	window.opfsx = opfsx
-	pluginAPI = new CommonPluginAPI()
-} else {
-	console.log(`[init] Welcome to Headbase, starting as ${Capacitor.getPlatform()} app`)
-	databaseService = new MobileDatabaseService();
-	deviceAPI = new WebDeviceApi();
-	eventsService = new CommonEventsService(deviceAPI);
-	vaultsAPI = new CommonVaultsAPI(databaseService, deviceAPI, eventsService);
-	workspaceVaultAPI = new WebWorkspaceVaultAPI(deviceAPI, eventsService, vaultsAPI);
-	filesAPI = new MobileFilesAPI()
-	pluginAPI = new CommonPluginAPI()
-}
-
+const databaseService = new MobileDatabaseService();
+const deviceAPI = new MobileDeviceApi();
+const eventsService = new CommonEventsService(deviceAPI);
+const vaultsAPI = new MobileVaultsAPI(databaseService, deviceAPI, eventsService);
+const workspaceVaultAPI = new MobileWorkspaceVaultAPI(deviceAPI, eventsService, vaultsAPI);
+const filesAPI = new MobileFilesAPI()
+const pluginAPI = new CommonPluginAPI()
 pluginAPI.registerPlugin(HeadbaseCorePlugin)
 
 export default function ApplicationWrapper() {
