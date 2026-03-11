@@ -21,6 +21,7 @@
 		"@capacitor/core": "^8.1.0",
 		"@capacitor/filesystem": "^8.1.2",
 		"@capacitor/ios": "^8.1.0",
+		"@headbase-app/lib": "file:vendor/headbase-app-lib-0.0.0.tgz",
 		"@solidjs/router": "^0.15.4",
 		"drizzle-orm": "^0.45.1",
 		"lucide-solid": "^0.574.0",

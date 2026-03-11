@@ -1,9 +1,10 @@
-import {from, Switch, Match, Show, For, createEffect} from "solid-js";
+import {from, Switch, Match, Show, For} from "solid-js";
+import {of, switchMap} from "rxjs";
+
 import {useWorkspace} from "../workspace/workspace.context";
 import {useWorkspaceVaultAPI} from "../../../03-framework/workspace-vault.context";
 import {useFilesAPI} from "../../../03-framework/files-api.context";
 import {FileTreeItem} from "./file-tree-item";
-import {combineLatestAll, iif, of, switchMap, tap} from "rxjs";
 
 
 export interface FileExplorerProps {
