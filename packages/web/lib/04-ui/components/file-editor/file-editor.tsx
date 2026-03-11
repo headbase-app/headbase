@@ -1,6 +1,6 @@
 import {createSignal, onMount, Show, type JSXElement, onCleanup} from "solid-js";
 import type {FilePlugin, FilePluginEditorMethods} from "../../../02-apis/plugin/file-plugin";
-import {useDeviceAPI} from "../../../03-framework/device.context";
+import {useDeviceAPI} from "../../../03-framework/contexts";
 import {useFilesAPI} from "../../../03-framework/files-api.context";
 import {usePluginsAPI} from "../../../03-framework/plugins.context";
 

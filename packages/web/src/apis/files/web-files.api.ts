@@ -13,6 +13,11 @@ import {Observable} from "rxjs";
 window.opfsx = opfxs
 
 export class WebFilesAPI implements IFilesAPI {
+	constructor() {
+		// @ts-ignore -- added to window debugging. todo: remove once more stable.
+		window.opfsx = opfsx
+	}
+
 	isVaultLocationSelectable(): boolean {
 		return false;
 	}

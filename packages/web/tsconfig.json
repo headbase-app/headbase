@@ -1,7 +1,46 @@
 {
-  "files": [],
-  "references": [
-    { "path": "./tsconfig.app.json" },
-    { "path": "./tsconfig.node.json" }
-  ]
+	"compilerOptions": {
+		"target": "ES2022",
+		"module": "ESNext",
+		"lib": ["ES2022", "DOM", "DOM.Iterable"],
+		"types": ["vite/client"],
+		"skipLibCheck": true,
+
+		/* Bundler mode */
+		"moduleResolution": "bundler",
+		"allowImportingTsExtensions": true,
+		"verbatimModuleSyntax": true,
+		"moduleDetection": "force",
+		"noEmit": true,
+
+		/* Linting */
+		"strict": true,
+		"noFallthroughCasesInSwitch": true,
+		"noUncheckedSideEffectImports": true,
+		/* Linting OVERWRITE - Allow for easier local development, rely on eslint warnings for this instead */
+		"noUnusedLocals": false,
+		"noUnusedParameters": false,
+		/* Linting OVERWRITE - Overwritten from default to allow 'private readonly' when typing constructor injection  */
+		"erasableSyntaxOnly": false,
+
+		/* Enabling decorators  */
+		"experimentalDecorators": true,
+		"useDefineForClassFields": false,
+
+		"paths": {
+			"@headbase-app/lib": [
+				"./lib/index.ts"
+			],
+			"@apis/*": [
+				"./src/apis/*"
+			],
+			"@utils/*": [
+				"./src/utils/*"
+			],
+			"@ui/*": [
+				"./src/ui/*"
+			]
+		}
+	},
+	"include": ["src"],
 }

@@ -1,4 +1,4 @@
-import type { StorybookConfig } from 'storybook-solidjs-vite';
+import type { StorybookConfig } from "@storybook/web-components-vite";
 
 const config: StorybookConfig = {
   stories: [
@@ -6,10 +6,12 @@ const config: StorybookConfig = {
     "../src/**/*.stories.@(js|jsx|mjs|ts|tsx)"
   ],
   addons: [
-    "@storybook/addon-docs"
+    "@storybook/addon-docs",
+		"@storybook/addon-a11y",
+		"@storybook/addon-vitest"
   ],
   framework: {
-    name: "storybook-solidjs-vite",
+		name: "@storybook/web-components-vite",
     options: {}
   },
 	core: {
