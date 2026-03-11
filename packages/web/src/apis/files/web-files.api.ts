@@ -1,18 +1,24 @@
 import {
+	EventTypes, type IEventsService,
 	type IFilesAPI,
 	type IFileSystemItem,
 	type IFileSystemTree, type IFileSystemTreeItem,
 	LIVE_QUERY_LOADING_STATE,
-	type LiveQueryResult
+	type LiveQueryResult, LiveQueryStatus, VaultDto
 } from "@headbase-app/lib";
 import * as opfxs from "opfsx"
 import type {OPFSXDirectoryTree, OPFSXFile} from "opfsx";
 import {Observable} from "rxjs";
 
-// @ts-ignore --- added for debugging
-window.opfsx = opfxs
 
 export class WebFilesAPI implements IFilesAPI {
+	constructor(
+		private eventsService: IEventsService
+	) {
+		// @ts-ignore -- added to window debugging. todo: remove once more stable.
+		window.opfsx = opfsx
+	}
+
 	isVaultLocationSelectable(): boolean {
 		return false;
 	}
@@ -115,8 +121,25 @@ export class WebFilesAPI implements IFilesAPI {
 	}
 
 	liveTree(path: string){
-		return new Observable<LiveQueryResult<IFileSystemTree>>((subscriber) => {
-			subscriber.next(LIVE_QUERY_LOADING_STATE)
+		return new Observable<LiveQueryResult<IFileSystemTree | null>>((observer) => {
+			const runQuery = async () => {
+				observer.next({status: LiveQueryStatus.LOADING})
+
+				try {
+					const tree = await this.tree(path)
+					observer.next({status: LiveQueryStatus.SUCCESS, result: tree })
+				}
+				catch (error) {
+					observer.next({status: LiveQueryStatus.ERROR, errors: [error] })
+				}
+			}
+
+			this.eventsService.subscribe(EventTypes.FILE_CHANGE, runQuery)
+			runQuery()
+
+			return () => {
+				this.eventsService.unsubscribe(EventTypes.FILE_CHANGE, runQuery)
+			}
 		})
 	}
 

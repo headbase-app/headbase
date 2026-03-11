@@ -1,7 +1,6 @@
 import {createEffect, from} from "solid-js";
 import {Route, createMemoryHistory, MemoryRouter, useNavigate} from "@solidjs/router";
 import {createStore} from "solid-js/store";
-import * as opfsx from "opfsx"
 
 import {
 	CommonEventsService, CommonPluginAPI,
@@ -23,13 +22,9 @@ const deviceAPI= new WebDeviceApi();
 const eventsService = new CommonEventsService(deviceAPI);
 const vaultsAPI = new WebVaultsAPI(databaseService, deviceAPI, eventsService);
 const workspaceVaultAPI = new WebWorkspaceVaultAPI(deviceAPI, eventsService, vaultsAPI);
-const filesAPI = new WebFilesAPI();
-
+const filesAPI = new WebFilesAPI(eventsService);
 const pluginAPI = new CommonPluginAPI();
 pluginAPI.registerPlugin(HeadbaseCorePlugin)
-
-// @ts-ignore -- added to window debugging. todo: remove once more stable.
-window.opfsx = opfsx
 
 
 export default function ApplicationWrapper() {

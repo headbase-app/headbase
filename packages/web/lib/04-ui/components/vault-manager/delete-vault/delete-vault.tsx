@@ -1,9 +1,7 @@
-import {createSignal, onMount, Show} from "solid-js";
+import {createSignal, from, Show} from "solid-js";
 
 import type {VaultManagerPage} from "../vault-manager";
 import {useVaultsAPI} from "../../../../03-framework/vaults.context";
-import {VaultDto} from "../../../../02-apis/vaults/vault";
-
 
 export interface DeleteVaultProps {
 	vaultId: string;
@@ -12,12 +10,7 @@ export interface DeleteVaultProps {
 
 export function DeleteVault(props: DeleteVaultProps) {
 	const vaultsAPI = useVaultsAPI()
-
-	const [vault, setVault] = createSignal<VaultDto|null>(null)
-	onMount(async () => {
-		const loadedVault = await vaultsAPI.get(props.vaultId)
-		setVault(loadedVault)
-	})
+	const vault = from(vaultsAPI.liveGet(props.vaultId))
 
 	const [error, setError] = createSignal<string|null>(null)
 	async function onDelete(e: SubmitEvent) {
@@ -37,7 +30,14 @@ export function DeleteVault(props: DeleteVaultProps) {
 		<div>
 			<button onClick={() => {props.navigate({type: "list"})}}>All vaults</button>
 
-			<Show when={vault()} fallback={<p>Loading vault....</p>} keyed>
+			<Show
+				when={(() => {
+					const v = vault()
+					return v?.status === "success" && v.result
+				})()}
+				fallback={<p>Loading vault....</p>}
+				keyed
+			>
 				{vault => (
 					<form onSubmit={onDelete}>
 						<p>Are you sure you want to delete vault '{vault.displayName}'?</p>

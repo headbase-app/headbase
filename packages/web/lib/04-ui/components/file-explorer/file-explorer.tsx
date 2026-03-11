@@ -1,9 +1,9 @@
-import {from, Switch, Match, createSignal, createEffect, Show, For} from "solid-js";
+import {from, Switch, Match, Show, For, createEffect} from "solid-js";
 import {useWorkspace} from "../workspace/workspace.context";
 import {useWorkspaceVaultAPI} from "../../../03-framework/workspace-vault.context";
-import type {IFileSystemTree} from "../../../02-apis/files/files.api";
 import {useFilesAPI} from "../../../03-framework/files-api.context";
 import {FileTreeItem} from "./file-tree-item";
+import {combineLatestAll, iif, of, switchMap, tap} from "rxjs";
 
 
 export interface FileExplorerProps {
@@ -12,23 +12,17 @@ export interface FileExplorerProps {
 
 export function FileExplorer(props?: FileExplorerProps) {
 	const {openTab} = useWorkspace()
-	const currentVaultService = useWorkspaceVaultAPI()
+	const workspaceVaultAPI = useWorkspaceVaultAPI()
 	const filesAPI = useFilesAPI()
-	const openVaultQuery = from(currentVaultService.liveGet())
-	const openVault = () => {
-		const query = openVaultQuery()
-		if (query?.status === "success") return query.result
-		return null
-	}
 
-	const [fileTree, setFileTree] = createSignal<IFileSystemTree|null>(null)
-	createEffect(async () => {
-		const vault = openVault()
-		if (vault) {
-			const tree = await filesAPI.tree(props?.path ?? vault.path)
-			setFileTree(tree)
-		}
-	})
+	const fileTreeQuery = from(workspaceVaultAPI.liveGet().pipe(
+		switchMap(vaultQuery => {
+			if (vaultQuery.status === "success" && vaultQuery.result) {
+				return filesAPI.liveTree(vaultQuery.result.path)
+			}
+			return of(null)
+		})
+	))
 
 	function openNewTab() {
 		openTab({type: "file-explorer", path: props?.path})
@@ -40,7 +34,13 @@ export function FileExplorer(props?: FileExplorerProps) {
 				<button onClick={openNewTab}>open in tab</button>
 			</div>
 			<Switch>
-				<Match when={fileTree()} keyed>
+				<Match
+					when={(() => {
+						const fileTree = fileTreeQuery();
+						return fileTree?.status === 'success' && fileTree.result
+					})()}
+					keyed
+				>
 					{(fileTree) => (
 						<>
 							<Show when={fileTree.children.length > 0} fallback={<p>No files found</p>}>
@@ -51,7 +51,7 @@ export function FileExplorer(props?: FileExplorerProps) {
 						</>
 					)}
 				</Match>
-				<Match when={!fileTree()}>
+				<Match when={!fileTreeQuery()}>
 					<p>Open a vault to display files.</p>
 				</Match>
 			</Switch>

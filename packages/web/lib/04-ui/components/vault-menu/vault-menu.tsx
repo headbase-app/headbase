@@ -1,4 +1,6 @@
 import {For, from, Match, Show, Switch} from "solid-js";
+import {map} from "rxjs";
+
 import ChevronUpIcon from "lucide-solid/icons/chevron-up"
 import ContentTypesIcon from "lucide-solid/icons/shapes"
 import FileExplorerIcon from "lucide-solid/icons/folder"
@@ -12,19 +14,22 @@ import type {VaultManagerPage} from "../vault-manager/vault-manager";
 
 import "./vault-menu.css"
 
+
 export function VaultMenu() {
 	const vaultsService = useVaultsAPI()
 	const currentVaultService = useWorkspaceVaultAPI()
 	const workspaceAPI = useWorkspace()
 
 	const vaultsQuery = from(vaultsService.liveQuery())
-	const openVaultQuery = from(currentVaultService.liveGet())
-	const openVault = () => {
-		const query = openVaultQuery()
-		if (query?.status === "success") return query.result
-		return null
-	}
+	const openVault = from(
+		currentVaultService.liveGet().pipe(
+			map(result => {
+				return result.status === "success" ? result.result : null
+			})
+		)
+	);
 
+	// todo: replace with context?
 	function dispatchOpenVaultManager(page?: VaultManagerPage) {
 		document.dispatchEvent(new CustomEvent("vault-manager-open", {detail: page}))
 	}
