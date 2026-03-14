@@ -1,6 +1,7 @@
 import {html} from "lit";
 import {ContextProvider, provide} from '@lit/context';
-import { customElement, property } from "lit/decorators.js";
+import { customElement, state } from "lit/decorators.js";
+import {ContextProvider as VanillaContextProvider} from "@ui/components/context.js"
 
 import {
 	CommonEventsService,
@@ -10,8 +11,8 @@ import {
 	HeadbaseCorePlugin, PluginAPIContext,
 	TranslationsAPIContext, VaultsAPIContext, WorkspaceVaultAPIContext,
 	MemoryRouter, PageRouterContext,
-	routes, routePages, BaseElement, type LiveQueryResult, type IWorkspaceVaultAPI, type VaultDto,
-	ObservableProperty, LIVE_QUERY_LOADING_STATE
+	routes, routePages, BaseElement,
+	ObservableProperty, type LiveQueryResult, type VaultDto
 } from "@headbase-app/lib";
 
 import "../lib/04-ui/pages/welcome-page.ts"
@@ -23,7 +24,12 @@ import {WebDeviceApi} from "@apis/device/web-device.api.ts";
 import {WebVaultsAPI} from "@apis/vaults/web-vaults.api.ts";
 import {WebWorkspaceVaultAPI} from "@apis/workspace-vault/workspace-vault.api.ts";
 import {WebFilesAPI} from "@apis/files/web-files.api.ts";
-import {of, switchMap} from "rxjs";
+import {FileExplorer} from "@ui/components/file-explorer.ts";
+import {
+	FileExplorerVanilla,
+	VanillaFilesAPIContext,
+	VanillaWorkspaceVaultAPIContext
+} from "@ui/components/file-explorer-vanilla.ts";
 
 const translationsAPI = new CommonTranslationsAPI();
 const databaseService = new WebDatabaseService();
@@ -35,8 +41,14 @@ const filesAPI = new WebFilesAPI();
 const pluginAPI = new CommonPluginAPI();
 pluginAPI.registerPlugin(HeadbaseCorePlugin)
 
+customElements.define(FileExplorer.tag, FileExplorer)
+customElements.define(FileExplorerVanilla.tag, FileExplorerVanilla)
+
 @customElement("hb-app")
 export class HeadbaseApp extends BaseElement {
+	static tag = "hb-app"
+	contextProvider!: VanillaContextProvider
+
 	@provide({context: TranslationsAPIContext}) translationsAPI = translationsAPI
 	@provide({context: DeviceAPIContext}) deviceAPI = deviceAPI
 	@provide({context: VaultsAPIContext}) vaultsAPI = vaultsAPI
@@ -51,32 +63,28 @@ export class HeadbaseApp extends BaseElement {
 		routes: routePages
 	})
 
-	currentVault = new ObservableProperty({host: this, observable: this.workspaceVaultAPI.liveGet()})
-	// todo: next steps for ObservableProperty
-	// - allow render updates via async directives rather than 'forceUpdateRender' via controller?
-	// - how to implement effects run on observed value change?
+	@state() currentVault?: LiveQueryResult<VaultDto | null>
+	currentVault$!: ObservableProperty<LiveQueryResult<VaultDto | null>>
 
-	// proof of concept for composing observables into single property:
-	fileTree = new ObservableProperty({
-		host: this,
-		observable:
-			this.workspaceVaultAPI.liveGet()
-				.pipe(
-					switchMap(vaultQuery => {
-						if (vaultQuery.status === "success" && vaultQuery.result) {
-							return this.filesAPI.tree(vaultQuery.result?.path)
-						}
-						return of(null)
-					})
-				)
-	})
+	constructor() {
+		super();
+		this.contextProvider = new VanillaContextProvider()
+		this.contextProvider.add(VanillaWorkspaceVaultAPIContext, this.workspaceVaultAPI)
+		this.contextProvider.add(VanillaFilesAPIContext, this.filesAPI)
+	}
+
+	connectedCallback() {
+		super.connectedCallback();
+		this.currentVault$ = new ObservableProperty(this, this.workspaceVaultAPI.liveGet(), {
+			reflectedProperty: "currentVault"
+		})
+	}
 
 	render() {
-		console.debug(this.currentVault.value)
-		console.debug(this.fileTree.value)
-
 		return html`
 			<p>This is a test</p>
+			<hb-file-explorer></hb-file-explorer>
+			<hb-file-explorer-vanilla></hb-file-explorer-vanilla>
 			${this.memoryRouter.outlet()}
 		`
 	}
