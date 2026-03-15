@@ -20,7 +20,7 @@ export class FileExplorer extends BaseElement {
 	constructor() {
 		super();
 		this.fileTree = LIVE_QUERY_EMPTY
-		this.reflectObservable("fileTree", this.workspaceVaultAPI.liveGet().pipe(
+		this.observedState("fileTree", this.workspaceVaultAPI.liveGet().pipe(
 			switchMap(vaultQuery => {
 				if (vaultQuery.status === "success" && vaultQuery.result) {
 					return this.filesAPI.liveTree(vaultQuery.result.path)

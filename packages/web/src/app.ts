@@ -1,4 +1,7 @@
 import {html, render} from "lit-html";
+import {choose} from "lit-html/directives/choose.js";
+import {BehaviorSubject} from "rxjs";
+
 import {
 	CommonEventsService,
 	CommonPluginAPI,
@@ -16,8 +19,6 @@ import {WebDeviceApi} from "@apis/device/web-device.api.ts";
 import {WebVaultsAPI} from "@apis/vaults/web-vaults.api.ts";
 import {WebWorkspaceVaultAPI} from "@apis/workspace-vault/workspace-vault.api.ts";
 import {WebFilesAPI} from "@apis/files/web-files.api.ts";
-import {BehaviorSubject} from "rxjs";
-import {choose} from "lit-html/directives/choose.js";
 
 const translationsAPI = new CommonTranslationsAPI();
 const databaseService = new WebDatabaseService();
@@ -35,9 +36,8 @@ export class HeadbaseApp extends BaseElement {
 	static tag = "hb-app"
 	contextProvider: ContextProvider
 
-	currentPage$: BehaviorSubject<string>
-	currentPage: string
-	currentVault: LiveQueryResult<VaultDto | null>
+	currentPage: BehaviorSubject<string>
+	currentVault: BehaviorSubject<LiveQueryResult<VaultDto | null>>
 
 	constructor() {
 		super();
@@ -49,19 +49,17 @@ export class HeadbaseApp extends BaseElement {
 		this.contextProvider.add(FilesAPIContext, filesAPI)
 		this.contextProvider.add(PluginAPIContext, pluginAPI)
 
-		this.currentPage$ = new BehaviorSubject(routes.app)
-		this.currentPage = routes.app
-		this.reflectObservable("currentPage", this.currentPage$)
-		this.contextProvider.add(CurrentPageContext, this.currentPage$)
+		this.currentPage = this.observedState(routes.selectVault)
+		this.contextProvider.add(CurrentPageContext, this.currentPage)
 
-		this.currentVault = LIVE_QUERY_LOADING_STATE
-		this.reflectObservable("currentVault", workspaceVaultAPI.liveGet())
+		this.currentVault = this.observedState<LiveQueryResult<VaultDto | null>>(LIVE_QUERY_LOADING_STATE)
 	}
 
 	render() {
+		console.debug("hb-app render")
 		render(html`
 			<hb-file-explorer></hb-file-explorer>
-			${choose(this.currentPage, [
+			${choose(this.currentPage.value, [
 				[routes.welcome, () => html`<hb-page-welcome></hb-page-welcome>`],
 				[routes.selectVault, () => html`<hb-page-select-vault></hb-page-select-vault>`],
 				[routes.app, () => html`<hb-page-app></hb-page-app>`],

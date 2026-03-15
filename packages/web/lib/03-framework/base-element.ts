@@ -1,12 +1,6 @@
-import {isObservable, type Observable, Subject, type Subscription, takeUntil} from "rxjs";
+import {BehaviorSubject, isObservable, Observable, skip, Subject, type Subscription, takeUntil} from "rxjs";
 
 const unsubscribe = Symbol('unsubscribe');
-const subscriptions = Symbol('subscriptions');
-
-interface StoredSubscription {
-	observable$?: Observable<unknown>;
-	subscription?: Subscription;
-}
 
 export interface ReflectObservableOptions {
 	disableRenderUpdate?: boolean
@@ -19,7 +13,6 @@ export interface ReflectObservableOptions {
  */
 export abstract class BaseElement extends HTMLElement {
 	[unsubscribe] = new Subject();
-	[subscriptions] = new Map<keyof this, StoredSubscription>();
 
 	connectedCallback() {
 		this.render()
@@ -29,29 +22,32 @@ export abstract class BaseElement extends HTMLElement {
 	}
 	render() {}
 
-	reflectObservable<Key extends keyof this>(
-		property: Key,
-		observable$: Observable<this[Key]>,
+	observedState<T>(
+		initialValue: T,
+		observable$?: Observable<T>,
 		options?: ReflectObservableOptions
 	) {
-		if (!this.hasOwnProperty(property)) throw new Error('Invalid property name');
-		if (!isObservable(observable$)) throw new Error('Invalid Observable!');
+		if (observable$ && !isObservable(observable$)) throw new Error('Provided value is not an observable');
 
-		const existingSubscription = this[subscriptions].get(property);
-		if (existingSubscription) {
-			if (existingSubscription?.observable$ === observable$) return;
-			else existingSubscription?.subscription?.unsubscribe();
+		const subject = new BehaviorSubject<T>(initialValue);
+
+		// If an existing observable is supplied, subscribe the subject
+		if (observable$) {
+			observable$.subscribe(subject).add(this[unsubscribe]);
 		}
-		const subscription = observable$
-			.pipe(takeUntil(this[unsubscribe]))
-			.subscribe(value => {
-				this[property] = value;
 
+		// Subscribe to the subject to re-render the component when an observable changes.
+		subject
+			// Skip the initialValue emit as this will trigger a render before all component constructor logic is run.
+			// We still want BehaviorSubject.value so can't use RelaySubject/Subject here.
+			.pipe(skip(1))
+			.subscribe((next) => {
+				console.debug("observedState next", next);
 				if (!options?.disableRenderUpdate) {
-					this.render();
+					this.render()
 				}
-			})
+		}).add(this[unsubscribe]);
 
-		this[subscriptions].set(property, { observable$, subscription });
+		return subject
 	}
 }
