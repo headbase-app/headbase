@@ -1,16 +1,15 @@
-import {html} from "lit";
-import {customElement} from "lit/decorators.js";
+import {html, render} from "lit-html";
 import {BaseElement} from "../../03-framework/base-element";
 
-@customElement("hb-select-vault-page")
 export class SelectVaultPage extends BaseElement {
+	static tag = "hb-page-select-vault"
 	render() {
-		return html`<p>Select Vault</p>`
+		render(html`<p>Select Vault</p>`, this)
 	}
 }
 
 declare global {
 	interface HTMLElementTagNameMap {
-		'hb-select-vault-page': SelectVaultPage
+		'hb-page-select-vault': SelectVaultPage
 	}
 }

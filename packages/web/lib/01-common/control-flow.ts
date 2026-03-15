@@ -40,3 +40,9 @@ export type LiveQueryResult<Data = null> = {
 export const LIVE_QUERY_LOADING_STATE = {
 	status: LiveQueryStatus.LOADING,
 } as const
+
+export const LIVE_QUERY_EMPTY = {
+	status: LiveQueryStatus.SUCCESS,
+	result: null
+} as const
+

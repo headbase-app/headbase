@@ -1,10 +1,12 @@
-import {createContext} from "@lit/context";
+import {createContext} from "./context.ts";
+
 import type {IDeviceAPI} from "../02-apis/device/device.api";
 import type {IFilesAPI} from "../02-apis/files/files.api.ts";
 import type {IPluginAPI} from "../02-apis/plugin/plugin.api.ts";
 import type {ITranslationsAPI} from "../02-apis/translations/translations.api.ts";
 import type {IVaultsAPI} from "../02-apis/vaults/vaults.api.ts";
 import type {IWorkspaceVaultAPI} from "../02-apis/workspace-vault/workspace-vault.api.ts";
+
 
 export const DeviceAPIContext = createContext<IDeviceAPI>('IDeviceAPI');
 export const FilesAPIContext = createContext<IFilesAPI>('IFilesAPI');

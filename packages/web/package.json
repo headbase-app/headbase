@@ -18,9 +18,8 @@
     "test:e2e:setup": "npx playwright install"
   },
   "dependencies": {
-    "@lit/context": "^1.1.6",
     "drizzle-orm": "^0.45.1",
-    "lit": "^3.3.2",
+    "lit-html": "^3.3.2",
     "lucide": "^0.577.0",
     "opfsx": "^0.1.0",
     "pdfjs-dist": "^5.5.207",

@@ -1,17 +1,15 @@
-import {html} from "lit";
-import {customElement} from "lit/decorators.js";
+import {html, render} from "lit-html";
 import {BaseElement} from "../../03-framework/base-element";
 
-
-@customElement("hb-app-page")
 export class AppPage extends BaseElement {
+	static tag = "hb-page-app"
 	render() {
-		return html`<p>App Page</p>`
+		render(html`<p>App Page</p>`, this)
 	}
 }
 
 declare global {
 	interface HTMLElementTagNameMap {
-		'hb-app-page': AppPage
+		'hb-page-app': AppPage
 	}
 }
