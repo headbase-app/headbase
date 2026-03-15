@@ -1,8 +1,15 @@
-import {html, render, TemplateResult} from "lit-html";
-import {BaseElement} from "../../../03-framework/base-element";
+import {html, render, type TemplateResult} from "lit-html";
 import {BehaviorSubject} from "rxjs";
+import {BaseElement} from "../../../03-framework/base-element";
+
+import "./vault-manager.css"
 
 export type VaultManagerPage = {type: "list"} | {type: "create"} | {type: "edit", id: string} | {type: "delete", id: string};
+
+export const VaultManagerEvents = {
+	NAVIGATE: "hb:vault-manager:navigate",
+} as const
+
 
 export class VaultManager extends BaseElement {
 	static tag = "hb-vault-manager"
@@ -10,8 +17,10 @@ export class VaultManager extends BaseElement {
 
 	constructor() {
 		super();
-		this.page = this.observedState({type: "list"})
-		this.addEventListener("hb-vault-manager-page", (e: CustomEventInit<VaultManagerPage>) => {
+		this.page = this.observedState<VaultManagerPage>({type: "list"})
+		// @ts-ignore -- todo: add easy way to satisfy types on custom events?
+		this.addEventListener(VaultManagerEvents.NAVIGATE, (e: CustomEvent<VaultManagerPage>) => {
+			e.stopImmediatePropagation()
 			this.page.next(e.detail)
 		})
 	}

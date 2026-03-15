@@ -31,12 +31,15 @@ export class CommonTranslationsAPI implements ITranslationsAPI {
 	addTranslations(language: string, translations: TranslationObject) {
 		if (translations[language]) {
 			translations[language] = {
+				// @ts-ignore
 				...translations[language],
 				...translations,
 			}
 		}
 		else {
+			// @ts-ignore
 			translations[language] = translations
 		}
+
 	}
 }

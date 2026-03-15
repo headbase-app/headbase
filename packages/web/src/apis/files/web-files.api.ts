@@ -6,7 +6,7 @@ import {
 	LIVE_QUERY_LOADING_STATE,
 	type LiveQueryResult, LiveQueryStatus, VaultDto
 } from "@headbase-app/lib";
-import * as opfxs from "opfsx"
+import * as opfsx from "opfsx"
 import type {OPFSXDirectoryTree, OPFSXFile} from "opfsx";
 import {Observable} from "rxjs";
 
@@ -69,7 +69,7 @@ export class WebFilesAPI implements IFilesAPI {
 
 	async tree(path: string): Promise<IFileSystemTree> {
 		try {
-			const tree = await opfxs.tree(path)
+			const tree = await opfsx.tree(path)
 			return {
 				name: this.getFileName(path),
 				path,
@@ -99,16 +99,16 @@ export class WebFilesAPI implements IFilesAPI {
 	async mkdir(path: string) {}
 
 	async read(path: string): Promise<Uint8Array> {
-		const file = await opfxs.read(path)
+		const file = await opfsx.read(path)
 		const buffer = await file.arrayBuffer()
 		return new Uint8Array(buffer)
 	}
 	async readAsText(path: string): Promise<string> {
-		const file = await opfxs.read(path)
+		const file = await opfsx.read(path)
 		return await file.text()
 	}
 	async readAsUrl(path: string): Promise<string> {
-		const file = await opfxs.read(path)
+		const file = await opfsx.read(path)
 		const buffer = await file.arrayBuffer()
 		const blob = new Blob([buffer])
 		return URL.createObjectURL(blob)
@@ -117,7 +117,7 @@ export class WebFilesAPI implements IFilesAPI {
 	async write(path: string, data: ArrayBuffer | Uint8Array) {}
 
 	async writeText(path: string, data: string) {
-		await opfxs.write(path, data)
+		await opfsx.write(path, data)
 	}
 
 	liveTree(path: string){

@@ -1,12 +1,12 @@
-import {html, render, TemplateResult} from "lit-html";
+import {html, render, type TemplateResult} from "lit-html";
 import {repeat} from "lit-html/directives/repeat.js";
 import {BehaviorSubject, of, switchMap} from "rxjs";
 
 import {useContext} from "../../../03-framework/context";
 import {FilesAPIContext, WorkspaceVaultAPIContext} from "../../../03-framework/contexts";
 import {BaseElement} from "../../../03-framework/base-element";
-import {LIVE_QUERY_EMPTY, LiveQueryResult} from "../../../01-common/control-flow";
-import {IFileSystemTree} from "../../../02-apis/files/files.api";
+import {LIVE_QUERY_EMPTY, type LiveQueryResult} from "../../../01-common/control-flow";
+import {type IFileSystemTree} from "../../../02-apis/files/files.api";
 
 
 export class FileExplorer extends BaseElement {
@@ -29,8 +29,8 @@ export class FileExplorer extends BaseElement {
 
 	render() {
 		let content: TemplateResult;
-		if (this.fileTree.value.status === "success") {
-			if (this.fileTree.value.result?.children.length > 0) {
+		if (this.fileTree.value.status === "success" && this.fileTree.value.result) {
+			if (this.fileTree.value.result.children.length > 0) {
 				content = html`${repeat(
 					this.fileTree.value.result.children,
 					(fileItem) => fileItem.path,

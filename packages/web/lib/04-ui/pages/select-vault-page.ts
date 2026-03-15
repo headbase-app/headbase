@@ -4,7 +4,10 @@ import {BaseElement} from "../../03-framework/base-element";
 export class SelectVaultPage extends BaseElement {
 	static tag = "hb-page-select-vault"
 	render() {
-		render(html`<p>Select Vault</p>`, this)
+		render(html`
+			<h1>Select Vault</h1>
+			<hb-vault-manager></hb-vault-manager>
+		`, this)
 	}
 }
 

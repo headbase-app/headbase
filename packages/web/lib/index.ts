@@ -17,9 +17,9 @@ export * from "./02-apis/vaults/vault.js"
 export * from "./02-apis/vaults/vaults.api.js"
 export * from "./02-apis/workspace-vault/workspace-vault.api.js"
 
-export * from "./03-framework/base-element.ts"
-export * from "./03-framework/context.ts"
-export * from "./03-framework/contexts.ts"
+export * from "./03-framework/base-element.js"
+export * from "./03-framework/context.js"
+export * from "./03-framework/contexts.js"
 
 // export * from "./04-ui/components/file-editor/file-editor.jsx"
 // export * from "./04-ui/components/file-explorer/file-explorer.jsx"
@@ -35,6 +35,11 @@ export * from "./03-framework/contexts.ts"
 export * from "./04-ui/pages/welcome-page.ts"
 export * from "./04-ui/pages/select-vault-page.ts"
 export * from "./04-ui/pages/app-page.ts"
+
+export * from "./04-ui/components/vault-manager/vault-manager.js"
+export * from "./04-ui/components/vault-manager/vaults-list/vaults-list.js"
+
+export * from "./04-ui/components/file-explorer/file-explorer.js"
 
 export * from "./plugin.js"
 export * from "./routes.ts"

@@ -31,22 +31,23 @@ export abstract class BaseElement extends HTMLElement {
 
 		const subject = new BehaviorSubject<T>(initialValue);
 
-		// If an existing observable is supplied, subscribe the subject
+		// If an existing observable is supplied, subscribe the subject to this observable.
 		if (observable$) {
 			observable$.subscribe(subject).add(this[unsubscribe]);
 		}
 
-		// Subscribe to the subject to re-render the component when an observable changes.
-		subject
-			// Skip the initialValue emit as this will trigger a render before all component constructor logic is run.
-			// We still want BehaviorSubject.value so can't use RelaySubject/Subject here.
-			.pipe(skip(1))
-			.subscribe((next) => {
-				console.debug("observedState next", next);
-				if (!options?.disableRenderUpdate) {
-					this.render()
-				}
-		}).add(this[unsubscribe]);
+		// Unless opted out, subscribe to re-render the component when the subject changes.
+		// The initial BehaviorSubject emit is skipped to avoid triggering a render to early before all component
+		// constructor logic is run.
+		// todo: does this indicate that components should have a custom lifecycle?
+		// for example: .render returns a TemplateResult, the base class is then responsible for rendering to the DOM and
+		// can also implement a lifecycle to prevent renders before a flag is set in connectedCallback.
+		// Components would then call a function such as .requestRender/.update/.requestUpdate
+		if (!options?.disableRenderUpdate) {
+			subject
+				.pipe(skip(1))
+				.subscribe(() => {this.render()}).add(this[unsubscribe]);
+		}
 
 		return subject
 	}

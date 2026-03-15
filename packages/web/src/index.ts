@@ -1,9 +1,9 @@
-import {AppPage, SelectVaultPage, WelcomePage, VaultManager} from "@headbase-app/lib";
-
-import {HeadbaseApp} from "./app.ts"
 import {
-	FileExplorer,
-} from "@ui/components/file-explorer.ts";
+	AppPage, SelectVaultPage, WelcomePage,
+	VaultManager, VaultsList,
+	FileExplorer
+} from "@headbase-app/lib";
+import {HeadbaseApp} from "./app.ts"
 
 customElements.define(HeadbaseApp.tag, HeadbaseApp)
 
@@ -12,5 +12,6 @@ customElements.define(SelectVaultPage.tag, SelectVaultPage)
 customElements.define(AppPage.tag, AppPage)
 
 customElements.define(VaultManager.tag, VaultManager)
+customElements.define(VaultsList.tag, VaultsList)
 
 customElements.define(FileExplorer.tag, FileExplorer)

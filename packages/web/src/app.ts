@@ -26,7 +26,7 @@ const deviceAPI = new WebDeviceApi();
 const eventsService = new CommonEventsService(deviceAPI);
 const vaultsAPI = new WebVaultsAPI(databaseService, deviceAPI, eventsService);
 const workspaceVaultAPI = new WebWorkspaceVaultAPI(deviceAPI, eventsService, vaultsAPI);
-const filesAPI = new WebFilesAPI();
+const filesAPI = new WebFilesAPI(eventsService);
 const pluginAPI = new CommonPluginAPI();
 pluginAPI.registerPlugin(HeadbaseCorePlugin)
 
@@ -58,7 +58,6 @@ export class HeadbaseApp extends BaseElement {
 	render() {
 		console.debug("hb-app render")
 		render(html`
-			<hb-file-explorer></hb-file-explorer>
 			${choose(this.currentPage.value, [
 				[routes.welcome, () => html`<hb-page-welcome></hb-page-welcome>`],
 				[routes.selectVault, () => html`<hb-page-select-vault></hb-page-select-vault>`],
