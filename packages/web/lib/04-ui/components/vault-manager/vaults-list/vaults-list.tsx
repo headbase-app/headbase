@@ -1,4 +1,5 @@
 import {Match, For, Switch, from, Show} from "solid-js";
+import {map} from "rxjs";
 
 import type {VaultManagerPage} from "../vault-manager";
 import {useFilesAPI} from "../../../../03-framework/files-api.context";
@@ -14,14 +15,15 @@ export function VaultsList(props: VaultListProps) {
 	const filesAPI = useFilesAPI()
 	const vaultsAPI = useVaultsAPI()
 	const workspaceVaultAPI = useWorkspaceVaultAPI()
-	const vaultsQuery = from(vaultsAPI.liveQuery())
 
-	const openVaultQuery = from(workspaceVaultAPI.liveGet())
-	const openVault = () => {
-		const query = openVaultQuery()
-		if (query?.status === "success") return query.result
-		return null
-	}
+	const vaultsQuery = from(vaultsAPI.liveQuery())
+	const openVault = from(
+		workspaceVaultAPI.liveGet().pipe(
+			map(result => {
+				return result.status === "success" ? result.result : null
+			})
+		)
+	);
 
 	return (
 		<div>

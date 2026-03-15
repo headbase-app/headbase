@@ -1,0 +1,17 @@
+{
+  "name": "@headbase-app/lib",
+  "version": "0.0.0",
+  "type": "module",
+  "main": "./dist/index.ts",
+  "scripts": {
+    "build": "ts-node ./build.ts"
+  },
+  "peerDependencies": {
+    "solid-js": "^1.9.11"
+  },
+  "devDependencies": {
+    "@types/node": "^24.10.1",
+    "ts-node": "^10.9.2",
+    "typescript": "~5.9.3"
+  }
+}
