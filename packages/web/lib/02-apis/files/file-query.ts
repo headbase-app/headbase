@@ -1,4 +1,4 @@
-export type FieldData = string | number | boolean | null
+type FieldData = string | number | boolean | null
 export type ObjectFields = {
 	[key: string]: FieldData | FieldData[] | ObjectFields
 }

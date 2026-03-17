@@ -1,4 +1,4 @@
-import {html, render, type TemplateResult} from "lit-html";
+import {html, nothing, render, type TemplateResult} from "lit-html";
 import {BehaviorSubject} from "rxjs";
 
 import {VaultDto} from "../../../../02-apis/vaults/vault";
@@ -52,8 +52,8 @@ export class VaultsList extends BaseElement {
 				<ul>
 					${this.vaults.value.result.map(vault => html`
 						<li>
-							<h3>${vault.displayName}</h3>
-							${this.filesAPI.isVaultLocationSelectable() ?? html`<p>${vault.path}</p>`}
+							<h3>${vault.displayName}${currentVault?.id === vault.id ? html`<span>(OPEN)</span>`: nothing}</h3>
+							${this.filesAPI.isVaultLocationSelectable() ? html`<p>${vault.path}</p>` : nothing}
 							<button @click=${()=> {this.navigate({type: "delete", id: vault.id})}}>Delete</button>
 							<button @click=${()=> {this.navigate({type: "edit", id: vault.id})}}>Edit</button>
 							<button>New tab</button>

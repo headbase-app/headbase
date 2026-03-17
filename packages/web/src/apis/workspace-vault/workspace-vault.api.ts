@@ -18,10 +18,10 @@ export class WebWorkspaceVaultAPI implements IWorkspaceVaultAPI {
 		const currentVault = await this.get()
 
 		if (vaultId) {
+			if (currentVault?.id !== vaultId) {
+				await this.close()
+			}
 			await this.open(vaultId)
-		}
-		else if (currentVault) {
-			document.title = `${currentVault.displayName} | Headbase`
 		}
 	}
 
@@ -39,7 +39,6 @@ export class WebWorkspaceVaultAPI implements IWorkspaceVaultAPI {
 		}
 		if (vaultToOpen) {
 			sessionStorage.setItem("hb_current_vault", JSON.stringify(vaultToOpen));
-			document.title = `${vaultToOpen.displayName} | Headbase`
 			this.eventsService.dispatch(EventTypes.VAULT_OPEN, {
 				context: this.deviceService.getCurrentContext(),
 				data: {
