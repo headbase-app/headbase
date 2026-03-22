@@ -63,7 +63,7 @@ export class WebVaultsAPI implements IVaultsAPI {
 		const db = await this.databaseService.getDatabase()
 		const currentVault = await this.get(id)
 		if (!currentVault) {
-			throw new Error(ErrorIdentifiers.VAULT_NOT_FOUND)
+			throw new HeadbaseError({type: ErrorIdentifiers.VAULT_NOT_FOUND, devMessage: `vault ${id} not found`})
 		}
 
 		const timestamp = new Date().toISOString();
@@ -74,7 +74,7 @@ export class WebVaultsAPI implements IVaultsAPI {
 				displayName: updateVaultDto.displayName ?? currentVault.displayName,
 				path: updateVaultDto.path ?? currentVault.path,
 			})
-			.where(eq(vaults.path, id))
+			.where(eq(vaults.id, id))
 
 		if (!preventEventDispatch) {
 			this.eventsService.dispatch(EventTypes.VAULT_CHANGE, {
@@ -98,7 +98,10 @@ export class WebVaultsAPI implements IVaultsAPI {
 	 */
 	async delete(id: string) {
 		// No need to actually access the db, but check it does exist.
-		await this.get(id)
+		const existingVault = await this.get(id)
+		if (!existingVault) {
+			throw new HeadbaseError({type: ErrorIdentifiers.VAULT_NOT_FOUND, devMessage: `vault ${id} not found`})
+		}
 
 		const db = await this.databaseService.getDatabase()
 		await db
@@ -114,13 +117,10 @@ export class WebVaultsAPI implements IVaultsAPI {
 		})
 	}
 
-	async get(id: string): Promise<VaultDto> {
+	async get(id: string): Promise<VaultDto|null> {
 		const db = await this.databaseService.getDatabase()
 		const result = await db.select().from(vaults).where(eq(vaults.id, id))
-		if (!result[0]) {
-			throw new HeadbaseError({type: ErrorIdentifiers.VAULT_NOT_FOUND, devMessage: `vault ${id} not found`})
-		}
-		return result[0];
+		return result[0] ?? null
 	}
 
 	async query(): Promise<VaultList> {
@@ -140,7 +140,11 @@ export class WebVaultsAPI implements IVaultsAPI {
 					observer.next({status: LiveQueryStatus.SUCCESS, result: results })
 				}
 				catch (error) {
-					console.error(error)
+					if (error instanceof HeadbaseError) {
+						console.error(error.cause)
+					} else {
+						console.error(error)
+					}
 					observer.next({status: LiveQueryStatus.ERROR, errors: [error] })
 				}
 			}
@@ -167,7 +171,11 @@ export class WebVaultsAPI implements IVaultsAPI {
 					observer.next({status: LiveQueryStatus.SUCCESS, result: currentVault })
 				}
 				catch (error) {
-					console.error(error)
+					if (error instanceof HeadbaseError) {
+						console.error(error.cause)
+					} else {
+						console.error(error)
+					}
 					observer.next({status: LiveQueryStatus.ERROR, errors: [error] })
 				}
 			}

@@ -1,6 +1,6 @@
 import {html, render} from "lit-html";
 import {choose} from "lit-html/directives/choose.js";
-import {BehaviorSubject} from "rxjs";
+import {BehaviorSubject, type Subscription} from "rxjs";
 
 import {
 	CommonEventsService,
@@ -11,7 +11,7 @@ import {
 	TranslationsAPIContext, VaultsAPIContext, WorkspaceVaultAPIContext,
 	routes, BaseElement,
 	type LiveQueryResult, type VaultDto,
-	ContextProvider, LIVE_QUERY_LOADING_STATE, createContext,
+	ContextProvider, LIVE_QUERY_LOADING_STATE, createContext, LiveQueryStatus,
 } from "@headbase-app/lib";
 
 import {WebDatabaseService} from "@apis/database/web-database.service.ts";
@@ -36,8 +36,9 @@ export class HeadbaseApp extends BaseElement {
 	static tag = "hb-app"
 	contextProvider: ContextProvider
 
-	currentPage: BehaviorSubject<string>
-	currentVault: BehaviorSubject<LiveQueryResult<VaultDto | null>>
+	currentPage$: BehaviorSubject<string>
+	currentVault$: BehaviorSubject<LiveQueryResult<VaultDto | null>>
+	currentVaultSub: Subscription
 
 	constructor() {
 		super();
@@ -49,16 +50,26 @@ export class HeadbaseApp extends BaseElement {
 		this.contextProvider.add(FilesAPIContext, filesAPI)
 		this.contextProvider.add(PluginAPIContext, pluginAPI)
 
-		this.currentPage = this.observedState(routes.selectVault)
-		this.contextProvider.add(CurrentPageContext, this.currentPage)
+		this.currentPage$ = this.observedState(routes.selectVault)
+		this.contextProvider.add(CurrentPageContext, this.currentPage$)
 
-		this.currentVault = this.observedState<LiveQueryResult<VaultDto | null>>(LIVE_QUERY_LOADING_STATE)
+		this.currentVault$ = this.observedState<LiveQueryResult<VaultDto | null>>(LIVE_QUERY_LOADING_STATE, workspaceVaultAPI.liveGet())
+		this.currentVaultSub = this.currentVault$.subscribe((v) => this.handleVaultChange(v))
+	}
+
+	handleVaultChange(state: LiveQueryResult<VaultDto | null>) {
+		if (state.status === LiveQueryStatus.SUCCESS) {
+			if (state.result) {
+				this.currentPage$.next(routes.app)
+			} else {
+				this.currentPage$.next(routes.selectVault)
+			}
+		}
 	}
 
 	render() {
-		console.debug("hb-app render")
 		render(html`
-			${choose(this.currentPage.value, [
+			${choose(this.currentPage$.value, [
 				[routes.welcome, () => html`<hb-page-welcome></hb-page-welcome>`],
 				[routes.selectVault, () => html`<hb-page-select-vault></hb-page-select-vault>`],
 				[routes.app, () => html`<hb-page-app></hb-page-app>`],

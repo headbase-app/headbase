@@ -6,8 +6,9 @@ import {BaseElement} from "../../../../03-framework/base-element";
 import {useContext} from "../../../../03-framework/context";
 import {FilesAPIContext, VaultsAPIContext, WorkspaceVaultAPIContext} from "../../../../03-framework/contexts";
 import {LIVE_QUERY_LOADING_STATE, type LiveQueryResult} from "../../../../01-common/control-flow";
-import {VaultManagerEvents, type VaultManagerPage} from "../vault-manager";
+import {type VaultManagerEvents, type VaultManagerPage} from "../vault-manager";
 import {when} from "lit-html/directives/when.js";
+import {dispatchEvent} from "../../../../03-framework/events.ts";
 
 
 export class VaultsList extends BaseElement {
@@ -23,13 +24,6 @@ export class VaultsList extends BaseElement {
 		super();
 		this.currentVault = this.observedState(LIVE_QUERY_LOADING_STATE, this.workspaceVaultAPI.liveGet())
 		this.vaults = this.observedState(LIVE_QUERY_LOADING_STATE, this.vaultsAPI.liveQuery())
-	}
-
-	navigate(page: VaultManagerPage) {
-		this.dispatchEvent(new CustomEvent(VaultManagerEvents.NAVIGATE, {
-			detail: page,
-			bubbles: true,
-		}))
 	}
 
 	render() {
@@ -54,8 +48,8 @@ export class VaultsList extends BaseElement {
 						<li>
 							<h3>${vault.displayName}${currentVault?.id === vault.id ? html`<span>(OPEN)</span>`: nothing}</h3>
 							${this.filesAPI.isVaultLocationSelectable() ? html`<p>${vault.path}</p>` : nothing}
-							<button @click=${()=> {this.navigate({type: "delete", id: vault.id})}}>Delete</button>
-							<button @click=${()=> {this.navigate({type: "edit", id: vault.id})}}>Edit</button>
+							<button @click=${()=> {dispatchEvent<VaultManagerEvents>(this, "vault-manager:navigate", {type: "delete", id: vault.id})}}>Delete</button>
+							<button @click=${()=> {dispatchEvent<VaultManagerEvents>(this, "vault-manager:navigate", {type: "edit", id: vault.id})}}>Edit</button>
 							<button>New tab</button>
 							${when(
 								currentVault?.id === vault.id,
@@ -70,7 +64,7 @@ export class VaultsList extends BaseElement {
 
 		render(html`
 			<div>
-				<button @click=${() => {this.navigate({type: "create"})}}>Create</button>
+				<button @click=${() => {dispatchEvent<VaultManagerEvents>(this, "vault-manager:navigate", {type: "create"})}}>Create</button>
 				<div>
 					${content}
 				</div>

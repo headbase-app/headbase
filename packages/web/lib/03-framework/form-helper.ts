@@ -60,7 +60,7 @@ export class FormHelper<Fields> {
 		return Object.fromEntries(this.#keys.map(key => [key, this.fields[key].value.value])) as FieldValues<Fields>
 	}
 
-	onChange<Key extends keyof Fields>(key: Key, value: Fields[Key]) {
+	setField<Key extends keyof Fields>(key: Key, value: Fields[Key]) {
 		this.fields[key].next({
 			...this.fields[key].value,
 			// Reset error as will be revalidated again
@@ -84,6 +84,21 @@ export class FormHelper<Fields> {
 		}
 
 		this.validate()
+	}
+
+	reset(values?: FieldValues<Fields>) {
+		if (values) {
+			this._initialValues = values
+		}
+
+		for (const key of this.#keys) {
+			this.fields[key].next({
+				blurred: false,
+				dirty: false,
+				touched: false,
+				value: this._initialValues[key],
+			});
+		}
 	}
 
 	onBlur<Key extends keyof Fields>(key: Key){
@@ -123,7 +138,9 @@ export class FormHelper<Fields> {
 		return true;
 	}
 
-	submit() {
+	submit(e: SubmitEvent) {
+		e.preventDefault()
+
 		const isValid = this.validate();
 
 		if (isValid) {

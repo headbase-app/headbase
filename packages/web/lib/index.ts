@@ -20,6 +20,7 @@ export * from "./02-apis/workspace-vault/workspace-vault.api.js"
 export * from "./03-framework/base-element.js"
 export * from "./03-framework/context.js"
 export * from "./03-framework/contexts.js"
+export * from "./03-framework/events.js"
 export * from "./03-framework/form-helper.ts"
 export * from "./03-framework/observe-directive.ts"
 
@@ -40,7 +41,10 @@ export * from "./04-ui/pages/app-page.ts"
 
 export * from "./04-ui/components/vault-manager/vault-manager.js"
 export * from "./04-ui/components/vault-manager/vaults-list/vaults-list.js"
+export * from "./04-ui/components/vault-manager/vault-form.js"
 export * from "./04-ui/components/vault-manager/create-vault/create-vault.ts"
+export * from "./04-ui/components/vault-manager/edit-vault/edit-vault.js"
+export * from "./04-ui/components/vault-manager/delete-vault/delete-vault.js"
 
 export * from "./04-ui/components/file-explorer/file-explorer.js"
 

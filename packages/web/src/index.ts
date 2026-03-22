@@ -1,6 +1,6 @@
 import {
 	AppPage, SelectVaultPage, WelcomePage,
-	VaultManager, VaultsList, CreateVault,
+	VaultManager, VaultsList, VaultForm, CreateVault, EditVault, DeleteVault,
 	FileExplorer
 } from "@headbase-app/lib";
 import {HeadbaseApp} from "./app.ts"
@@ -13,6 +13,9 @@ customElements.define(AppPage.tag, AppPage)
 
 customElements.define(VaultManager.tag, VaultManager)
 customElements.define(VaultsList.tag, VaultsList)
+customElements.define(VaultForm.tag, VaultForm)
 customElements.define(CreateVault.tag, CreateVault)
+customElements.define(EditVault.tag, EditVault)
+customElements.define(DeleteVault.tag, DeleteVault)
 
 customElements.define(FileExplorer.tag, FileExplorer)
