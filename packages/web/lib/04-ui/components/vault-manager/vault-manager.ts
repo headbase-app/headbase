@@ -25,19 +25,15 @@ export class VaultManager extends BaseElement {
 	}
 
 	render() {
-		let content: TemplateResult
 		if (this.page.value.type === 'create') {
-			content = html`<hb-create-vault></hb-create-vault>`
+			return html`<hb-create-vault></hb-create-vault>`
 		}
 		else if (this.page.value.type === 'edit') {
-			content = html`<hb-edit-vault .vaultId=${this.page.value.id}></hb-edit-vault>`
+			return html`<hb-edit-vault vaultId=${this.page.value.id}></hb-edit-vault>`
 		}
 		else if (this.page.value.type === 'delete') {
-			content = html`<hb-delete-vault .vaultId=${this.page.value.id}></hb-delete-vault>`
+			return html`<hb-delete-vault vaultId=${this.page.value.id}></hb-delete-vault>`
 		}
-		else {
-			content = html`<hb-vaults-list></hb-vaults-list>`
-		}
-		render(content, this)
+		return html`<hb-vaults-list></hb-vaults-list>`
 	}
 }

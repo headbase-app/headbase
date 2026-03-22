@@ -62,13 +62,13 @@ export class VaultsList extends BaseElement {
 			`
 		}
 
-		render(html`
+		return html`
 			<div>
 				<button @click=${() => {dispatchEvent<VaultManagerEvents>(this, "vault-manager:navigate", {type: "create"})}}>Create</button>
 				<div>
 					${content}
 				</div>
 			</div>
-		`, this)
+		`
 	}
 }

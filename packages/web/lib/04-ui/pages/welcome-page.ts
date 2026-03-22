@@ -3,8 +3,9 @@ import {BaseElement} from "../../03-framework/base-element";
 
 export class WelcomePage extends BaseElement {
 	static tag = "hb-page-welcome"
+
 	render() {
-		render(html`<p>Welcome Page</p>`, this)
+		return html`<p>Welcome Page</p>`
 	}
 }
 

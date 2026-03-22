@@ -1,4 +1,4 @@
-import {html, render} from "lit-html";
+import {html} from "lit-html";
 import {repeat} from "lit-html/directives/repeat.js";
 
 import {BaseElement} from "../../../03-framework/base-element";
@@ -19,14 +19,14 @@ export class FileTreeItem extends BaseElement {
 
 	render() {
 		if (this.item.type === "file") {
-			return render(html`
+			return html`
 				<div>
 					<button @click=${() => {this.openFileTab(this.item.path)}}>${this.item.name}</button>
 				</div>
-			`, this)
+			`
 		}
 
-		render(html`
+		return html`
 			<details>
 				<summary>
 					<button @click=${() => {this.openFileExplorerTab(this.item.path)}}>${this.item.name}</button>
@@ -46,6 +46,6 @@ export class FileTreeItem extends BaseElement {
 				</For>
 				</div>
 			</details>
-		`, this)
+		`
 	}
 }

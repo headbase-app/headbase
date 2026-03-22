@@ -1,4 +1,5 @@
-import {BehaviorSubject, isObservable, Observable, skip, Subject, type Subscription, takeUntil} from "rxjs";
+import {BehaviorSubject, isObservable, Observable, skip, Subject} from "rxjs";
+import {nothing, type TemplateResult, render} from "lit-html";
 
 const unsubscribe = Symbol('unsubscribe');
 
@@ -15,12 +16,22 @@ export abstract class BaseElement extends HTMLElement {
 	[unsubscribe] = new Subject();
 
 	connectedCallback() {
-		this.render()
+		this.requestUpdate()
 	}
 	disconnectedCallback() {
 		this[unsubscribe].complete();
 	}
-	render() {}
+
+	render(): TemplateResult | typeof nothing {
+		return nothing
+	}
+
+	requestUpdate() {
+		this.update()
+		const template = this.render()
+		render(template, this)
+	}
+	update() {}
 
 	observedState<T>(
 		initialValue: T,
@@ -46,7 +57,7 @@ export abstract class BaseElement extends HTMLElement {
 		if (!options?.disableRenderUpdate) {
 			subject
 				.pipe(skip(1))
-				.subscribe(() => {this.render()}).add(this[unsubscribe]);
+				.subscribe(() => {this.requestUpdate()}).add(this[unsubscribe]);
 		}
 
 		return subject

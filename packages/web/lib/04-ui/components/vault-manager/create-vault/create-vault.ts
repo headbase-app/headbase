@@ -1,4 +1,4 @@
-import {html, render} from "lit-html";
+import {html} from "lit-html";
 
 import {BaseElement} from "../../../../03-framework/base-element";
 import {useContext} from "../../../../03-framework/context";
@@ -17,12 +17,12 @@ export class CreateVault extends BaseElement {
 	}
 
 	render() {
-		render(html`
+		return html`
 			<hb-vault-form
 				title="Create new vault"
 				.submitText=${"Create vault"}
 				.onSubmit=${this.onSubmit.bind(this)}
 			></hb-vault-form>
-		`, this)
+		`
 	}
 }

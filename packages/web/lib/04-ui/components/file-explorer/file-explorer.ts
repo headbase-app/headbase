@@ -1,4 +1,4 @@
-import {html, render, type TemplateResult} from "lit-html";
+import {html, type TemplateResult} from "lit-html";
 import {repeat} from "lit-html/directives/repeat.js";
 import {BehaviorSubject, of, switchMap} from "rxjs";
 
@@ -51,7 +51,7 @@ export class FileExplorer extends BaseElement {
 			content = html`<p>Loading...</p>`
 		}
 
-		render(html`
+		return html`
 			<div>
 				<div>
 					<button onClick={openNewTab}>open in tab</button>
@@ -60,6 +60,6 @@ export class FileExplorer extends BaseElement {
 					${content}
 				</div>
 			</div>
-		`, this)
+		`
 	}
 }

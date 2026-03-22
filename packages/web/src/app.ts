@@ -68,13 +68,13 @@ export class HeadbaseApp extends BaseElement {
 	}
 
 	render() {
-		render(html`
+		return html`
 			${choose(this.currentPage$.value, [
 				[routes.welcome, () => html`<hb-page-welcome></hb-page-welcome>`],
 				[routes.selectVault, () => html`<hb-page-select-vault></hb-page-select-vault>`],
 				[routes.app, () => html`<hb-page-app></hb-page-app>`],
 			])}
-    `, this)
+    `
 	}
 }
 

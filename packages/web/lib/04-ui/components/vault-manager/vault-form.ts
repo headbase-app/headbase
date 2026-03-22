@@ -1,4 +1,4 @@
-import {html, nothing, render} from "lit-html";
+import {html, nothing} from "lit-html";
 import {when} from "lit-html/directives/when.js";
 
 import {BaseElement, useContext, FilesAPIContext, type FormErrors, FormHelper, observe, dispatchEvent} from "@headbase-app/lib";
@@ -68,7 +68,7 @@ export class VaultForm extends BaseElement {
 	}
 
 	render() {
-		render(html`
+		return html`
 			<div>
 				<button @click=${() => {dispatchEvent<VaultManagerEvents>(this, "vault-manager:navigate", {type: "list"})}}>All vaults</button>
 				<h3>${this.title}</h3>
@@ -109,6 +109,6 @@ export class VaultForm extends BaseElement {
 					</form>
 				</div>
 			</div>
-		`, this)
+		`
 	}
 }
