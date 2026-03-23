@@ -53,7 +53,6 @@ export function CreateVault(props: CreateVaultProps) {
 		const result = CreateVaultDto.safeParse(values)
 		if (result.error) {
 			const errors = z.flattenError(result.error)
-			console.debug(errors)
 			setErrors({
 				displayName: errors.fieldErrors.displayName?.join(","),
 				path: errors.fieldErrors.path?.join(",")

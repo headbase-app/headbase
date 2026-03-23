@@ -1,33 +1,49 @@
-import {eq} from "drizzle-orm";
 import {Observable} from "rxjs";
+import * as opfsx from "opfsx"
+import {ZodError} from "zod";
 
-import {vaults} from "../database/schema";
-import type {IDatabaseService} from "../database/database.service";
 import {
 	type CreateVaultDto,
 	EncryptionService, ErrorIdentifiers, EventTypes, HeadbaseError,
 	type IDeviceAPI,
 	type IEventsService,
 	type IVaultsAPI, LIVE_QUERY_LOADING_STATE, type LiveQueryResult,
-	LiveQueryStatus, type UpdateVaultDto, type VaultChangeEvent, type VaultDto, type VaultList
+	LiveQueryStatus, type UpdateVaultDto, type VaultChangeEvent, type VaultDto, VaultList
 } from "@headbase-app/lib";
 
 
 export class WebVaultsAPI implements IVaultsAPI {
 	constructor(
-		private readonly databaseService: IDatabaseService,
 		private readonly deviceService: IDeviceAPI,
 		private readonly eventsService: IEventsService
 	) {}
 
+	async #load() {
+		let vaults: VaultList = []
+		try {
+			const file = await opfsx.read("/headbase-v1/vaults.json")
+			const text = await file.text()
+			vaults = VaultList.parse(JSON.parse(text))
+		}
+		catch (error) {
+			if (error instanceof DOMException) {
+				console.warn(`No vaults file found (/headbase-v1/vaults.json), returning empty list.`)
+			}
+			else if (error instanceof ZodError) {
+				console.warn(`Vaults file failed validation, returning empty list.`)
+			}
+		}
+		return vaults
+	}
+
+	async #save(vaults: VaultList) {
+		await opfsx.write("/headbase-v1/vaults.json", JSON.stringify(vaults))
+	}
+
 	/**
 	 * Create a new vault.
-	 *
-	 * @param createVaultDto
 	 */
 	async create(createVaultDto: CreateVaultDto) {
-		const db = await this.databaseService.getDatabase()
-
 		const id = EncryptionService.generateUUID();
 		const timestamp = new Date().toISOString();
 
@@ -39,7 +55,10 @@ export class WebVaultsAPI implements IVaultsAPI {
 			updatedAt: timestamp
 		}
 
-		await db.insert(vaults).values(vault)
+		// todo: validate for existing ID
+		const vaults = await this.#load()
+		vaults.push(vault)
+		await this.#save(vaults)
 
 		this.eventsService.dispatch(EventTypes.VAULT_CHANGE, {
 			context: this.deviceService.getCurrentContext(),
@@ -60,21 +79,26 @@ export class WebVaultsAPI implements IVaultsAPI {
 	 * @param preventEventDispatch - Prevent an update event being dispatched.
 	 */
 	async update(id: string, updateVaultDto: UpdateVaultDto, preventEventDispatch?: boolean) {
-		const db = await this.databaseService.getDatabase()
 		const currentVault = await this.get(id)
 		if (!currentVault) {
-			throw new Error(ErrorIdentifiers.VAULT_NOT_FOUND)
+			throw new HeadbaseError({type: ErrorIdentifiers.VAULT_NOT_FOUND, devMessage: `vault ${id} not found`})
 		}
 
 		const timestamp = new Date().toISOString();
-		await db
-			.update(vaults)
-			.set({
-				updatedAt: timestamp,
-				displayName: updateVaultDto.displayName ?? currentVault.displayName,
-				path: updateVaultDto.path ?? currentVault.path,
-			})
-			.where(eq(vaults.path, id))
+
+		// todo: validate for existing ID
+		const vaults = await this.#load()
+		await this.#save(vaults.map(vault => {
+			if (vault.id === id) {
+				return {
+					...vault,
+					updatedAt: timestamp,
+					displayName: updateVaultDto.displayName ?? currentVault.displayName,
+					path: updateVaultDto.path ?? currentVault.path,
+				}
+			}
+			return vault
+		}))
 
 		if (!preventEventDispatch) {
 			this.eventsService.dispatch(EventTypes.VAULT_CHANGE, {
@@ -97,13 +121,13 @@ export class WebVaultsAPI implements IVaultsAPI {
 	 * Delete the given vault.
 	 */
 	async delete(id: string) {
-		// No need to actually access the db, but check it does exist.
-		await this.get(id)
+		const currentVault = await this.get(id)
+		if (!currentVault) {
+			throw new HeadbaseError({type: ErrorIdentifiers.VAULT_NOT_FOUND, devMessage: `vault ${id} not found`})
+		}
 
-		const db = await this.databaseService.getDatabase()
-		await db
-			.delete(vaults)
-			.where(eq(vaults.id, id))
+		const vaults = await this.#load()
+		await this.#save(vaults.filter(vault => vault.id !== id))
 
 		this.eventsService.dispatch(EventTypes.VAULT_CHANGE, {
 			context: this.deviceService.getCurrentContext(),
@@ -114,18 +138,14 @@ export class WebVaultsAPI implements IVaultsAPI {
 		})
 	}
 
-	async get(id: string): Promise<VaultDto> {
-		const db = await this.databaseService.getDatabase()
-		const result = await db.select().from(vaults).where(eq(vaults.id, id))
-		if (!result[0]) {
-			throw new HeadbaseError({type: ErrorIdentifiers.VAULT_NOT_FOUND, devMessage: `vault ${id} not found`})
-		}
-		return result[0];
+	async get(id: string): Promise<VaultDto|null> {
+		const vaults = await this.#load()
+		const result = await vaults.find(vault => vault.id === id)
+		return result ?? null;
 	}
 
 	async query(): Promise<VaultList> {
-		const db = await this.databaseService.getDatabase()
-		return db.select().from(vaults);
+		return this.#load()
 	}
 
 	liveQuery() {

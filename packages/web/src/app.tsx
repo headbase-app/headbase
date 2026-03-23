@@ -12,15 +12,13 @@ import {
 } from "@headbase-app/lib";
 
 import {WebDeviceApi} from "@apis/device/web-device.api.ts";
-import {WebDatabaseService} from "@apis/database/web-database.service.ts";
 import {WebWorkspaceVaultAPI} from "@apis/workspace-vault/workspace-vault.api.ts";
 import {WebFilesAPI} from "@apis/files/web-files.api.ts";
 import {WebVaultsAPI} from "@apis/vaults/web-vaults.api.ts";
 
-const databaseService = new WebDatabaseService();
 const deviceAPI= new WebDeviceApi();
 const eventsService = new CommonEventsService(deviceAPI);
-const vaultsAPI = new WebVaultsAPI(databaseService, deviceAPI, eventsService);
+const vaultsAPI = new WebVaultsAPI(deviceAPI, eventsService);
 const workspaceVaultAPI = new WebWorkspaceVaultAPI(deviceAPI, eventsService, vaultsAPI);
 const filesAPI = new WebFilesAPI(eventsService);
 const pluginAPI = new CommonPluginAPI();

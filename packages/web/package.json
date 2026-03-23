@@ -20,13 +20,11 @@
   },
   "dependencies": {
     "@solidjs/router": "^0.15.4",
-    "drizzle-orm": "^0.45.1",
     "lucide-solid": "^0.577.0",
     "opfsx": "^0.1.0",
     "pdfjs-dist": "^5.5.207",
     "rxjs": "^7.8.2",
     "solid-js": "^1.9.10",
-    "sqlocal": "^0.17.0",
     "zod": "^4.3.6"
   },
   "devDependencies": {

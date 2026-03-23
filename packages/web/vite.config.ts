@@ -21,9 +21,6 @@ export default defineConfig({
 			),
 		}
 	},
-	optimizeDeps: {
-		exclude: ['sqlocal'],
-	},
 	css: {
 		transformer: "lightningcss",
 		lightningcss: {
@@ -36,13 +33,6 @@ export default defineConfig({
 		cssMinify: "lightningcss",
 	},
 	server: {
-		port: 42101,
-		headers: {
-			'Cross-Origin-Opener-Policy': 'same-origin',
-			'Cross-Origin-Embedder-Policy': 'require-corp',
-		},
+		port: 42101
 	},
-	worker: {
-		format: "es"
-	}
 })
