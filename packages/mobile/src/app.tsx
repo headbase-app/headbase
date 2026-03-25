@@ -17,17 +17,15 @@ import {
 } from "@headbase-app/lib";
 
 import {MobileDeviceApi} from "@apis/device/mobile-device.api.ts";
-import MobileDatabaseService from "@apis/database/mobile-database.service.ts";
 import {MobileFilesAPI} from "@apis/files/mobile-files.api.ts";
 import {MobileVaultsAPI} from "@apis/vaults/mobile-vaults.api.ts";
 import {MobileWorkspaceVaultAPI} from "@apis/workspace-vault/mobile-workspace-vault.api.ts";
 
 import "./app.css"
 
-const databaseService = new MobileDatabaseService();
 const deviceAPI = new MobileDeviceApi();
 const eventsService = new CommonEventsService(deviceAPI);
-const vaultsAPI = new MobileVaultsAPI(databaseService, deviceAPI, eventsService);
+const vaultsAPI = new MobileVaultsAPI(deviceAPI, eventsService);
 const workspaceVaultAPI = new MobileWorkspaceVaultAPI(deviceAPI, eventsService, vaultsAPI);
 const filesAPI = new MobileFilesAPI()
 const pluginAPI = new CommonPluginAPI()

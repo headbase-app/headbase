@@ -11,6 +11,7 @@ import {
 	LiveQueryStatus, type UpdateVaultDto, type VaultChangeEvent, type VaultDto, VaultList
 } from "@headbase-app/lib";
 
+const VAULTS_PATH = "/headbase-v1/vaults.json"
 
 export class WebVaultsAPI implements IVaultsAPI {
 	constructor(
@@ -37,7 +38,7 @@ export class WebVaultsAPI implements IVaultsAPI {
 	}
 
 	async #save(vaults: VaultList) {
-		await opfsx.write("/headbase-v1/vaults.json", JSON.stringify(vaults))
+		await opfsx.write(VAULTS_PATH, JSON.stringify(vaults))
 	}
 
 	/**
