@@ -14,10 +14,6 @@ const config: CapacitorConfig = {
 	plugins: {
 		SystemBars: {
 			insetsHandling: "css",
-		},
-		CapacitorSQLite: {
-			iosIsEncryption: false,
-			androidIsEncryption: false,
 		}
 	}
 };
