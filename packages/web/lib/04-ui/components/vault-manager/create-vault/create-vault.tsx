@@ -1,6 +1,6 @@
 import {createSignal, Show} from "solid-js";
 import {z} from "zod";
-import {createStore} from "solid-js/store";
+import {createStore, unwrap} from "solid-js/store";
 
 import type {VaultManagerPage} from "../vault-manager";
 import {useFilesAPI} from "../../../../03-framework/files-api.context";
@@ -32,14 +32,15 @@ export function CreateVault(props: CreateVaultProps) {
 		e.preventDefault()
 		setTouched({displayName: true, path: true})
 
-		if (!filesAPI.isVaultLocationSelectable() && values.displayName) {
+		if (!vaultsAPI.isLocationSelectable() && values.displayName) {
 			setValues("path", `/headbase-v1/vaults/${values.displayName}`)
 		}
 
 		const isValid = validate()
 		if (isValid) {
 			try {
-				await vaultsAPI.create(values)
+				// Unwrap proxy to prevent issues if platform level APIs need to serialize.
+				await vaultsAPI.create(unwrap(values))
 				props.navigate({type: "list"})
 			}
 			catch (e) {
@@ -75,7 +76,7 @@ export function CreateVault(props: CreateVaultProps) {
 	}
 
 	async function selectVaultPath() {
-		const path = await filesAPI.selectVaultLocation()
+		const path = await vaultsAPI.selectLocation()
 		if (path) {
 			setValues("path", path)
 		}
@@ -103,7 +104,7 @@ export function CreateVault(props: CreateVaultProps) {
 					</div>
 
 					<label>Vault Location</label>
-					<Show when={filesAPI.isVaultLocationSelectable()} fallback={<p>Vault location is not user managed on this platform. Try the desktop or mobile app for more control over your files.</p>}>
+					<Show when={vaultsAPI.isLocationSelectable()} fallback={<p>Vault location is not user managed on this platform. Try the desktop or mobile app for more control over your files.</p>}>
 						<div>
 							<Show when={values.path} fallback={<p>No Location Selected</p>}>
 								<p>{filesAPI.getPathDisplay(values.path)}</p>

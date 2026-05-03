@@ -19,7 +19,7 @@
 Headbase is an exploration of [local-first software](https://www.inkandswitch.com/essay/local-first) and [malleable systems](https://malleable.systems). The goal isn't to create a "notes app" or a "task management" app, but to develop primitives that users can build their own experience with while retaining control and agency
 over their own data.
 
-**SUPPORTED PLATFORMS**: The target platforms are Linux, MacOS and Android. Windows and iOS support is planned, but not a current priority for development and testing.
+**SUPPORTED PLATFORMS**: The target platforms are Linux, MacOS and Android. Windows and iOS support is planned, but not a current priority early in development.
 
 **For users:**
 - [Install](docs/user-guide/install.md)

@@ -8,19 +8,19 @@ import {
 	HeadbaseCorePlugin,
 	VaultsAPIContext, WorkspaceVaultAPIContext, FilesAPIContext, DeviceAPIContext, PluginAPIContext,
 	useWorkspaceVaultAPI, VaultManager,
-	useFilesAPI, VaultMenu, VaultManagerDialog, type VaultManagerPage
+	VaultMenu, VaultManagerDialog, type VaultManagerPage, useVaultsAPI
 } from "@headbase-app/lib";
 
-import {WebDeviceApi} from "@apis/device/web-device.api.ts";
-import {WebWorkspaceVaultAPI} from "@apis/workspace-vault/workspace-vault.api.ts";
-import {WebFilesAPI} from "@apis/files/web-files.api.ts";
-import {WebVaultsAPI} from "@apis/vaults/web-vaults.api.ts";
+import {DeviceAPI} from "./apis/device.api.ts";
+import {WorkspaceVaultAPI} from "./apis/workspace-vault.api.ts";
+import {FilesAPI} from "./apis/files.api.ts";
+import {VaultsAPI} from "./apis/vaults.api.ts";
 
-const deviceAPI= new WebDeviceApi();
+const deviceAPI= new DeviceAPI();
 const eventsService = new CommonEventsService(deviceAPI);
-const vaultsAPI = new WebVaultsAPI(deviceAPI, eventsService);
-const workspaceVaultAPI = new WebWorkspaceVaultAPI(deviceAPI, eventsService, vaultsAPI);
-const filesAPI = new WebFilesAPI(eventsService);
+const vaultsAPI = new VaultsAPI(eventsService, deviceAPI);
+const workspaceVaultAPI = new WorkspaceVaultAPI(eventsService, deviceAPI, vaultsAPI);
+const filesAPI = new FilesAPI(eventsService);
 const pluginAPI = new CommonPluginAPI();
 pluginAPI.registerPlugin(HeadbaseCorePlugin)
 
@@ -94,13 +94,13 @@ function SelectVaultPage() {
 
 function MainApplicationPage() {
 	useVaultRedirects()
-	const filesAPI = useFilesAPI()
+	const vaultsAPI = useVaultsAPI()
 
 	createEffect(async () => {
-		const isFilePermissionGranted = await filesAPI.checkPermissions()
+		const isFilePermissionGranted = await vaultsAPI.checkPermissions()
 		if (!isFilePermissionGranted) {
 			console.debug(`[init] File permissions check failed, requesting permissions`)
-			await filesAPI.requestPermissions()
+			await vaultsAPI.requestPermissions()
 		}
 		else {
 			console.debug("[init] File permissions check succeeded")

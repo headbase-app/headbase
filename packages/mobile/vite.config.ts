@@ -15,7 +15,8 @@ export default defineConfig({
 			// Ensure icons can be tree-shaken in dev mode (see docs/technical-debt.md, thanks to https://christopher.engineering/en/blog/lucide-icons-with-vite-dev-server/)
 			"lucide-solid/icons": fileURLToPath(
 				new URL(
-					"./node_modules/lucide-solid/dist/source/icons",
+					// Relative path to access node_modules in root project of NPM workspaces
+					"../../node_modules/lucide-solid/dist/source/icons",
 					import.meta.url,
 				),
 			),
@@ -30,6 +31,9 @@ export default defineConfig({
 		}
 	},
 	build: {
+		// dist is outside project root (src) so needs explicit definition and emptying.
+		outDir: "../dist",
+		emptyOutDir: true,
 		cssMinify: "lightningcss"
 	},
 	server: {
@@ -41,5 +45,9 @@ export default defineConfig({
 	},
 	worker: {
 		format: "es"
+	},
+	optimizeDeps: {
+		// Exclude @headbase-app/lib otherwise Vite seems to pre-bundle assuming React and/or breaks pdfjs-dist worker import.
+		exclude: ["@headbase-app/lib"]
 	}
 })

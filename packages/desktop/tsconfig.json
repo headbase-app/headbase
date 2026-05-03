@@ -1,12 +1,28 @@
 {
-  "files": [],
-  "references": [{ "path": "./tsconfig.node.json" }, { "path": "./tsconfig.web.json" }],
-  "compilerOptions": {
-    "baseUrl": ".",
-    "paths": {
-      "@/*": [
-        "./src/*"
-      ]
-    }
-  }
+	"compilerOptions": {
+		"target": "ESNext",
+		"module": "esnext",
+		"strict": true,
+		"allowJs": true,
+		"skipLibCheck": true,
+		"esModuleInterop": true,
+		"noImplicitAny": true,
+		"sourceMap": true,
+		"baseUrl": ".",
+		"outDir": "dist",
+		"moduleResolution": "node",
+		"resolveJsonModule": true,
+		"jsx": "preserve",
+		"jsxImportSource": "solid-js",
+		"allowImportingTsExtensions": true,
+		/* Adding custom path aliases for cleaner imports */
+		"paths": {
+			"@apis/*": [
+				"./src/apis/*"
+			],
+			"@ui/*": [
+				"./src/ui/*"
+			]
+		}
+	},
 }

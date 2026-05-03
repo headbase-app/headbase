@@ -26,7 +26,7 @@ export class CommonEventsService implements IEventsService {
 		this.listenerStore = {}
 	}
 
-	dispatch<Event extends keyof EventMap>(type: Event, detail: EventMap[Event]["detail"]): void {
+	async dispatch<Event extends keyof EventMap>(type: Event, detail: EventMap[Event]["detail"]) {
 		if (this.listenerStore[type]) {
 			for (const listener of this.listenerStore[type]) {
 				// @ts-ignore -- todo: fix type issue
@@ -38,7 +38,7 @@ export class CommonEventsService implements IEventsService {
 
 		// Only broadcast events to other instances and the shared worker if they originate in the current context,
 		// otherwise hello infinite event ping pong!
-		const deviceContext = this.deviceService.getCurrentContext()
+		const deviceContext = await this.deviceService.getCurrentContext()
 		if (detail.context.id === deviceContext.id) {
 			if (this.localBroadcastChannel) {
 				// Don't send open/close events as that is unique to every instance.
@@ -49,7 +49,7 @@ export class CommonEventsService implements IEventsService {
 		}
 	}
 
-	subscribe<Event extends keyof EventMap>(type: Event, listener: IEventListener<Event>): void {
+	subscribe<Event extends keyof EventMap>(type: Event, listener: IEventListener<Event>) {
 		if (!this.listenerStore[type]) {
 			this.listenerStore[type] = []
 		}

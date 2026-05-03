@@ -26,7 +26,7 @@
 		"noUnusedLocals": false,
 		"noUnusedParameters": false,
 
-		/* Overwritten from default to allow 'private readonly' when typing constructor injection  */
+		/* Linting OVERWRITE - Overwritten from default to allow 'private readonly' when typing constructor injection  */
 		"erasableSyntaxOnly": false,
 
 		/* Adding custom path aliases for cleaner imports */

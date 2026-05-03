@@ -18,13 +18,13 @@ export interface DeviceIdentity {
  * This is useful when handling events and cross-context communications between difference
  * tabs/windows running at the same time.
  *
- * todo: rename to prevent name collision with device service and react context?
+ * todo: rename to prevent name collision with "device" service and react "context"?
  */
 export interface DeviceContext {
 	id: string
 }
 
 export interface IDeviceAPI {
-	getIdentity: () => DeviceIdentity
-	getCurrentContext: () => DeviceContext
+	getIdentity: () => Promise<DeviceIdentity>
+	getCurrentContext: () => Promise<DeviceContext>
 }

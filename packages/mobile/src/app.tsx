@@ -12,22 +12,22 @@ import {
 	WorkspaceVaultAPIContext,
 	FilesAPIContext,
 	DeviceAPIContext,
-	PluginAPIContext, useWorkspaceVaultAPI, type VaultManagerPage, VaultManager, useFilesAPI, VaultMenu,
+	PluginAPIContext, useWorkspaceVaultAPI, type VaultManagerPage, VaultManager, useVaultsAPI, VaultMenu,
 	VaultManagerDialog
 } from "@headbase-app/lib";
 
-import {MobileDeviceApi} from "@apis/device/mobile-device.api.ts";
-import {MobileFilesAPI} from "@apis/files/mobile-files.api.ts";
-import {MobileVaultsAPI} from "@apis/vaults/mobile-vaults.api.ts";
-import {MobileWorkspaceVaultAPI} from "@apis/workspace-vault/mobile-workspace-vault.api.ts";
+import {DeviceAPI} from "./apis/device.api.ts";
+import {FilesAPI} from "./apis/files.api.ts";
+import {VaultsAPI} from "./apis/vaults.api.ts";
+import {WorkspaceVaultAPI} from "./apis/workspace-vault.api.ts";
 
 import "./app.css"
 
-const deviceAPI = new MobileDeviceApi();
+const deviceAPI = new DeviceAPI();
 const eventsService = new CommonEventsService(deviceAPI);
-const vaultsAPI = new MobileVaultsAPI(deviceAPI, eventsService);
-const workspaceVaultAPI = new MobileWorkspaceVaultAPI(deviceAPI, eventsService, vaultsAPI);
-const filesAPI = new MobileFilesAPI()
+const vaultsAPI = new VaultsAPI(eventsService, deviceAPI);
+const workspaceVaultAPI = new WorkspaceVaultAPI(eventsService, deviceAPI, vaultsAPI);
+const filesAPI = new FilesAPI(eventsService)
 const pluginAPI = new CommonPluginAPI()
 pluginAPI.registerPlugin(HeadbaseCorePlugin)
 
@@ -100,13 +100,13 @@ function SelectVaultPage() {
 
 function MainApplicationPage() {
 	useVaultRedirects()
-	const filesAPI = useFilesAPI()
+	const vaultsAPI = useVaultsAPI()
 
 	createEffect(async () => {
-		const isFilePermissionGranted = await filesAPI.checkPermissions()
+		const isFilePermissionGranted = await vaultsAPI.checkPermissions()
 		if (!isFilePermissionGranted) {
 			console.debug(`[init] File permissions check failed, requesting permissions`)
-			await filesAPI.requestPermissions()
+			await vaultsAPI.requestPermissions()
 		}
 		else {
 			console.debug("[init] File permissions check succeeded")

@@ -59,7 +59,7 @@ export function VaultsList(props: VaultListProps) {
 									{(vault) => (
 										<li>
 											<h3>{vault.displayName}</h3>
-											<Show when={filesAPI.isVaultLocationSelectable()}><p>{vault.path}</p></Show>
+											<Show when={vaultsAPI.isLocationSelectable()}><p>{vault.path}</p></Show>
 											<button onClick={() => {props.navigate({type: "delete", id: vault.id})}}>Delete</button>
 											<button onClick={() => {props.navigate({type: "edit", id: vault.id})}}>Edit</button>
 											<button>New tab</button>

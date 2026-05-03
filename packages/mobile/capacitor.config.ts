@@ -8,9 +8,6 @@ const config: CapacitorConfig = {
 	android: {
 		path: join(__dirname, "native/android")
 	},
-	ios: {
-		path: join(__dirname, "native/ios")
-	},
 	plugins: {
 		SystemBars: {
 			insetsHandling: "css",

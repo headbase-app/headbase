@@ -26,12 +26,6 @@ export interface IFileSystemTree {
 }
 
 export interface IFilesAPI {
-	// Vault files. todo: move to different API like vaults?
-	isVaultLocationSelectable: () => boolean,
-	selectVaultLocation: () => Promise<string|null>
-	// Permission checks
-	checkPermissions: () => Promise<boolean>
-	requestPermissions: () => Promise<boolean>
 	// Path formatting
 	getFileName: (path: string) => string
 	getPathDisplay: (path: string) => string
@@ -50,5 +44,5 @@ export interface IFilesAPI {
 	// Observable operations
 	liveTree: (path: string) => Observable<LiveQueryResult<IFileSystemTree|null>>
 	liveLs: (path: string) => Observable<LiveQueryResult<IFileSystemItem[]>>
-	liveRead: (path: string) => Observable<LiveQueryResult<string>>
+	// todo: live file reading?
 }

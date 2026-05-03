@@ -1,5 +1,5 @@
 import {createSignal, onMount, Show} from "solid-js";
-import {createStore} from "solid-js/store";
+import {createStore, unwrap} from "solid-js/store";
 import {z} from "zod";
 
 import type {VaultManagerPage} from "../vault-manager";
@@ -40,7 +40,8 @@ export function EditVault(props: EditVaultProps) {
 		const isValid = validate()
 		if (isValid) {
 			try {
-				await vaultsAPI.update(props.vaultId, values)
+				// Unwrap proxy to prevent issues if platform level APIs need to serialize.
+				await vaultsAPI.update(props.vaultId, unwrap(values))
 				props.navigate({type: "list"})
 			}
 			catch (e) {

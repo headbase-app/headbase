@@ -19,7 +19,9 @@ export function FileExplorer(props?: FileExplorerProps) {
 	const fileTreeQuery = from(workspaceVaultAPI.liveGet().pipe(
 		switchMap(vaultQuery => {
 			if (vaultQuery.status === "success" && vaultQuery.result) {
-				return filesAPI.liveTree(vaultQuery.result.path)
+				// todo: use proper path joining
+				const path = props?.path ? `${vaultQuery.result.path}${props.path}` : vaultQuery.result.path
+				return filesAPI.liveTree(path)
 			}
 			return of(null)
 		})
@@ -51,6 +53,15 @@ export function FileExplorer(props?: FileExplorerProps) {
 							</Show>
 						</>
 					)}
+				</Match>
+				<Match
+					when={(() => {
+						const fileTree = fileTreeQuery();
+						return fileTree?.status === 'loading'
+					})()}
+					keyed
+				>
+					<p>Loading files...</p>
 				</Match>
 				<Match when={!fileTreeQuery()}>
 					<p>Open a vault to display files.</p>
