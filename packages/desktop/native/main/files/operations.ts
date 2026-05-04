@@ -1,5 +1,5 @@
-import { readdir, stat as fsStat } from "node:fs/promises"
-import { join, basename, sep } from "node:path"
+import {readdir, readFile, stat as fsStat} from "node:fs/promises"
+import {basename, join, sep} from "node:path"
 
 export interface FileSystemDirectory {
 	type: 'directory',
@@ -51,18 +51,29 @@ export async function _tree(directoryPath: string) {
 	return parentDirectory
 }
 
-export function ls() {}
+export async function ls() {}
 
-export function mkdir() {}
+export async function mkdir() {}
 
-export function rm() {}
+export async function rm() {}
 
-export function cp() {}
+export async function cp() {}
 
-export function mv() {}
+export async function mv() {}
 
-export function write() {}
+export async function write() {}
 
-export function read() {}
+export async function read(path: string) {
+	return await readFile(path)
+}
+
+export async function readAsText(path: string) {
+	return await readFile(path, {encoding: 'utf8'})
+}
+
+export async function readAsUrl(path: string) {
+	const encodedPath = encodeURIComponent(path)
+	return `hb://${encodedPath}`
+}
 
 export function stat() {}

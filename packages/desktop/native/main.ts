@@ -1,4 +1,4 @@
-import {app, BrowserWindow, ipcMain, shell} from 'electron';
+import {app, BrowserWindow, ipcMain, shell, protocol, net} from 'electron';
 import path from 'node:path';
 import started from 'electron-squirrel-startup';
 
@@ -6,7 +6,7 @@ import started from 'electron-squirrel-startup';
 import {CreateVaultDto, UpdateVaultDto} from "@headbase-app/lib/dist/02-apis/vaults/vault.ts";
 
 import {selectLocation, createVault, deleteVault, getVault, queryVaults, updateVault} from "./main/vaults/vaults";
-import {tree} from "./main/file-system/operations";
+import {read, readAsText, readAsUrl, tree} from "./main/files/operations";
 
 // @ts-expect-error -- todo: icon not found?
 import icon from './resources/icon.png'
@@ -80,6 +80,11 @@ function createWindow(vaultId?: string): void {
 	}
 }
 
+// Register custom protocol used for loading/streaming files via URL (hb://path/to/file).
+protocol.registerSchemesAsPrivileged([
+	{scheme: 'hb', privileges: {bypassCSP: true, stream: true}},
+])
+
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
@@ -90,6 +95,21 @@ app.whenReady().then(() => {
 		// On macOS it's common to re-create a window in the app when the
 		// dock icon is clicked and there are no other windows open.
 		if (BrowserWindow.getAllWindows().length === 0) createWindow()
+	})
+	protocol.handle("hb", async (request) => {
+		const encodedFilePath = request.url.slice("hb://".length)
+		const filePath = decodeURIComponent(encodedFilePath)
+
+		// todo: add security to restrict access to known vaults
+
+		// todo: allow streaming of video and audio?
+
+		const fileBuffer = await read(filePath)
+		console.debug(`[hb protocol] File requested ${filePath}`)
+
+		return new Response(fileBuffer, {
+			status: 200,
+		})
 	})
 })
 
@@ -293,6 +313,81 @@ ipcMain.handle('files_tree', async (event) => {
 
 	try {
 		const result = await tree(vault.path)
+		return {error: false, result}
+	}
+	catch (e) {
+		return {error: true, identifier: 'system-error', message: 'An unexpected error occurred', cause: e}
+	}
+})
+
+ipcMain.handle('files_read', async (event, path: string) => {
+	const senderWindow = BrowserWindow.fromWebContents(event.sender);
+	if (!senderWindow) {
+		return {error: true, identifier: 'unidentified-window', message: 'Event could not be traced to sender window, ignoring request.'}
+	}
+	const vaultId = windowVaults.get(senderWindow.id)
+	if (!vaultId) {
+		return {error: true, identifier: 'no-open-vault', message: 'Window has no current vault open, so unable to fulfill request.'}
+	}
+	const vault = await getVault(USER_DATA_PATH, vaultId)
+	if (!vault) {
+		return {error: true, identifier: 'vault-not-found', message: 'Current open vault not found.'}
+	}
+
+	// todo: check that path is within current vault
+
+	try {
+		const result = await read(path)
+		return {error: false, result}
+	}
+	catch (e) {
+		return {error: true, identifier: 'system-error', message: 'An unexpected error occurred', cause: e}
+	}
+})
+
+ipcMain.handle('files_readAsText', async (event, path: string) => {
+	const senderWindow = BrowserWindow.fromWebContents(event.sender);
+	if (!senderWindow) {
+		return {error: true, identifier: 'unidentified-window', message: 'Event could not be traced to sender window, ignoring request.'}
+	}
+	const vaultId = windowVaults.get(senderWindow.id)
+	if (!vaultId) {
+		return {error: true, identifier: 'no-open-vault', message: 'Window has no current vault open, so unable to fulfill request.'}
+	}
+	const vault = await getVault(USER_DATA_PATH, vaultId)
+	if (!vault) {
+		return {error: true, identifier: 'vault-not-found', message: 'Current open vault not found.'}
+	}
+
+	// todo: check that path is within current vault
+
+	try {
+		const result = await readAsText(path)
+		return {error: false, result}
+	}
+	catch (e) {
+		return {error: true, identifier: 'system-error', message: 'An unexpected error occurred', cause: e}
+	}
+})
+
+ipcMain.handle('files_readAsUrl', async (event, path: string) => {
+	const senderWindow = BrowserWindow.fromWebContents(event.sender);
+	if (!senderWindow) {
+		return {error: true, identifier: 'unidentified-window', message: 'Event could not be traced to sender window, ignoring request.'}
+	}
+	const vaultId = windowVaults.get(senderWindow.id)
+	if (!vaultId) {
+		return {error: true, identifier: 'no-open-vault', message: 'Window has no current vault open, so unable to fulfill request.'}
+	}
+	const vault = await getVault(USER_DATA_PATH, vaultId)
+	if (!vault) {
+		return {error: true, identifier: 'vault-not-found', message: 'Current open vault not found.'}
+	}
+
+	// todo: check that path is within current vault, or don't both as checks will be made by hb:// protocol anyway?
+
+	try {
+		const result = await readAsUrl(path)
 		return {error: false, result}
 	}
 	catch (e) {
