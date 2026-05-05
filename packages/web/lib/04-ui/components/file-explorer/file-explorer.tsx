@@ -20,7 +20,7 @@ export function FileExplorer(props?: FileExplorerProps) {
 		switchMap(vaultQuery => {
 			if (vaultQuery.status === "success" && vaultQuery.result) {
 				// todo: use proper path joining
-				const path = props?.path ? `${vaultQuery.result.path}${props.path}` : vaultQuery.result.path
+				const path = props?.path ? props.path : vaultQuery.result.path
 				return filesAPI.liveTree(path)
 			}
 			return of(null)

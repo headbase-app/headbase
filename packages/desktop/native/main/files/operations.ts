@@ -1,4 +1,4 @@
-import {readdir, readFile, stat as fsStat} from "node:fs/promises"
+import {readdir, readFile, stat as fsStat, writeFile} from "node:fs/promises"
 import {basename, join, sep} from "node:path"
 
 export interface FileSystemDirectory {
@@ -61,7 +61,19 @@ export async function cp() {}
 
 export async function mv() {}
 
-export async function write() {}
+export async function write(path: string, data: ArrayBuffer|Uint8Array) {
+	let buffer: Uint8Array;
+	if (data instanceof ArrayBuffer) {
+		buffer = new Uint8Array(data)
+	} else {
+		buffer = data
+	}
+	await writeFile(path, buffer)
+}
+
+export async function writeText(path: string, data: string) {
+	await writeFile(path, data, {encoding: 'utf8'})
+}
 
 export async function read(path: string) {
 	return await readFile(path)

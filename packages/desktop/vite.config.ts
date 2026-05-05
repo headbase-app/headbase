@@ -31,6 +31,6 @@ export default defineConfig({
 	},
 	optimizeDeps: {
 		// Exclude @headbase-app/lib otherwise Vite seems to pre-bundle assuming React and/or breaks pdfjs-dist worker import.
-		exclude: ["@headbase-app/lib"]
+		exclude: ["@headbase-app/lib"],
 	}
 });

@@ -6,7 +6,7 @@ import started from 'electron-squirrel-startup';
 import {CreateVaultDto, UpdateVaultDto} from "@headbase-app/lib/dist/02-apis/vaults/vault.ts";
 
 import {selectLocation, createVault, deleteVault, getVault, queryVaults, updateVault} from "./main/vaults/vaults";
-import {read, readAsText, readAsUrl, tree} from "./main/files/operations";
+import {read, readAsText, readAsUrl, tree, write, writeText} from "./main/files/operations";
 
 // @ts-expect-error -- todo: icon not found?
 import icon from './resources/icon.png'
@@ -297,22 +297,12 @@ ipcMain.handle('workspaceVault_close', (event) => {
 /**
  * File System
  */
-ipcMain.handle('files_tree', async (event) => {
-	const senderWindow = BrowserWindow.fromWebContents(event.sender);
-	if (!senderWindow) {
-		return {error: true, identifier: 'unidentified-window', message: 'Event could not be traced to sender window, ignoring request.'}
-	}
-	const vaultId = windowVaults.get(senderWindow.id)
-	if (!vaultId) {
-		return {error: true, identifier: 'no-open-vault', message: 'Window has no current vault open, so unable to fulfill request.'}
-	}
-	const vault = await getVault(USER_DATA_PATH, vaultId)
-	if (!vault) {
-		return {error: true, identifier: 'vault-not-found', message: 'Current open vault not found.'}
-	}
+ipcMain.handle('files_tree', async (_event, path: string) => {
+	// todo: check that path is within a vault folder,
 
 	try {
-		const result = await tree(vault.path)
+		console.debug(`[file-manager] tree - ${path}`)
+		const result = await tree(path)
 		return {error: false, result}
 	}
 	catch (e) {
@@ -320,23 +310,11 @@ ipcMain.handle('files_tree', async (event) => {
 	}
 })
 
-ipcMain.handle('files_read', async (event, path: string) => {
-	const senderWindow = BrowserWindow.fromWebContents(event.sender);
-	if (!senderWindow) {
-		return {error: true, identifier: 'unidentified-window', message: 'Event could not be traced to sender window, ignoring request.'}
-	}
-	const vaultId = windowVaults.get(senderWindow.id)
-	if (!vaultId) {
-		return {error: true, identifier: 'no-open-vault', message: 'Window has no current vault open, so unable to fulfill request.'}
-	}
-	const vault = await getVault(USER_DATA_PATH, vaultId)
-	if (!vault) {
-		return {error: true, identifier: 'vault-not-found', message: 'Current open vault not found.'}
-	}
-
-	// todo: check that path is within current vault
+ipcMain.handle('files_read', async (_event, path: string) => {
+	// todo: check that path is within a vault folder
 
 	try {
+		console.debug(`[file-manager] read - ${path}`)
 		const result = await read(path)
 		return {error: false, result}
 	}
@@ -345,23 +323,11 @@ ipcMain.handle('files_read', async (event, path: string) => {
 	}
 })
 
-ipcMain.handle('files_readAsText', async (event, path: string) => {
-	const senderWindow = BrowserWindow.fromWebContents(event.sender);
-	if (!senderWindow) {
-		return {error: true, identifier: 'unidentified-window', message: 'Event could not be traced to sender window, ignoring request.'}
-	}
-	const vaultId = windowVaults.get(senderWindow.id)
-	if (!vaultId) {
-		return {error: true, identifier: 'no-open-vault', message: 'Window has no current vault open, so unable to fulfill request.'}
-	}
-	const vault = await getVault(USER_DATA_PATH, vaultId)
-	if (!vault) {
-		return {error: true, identifier: 'vault-not-found', message: 'Current open vault not found.'}
-	}
-
-	// todo: check that path is within current vault
+ipcMain.handle('files_readAsText', async (_event, path: string) => {
+	// todo: check that path is within a vault folder
 
 	try {
+		console.debug(`[file-manager] readAsText - ${path}`)
 		const result = await readAsText(path)
 		return {error: false, result}
 	}
@@ -370,24 +336,38 @@ ipcMain.handle('files_readAsText', async (event, path: string) => {
 	}
 })
 
-ipcMain.handle('files_readAsUrl', async (event, path: string) => {
-	const senderWindow = BrowserWindow.fromWebContents(event.sender);
-	if (!senderWindow) {
-		return {error: true, identifier: 'unidentified-window', message: 'Event could not be traced to sender window, ignoring request.'}
-	}
-	const vaultId = windowVaults.get(senderWindow.id)
-	if (!vaultId) {
-		return {error: true, identifier: 'no-open-vault', message: 'Window has no current vault open, so unable to fulfill request.'}
-	}
-	const vault = await getVault(USER_DATA_PATH, vaultId)
-	if (!vault) {
-		return {error: true, identifier: 'vault-not-found', message: 'Current open vault not found.'}
-	}
-
-	// todo: check that path is within current vault, or don't both as checks will be made by hb:// protocol anyway?
+ipcMain.handle('files_readAsUrl', async (_event, path: string) => {
+	// todo: check that path is within a vault folder, or don't both as checks will be made by hb:// protocol anyway?
 
 	try {
+		console.debug(`[files] readAsUrl - ${path}`)
 		const result = await readAsUrl(path)
+		return {error: false, result}
+	}
+	catch (e) {
+		return {error: true, identifier: 'system-error', message: 'An unexpected error occurred', cause: e}
+	}
+})
+
+ipcMain.handle('files_write', async (_event, path: string, data: ArrayBuffer|Uint8Array) => {
+	// todo: check that path is within a vault folder, or don't both as checks will be made by hb:// protocol anyway?
+
+	try {
+		console.debug(`[file-manager] write - ${path}`)
+		const result = await write(path, data)
+		return {error: false, result}
+	}
+	catch (e) {
+		return {error: true, identifier: 'system-error', message: 'An unexpected error occurred', cause: e}
+	}
+})
+
+ipcMain.handle('files_writeText', async (_event, path: string, data: string) => {
+	// todo: check that path is within a vault folder, or don't both as checks will be made by hb:// protocol anyway?
+
+	try {
+		console.debug(`[file-manager] writeText - ${path}`)
+		const result = await writeText(path, data)
 		return {error: false, result}
 	}
 	catch (e) {

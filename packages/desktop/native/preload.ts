@@ -31,6 +31,6 @@ contextBridge.exposeInMainWorld('platformAPI', {
 	files_read: (path: string) => ipcRenderer.invoke('files_read', path),
 	files_readAsText: (path: string) => ipcRenderer.invoke('files_readAsText', path),
 	files_readAsUrl: (path: string) => ipcRenderer.invoke('files_readAsUrl', path),
-	files_write: () => ipcRenderer.invoke('files_write'),
-	files_writeText: () => ipcRenderer.invoke('files_writeText'),
+	files_write: (path: string, data: ArrayBuffer|Uint8Array) => ipcRenderer.invoke('files_write', path, data),
+	files_writeText: (path: string, data: string) => ipcRenderer.invoke('files_writeText', path, data),
 } satisfies IPlatformAPI)

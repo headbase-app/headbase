@@ -36,7 +36,7 @@
     "@solidjs/router": "^0.15.4",
     "lucide-solid": "^0.577.0",
     "opfsx": "^0.1.0",
-    "pdfjs-dist": "^5.5.207",
+    "pdfjs-dist": "^5.7.284",
     "rxjs": "^7.8.2",
     "solid-js": "^1.9.10",
     "zod": "^4.3.6"

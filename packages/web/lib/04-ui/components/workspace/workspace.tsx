@@ -29,7 +29,6 @@ export function Workspace() {
 				<Show when={tabs.length === 0}>
 					<p>No open tabs</p>
 				</Show>
-				<p>Workspace</p>
 				<For each={tabs}>
 					{(tab) => (
 						<WorkspaceTab tab={tab} isActive={tab.id === activeTabId()} />
