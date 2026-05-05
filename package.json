@@ -19,7 +19,7 @@
 	},
   "main": "index.js",
   "scripts": {
-		"bootstrap": "npm install && npm run build -w @headbase-app/lib",
+		"setup": "npm install && npm run build -w @headbase-app/lib",
     "prepare": "husky install"
   },
   "devDependencies": {

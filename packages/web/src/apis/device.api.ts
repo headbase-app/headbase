@@ -1,4 +1,4 @@
-import type {IDeviceAPI} from "@headbase-app/lib";
+import type {IDeviceAPI} from "../../../desktop/lib";
 
 export class DeviceAPI implements IDeviceAPI {
 	async getIdentity() {

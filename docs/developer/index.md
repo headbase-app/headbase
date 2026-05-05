@@ -14,14 +14,15 @@ and injects the platform specific implementations of these APIs.
 
 ## Project Structure
 The project is a monorepo containing multiple packages/projects:
-- `packages/web` (`@headbase-app/web`) - The web platform (PWA), built using Vite. This is also where the shared "application layer" library code is developed.
-- `packages/lib` (`@headbase-app/lib`) - The packaged application library extracted from the web project, used by the `desktop` and `mobile` applications.
-- `packages/desktop` (`@headbase-app/desktop`) - The desktop platform, built using Electron.
-- `packages/mobile` (`@headbase-app/mobile`) -  The mobile platform, built using Capacitor.
+- `packages/web` (`@headbase-app/web`) - The demo web app, built using Vite.
+- `packages/desktop` (`@headbase-app/desktop`) - The desktop platform, built using Electron. This is also where the shared "application layer" library code is developed.
+- `packages/mobile` (`@headbase-app/mobile`) - The mobile platform, built using Capacitor.
+- `packages/lib` (`@headbase-app/lib`) - The packaged application layer library extracted from the desktop project, used by the `web` and `mobile` platform projects.
 
 ## Way of Working
-- The application is developed primarily in `packages/web`, including the shared "application layer" code.
-- `packages/lib` then copies the library code from `packages/web` and exposes it for use by `packages/desktop` and `packages/mobile`.
+- The application is developed primarily in `packages/desktop`, including the shared "application layer" code.
+- `packages/lib` then copies the library code from `packages/desktop` and exposes it for use by `packages/web` and `packages/mobile`.
+- In future the plan is that the application layer development will likely shift to the `packages/web` project. Desktop is currently used as it's the easiest platform to create and edit test data on.
 
 ## Common Issues
 - Ensure the application layer never leaks into the platform layer, for example SolidJS proxy objects should always be unwrapped when being passed to API methods.

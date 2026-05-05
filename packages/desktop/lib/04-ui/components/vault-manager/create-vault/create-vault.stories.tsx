@@ -3,7 +3,7 @@ import { CreateVault } from "./create-vault"
 import type {VaultManagerPage} from "packages/web/lib/03-ui/components/vault-manager/vault-manager.jsx";
 import {VaultsAPIContext} from "packages/mobile/src/framework/vaults.context.js";
 import {WebDeviceApi} from "packages/mobile/src/apis/web/device/web-device.api.js";
-import {CommonEventsService, CommonVaultsAPI} from "@headbase-app/lib";
+import {CommonEventsService, CommonVaultsAPI} from "packages/lib";
 import {WebDatabaseService} from "packages/mobile/src/apis/web/database/web-database.service.js";
 
 // todo: UI level tests should rely on props, no need to inject services with external dependencies?

@@ -35,6 +35,7 @@ export function FileExplorer(props?: FileExplorerProps) {
 		<div>
 			<div>
 				<button onClick={openNewTab}>open in tab</button>
+				<button>refresh (todo)</button>
 			</div>
 			<Switch>
 				<Match

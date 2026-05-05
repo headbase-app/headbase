@@ -1,7 +1,7 @@
 import {Observable} from "rxjs";
 
-import type { IEventsService, IDeviceAPI, IWorkspaceVaultAPI, IVaultsAPI, LiveQueryResult } from "@headbase-app/lib";
-import { LiveQueryStatus, EventTypes, VaultDto } from "@headbase-app/lib";
+import type { IEventsService, IDeviceAPI, IWorkspaceVaultAPI, IVaultsAPI, LiveQueryResult } from "../../../desktop/lib";
+import { LiveQueryStatus, EventTypes, VaultDto } from "../../../desktop/lib";
 
 export class WorkspaceVaultAPI implements IWorkspaceVaultAPI {
 	constructor(

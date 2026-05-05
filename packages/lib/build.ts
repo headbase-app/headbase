@@ -6,8 +6,9 @@ async function build() {
 	console.debug("[build] Removing old `dist` folder")
 	await rm("./dist", { recursive: true, force: true })
 
-	console.debug("[build] Copying `../web/lib` to `dist`")
-	await cp("../web/lib", "./dist", {recursive: true})
+	const librarySrc = "../desktop/lib"
+	console.debug(`[build] Copying ${librarySrc} to \`dist\``)
+	await cp(librarySrc, "./dist", {recursive: true})
 
 	console.debug("[build] Finished build")
 }

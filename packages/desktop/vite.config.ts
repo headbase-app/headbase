@@ -10,6 +10,7 @@ export default defineConfig({
 	root: "./src",
 	resolve: {
 		alias: {
+			'@headbase-app/lib': resolve('lib/index.ts'),
 			'@apis': resolve('src/apis'),
 			'@ui': resolve('src/ui'),
 			// Ensure icons can be tree-shaken in dev mode (see /web/docs/technical-debt.md, thanks to https://christopher.engineering/en/blog/lucide-icons-with-vite-dev-server/)

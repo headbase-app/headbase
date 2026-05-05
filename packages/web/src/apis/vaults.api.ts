@@ -9,7 +9,7 @@ import {
 	type IEventsService,
 	type IVaultsAPI, LIVE_QUERY_LOADING_STATE, type LiveQueryResult,
 	LiveQueryStatus, type UpdateVaultDto, type VaultChangeEvent, type VaultDto, VaultList
-} from "@headbase-app/lib";
+} from "../../../desktop/lib";
 
 const VAULTS_PATH = "/headbase-v1/vaults.json"
 

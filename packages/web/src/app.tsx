@@ -9,7 +9,7 @@ import {
 	VaultsAPIContext, WorkspaceVaultAPIContext, FilesAPIContext, DeviceAPIContext, PluginAPIContext,
 	useWorkspaceVaultAPI, VaultManager,
 	VaultMenu, VaultManagerDialog, type VaultManagerPage, useVaultsAPI
-} from "@headbase-app/lib";
+} from "../../desktop/lib";
 
 import {DeviceAPI} from "./apis/device.api.ts";
 import {WorkspaceVaultAPI} from "./apis/workspace-vault.api.ts";

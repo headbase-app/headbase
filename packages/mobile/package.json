@@ -23,6 +23,7 @@
 		"build": "tsc -b && vite build",
 		"preview": "vite preview",
 		"sync": "npx cap sync",
+		"build-sync": "npm run build && npm run sync",
 		"sync:android": "npx cap sync android",
 		"run:android": "npx cap run android",
 		"open:android": "npx cap open android"

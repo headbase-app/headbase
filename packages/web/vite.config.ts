@@ -8,7 +8,6 @@ export default defineConfig({
   plugins: [solid()],
 	resolve: {
 		alias: {
-			'@headbase-app/lib': resolve('lib/index.ts'),
 			'@common': resolve('src/common'),
 			'@apis': resolve('src/apis'),
 			'@framework': resolve('src/framework'),

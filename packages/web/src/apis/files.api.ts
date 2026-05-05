@@ -9,7 +9,7 @@ import {
 	type IFileSystemTree, type IFileSystemTreeItem,
 	LIVE_QUERY_LOADING_STATE,
 	type LiveQueryResult, LiveQueryStatus
-} from "@headbase-app/lib";
+} from "../../../desktop/lib";
 
 
 export class FilesAPI implements IFilesAPI {
