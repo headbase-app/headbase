@@ -30,7 +30,7 @@ export const BasicMarkdownEditorPlugin: FilePlugin = {
 	type: PLUGIN_TYPES.FILE,
 	id: "headbase--basic-markdown",
 	name: "Basic Markdown Editor",
-	description: "Provides basic support for editing markdown files",
+	description: "Provides basic editing support for markdown files",
 	fileIcon: "markdown",
 	fileExtensions: [".md"],
 	editor: BasicMarkdownEditor,
