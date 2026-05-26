@@ -1,34 +1,28 @@
-import type {
-	FilePlugin,
-	FilePluginEditorMethods,
-	FilePluginEditorProps
-} from "../../../../../02-apis/plugin/file-plugin";
-import {PLUGIN_TYPES} from "../../../../../02-apis/plugin/plugin.api";
+import {
+	FileEditorMetadata, FileEditorPlugin,
+} from "../../../../../02-apis/plugin/plugin.api";
 
-
-async function VideoPlayer({document, apis, filePath, container}: FilePluginEditorProps): Promise<FilePluginEditorMethods> {
-	const url = await apis.filesAPI.readAsUrl(filePath)
-	const video = document.createElement("video")
-	video.src = url
-	video.controls = true
-	container.append(video)
-
-	async function close() {
-		container.removeChild(video)
+export class VideoPlayer extends FileEditorPlugin {
+	static meta: FileEditorMetadata = {
+		id: "headbase--video-player",
+		name: "Video Player",
+		description: "Provides support for playing video files.",
+		supportedExtensions: [
+			".mp4", ".mkv", ".webm"
+		],
 	}
 
-	return {
-		close
-	}
-}
+	video!: HTMLVideoElement
 
-export const VideoPlayerPlugin: FilePlugin = {
-	type: PLUGIN_TYPES.FILE,
-	id: "headbase--video-player",
-	name: "Video Player",
-	description: "Provides support for playing video files.",
-	fileExtensions: [
-		".mp4", ".mkv", ".webm"
-	],
-	editor: VideoPlayer,
+	async load() {
+		const url = await this.apis.filesAPI.readAsUrl(this.filePath)
+		this.video = document.createElement("video")
+		this.video.src = url
+		this.video.controls = true
+		this.container.append(this.video)
+	}
+
+	async unload() {
+		this.container.removeChild(this.video)
+	}
 }

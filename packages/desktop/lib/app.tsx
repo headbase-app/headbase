@@ -3,35 +3,21 @@ import {Route, createMemoryHistory, MemoryRouter, useNavigate} from "@solidjs/ro
 import {createStore} from "solid-js/store";
 
 import {
-	CommonEventsService, CommonPluginAPI,
 	WorkspaceProvider, Workspace,
-	HeadbaseCorePlugin,
 	VaultsAPIContext, WorkspaceVaultAPIContext, FilesAPIContext, DeviceAPIContext, PluginAPIContext,
 	useWorkspaceVaultAPI, VaultManager,
 	VaultMenu, VaultManagerDialog, type VaultManagerPage, useVaultsAPI
 } from "@headbase-app/lib";
-
-import {DeviceAPI} from "@apis/device/device.api.ts";
-import {WorkspaceVaultAPI} from "@apis/workspace-vault/workspace-vault.api.ts";
-import {FilesAPI} from "@apis/files/files.api.ts";
-import {VaultsAPI} from "@apis/vaults/vaults.api.ts";
-
-const deviceAPI= new DeviceAPI();
-const eventsService = new CommonEventsService(deviceAPI);
-const vaultsAPI = new VaultsAPI(eventsService, deviceAPI);
-const workspaceVaultAPI = new WorkspaceVaultAPI(eventsService, deviceAPI, vaultsAPI);
-const filesAPI = new FilesAPI(eventsService);
-const pluginAPI = new CommonPluginAPI();
-pluginAPI.registerPlugin(HeadbaseCorePlugin)
+import {InjectedDependencies} from "./headbase.tsx";
 
 
-export default function ApplicationWrapper() {
+export default function ApplicationWrapper(props: InjectedDependencies) {
 	return (
-		<VaultsAPIContext.Provider value={vaultsAPI}>
-			<WorkspaceVaultAPIContext.Provider value={workspaceVaultAPI}>
-				<FilesAPIContext.Provider value={filesAPI}>
-					<DeviceAPIContext.Provider value={deviceAPI}>
-						<PluginAPIContext.Provider value={pluginAPI}>
+		<VaultsAPIContext.Provider value={props.vaultsAPI}>
+			<WorkspaceVaultAPIContext.Provider value={props.workspaceVaultAPI}>
+				<FilesAPIContext.Provider value={props.filesAPI}>
+					<DeviceAPIContext.Provider value={props.deviceAPI}>
+						<PluginAPIContext.Provider value={props.pluginStore}>
 							<WorkspaceProvider>
 								<Application />
 							</WorkspaceProvider>

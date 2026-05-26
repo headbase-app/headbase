@@ -1,7 +1,7 @@
 import {createContext, useContext} from "solid-js";
-import type {IPluginAPI} from "../02-apis/plugin/plugin.api";
+import type {IPluginStore} from "../02-apis/plugin/plugin.api";
 
-export const PluginAPIContext = createContext<IPluginAPI>();
+export const PluginAPIContext = createContext<IPluginStore>();
 
 export function usePluginsAPI() {
 	const context = useContext(PluginAPIContext)

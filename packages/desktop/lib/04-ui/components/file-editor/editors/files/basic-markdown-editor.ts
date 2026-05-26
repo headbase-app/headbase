@@ -1,37 +1,32 @@
-import type {
-	FilePlugin,
-	FilePluginEditorMethods,
-	FilePluginEditorProps
-} from "../../../../../02-apis/plugin/file-plugin";
-import {PLUGIN_TYPES} from "../../../../../02-apis/plugin/plugin.api";
+import {
+	FileEditorPlugin,
+	FileEditorMetadata,
+} from "../../../../../02-apis/plugin/plugin.api";
 
 
-async function BasicMarkdownEditor({document, apis, filePath, container}: FilePluginEditorProps): Promise<FilePluginEditorMethods> {
-	const fileContents = await apis.filesAPI.readAsText(filePath)
-	const textarea = document.createElement("textarea")
-	textarea.value = fileContents
-	container.append(textarea)
-
-	async function save() {
-		await apis.filesAPI.writeText(filePath, textarea.value)
+export class BasicMarkdownEditor extends FileEditorPlugin {
+	static meta: FileEditorMetadata = {
+		id: "headbase--basic-markdown",
+		name: "Basic Markdown Editor",
+		description: "Provides basic editing support for markdown files",
+		icon: "markdown",
+		supportedExtensions: [".md"],
 	}
 
-	async function close() {
-		container.removeChild(textarea)
+	textarea!: HTMLTextAreaElement
+
+	async load() {
+		const fileContents = await this.apis.filesAPI.readAsText(this.filePath)
+		this.textarea = document.createElement("textarea")
+		this.textarea.value = fileContents
+		this.container.append(this.textarea)
 	}
 
-	return {
-		save,
-		close
+	async save() {
+		await this.apis.filesAPI.writeText(this.filePath, this.textarea.value)
 	}
-}
 
-export const BasicMarkdownEditorPlugin: FilePlugin = {
-	type: PLUGIN_TYPES.FILE,
-	id: "headbase--basic-markdown",
-	name: "Basic Markdown Editor",
-	description: "Provides basic editing support for markdown files",
-	fileIcon: "markdown",
-	fileExtensions: [".md"],
-	editor: BasicMarkdownEditor,
+	async unload() {
+		this.container.removeChild(this.textarea)
+	}
 }

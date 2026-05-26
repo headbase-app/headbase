@@ -1,35 +1,30 @@
-import type {
-	FilePlugin,
-	FilePluginEditorMethods,
-	FilePluginEditorProps
-} from "../../../../../02-apis/plugin/file-plugin";
-import {PLUGIN_TYPES} from "../../../../../02-apis/plugin/plugin.api";
+import {
+	FileEditorMetadata, FileEditorPlugin,
+} from "../../../../../02-apis/plugin/plugin.api";
 
 
-async function ImageViewer({document, apis, filePath, container}: FilePluginEditorProps): Promise<FilePluginEditorMethods> {
-	const url = await apis.filesAPI.readAsUrl(filePath)
-	const image = document.createElement("img")
-	image.src = url
-	container.append(image)
-
-	async function close() {
-		container.removeChild(image)
+export class ImageViewer extends FileEditorPlugin {
+	static meta: FileEditorMetadata = {
+		id: "headbase--image-viewer",
+		name: "Image Viewer",
+		description: "Provides support for viewing images",
+		supportedExtensions: [
+			".apng", ".avif", ".gif",
+			".jpg", ".jpeg", ".jfif", ".pjpeg", ".pjp",
+			".png", ".svg", ".webp"
+		],
 	}
 
-	return {
-		close
-	}
-}
+	image!: HTMLImageElement
 
-export const ImageViewerPlugin: FilePlugin = {
-	type: PLUGIN_TYPES.FILE,
-	id: "headbase--image-viewer",
-	name: "Image Viewer",
-	description: "Provides support for viewing images",
-	fileExtensions: [
-		".apng", ".avif", ".gif",
-		".jpg", ".jpeg", ".jfif", ".pjpeg", ".pjp",
-		".png", ".svg", ".webp"
-	],
-	editor: ImageViewer,
+	async load() {
+		const url = await this.apis.filesAPI.readAsUrl(this.filePath)
+		this.image = document.createElement("img")
+		this.image.src = url
+		this.container.append(this.image)
+	}
+
+	async unload() {
+		this.container.removeChild(this.image)
+	}
 }

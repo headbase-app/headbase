@@ -3,7 +3,7 @@ import {Route, createMemoryHistory, MemoryRouter, useNavigate} from "@solidjs/ro
 import {createStore} from "solid-js/store";
 
 import {
-	CommonEventsService, CommonPluginAPI,
+	CommonEventsService, PluginStoreService,
 	WorkspaceProvider, Workspace,
 	HeadbaseCorePlugin,
 	VaultsAPIContext, WorkspaceVaultAPIContext, FilesAPIContext, DeviceAPIContext, PluginAPIContext,
@@ -21,7 +21,7 @@ const eventsService = new CommonEventsService(deviceAPI);
 const vaultsAPI = new VaultsAPI(eventsService, deviceAPI);
 const workspaceVaultAPI = new WorkspaceVaultAPI(eventsService, deviceAPI, vaultsAPI);
 const filesAPI = new FilesAPI(eventsService);
-const pluginAPI = new CommonPluginAPI();
+const pluginAPI = new PluginStoreService();
 pluginAPI.registerPlugin(HeadbaseCorePlugin)
 
 

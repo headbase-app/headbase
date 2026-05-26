@@ -1,36 +1,31 @@
-import type {
-	FilePlugin,
-	FilePluginEditorMethods,
-	FilePluginEditorProps
-} from "../../../../../02-apis/plugin/file-plugin";
-import {PLUGIN_TYPES} from "../../../../../02-apis/plugin/plugin.api";
+import {
+	FileEditorMetadata, FileEditorPlugin,
+} from "../../../../../02-apis/plugin/plugin.api";
 
 
-async function AudioPlayer({document, apis, filePath, container}: FilePluginEditorProps): Promise<FilePluginEditorMethods> {
-	const url = await apis.filesAPI.readAsUrl(filePath)
-	const audio = document.createElement("audio")
-	audio.src = url
-	audio.controls = true
-	container.append(audio)
-
-	async function close() {
-		container.removeChild(audio)
+export class AudioPlayer extends FileEditorPlugin {
+	static meta: FileEditorMetadata = {
+		id: "headbase--audio-player",
+		name: "Audio Player",
+		description: "Provides support for playing audio files.",
+		supportedExtensions: [
+			".mp3", ".m4a", ".m4b", ".flac", ".wav",
+			".aac", ".ogg", ".wma",
+			".aiff", ".alac", ".opus", ".dsd",
+		],
 	}
 
-	return {
-		close
-	}
-}
+	audio!: HTMLAudioElement
 
-export const AudioPlayerPlugin: FilePlugin = {
-	type: PLUGIN_TYPES.FILE,
-	id: "headbase--audio-player",
-	name: "Audio Player",
-	description: "Provides support for playing audio files.",
-	fileExtensions: [
-		".mp3", ".m4a", ".m4b", ".flac", ".wav",
-		".aac", ".ogg", ".wma",
-		".aiff", ".alac", ".opus", ".dsd",
-	],
-	editor: AudioPlayer,
+	async load() {
+		const url = await this.apis.filesAPI.readAsUrl(this.filePath)
+		this.audio = document.createElement("audio")
+		this.audio.src = url
+		this.audio.controls = true
+		this.container.append(this.audio)
+	}
+
+	async unload() {
+		this.container.removeChild(this.audio)
+	}
 }
