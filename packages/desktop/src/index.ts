@@ -1,4 +1,4 @@
-import {HeadbaseApp} from "../lib/headbase.tsx";
+import {HeadbaseApp} from "../lib/headbase.ts";
 import {DeviceAPI} from "@apis/device/device.api.ts";
 import {CommonEventsService, PluginStore} from "@headbase-app/lib";
 import {VaultsAPI} from "@apis/vaults/vaults.api.ts";
@@ -14,15 +14,11 @@ const workspaceVaultAPI = new WorkspaceVaultAPI(eventsService, deviceAPI, vaults
 const filesAPI = new FilesAPI(eventsService);
 const pluginStore = new PluginStore(deviceAPI, filesAPI);
 
-const headbase = new HeadbaseApp({
-	root,
-	deps: {
-		deviceAPI,
-		eventsService,
-		vaultsAPI,
-		workspaceVaultAPI,
-		filesAPI,
-		pluginStore,
-	},
-})
-headbase.load()
+const headbase = new HeadbaseApp(
+	deviceAPI,
+	eventsService,
+	vaultsAPI,
+	workspaceVaultAPI,
+	filesAPI,
+	pluginStore,
+).load(root)

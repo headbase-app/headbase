@@ -8,7 +8,7 @@ import {
 	useWorkspaceVaultAPI, VaultManager,
 	VaultMenu, VaultManagerDialog, type VaultManagerPage, useVaultsAPI
 } from "@headbase-app/lib";
-import {InjectedDependencies} from "./headbase.tsx";
+import {InjectedDependencies} from "./headbase.ts";
 
 
 export default function ApplicationWrapper(props: InjectedDependencies) {
