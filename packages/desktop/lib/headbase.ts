@@ -39,6 +39,7 @@ export class HeadbaseApp {
 		this.root = root;
 		this.pluginStore.registerBasePlugin(HeadbaseCorePlugin)
 		await this.#render()
+		console.debug("app load")
 		return this;
 	}
 
