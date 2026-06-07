@@ -12,14 +12,6 @@ export default defineConfig({
 			'@apis': resolve('src/apis'),
 			'@framework': resolve('src/framework'),
 			'@ui': resolve('src/ui'),
-			// Ensure icons can be tree-shaken in dev mode (see docs/technical-debt.md, thanks to https://christopher.engineering/en/blog/lucide-icons-with-vite-dev-server/)
-			"lucide-solid/icons": fileURLToPath(
-				new URL(
-					// Relative path to access node_modules in root project of NPM workspaces
-					"../../node_modules/lucide-solid/dist/source/icons",
-					import.meta.url,
-				),
-			),
 		}
 	},
 	css: {
