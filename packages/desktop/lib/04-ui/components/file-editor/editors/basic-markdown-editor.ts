@@ -1,7 +1,7 @@
 import {
 	FileEditorPlugin,
 	FileEditorMetadata,
-} from "../../../../../02-apis/plugin/plugin.api";
+} from "../../../../02-apis/plugin/plugin.api.ts";
 
 
 export class BasicMarkdownEditor extends FileEditorPlugin {

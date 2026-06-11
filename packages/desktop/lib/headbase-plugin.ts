@@ -4,15 +4,15 @@ import {
 } from "./02-apis/plugin/plugin.api.js";
 
 // Text / Markdown
-import {BasicMarkdownEditor} from "./04-ui/components/file-editor/editors/files/basic-markdown-editor.js";
+import {BasicMarkdownEditor} from "./04-ui/components/file-editor/editors/basic-markdown-editor.js";
 // Media
-import {ImageViewer} from "./04-ui/components/file-editor/editors/files/image-viewer.js";
-import {AudioPlayer} from "./04-ui/components/file-editor/editors/files/audio-player.ts";
-import {VideoPlayer} from "./04-ui/components/file-editor/editors/files/video-player.ts";
+import {ImageViewer} from "./04-ui/components/file-editor/editors/image-viewer.js";
+import {AudioPlayer} from "./04-ui/components/file-editor/editors/audio-player.ts";
+import {VideoPlayer} from "./04-ui/components/file-editor/editors/video-player.ts";
 // Other files
-import {PDFViewer} from "./04-ui/components/file-editor/editors/files/pdf-viewer.js";
+import {PDFViewer} from "./04-ui/components/file-editor/editors/pdf-viewer.js";
 // Headbase
-import {ViewEditor} from "./04-ui/components/file-editor/editors/headbase/view-editor.js";
+import {ViewEditorPlugin} from "./04-ui/components/file-editor/editors/headbase-view.js";
 
 
 export class HeadbaseCorePlugin extends BasePlugin {
@@ -32,7 +32,7 @@ export class HeadbaseCorePlugin extends BasePlugin {
 		// Other files
 		this.registerEditor(PDFViewer)
 		// Headbase
-		this.registerEditor(ViewEditor)
+		this.registerEditor(ViewEditorPlugin)
 	}
 
 	async unload() {

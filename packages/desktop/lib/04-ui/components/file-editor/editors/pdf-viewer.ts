@@ -1,6 +1,6 @@
 import {
 	FileEditorMetadata, FileEditorPlugin,
-} from "../../../../../02-apis/plugin/plugin.api";
+} from "../../../../02-apis/plugin/plugin.api.ts";
 
 import * as pdfjs from "pdfjs-dist"
 import pdfjsWorkerUrl from 'pdfjs-dist/build/pdf.worker?worker&url';

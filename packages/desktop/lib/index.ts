@@ -36,7 +36,11 @@ export * from "./04-ui/components/vault-menu/vault-menu.js"
 
 // export * from "./04-ui/components/workspace/workspace.context.js"
 // export * from "./04-ui/components/workspace/workspace.provider.js"
-// export * from "./04-ui/components/workspace/workspace.js"
+export * from "./04-ui/components/workspace/workspace.js"
+export * from "./04-ui/components/workspace/tabs/file-explorer-tab.ts"
+export * from "./04-ui/components/workspace/tabs/search-tab.ts"
+export * from "./04-ui/components/workspace/tabs/types-tab.ts"
+export * from "./04-ui/components/workspace/tabs/file-tab.ts"
 // export * from "./04-ui/components/workspace/workspace-tab.js"
 
 export * from "./app.js"

@@ -7,7 +7,8 @@ import {
 	PluginStore, HeadbaseCorePlugin,
 	VaultsAPIContext,
 	WorkspaceVaultAPIContext, PluginAPIContext, FileExplorer, FileTreeItem, VaultManager, VaultsList, VaultForm,
-	CreateVault, EditVault, DeleteVault, VaultMenu,
+	CreateVault, EditVault, DeleteVault, VaultMenu, Workspace, WorkspaceAPIContext, FileExplorerTab, SearchTab, TypesTab,
+	FileTab,
 } from "@headbase-app/lib";
 import {ContextProvider} from "@headbase-app/lib";
 
@@ -18,6 +19,7 @@ import {FilesAPI} from "@apis/files/files.api.ts";
 import {WelcomePage} from "../lib/04-ui/pages/welcome-page.ts";
 import {AppPage} from "../lib/04-ui/pages/app-page.ts";
 import {ManageVaultsPage} from "../lib/04-ui/pages/manage-vaults-page.ts";
+import {WorkspaceAPI} from "../lib/02-apis/workspace/workspace.ts";
 
 import "./index.css"
 
@@ -39,6 +41,12 @@ customElements.define(FileTreeItem.tag, FileTreeItem)
 
 customElements.define(HeadbaseApp.tag, HeadbaseApp)
 
+customElements.define(Workspace.tag, Workspace)
+customElements.define(FileExplorerTab.tag, FileExplorerTab)
+customElements.define(SearchTab.tag, SearchTab)
+customElements.define(TypesTab.tag, TypesTab)
+customElements.define(FileTab.tag, FileTab)
+
 export class HeadbaseDesktopApp extends BaseElement {
 	static tag = 'hb-desktop-app';
 	contextProvider: ContextProvider
@@ -54,12 +62,15 @@ export class HeadbaseDesktopApp extends BaseElement {
 		const pluginStore = new PluginStore(deviceAPI, filesAPI);
 		pluginStore.registerBasePlugin(HeadbaseCorePlugin);
 
+		const workspaceAPI = new WorkspaceAPI(filesAPI);
+
 		this.contextProvider = new ContextProvider(document, "hb-desktop-app")
 		this.contextProvider.add(DeviceAPIContext, deviceAPI)
 		this.contextProvider.add(VaultsAPIContext, vaultsAPI)
 		this.contextProvider.add(WorkspaceVaultAPIContext, workspaceVaultAPI)
 		this.contextProvider.add(FilesAPIContext, filesAPI)
 		this.contextProvider.add(PluginAPIContext, pluginStore)
+		this.contextProvider.add(WorkspaceAPIContext, workspaceAPI)
 	}
 
 	render() {

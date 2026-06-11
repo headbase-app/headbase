@@ -13,6 +13,7 @@ export class FileExplorer extends BaseElement {
 	static tag = "hb-file-explorer"
 	workspaceVaultAPI = useContext(WorkspaceVaultAPIContext)
 	filesAPI = useContext(FilesAPIContext)
+	path?: string
 	fileTree: BehaviorSubject<LiveQueryResult<IFileSystemTree | null>>
 
 	constructor() {
@@ -20,7 +21,7 @@ export class FileExplorer extends BaseElement {
 		this.fileTree = this.createState(LIVE_QUERY_EMPTY, this.workspaceVaultAPI.liveGet().pipe(
 			switchMap(vaultQuery => {
 				if (vaultQuery.status === "success" && vaultQuery.result) {
-					return this.filesAPI.liveTree(vaultQuery.result.path)
+					return this.filesAPI.liveTree(this.path ?? vaultQuery.result.path)
 				}
 				return of(LIVE_QUERY_EMPTY)
 			}),

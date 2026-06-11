@@ -8,7 +8,7 @@ import {
 	useContext, VaultDto, VaultManagerEvents,
 	VaultsAPIContext,
 	WorkspaceVaultAPIContext,
-	dispatchEvent
+	dispatchEvent, WorkspaceAPIContext
 } from "@headbase-app/lib";
 
 import "./vault-menu.css"
@@ -22,7 +22,7 @@ export class VaultMenu extends BaseElement {
 
 	vaultsAPI = useContext(VaultsAPIContext)
 	workspaceVaultAPI = useContext(WorkspaceVaultAPIContext)
-	workspaceAPI = useContext(WorkspaceVaultAPIContext)
+	workspaceAPI = useContext(WorkspaceAPIContext)
 
 	currentVault$: BehaviorSubject<LiveQueryResult<VaultDto | null>>
 	vaults$: BehaviorSubject<LiveQueryResult<VaultDto[]>>
@@ -67,21 +67,23 @@ export class VaultMenu extends BaseElement {
 		return html`
 			<div class="vault-menu">
 				<button popovertarget="vault-switcher">${switcherText}${i("chevron-up")}</button>
-				<button>${i("shapes")}</button>
 				<button @click=${()=> {
-					//this.workspaceAPI.openTab({type: "file-explorer"})
+					this.workspaceAPI.openTab({type: "content-types"})
+				}}>
+					${i("shapes")}
+				</button>
+				<button @click=${()=> {
+					this.workspaceAPI.openTab({type: "file-explorer"})
 				}}>
 					${i("folder")}
 				</button>
 				<button @click=${()=> {
-					//this.workspaceAPI.openTab({type: "search"})
+					this.workspaceAPI.openTab({type: "search"})
 				}}>
 					${i("search")}
 				</button>
 				</button>
-				<button @click=${()=> {
-					//this.workspaceAPI.openTab({type: "new"})
-				}}>
+				<button>
 					${i("plus")}
 				</button>
 			</div>

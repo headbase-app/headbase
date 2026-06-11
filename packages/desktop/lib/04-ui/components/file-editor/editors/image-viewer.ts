@@ -1,6 +1,6 @@
 import {
 	FileEditorMetadata, FileEditorPlugin,
-} from "../../../../../02-apis/plugin/plugin.api";
+} from "../../../../02-apis/plugin/plugin.api.ts";
 
 
 export class ImageViewer extends FileEditorPlugin {
