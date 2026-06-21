@@ -1,6 +1,6 @@
-# `@headbase-app/mobile`
+# `@headbase-app/web`
 
-The Headbase web application (and global library), built using [Vite](https://vitejs.dev/) and [Solid](https://www.solidjs.com/).
+The Headbase web application.
 
 ## Prerequisites
 - Node installed at the latest LTS version

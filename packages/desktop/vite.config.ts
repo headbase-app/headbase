@@ -1,7 +1,5 @@
 import { defineConfig } from 'vite';
-import solid from "vite-plugin-solid";
 import {resolve} from "node:path";
-import {fileURLToPath} from "node:url";
 
 // This is the Vite config for the Electron render process / frontend app.
 
@@ -15,10 +13,6 @@ export default defineConfig({
 			'@ui': resolve('src/ui'),
 		}
 	},
-	plugins: [
-		// @ts-expect-error -- todo: plugin types don't match?
-		solid()
-	],
 	worker: {
 		format: "es"
 	},

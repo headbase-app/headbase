@@ -6,13 +6,13 @@ import {
 	DeviceAPIContext, FilesAPIContext, HeadbaseApp,
 	PluginStore, HeadbaseCorePlugin,
 	VaultsAPIContext,
+	WorkspaceAPI,
 	WorkspaceVaultAPIContext, PluginAPIContext, FileExplorer, FileTreeItem, VaultManager, VaultsList, VaultForm,
 	CreateVault, EditVault, DeleteVault, VaultMenu, Workspace, WorkspaceAPIContext, FileExplorerTab, SearchTab, TypesTab,
 	FileTab,
-	WelcomePage, AppPage, ManageVaultsPage,
-	WorkspaceAPI,
-	ContextProvider
+	WelcomePage, AppPage, ManageVaultsPage
 } from "@headbase-app/lib";
+import {ContextProvider} from "@headbase-app/lib";
 
 import {DeviceAPI} from "@apis/device/device.api.ts";
 import {VaultsAPI} from "@apis/vaults/vaults.api.ts";
@@ -72,7 +72,10 @@ export class HeadbaseDesktopApp extends BaseElement {
 	}
 
 	render() {
-		return html`<hb-app/>`
+		return html`
+			<p>Mobile APP!</p>
+			<hb-app></hb-app>
+		`
 	}
 }
 customElements.define(HeadbaseDesktopApp.tag, HeadbaseDesktopApp)

@@ -32,19 +32,15 @@
 		"@capacitor/android": "^8.1.0",
 		"@capacitor/core": "^8.1.0",
 		"@capacitor/filesystem": "^8.1.2",
-		"@solidjs/router": "^0.15.4",
-		"lucide-solid": "^0.574.0",
+		"lit-html": "^3.3.3",
+		"lucide-static": "^1.18.0",
 		"pdfjs-dist": "^5.7.284",
 		"rxjs": "^7.8.2",
-		"solid-js": "^1.9.10",
 		"zod": "^4.3.6"
 	},
 	"devDependencies": {
 		"@capacitor/cli": "^8.1.0",
-		"@types/node": "^24.10.1",
-		"lightningcss": "^1.31.1",
 		"typescript": "~5.9.3",
-		"vite": "^7.3.1",
-		"vite-plugin-solid": "^2.11.10"
+		"vite": "^7.3.1"
 	}
 }

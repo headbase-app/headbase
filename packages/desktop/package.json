@@ -25,6 +25,14 @@
 		"make": "electron-forge make",
 		"publish": "electron-forge publish"
 	},
+	"dependencies": {
+		"electron-squirrel-startup": "^1.0.1",
+		"lit-html": "^3.3.3",
+		"lucide-static": "^1.17.0",
+		"pdfjs-dist": "^5.7.284",
+		"rxjs": "^7.8.2",
+		"zod": "^4.3.6"
+	},
 	"devDependencies": {
 		"@electron-forge/cli": "^7.11.1",
 		"@electron-forge/maker-deb": "^7.11.1",
@@ -42,13 +50,5 @@
 		"typescript": "~4.5.4",
 		"vite": "^5.4.21",
 		"vitest": "^4.1.7"
-	},
-	"dependencies": {
-		"electron-squirrel-startup": "^1.0.1",
-		"lit-html": "^3.3.3",
-		"lucide-static": "^1.17.0",
-		"pdfjs-dist": "^5.7.284",
-		"rxjs": "^7.8.2",
-		"zod": "^4.3.6"
 	}
 }
