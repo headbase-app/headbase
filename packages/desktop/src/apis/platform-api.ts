@@ -41,6 +41,7 @@ export interface IPlatformAPI {
 	// FilesAPI
 	files_ls: AsPlatformMethod<IFilesAPI['ls']>
 	files_tree: AsPlatformMethod<IFilesAPI['tree']>
+	files_glob: AsPlatformMethod<IFilesAPI['glob']>
 	files_mv: AsPlatformMethod<IFilesAPI['mv']>
 	files_cp: AsPlatformMethod<IFilesAPI['cp']>
 	files_rm: AsPlatformMethod<IFilesAPI['rm']>

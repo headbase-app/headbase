@@ -4,11 +4,11 @@
 # Node
 node_modules
 
-# Databases
-*.sqlite
-
 # OS
 **/*.DS_Store
 
 # Testing
 /testing
+
+# Docs
+/TODO.md

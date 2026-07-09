@@ -38,6 +38,14 @@ export class FilesAPI implements IFilesAPI {
 		return platformResponse.result
 	}
 
+	async glob(basePath: string, pattern: string) {
+		const platformResponse = await window.platformAPI.files_glob(basePath, pattern)
+		if (platformResponse.error) {
+			throw new Error(platformResponse.identifier, {cause: platformResponse.cause})
+		}
+		return platformResponse.result
+	}
+
 	async mv(sourcePath: string, destinationPath: string) {
 		const platformResponse = await window.platformAPI.files_mv(sourcePath, destinationPath)
 		if (platformResponse.error) {
@@ -111,14 +119,14 @@ export class FilesAPI implements IFilesAPI {
 	liveTree(path: string){
 		return new Observable<LiveQueryResult<IFileSystemTree | null>>((observer) => {
 			const runQuery = async () => {
-				observer.next({status: LiveQueryStatus.LOADING})
+				observer.next({status: LiveQueryStatus.LOADING, result: null})
 
 				try {
 					const tree = await this.tree(path)
 					observer.next({status: LiveQueryStatus.SUCCESS, result: tree })
 				}
 				catch (error) {
-					observer.next({status: LiveQueryStatus.ERROR, errors: [error] })
+					observer.next({status: LiveQueryStatus.ERROR, errors: [error], result: null})
 				}
 			}
 
@@ -134,14 +142,14 @@ export class FilesAPI implements IFilesAPI {
 	liveLs(path: string) {
 		return new Observable<LiveQueryResult<IFileSystemItem[]>>((observer) => {
 			const runQuery = async () => {
-				observer.next({status: LiveQueryStatus.LOADING})
+				observer.next({status: LiveQueryStatus.LOADING, result: null})
 
 				try {
 					const list = await this.ls(path)
 					observer.next({status: LiveQueryStatus.SUCCESS, result: list })
 				}
 				catch (error) {
-					observer.next({status: LiveQueryStatus.ERROR, errors: [error] })
+					observer.next({status: LiveQueryStatus.ERROR, errors: [error], result: null })
 				}
 			}
 

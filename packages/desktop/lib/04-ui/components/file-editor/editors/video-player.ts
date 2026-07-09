@@ -1,10 +1,9 @@
-import {
-	FileEditorMetadata, FileEditorPlugin,
-} from "../../../../02-apis/plugin/plugin.api.ts";
+import {FileEditorMetadata, FileEditorPlugin} from "../../../../02-apis/plugin/plugins/editor-plugin.ts";
+
 
 export class VideoPlayer extends FileEditorPlugin {
 	static meta: FileEditorMetadata = {
-		id: "headbase--video-player",
+		id: "https://spec.headbase.app/v1/editor/video-player",
 		name: "Video Player",
 		description: "Provides support for playing video files.",
 		supportedExtensions: [

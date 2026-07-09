@@ -3,8 +3,10 @@ export type ObjectFields = {
 	[key: string]: FieldData | FieldData[] | ObjectFields
 }
 
+export type FieldKey = "$file.name" | "$file.path" | "$file.text" | string
+
 export type WhereQuery = {
-	[field: string]: {
+	[field: FieldKey]: {
 		$equal?: string | number | boolean
 		$notEqual?: string | number | boolean
 		$in?: string[] | number[]
@@ -25,13 +27,10 @@ export type WhereQuery = {
 	$or?: WhereQuery[]
 }
 
-export interface Query {
-	page?: {
-		limit?: number
-		offset?: number
-	}
+// todo: add ability to page
+export interface BaseQuery {
 	order?: {
-		[field: string]: 'desc' | 'asc'
+		[field: FieldKey]: 'desc' | 'asc'
 	}
 	where?: WhereQuery
 }

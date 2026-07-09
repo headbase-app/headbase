@@ -1,9 +1,8 @@
-import {
-	FileEditorPlugin,
-	FileEditorMetadata
-} from "../../../../02-apis/plugin/plugin.api.ts";
 import {BaseElement, IFilesAPI} from "@headbase-app/lib";
 import {html, nothing, TemplateResult} from "lit-html";
+
+import {FileEditorMetadata, FileEditorPlugin} from "../../../../../02-apis/plugin/plugins/editor-plugin.ts";
+
 
 class HeadbaseView extends BaseElement {
 	static tag = "hb-view-editor";
@@ -28,7 +27,7 @@ customElements.define(HeadbaseView.tag, HeadbaseView)
 
 export class ViewEditorPlugin extends FileEditorPlugin {
 	static meta: FileEditorMetadata = {
-		id: "headbase--views",
+		id: "https://spec.headbase.app/v1/editor/views",
 		name: "Headbase Views",
 		description: "Provides support for Headbase .hb files which contain data views.",
 		supportedExtensions: [".hb"],

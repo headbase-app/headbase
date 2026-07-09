@@ -1,14 +1,13 @@
-import {
-	FileEditorMetadata, FileEditorPlugin,
-} from "../../../../02-apis/plugin/plugin.api.ts";
+import {FileEditorMetadata, FileEditorPlugin} from "../../../../02-apis/plugin/plugins/editor-plugin.ts";
 
 import * as pdfjs from "pdfjs-dist"
+// @ts-ignore -- todo: fix worker URL?
 import pdfjsWorkerUrl from 'pdfjs-dist/build/pdf.worker?worker&url';
 pdfjs.GlobalWorkerOptions.workerSrc = pdfjsWorkerUrl
 
 export class PDFViewer extends FileEditorPlugin {
 	static meta: FileEditorMetadata = {
-		id: "headbase--pdf-viewer",
+		id: "https://spec.headbase.app/v1/editor/pdf-viewer",
 		name: "PDF Viewer",
 		description: "Provides support for viewing PDF files",
 		supportedExtensions: [".pdf"],

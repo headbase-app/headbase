@@ -1,7 +1,4 @@
-import {
-	BasePlugin,
-	BasePluginMetadata,
-} from "./02-apis/plugin/plugin.api.js";
+import {BasePlugin, BasePluginMetadata} from "./02-apis/plugin/plugins/base-plugin.ts";
 
 // Text / Markdown
 import {BasicMarkdownEditor} from "./04-ui/components/file-editor/editors/basic-markdown-editor.js";
@@ -12,7 +9,7 @@ import {VideoPlayer} from "./04-ui/components/file-editor/editors/video-player.t
 // Other files
 import {PDFViewer} from "./04-ui/components/file-editor/editors/pdf-viewer.js";
 // Headbase
-import {ViewEditorPlugin} from "./04-ui/components/file-editor/editors/headbase-view.js";
+import {ViewEditorPlugin} from "./04-ui/components/file-editor/editors/headbase-view/headbase-view.js";
 
 
 export class HeadbaseCorePlugin extends BasePlugin {

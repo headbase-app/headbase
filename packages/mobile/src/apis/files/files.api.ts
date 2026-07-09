@@ -1,10 +1,12 @@
 import {Capacitor} from "@capacitor/core";
 import {Encoding, Filesystem} from "@capacitor/filesystem";
 import {Observable} from "rxjs";
+import {Minimatch} from "minimatch";
 
 import {
 	EventTypes, type IEventsService,
 	type IFilesAPI,
+	type IFileSystemFile,
 	type IFileSystemItem,
 	type IFileSystemTree,
 	type IFileSystemTreeItem,
@@ -75,6 +77,14 @@ export class FilesAPI implements IFilesAPI {
 			name: file.name,
 			path: file.name,
 		}))
+	}
+
+	async glob(basePath: string, pattern: string): Promise<IFileSystemFile[]> {
+		const files = await this.ls(basePath)
+		const mm = new Minimatch(pattern)
+		return files
+			.filter(file => file.type === 'file')
+			.filter(file => mm.match(file.path))
 	}
 
 	async mv(sourcePath: string, destinationPath: string) {}

@@ -1,12 +1,9 @@
-import {
-	FileEditorPlugin,
-	FileEditorMetadata,
-} from "../../../../02-apis/plugin/plugin.api.ts";
+import {FileEditorMetadata, FileEditorPlugin} from "../../../../02-apis/plugin/plugins/editor-plugin.ts";
 
 
 export class BasicMarkdownEditor extends FileEditorPlugin {
 	static meta: FileEditorMetadata = {
-		id: "headbase--basic-markdown",
+		id: "https://spec.headbase.app/v1/editor/basic-markdown",
 		name: "Basic Markdown Editor",
 		description: "Provides basic editing support for markdown files",
 		icon: "markdown",

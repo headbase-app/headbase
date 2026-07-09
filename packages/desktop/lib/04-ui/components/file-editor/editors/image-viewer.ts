@@ -1,11 +1,9 @@
-import {
-	FileEditorMetadata, FileEditorPlugin,
-} from "../../../../02-apis/plugin/plugin.api.ts";
+import {FileEditorMetadata, FileEditorPlugin} from "../../../../02-apis/plugin/plugins/editor-plugin.ts";
 
 
 export class ImageViewer extends FileEditorPlugin {
 	static meta: FileEditorMetadata = {
-		id: "headbase--image-viewer",
+		id: "https://spec.headbase.app/v1/editor/image-viewer",
 		name: "Image Viewer",
 		description: "Provides support for viewing images",
 		supportedExtensions: [

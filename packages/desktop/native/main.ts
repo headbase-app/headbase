@@ -6,7 +6,7 @@ import started from 'electron-squirrel-startup';
 import {CreateVaultDto, UpdateVaultDto} from "@headbase-app/lib/dist/02-apis/vaults/vault.ts";
 
 import {selectLocation, createVault, deleteVault, getVault, queryVaults, updateVault} from "./main/vaults/vaults";
-import {read, readAsText, readAsUrl, tree, write, writeText} from "./main/files/operations";
+import {glob, read, readAsText, readAsUrl, tree, write, writeText} from "./main/files/operations";
 
 // @ts-expect-error -- todo: icon not found?
 import icon from './resources/icon.png'
@@ -303,6 +303,20 @@ ipcMain.handle('files_tree', async (_event, path: string) => {
 	try {
 		console.debug(`[file-manager] tree - ${path}`)
 		const result = await tree(path)
+		return {error: false, result}
+	}
+	catch (e) {
+		return {error: true, identifier: 'system-error', message: 'An unexpected error occurred', cause: e}
+	}
+})
+
+ipcMain.handle('files_glob', async (_event, basePath: string, pattern: string) => {
+	// todo: check that path is within a vault folder
+	// todo: validate glob pattern?
+
+	try {
+		console.debug(`[file-manager] glob - ${basePath} ${pattern}`)
+		const result = await glob(basePath, pattern)
 		return {error: false, result}
 	}
 	catch (e) {

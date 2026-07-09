@@ -32,6 +32,11 @@ export interface IFilesAPI {
 	// File system operations
 	tree: (path: string) => Promise<IFileSystemTree|null>
 	ls: (path: string) => Promise<IFileSystemItem[]>
+	/**
+	 * @param {string} pabasePathth - The base path to search from.
+	 * @param {string} pattern - A glob pattern, see https://www.npmjs.com/package/minimatch.
+	 */
+	glob: (basePath: string, patten: string) => Promise<IFileSystemFile[]>
 	mv: (sourcePath: string, destinationPath: string) => Promise<void>
 	cp: (sourcePath: string, destinationPath: string) => Promise<void>
 	rm: (path: string) => Promise<void>

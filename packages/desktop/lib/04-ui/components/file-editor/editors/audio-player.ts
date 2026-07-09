@@ -1,11 +1,9 @@
-import {
-	FileEditorMetadata, FileEditorPlugin,
-} from "../../../../02-apis/plugin/plugin.api.ts";
+import {FileEditorMetadata, FileEditorPlugin} from "../../../../02-apis/plugin/plugins/editor-plugin.ts";
 
 
 export class AudioPlayer extends FileEditorPlugin {
 	static meta: FileEditorMetadata = {
-		id: "headbase--audio-player",
+		id: "https://spec.headbase.app/v1/editor/audio-player",
 		name: "Audio Player",
 		description: "Provides support for playing audio files.",
 		supportedExtensions: [

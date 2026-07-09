@@ -1,13 +1,13 @@
-import {readdir, readFile, stat as fsStat, writeFile} from "node:fs/promises"
+import {readdir, readFile, stat as fsStat, writeFile, glob as fsGlob} from "node:fs/promises"
 import {basename, join, sep} from "node:path"
 
+// todo: should use shared types from library?
 export interface FileSystemDirectory {
 	type: 'directory',
 	name: string,
 	path: string,
 	children: TreeItem[]
 }
-
 export interface FileSystemFile {
 	type: 'file',
 	name: string,
@@ -49,6 +49,18 @@ export async function _tree(directoryPath: string) {
 	}
 
 	return parentDirectory
+}
+
+export async function glob(basePath: string, pattern: string): Promise<FileSystemFile[]> {
+	const results: FileSystemFile[] = []
+	for await (const file of fsGlob(pattern, {cwd: basePath})) {
+		results.push({
+			type: "file",
+			path: file,
+			name: basename(file),
+		})
+	}
+	return results
 }
 
 export async function ls() {}
