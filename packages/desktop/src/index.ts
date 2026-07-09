@@ -58,7 +58,7 @@ export class HeadbaseDesktopApp extends BaseElement {
 		const filesAPI = new FilesAPI(eventsService);
 
 		const pluginStore = new PluginStore(deviceAPI, filesAPI);
-		pluginStore.registerBasePlugin(HeadbaseCorePlugin);
+		pluginStore.registerPlugin(HeadbaseCorePlugin);
 
 		const workspaceAPI = new WorkspaceAPI(filesAPI);
 
