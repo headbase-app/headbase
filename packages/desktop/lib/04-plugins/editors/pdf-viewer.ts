@@ -1,4 +1,4 @@
-import {FileEditorMetadata, FileEditorPlugin} from "../../../../02-apis/plugin/plugins/editor-plugin.ts";
+import {FileEditorMetadata, FileEditorPlugin} from "../../02-apis/plugin/plugins/editor-plugin.ts";
 
 import * as pdfjs from "pdfjs-dist"
 // @ts-ignore -- todo: fix worker URL?
@@ -21,7 +21,7 @@ export class PDFViewer extends FileEditorPlugin {
 		const data = await this.apis.filesAPI.read(this.filePath)
 
 		this.pdfContainer = document.createElement("div");
-		this.pdfDocument = await pdfjs.getDocument(data).promise
+		this.pdfDocument = await pdfjs.getDocument(data.buffer).promise
 		const pageCount = this.pdfDocument.numPages
 		this.pdfPages = []
 

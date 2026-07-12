@@ -4,7 +4,7 @@ import {
 import {IDeviceAPI} from "../device/device.api.ts";
 import {IFilesAPI} from "../files/files.api.ts";
 import {FileEditorPluginClass} from "./plugins/editor-plugin.ts";
-import {DataSourcePluginClass} from "./plugins/data-source-plugin.ts";
+import {SourcePluginClass} from "./plugins/source-plugin/source-plugin.ts";
 import {ViewPluginClass} from "./plugins/view-plugin.ts";
 import {BasePluginClass} from "./plugins/base-plugin.ts";
 
@@ -16,16 +16,16 @@ export class PluginStore implements IPluginStore {
 
 	// #basePlugins: BasePluginClass[] = [];
 	#editors: FileEditorPluginClass[] = []
-	#dataSources: DataSourcePluginClass[] = []
+	#dataSources: SourcePluginClass[] = []
 	#viewDisplays: ViewPluginClass[] = []
 
 	registerPlugin(plugin: BasePluginClass)  {
 		// todo: move somewhere that allows app control over core/external registration (protecting id namespace, validation etc)
 		// this.#basePlugins.push(plugin);
-		const instance = new plugin({deviceAPI: this.deviceAPI, filesAPI: this.filesAPI});
+		const instance = new plugin({deviceAPI: this.deviceAPI, filesAPI: this.filesAPI, pluginAPI: this});
 		instance.registerEditor = (editor) => this.#registerEditor(editor);
-		instance.registerViewSource = (viewSource) => this.#registerViewSource(viewSource);
-		instance.registerViewDisplay = (viewDisplay) => this.#registerViewDisplay(viewDisplay);
+		instance.registerSource = (viewSource) => this.#registerViewSource(viewSource);
+		instance.registerView = (viewDisplay) => this.#registerViewDisplay(viewDisplay);
 		instance.load()
 	}
 
@@ -44,7 +44,7 @@ export class PluginStore implements IPluginStore {
 		this.#editors.push(plugin)
 	}
 
-	#registerViewSource(plugin: DataSourcePluginClass) {
+	#registerViewSource(plugin: SourcePluginClass) {
 		for (const view of this.#dataSources) {
 			if (view.meta.id === plugin.meta.id) {
 				throw new Error(`View source with id ${plugin.meta.id} already found.`)
@@ -76,11 +76,23 @@ export class PluginStore implements IPluginStore {
 		return this.#editors
 	}
 
-	async getDataSources() {
+	async getEditorById(id: string) {
+		return this.#editors.find(s => s.meta.id === id) ?? null
+	}
+
+	async getSources() {
 		return this.#dataSources
+	}
+
+	async getSourceById(id: string) {
+		return this.#dataSources.find(s => s.meta.id === id) ?? null
 	}
 
 	async getViews() {
 		return this.#viewDisplays
+	}
+
+	async getViewById(id: string) {
+		return this.#viewDisplays.find(s => s.meta.id === id) ?? null
 	}
 }

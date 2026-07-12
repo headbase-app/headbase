@@ -25,10 +25,34 @@ export interface IFileSystemTree {
 	children: IFileSystemTreeItem[]
 }
 
+export interface ParsedPath {
+	dir: string
+	base: string // base matches Node.js API, is is the filename with extension.
+	ext: string
+}
+
+export interface FileStats {
+	size: number
+	createdAt: string
+	updatedAt: string
+}
+
+export interface ReadFileBuffer {
+	buffer: Buffer
+	meta: FileStats
+}
+export interface ReadFileText {
+	text: string
+	meta: FileStats
+}
+export interface ReadFileURL {
+	url: string
+	meta: FileStats
+}
+
 export interface IFilesAPI {
 	// Path formatting
-	getFileName: (path: string) => string
-	getPathDisplay: (path: string) => string
+	parsePath: (path: string) => ParsedPath
 	// File system operations
 	tree: (path: string) => Promise<IFileSystemTree|null>
 	ls: (path: string) => Promise<IFileSystemItem[]>
@@ -41,9 +65,10 @@ export interface IFilesAPI {
 	cp: (sourcePath: string, destinationPath: string) => Promise<void>
 	rm: (path: string) => Promise<void>
 	mkdir: (path: string) => Promise<void>
-	read: (path: string) => Promise<Uint8Array>
-	readAsText: (path: string) => Promise<string>
-	readAsUrl: (path: string) => Promise<string>
+	read: (path: string) => Promise<ReadFileBuffer>
+	readAsText: (path: string) => Promise<ReadFileText>
+	readAsUrl: (path: string) => Promise<ReadFileURL>
+	stat: (path: string) => Promise<FileStats>
 	write: (path: string, data: ArrayBuffer|Uint8Array) => Promise<void>
 	writeText: (path: string, data: string) => Promise<void>
 	// Observable operations

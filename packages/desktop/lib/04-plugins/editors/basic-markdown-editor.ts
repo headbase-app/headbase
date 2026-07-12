@@ -1,4 +1,4 @@
-import {FileEditorMetadata, FileEditorPlugin} from "../../../../02-apis/plugin/plugins/editor-plugin.ts";
+import {FileEditorMetadata, FileEditorPlugin} from "../../02-apis/plugin/plugins/editor-plugin.ts";
 
 
 export class BasicMarkdownEditor extends FileEditorPlugin {
@@ -13,9 +13,9 @@ export class BasicMarkdownEditor extends FileEditorPlugin {
 	textarea!: HTMLTextAreaElement
 
 	async load() {
-		const fileContents = await this.apis.filesAPI.readAsText(this.filePath)
+		const result = await this.apis.filesAPI.readAsText(this.filePath)
 		this.textarea = document.createElement("textarea")
-		this.textarea.value = fileContents
+		this.textarea.value = result.text
 		this.container.append(this.textarea)
 	}
 

@@ -10,6 +10,7 @@ import {
 	LIVE_QUERY_LOADING_STATE,
 	type LiveQueryResult, LiveQueryStatus
 } from "../../../../lib/dist";
+import {ParsedPath} from "@headbase-app/desktop/lib";
 
 
 export class FilesAPI implements IFilesAPI {
@@ -20,13 +21,21 @@ export class FilesAPI implements IFilesAPI {
 		window.opfsx = opfsx
 	}
 
-	getPathDisplay(path: string) {
-		return path.replace("/headbase-v1/vaults/", "")
-	}
+	parsePath(path: string): ParsedPath  {
+		// todo: may not work across posix/windows?
+		const parts = path.split("/");
+		const base = parts[parts.length - 1]
 
-	getFileName(path: string): string {
-		const parts = path.split("/")
-		return parts[parts.length-1]
+		const dir = parts.slice(0, parts.length - 1).join("")
+
+		const extParts = base.split(".")
+		const ext = extParts.slice(0, extParts.length - 1).join(".");
+
+		return {
+			base: base,
+			dir: dir,
+			ext: ext,
+		}
 	}
 
 	async ls() {
@@ -54,10 +63,11 @@ export class FilesAPI implements IFilesAPI {
 	}
 
 	async tree(path: string): Promise<IFileSystemTree> {
+		const parsedPath = this.parsePath()
 		try {
 			const tree = await opfsx.tree(path)
 			return {
-				name: this.getFileName(path),
+				name: parsedPath.base,
 				path,
 				type: "directory",
 				children: tree.children.map(this.#mapTreeItem.bind(this))
@@ -69,7 +79,7 @@ export class FilesAPI implements IFilesAPI {
 
 		// fallback to returning an empty directory if there's been an error.
 		return {
-			name: this.getFileName(path),
+			name: parsedPath.base,
 			path: path,
 			type: "directory",
 			children: []

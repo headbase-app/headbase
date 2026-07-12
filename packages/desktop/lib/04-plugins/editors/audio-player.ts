@@ -1,4 +1,4 @@
-import {FileEditorMetadata, FileEditorPlugin} from "../../../../02-apis/plugin/plugins/editor-plugin.ts";
+import {FileEditorMetadata, FileEditorPlugin} from "../../02-apis/plugin/plugins/editor-plugin.ts";
 
 
 export class AudioPlayer extends FileEditorPlugin {

@@ -13,6 +13,7 @@ import {
 	LIVE_QUERY_LOADING_STATE,
 	type LiveQueryResult, LiveQueryStatus
 } from "../../../../lib/dist";
+import {ParsedPath} from "@headbase-app/desktop/lib";
 
 
 export class FilesAPI implements IFilesAPI {
@@ -20,18 +21,21 @@ export class FilesAPI implements IFilesAPI {
 		private eventsService: IEventsService
 	) {}
 
-	getPathDisplay(path: string) {
-		if (Capacitor.getPlatform() === "android") {
-			if (path.startsWith("/storage/emulated/0/")){
-				return path.replace("/storage/emulated/0/", "/")
-			}
-		}
-		return path
-	}
+	parsePath(path: string): ParsedPath  {
+		// todo: may not work across posix/windows?
+		const parts = path.split("/");
+		const base = parts[parts.length - 1]
 
-	getFileName(path: string): string {
-		const parts = path.split("/")
-		return parts[parts.length-1]
+		const dir = parts.slice(0, parts.length - 1).join("")
+
+		const extParts = base.split(".")
+		const ext = extParts.slice(0, extParts.length - 1).join(".");
+
+		return {
+			base: base,
+			dir: dir,
+			ext: ext,
+		}
 	}
 
 	/**

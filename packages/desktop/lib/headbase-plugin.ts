@@ -1,15 +1,14 @@
 import {BasePlugin, BasePluginMetadata} from "./02-apis/plugin/plugins/base-plugin.ts";
 
 // Text / Markdown
-import {BasicMarkdownEditor} from "./04-ui/components/file-editor/editors/basic-markdown-editor.js";
-// Media
-import {ImageViewer} from "./04-ui/components/file-editor/editors/image-viewer.js";
-import {AudioPlayer} from "./04-ui/components/file-editor/editors/audio-player.ts";
-import {VideoPlayer} from "./04-ui/components/file-editor/editors/video-player.ts";
-// Other files
-import {PDFViewer} from "./04-ui/components/file-editor/editors/pdf-viewer.js";
-// Headbase
-import {ViewEditorPlugin} from "./04-ui/components/file-editor/editors/headbase-view/headbase-view.js";
+import {BasicMarkdownEditor} from "./04-plugins/editors/basic-markdown-editor.js";
+import {ImageViewer} from "./04-plugins/editors/image-viewer.js";
+import {AudioPlayer} from "./04-plugins/editors/audio-player.ts";
+import {VideoPlayer} from "./04-plugins/editors/video-player.ts";
+import {PDFViewer} from "./04-plugins/editors/pdf-viewer.js";
+import {ViewEditorPlugin} from "./04-plugins/editors/view/view-plugin.js";
+
+import {MarkdownSourcePlugin} from "./04-plugins/sources/markdown-source.ts";
 
 
 export class HeadbaseCorePlugin extends BasePlugin {
@@ -20,16 +19,14 @@ export class HeadbaseCorePlugin extends BasePlugin {
 	}
 
 	async load() {
-		// Text / Markdown
 		this.registerEditor(BasicMarkdownEditor)
-		// Media
 		this.registerEditor(ImageViewer)
 		this.registerEditor(AudioPlayer)
 		this.registerEditor(VideoPlayer)
-		// Other files
 		this.registerEditor(PDFViewer)
-		// Headbase
 		this.registerEditor(ViewEditorPlugin)
+
+		this.registerSource(MarkdownSourcePlugin)
 	}
 
 	async unload() {

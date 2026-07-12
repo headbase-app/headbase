@@ -27,13 +27,13 @@ export class WorkspaceAPI implements IWorkspaceAPI {
 			name = "New Search"
 		}
 		else if (tab.type === "file-explorer") {
-			name = tab.path ? this.filesAPI.getFileName(tab.path) : "File Explorer"
+			name = tab.path ? this.filesAPI.parsePath(tab.path).base : "File Explorer"
 		}
 		else if (tab.type === 'content-types') {
 			name = "Content Types"
 		}
 		else {
-			name =  this.filesAPI.getFileName(tab.path)
+			name =  this.filesAPI.parsePath(tab.path).base
 		}
 
 		return {

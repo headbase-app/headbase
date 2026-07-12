@@ -1,11 +1,11 @@
 import {Observable} from "rxjs";
 
 import {
-	EventTypes, type IEventsService,
+	EventTypes, FileStats, type IEventsService,
 	type IFilesAPI,
 	type IFileSystemItem,
 	type IFileSystemTree,
-	type LiveQueryResult, LiveQueryStatus
+	type LiveQueryResult, LiveQueryStatus, ParsedPath
 } from "@headbase-app/lib";
 
 
@@ -14,12 +14,21 @@ export class FilesAPI implements IFilesAPI {
 		private eventsService: IEventsService
 	) {}
 
-	getPathDisplay(path: string) {
-		return path.replace("/headbase-v1/vaults/", "")
-	}
-	getFileName(path: string): string {
-		const parts = path.split("/")
-		return parts[parts.length-1]
+	parsePath(path: string): ParsedPath {
+		// todo: may not work across posix/windows?
+		const parts = path.split("/");
+		const base = parts[parts.length - 1]
+
+		const dir =  parts.slice(0, parts.length - 1).join("/")
+
+		const extParts = base.split(".")
+		const ext = extParts.slice(0, extParts.length - 1).join(".");
+
+		return {
+			base: base,
+			dir: dir,
+			ext: ext,
+		}
 	}
 
 	async ls(path: string) {
@@ -94,6 +103,14 @@ export class FilesAPI implements IFilesAPI {
 	}
 	async readAsUrl(path: string) {
 		const platformResponse = await window.platformAPI.files_readAsUrl(path)
+		if (platformResponse.error) {
+			throw new Error(platformResponse.identifier, {cause: platformResponse.cause})
+		}
+		return platformResponse.result
+	}
+
+	async stat(path: string): Promise<FileStats> {
+		const platformResponse = await window.platformAPI.files_stat(path)
 		if (platformResponse.error) {
 			throw new Error(platformResponse.identifier, {cause: platformResponse.cause})
 		}

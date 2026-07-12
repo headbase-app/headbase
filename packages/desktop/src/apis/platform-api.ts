@@ -49,6 +49,7 @@ export interface IPlatformAPI {
 	files_read: AsPlatformMethod<IFilesAPI['read']>
 	files_readAsText: AsPlatformMethod<IFilesAPI['readAsText']>
 	files_readAsUrl: AsPlatformMethod<IFilesAPI['readAsUrl']>
+	files_stat: AsPlatformMethod<IFilesAPI['stat']>
 	files_write: AsPlatformMethod<IFilesAPI['write']>
 	files_writeText: AsPlatformMethod<IFilesAPI['writeText']>
 }

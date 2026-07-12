@@ -1,4 +1,4 @@
-import {app, BrowserWindow, ipcMain, shell, protocol, net} from 'electron';
+import {app, BrowserWindow, ipcMain, shell, protocol} from 'electron';
 import path from 'node:path';
 import started from 'electron-squirrel-startup';
 
@@ -6,7 +6,7 @@ import started from 'electron-squirrel-startup';
 import {CreateVaultDto, UpdateVaultDto} from "@headbase-app/lib/dist/02-apis/vaults/vault.ts";
 
 import {selectLocation, createVault, deleteVault, getVault, queryVaults, updateVault} from "./main/vaults/vaults";
-import {glob, read, readAsText, readAsUrl, tree, write, writeText} from "./main/files/operations";
+import {glob, read, readAsText, readAsUrl, tree, write, writeText, stat} from "./main/files/operations";
 
 // @ts-expect-error -- todo: icon not found?
 import icon from './resources/icon.png'
@@ -104,10 +104,11 @@ app.whenReady().then(() => {
 
 		// todo: allow streaming of video and audio?
 
-		const fileBuffer = await read(filePath)
+		// todo: load without stats for perf?
+		const result = await read(filePath)
 		console.debug(`[hb protocol] File requested ${filePath}`)
 
-		return new Response(fileBuffer, {
+		return new Response(result.buffer, {
 			status: 200,
 		})
 	})
@@ -343,6 +344,19 @@ ipcMain.handle('files_readAsText', async (_event, path: string) => {
 	try {
 		console.debug(`[file-manager] readAsText - ${path}`)
 		const result = await readAsText(path)
+		return {error: false, result}
+	}
+	catch (e) {
+		return {error: true, identifier: 'system-error', message: 'An unexpected error occurred', cause: e}
+	}
+})
+
+ipcMain.handle('files_stat', async (_event, path: string) => {
+	// todo: check that path is within a vault folder
+
+	try {
+		console.debug(`[file-manager] stat - ${path}`)
+		const result = await stat(path)
 		return {error: false, result}
 	}
 	catch (e) {

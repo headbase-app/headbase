@@ -24,6 +24,7 @@ contextBridge.exposeInMainWorld('platformAPI', {
 	// FilesAPI
 	files_ls: (path: string) => ipcRenderer.invoke('files_ls', path),
 	files_tree: (path: string) => ipcRenderer.invoke('files_tree', path),
+	files_glob: (basePath: string, pattern: string) => ipcRenderer.invoke('files_glob', basePath, pattern),
 	files_mv: (sourcePath: string, targetPath: string) => ipcRenderer.invoke('files_mv', sourcePath, targetPath),
 	files_cp: (sourcePath: string, targetPath: string) => ipcRenderer.invoke('files_cp', sourcePath, targetPath),
 	files_rm: (path: string) => ipcRenderer.invoke('files_rm', path),
@@ -31,6 +32,7 @@ contextBridge.exposeInMainWorld('platformAPI', {
 	files_read: (path: string) => ipcRenderer.invoke('files_read', path),
 	files_readAsText: (path: string) => ipcRenderer.invoke('files_readAsText', path),
 	files_readAsUrl: (path: string) => ipcRenderer.invoke('files_readAsUrl', path),
+	files_stat: (path: string) => ipcRenderer.invoke('files_stat', path),
 	files_write: (path: string, data: ArrayBuffer|Uint8Array) => ipcRenderer.invoke('files_write', path, data),
 	files_writeText: (path: string, data: string) => ipcRenderer.invoke('files_writeText', path, data),
 } satisfies IPlatformAPI)

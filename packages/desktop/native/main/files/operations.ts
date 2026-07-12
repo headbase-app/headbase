@@ -54,9 +54,10 @@ export async function _tree(directoryPath: string) {
 export async function glob(basePath: string, pattern: string): Promise<FileSystemFile[]> {
 	const results: FileSystemFile[] = []
 	for await (const file of fsGlob(pattern, {cwd: basePath})) {
+		const fullPath = join(basePath, file)
 		results.push({
 			type: "file",
-			path: file,
+			path: fullPath,
 			name: basename(file),
 		})
 	}
@@ -88,16 +89,42 @@ export async function writeText(path: string, data: string) {
 }
 
 export async function read(path: string) {
-	return await readFile(path)
+	const buffer = await readFile(path)
+	const stats = await stat(path)
+
+	return {
+		buffer,
+		stats
+	}
 }
 
 export async function readAsText(path: string) {
-	return await readFile(path, {encoding: 'utf8'})
+	const text = await readFile(path, {encoding: 'utf8'})
+	const stats = await stat(path)
+
+	return {
+		text,
+		meta: stats
+	}
 }
 
 export async function readAsUrl(path: string) {
 	const encodedPath = encodeURIComponent(path)
-	return `hb://${encodedPath}`
+	const url = `hb://${encodedPath}`
+	const stats = await stat(path)
+
+	return {
+		url,
+		meta: stats
+	}
 }
 
-export function stat() {}
+export async function stat(path: string) {
+	const stats = await fsStat(path)
+
+	return {
+		size: stats.size,
+		createdAt: new Date(stats.birthtime).toISOString(),
+		updatedAt: new Date(stats.mtime).toISOString()
+	}
+}

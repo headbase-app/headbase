@@ -1,4 +1,4 @@
-import {html, nothing, TemplateResult} from "lit-html";
+import {html} from "lit-html";
 import {createRef, ref} from "lit-html/directives/ref.js";
 import {when} from "lit-html/directives/when.js";
 
@@ -43,7 +43,7 @@ export class FileTab extends BaseElement {
 
 		if (supportedEditors.length > 0) {
 			const plugin = supportedEditors[0];
-			this.editor = new plugin({deviceAPI: this.deviceAPI, filesAPI: this.filesAPI}, this, this.path)
+			this.editor = new plugin({deviceAPI: this.deviceAPI, filesAPI: this.filesAPI, pluginAPI: this.pluginAPI}, this, this.path)
 			await this.editor.load()
 			this.requestUpdate()
 		}

@@ -1,6 +1,6 @@
-import {IDeviceAPI, IFilesAPI} from "@headbase-app/lib";
+import {IDeviceAPI, IFilesAPI, IPluginStore} from "@headbase-app/lib";
 import {FileEditorPluginClass} from "./editor-plugin.ts";
-import {DataSourcePluginClass} from "./data-source-plugin.ts";
+import {SourcePluginClass} from "./source-plugin/source-plugin.ts";
 import {ViewPluginClass} from "./view-plugin.ts";
 
 export interface BasePluginMetadata {
@@ -12,6 +12,8 @@ export interface BasePluginMetadata {
 export interface PluginExposedAPIs {
 	deviceAPI: IDeviceAPI
 	filesAPI: IFilesAPI
+	// todo: plugins shouldn't be exposed to plugins?
+	pluginAPI: IPluginStore
 }
 
 export interface PluginMetadata {
@@ -31,8 +33,8 @@ export abstract class BasePlugin {
 	abstract unload?(): Promise<void>;
 
 	registerEditor!: (editor: FileEditorPluginClass) => void;
-	registerViewSource!: (editor: DataSourcePluginClass) => void;
-	registerViewDisplay!: (editor: ViewPluginClass) => void;
+	registerSource!: (editor: SourcePluginClass) => void;
+	registerView!: (editor: ViewPluginClass) => void;
 }
 
 export type BasePluginClass = (new (...args: ConstructorParameters<typeof BasePlugin>) => BasePlugin) & {meta: BasePluginMetadata}
