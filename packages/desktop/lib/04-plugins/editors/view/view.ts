@@ -1,12 +1,12 @@
 import {z} from "zod";
-import {DynamicFields} from "../../../02-apis/plugin/plugins/source-plugin/dynamic-fields.ts";
+import {DynamicFieldValues} from "../../../02-apis/plugin/plugins/source-plugin/dynamic-fields.ts";
 
 export const ViewConfig = z.object({
 	name: z.string(),
 	sources: z.array(z.object({
 		version: z.literal(1),
 		type: z.url(),
-		settings: DynamicFields,
+		settings: DynamicFieldValues,
 		query: z.string().nullish(),
 	}))
 })

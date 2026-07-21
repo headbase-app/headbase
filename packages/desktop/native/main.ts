@@ -1,12 +1,12 @@
-import {app, BrowserWindow, ipcMain, shell, protocol} from 'electron';
-import path from 'node:path';
+import {app, BrowserWindow, ipcMain, IpcMainInvokeEvent, protocol, shell} from 'electron';
+import {join as path_join} from 'node:path';
 import started from 'electron-squirrel-startup';
 
 // importing specific file to prevent including web only deps (like pdfjs-dist) in Node.js (see /docs/technical-debt.md)
 import {CreateVaultDto, UpdateVaultDto} from "@headbase-app/lib/dist/02-apis/vaults/vault.ts";
 
-import {selectLocation, createVault, deleteVault, getVault, queryVaults, updateVault} from "./main/vaults/vaults";
-import {glob, read, readAsText, readAsUrl, tree, write, writeText, stat} from "./main/files/operations";
+import {createVault, deleteVault, getVault, queryVaults, selectLocation, updateVault} from "./main/vaults/vaults";
+import {glob, read, readAsText, readAsUrl, stat, tree, write, writeText} from "./main/files/operations";
 
 // @ts-expect-error -- todo: icon not found?
 import icon from './resources/icon.png'
@@ -23,6 +23,21 @@ if (started) {app.quit()}
 // - Used as a security measure to restrict file system access of renderer IPC calls to the current vault folder.
 const windowVaults = new Map<number, string>()
 
+async function getSenderContext(event: IpcMainInvokeEvent) {
+	const senderWindow = BrowserWindow.fromWebContents(event.sender);
+	if (senderWindow) {
+		const currentVaultId = windowVaults.get(senderWindow.id)
+		if (currentVaultId) {
+			const vault = await getVault(USER_DATA_PATH, currentVaultId)
+			return {id: senderWindow.id, vault: vault}
+		}
+
+		return {id: senderWindow.id}
+	}
+
+	throw new Error("Could not resolve sender context")
+}
+
 function createWindow(vaultId?: string): void {
 	// Create a window, hidden by default
 	const window = new BrowserWindow({
@@ -38,7 +53,7 @@ function createWindow(vaultId?: string): void {
 		} : {}),
 		...(process.platform === 'linux' ? { icon } : {}),
 		webPreferences: {
-			preload: path.join(__dirname, 'preload.js'),
+			preload: path_join(__dirname, 'preload.js'),
 		},
 	})
 
@@ -75,7 +90,7 @@ function createWindow(vaultId?: string): void {
 	}
 	else {
 		window.loadFile(
-			path.join(__dirname, `../renderer/${MAIN_WINDOW_VITE_NAME}/index.html`),
+			path_join(__dirname, `../renderer/${MAIN_WINDOW_VITE_NAME}/index.html`),
 		);
 	}
 }
@@ -258,52 +273,29 @@ ipcMain.handle('workspaceVault_openNewContext', (event, vaultId: string) => {
 })
 
 ipcMain.handle('workspaceVault_get', async (event) => {
-	const senderWindow = BrowserWindow.fromWebContents(event.sender);
-	if (!senderWindow) {
-		return {error: true, identifier: 'unidentified-window', message: 'Event could not be traced to sender window, ignoring request.'}
-	}
-
-	const vaultId = windowVaults.get(senderWindow.id)
-	if (!vaultId) {
-		return {error: false, result: null}
-	}
-
-	try {
-		const vault = await getVault(USER_DATA_PATH, vaultId)
-		if (vault) {
-			return {error: false, result: vault}
-		}
-		return {error: true, identifier: 'vault-not-found', message: 'Window has current vault which could not be found.'}
-	}
-	catch (e) {
-		return {error: true, identifier: 'system-error', message: 'An unexpected error occurred', cause: e}
-	}
+	const senderContext = await getSenderContext(event)
+	return {error: false, result: senderContext.vault}
 })
 
-ipcMain.handle('workspaceVault_close', (event) => {
-	const senderWindow = BrowserWindow.fromWebContents(event.sender);
-	if (!senderWindow) {
-		return {error: true, identifier: 'unidentified-window', message: 'Event could not be traced to sender window, ignoring request.'}
-	}
-
-	const vaultId = windowVaults.get(senderWindow.id)
-	if (!vaultId) {
-		return {error: true, identifier: 'no-open-vault', message: 'Window has no current vault open, so unable to close.'}
-	}
-
-	windowVaults.delete(senderWindow.id)
+ipcMain.handle('workspaceVault_close', async (event) => {
+	const senderContext = await getSenderContext(event)
+	windowVaults.delete(senderContext.id)
 	return {error: false}
 })
 
 /**
  * File System
  */
-ipcMain.handle('files_tree', async (_event, path: string) => {
-	// todo: check that path is within a vault folder,
+ipcMain.handle('files_tree', async (event, vaultFilePath: string) => {
+	const senderContext = await getSenderContext(event)
+	if (!senderContext.vault) {
+		return {error: true, identifier: 'vault-not-open', message: 'Sender window has no vault open'}
+	}
+	const filePath = path_join(senderContext.vault.path, vaultFilePath)
 
 	try {
-		console.debug(`[file-manager] tree - ${path}`)
-		const result = await tree(path)
+		console.debug(`[files] tree - (${senderContext.id})[${senderContext.vault.path}] ${vaultFilePath}`)
+		const result = await tree(senderContext.vault.path, filePath)
 		return {error: false, result}
 	}
 	catch (e) {
@@ -311,13 +303,17 @@ ipcMain.handle('files_tree', async (_event, path: string) => {
 	}
 })
 
-ipcMain.handle('files_glob', async (_event, basePath: string, pattern: string) => {
-	// todo: check that path is within a vault folder
-	// todo: validate glob pattern?
+ipcMain.handle('files_glob', async (event, vaultFilePath: string, pattern: string) => {
+	const senderContext = await getSenderContext(event)
+	if (!senderContext.vault) {
+		return {error: true, identifier: 'vault-not-open', message: 'Sender window has no vault open'}
+	}
+	const vaultPath = path_join(senderContext.vault.path, vaultFilePath)
 
+	// todo: validate glob pattern, should be done in platform layer?
 	try {
-		console.debug(`[file-manager] glob - ${basePath} ${pattern}`)
-		const result = await glob(basePath, pattern)
+		console.debug(`[files] glob - (${senderContext.id})[${senderContext.vault.path}] ${vaultFilePath}`)
+		const result = await glob(vaultPath, vaultFilePath, pattern)
 		return {error: false, result}
 	}
 	catch (e) {
@@ -325,12 +321,16 @@ ipcMain.handle('files_glob', async (_event, basePath: string, pattern: string) =
 	}
 })
 
-ipcMain.handle('files_read', async (_event, path: string) => {
-	// todo: check that path is within a vault folder
+ipcMain.handle('files_read', async (event, vaultFilePath: string) => {
+	const senderContext = await getSenderContext(event)
+	if (!senderContext.vault) {
+		return {error: true, identifier: 'vault-not-open', message: 'Sender window has no vault open'}
+	}
+	const filePath = path_join(senderContext.vault.path, vaultFilePath)
 
 	try {
-		console.debug(`[file-manager] read - ${path}`)
-		const result = await read(path)
+		console.debug(`[files] read - (${senderContext.id})[${senderContext.vault.path}] ${vaultFilePath} `)
+		const result = await read(filePath)
 		return {error: false, result}
 	}
 	catch (e) {
@@ -338,12 +338,16 @@ ipcMain.handle('files_read', async (_event, path: string) => {
 	}
 })
 
-ipcMain.handle('files_readAsText', async (_event, path: string) => {
-	// todo: check that path is within a vault folder
+ipcMain.handle('files_readAsText', async (event, vaultFilePath: string) => {
+	const senderContext = await getSenderContext(event)
+	if (!senderContext.vault) {
+		return {error: true, identifier: 'vault-not-open', message: 'Sender window has no vault open'}
+	}
+	const filePath = path_join(senderContext.vault.path, vaultFilePath)
 
 	try {
-		console.debug(`[file-manager] readAsText - ${path}`)
-		const result = await readAsText(path)
+		console.debug(`[files] readAsText - (${senderContext.id})[${senderContext.vault.path}] ${vaultFilePath}`)
+		const result = await readAsText(filePath)
 		return {error: false, result}
 	}
 	catch (e) {
@@ -351,12 +355,16 @@ ipcMain.handle('files_readAsText', async (_event, path: string) => {
 	}
 })
 
-ipcMain.handle('files_stat', async (_event, path: string) => {
-	// todo: check that path is within a vault folder
+ipcMain.handle('files_stat', async (event, vaultFilePath: string) => {
+	const senderContext = await getSenderContext(event)
+	if (!senderContext.vault) {
+		return {error: true, identifier: 'vault-not-open', message: 'Sender window has no vault open'}
+	}
+	const filePath = path_join(senderContext.vault.path, vaultFilePath)
 
 	try {
-		console.debug(`[file-manager] stat - ${path}`)
-		const result = await stat(path)
+		console.debug(`[files] stat - (${senderContext.id})[${senderContext.vault.path}] ${vaultFilePath}`)
+		const result = await stat(filePath)
 		return {error: false, result}
 	}
 	catch (e) {
@@ -364,12 +372,18 @@ ipcMain.handle('files_stat', async (_event, path: string) => {
 	}
 })
 
-ipcMain.handle('files_readAsUrl', async (_event, path: string) => {
+ipcMain.handle('files_readAsUrl', async (event, vaultFilePath: string) => {
 	// todo: check that path is within a vault folder, or don't both as checks will be made by hb:// protocol anyway?
 
+	const senderContext = await getSenderContext(event)
+	if (!senderContext.vault) {
+		return {error: true, identifier: 'vault-not-open', message: 'Sender window has no vault open'}
+	}
+	const filePath = path_join(senderContext.vault.path, vaultFilePath)
+
 	try {
-		console.debug(`[files] readAsUrl - ${path}`)
-		const result = await readAsUrl(path)
+		console.debug(`[files] readAsUrl - (${senderContext.id})[${senderContext.vault.path}] ${vaultFilePath}`)
+		const result = await readAsUrl(filePath)
 		return {error: false, result}
 	}
 	catch (e) {
@@ -377,12 +391,18 @@ ipcMain.handle('files_readAsUrl', async (_event, path: string) => {
 	}
 })
 
-ipcMain.handle('files_write', async (_event, path: string, data: ArrayBuffer|Uint8Array) => {
+ipcMain.handle('files_write', async (event, vaultFilePath: string, data: ArrayBuffer|Uint8Array) => {
 	// todo: check that path is within a vault folder, or don't both as checks will be made by hb:// protocol anyway?
 
+	const senderContext = await getSenderContext(event)
+	if (!senderContext.vault) {
+		return {error: true, identifier: 'vault-not-open', message: 'Sender window has no vault open'}
+	}
+	const filePath = path_join(senderContext.vault.path, vaultFilePath)
+
 	try {
-		console.debug(`[file-manager] write - ${path}`)
-		const result = await write(path, data)
+		console.debug(`[files] write - (${senderContext.id})[${senderContext.vault.path}] ${vaultFilePath}`)
+		const result = await write(filePath, data)
 		return {error: false, result}
 	}
 	catch (e) {
@@ -390,12 +410,18 @@ ipcMain.handle('files_write', async (_event, path: string, data: ArrayBuffer|Uin
 	}
 })
 
-ipcMain.handle('files_writeText', async (_event, path: string, data: string) => {
+ipcMain.handle('files_writeText', async (event, vaultFilePath: string, data: string) => {
 	// todo: check that path is within a vault folder, or don't both as checks will be made by hb:// protocol anyway?
 
+	const senderContext = await getSenderContext(event)
+	if (!senderContext.vault) {
+		return {error: true, identifier: 'vault-not-open', message: 'Sender window has no vault open'}
+	}
+	const filePath = path_join(senderContext.vault.path, vaultFilePath)
+
 	try {
-		console.debug(`[file-manager] writeText - ${path}`)
-		const result = await writeText(path, data)
+		console.debug(`[files] writeText - (${senderContext.id})[${senderContext.vault.path}] ${vaultFilePath}`)
+		const result = await writeText(filePath, data)
 		return {error: false, result}
 	}
 	catch (e) {

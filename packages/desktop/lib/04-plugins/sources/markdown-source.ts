@@ -31,7 +31,8 @@ export class MarkdownSourcePlugin extends SourcePlugin {
 
 	async query(settings: InferObjectFromFieldDefinitions<typeof MarkdownMetadata["settings"]>): Promise<DataObject[]> {
 		const pattern = settings.recursive ? "**/*.md" : "*.md";
-		const files = await this.apis.filesAPI.glob(settings.from, pattern)
+		const from  = settings.from ? settings.from  : "/"
+		const files = await this.apis.filesAPI.glob(from, pattern)
 
 		const results: DataObject[] = []
 		for (const file of files) {

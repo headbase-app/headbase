@@ -1,4 +1,9 @@
 {
+	"include": [
+		"lib/**/*",
+		"native/**/*",
+		"src/**/*"
+	],
 	"compilerOptions": {
 		"target": "ESNext",
 		"module": "esnext",
@@ -15,6 +20,7 @@
 		"jsx": "preserve",
 		"jsxImportSource": "solid-js",
 		"allowImportingTsExtensions": true,
+		"noEmit": true,
 		/* Adding custom path aliases for cleaner imports */
 		"paths": {
 			"@headbase-app/lib": [

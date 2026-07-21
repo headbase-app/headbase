@@ -104,14 +104,14 @@ export class WorkspaceVaultAPI implements IWorkspaceVaultAPI {
 	liveGet() {
 		return new Observable<LiveQueryResult<VaultDto | null>>((observer) => {
 			const runQuery = async () => {
-				observer.next({status: LiveQueryStatus.LOADING})
+				observer.next({status: LiveQueryStatus.LOADING, result: null})
 
 				try {
 					const currentVault = await this.get()
 					observer.next({status: LiveQueryStatus.SUCCESS, result: currentVault })
 				}
 				catch (error) {
-					observer.next({status: LiveQueryStatus.ERROR, errors: [error] })
+					observer.next({status: LiveQueryStatus.ERROR, errors: [error], result: null })
 				}
 			}
 

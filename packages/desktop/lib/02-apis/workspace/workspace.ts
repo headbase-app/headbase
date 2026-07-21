@@ -1,16 +1,42 @@
-import {IWorkspaceAPI, OpenTabOptions, TabMetadata, TabTypes, WorkspaceTab, WorkspaceTabs} from "./workspace.api.ts";
 import {BehaviorSubject} from "rxjs";
 import {EncryptionService, IFilesAPI} from "@headbase-app/lib";
+import {IWorkspaceAPI, OpenTabOptions, TabMetadata, TabTypes, WorkspaceTab, WorkspaceTabs} from "./workspace.api.ts";
+
+const WORKSPACE_TABS_STORAGE_KEY = "workspace-tabs"
+const WORKSPACE_ACTIVE_TAB_STORAGE_KEY = "workspace-active-tab"
 
 export class WorkspaceAPI implements IWorkspaceAPI {
-	#tabs$: BehaviorSubject<WorkspaceTabs>;
-	#activeTab$: BehaviorSubject<string|null>;
+	readonly #tabs$: BehaviorSubject<WorkspaceTabs>;
+	readonly #activeTab$: BehaviorSubject<string|null>;
 
 	constructor(
 		private filesAPI: IFilesAPI,
 	) {
-		this.#tabs$ = new BehaviorSubject<WorkspaceTabs>([])
-		this.#activeTab$ = new BehaviorSubject<string|null>(null)
+
+		// todo: workspace tabs should be handled via storage API class, or workspace/WorkspaceVaultAPI combined?
+		let savedTabs: WorkspaceTab[] = [];
+		const workspaceStorage = localStorage.getItem(WORKSPACE_TABS_STORAGE_KEY);
+		if (workspaceStorage) {
+			savedTabs = JSON.parse(workspaceStorage);
+		}
+
+		let savedActiveTab: string | null = null;
+		const activeTabStorage = localStorage.getItem(WORKSPACE_ACTIVE_TAB_STORAGE_KEY);
+		if (activeTabStorage) {
+			savedActiveTab = JSON.parse(activeTabStorage);
+		}
+
+		this.#tabs$ = new BehaviorSubject<WorkspaceTabs>(savedTabs)
+		this.#activeTab$ = new BehaviorSubject<string|null>(savedActiveTab)
+	}
+
+	#setTabs(tabs: WorkspaceTab[]) {
+		localStorage.setItem(WORKSPACE_TABS_STORAGE_KEY, JSON.stringify(tabs));
+		this.#tabs$.next(tabs);
+	}
+	#setActiveTab(id: string|null) {
+		localStorage.setItem(WORKSPACE_ACTIVE_TAB_STORAGE_KEY, JSON.stringify(id));
+		this.#activeTab$.next(id);
 	}
 
 	liveQueryTabs() {
@@ -61,16 +87,15 @@ export class WorkspaceAPI implements IWorkspaceAPI {
 		}
 
 		const metadata = this.#getTabMetadataFromType(tab)
-		this.#tabs$.next([
+		this.#setTabs([
 			...this.#tabs$.value,
 			{
 				...tab,
 				...metadata,
 			}
 		])
-
 		if (!this.#activeTab$.value || options?.switch) {
-			this.#activeTab$.next(metadata.id)
+			this.#setActiveTab(metadata.id)
 		}
 	}
 
@@ -86,7 +111,7 @@ export class WorkspaceAPI implements IWorkspaceAPI {
 			} satisfies WorkspaceTab
 		})
 
-		this.#tabs$.next(updatedTabs);
+		this.#setTabs(updatedTabs);
 	}
 
 	closeTab(id: string) {
@@ -94,17 +119,17 @@ export class WorkspaceAPI implements IWorkspaceAPI {
 		// todo: if active tab, set active to next nearest tab?
 
 		const updatedTabs = this.#tabs$.value.filter(tab => tab.id !== id)
-		this.#tabs$.next(updatedTabs);
+		this.#setTabs(updatedTabs);
 	}
 
 	closeAllTabs() {
-		this.#tabs$.next([])
-		this.#activeTab$.next(null)
+		this.#setTabs([])
+		this.#setActiveTab(null)
 	}
 
 	switchToTab(id: string) {
 		// todo: check tab exists
-		this.#activeTab$.next(id);
+		this.#setActiveTab(id)
 	}
 
 	updateTabMetadata(id: string, update: Partial<Omit<TabMetadata, 'id'>>) {
@@ -119,6 +144,6 @@ export class WorkspaceAPI implements IWorkspaceAPI {
 			} satisfies WorkspaceTab
 		})
 
-		this.#tabs$.next(updatedTabs);
+		this.#setTabs(updatedTabs)
 	}
 }

@@ -49,6 +49,8 @@ class HeadbaseView extends BaseElement {
 				this.results = sourceResults
 			}
 		}
+
+		console.debug(this.results)
 	}
 
 	render() {

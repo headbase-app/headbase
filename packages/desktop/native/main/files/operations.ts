@@ -16,11 +16,16 @@ export interface FileSystemFile {
 
 type TreeItem = FileSystemDirectory | FileSystemFile
 
-export async function tree(folderPath: string) {
-	return _tree(folderPath)
+function formatVaultFilePath(vaultPath: string, path: string) {
+	const filePath = path.replaceAll(vaultPath, "")
+	return filePath.startsWith("/") ? filePath : `/${filePath}`
 }
 
-export async function _tree(directoryPath: string) {
+export async function tree(basePath: string, vaultPath: string) {
+	return _tree(basePath, vaultPath)
+}
+
+export async function _tree(vaultPath: string, directoryPath: string) {
 	// todo: use recursive option to avoid manual recursion of _tree?
 	// advantage of doing this is file structure remains intact
 	const children = await readdir(directoryPath)
@@ -28,7 +33,7 @@ export async function _tree(directoryPath: string) {
 	const parentDirectory: FileSystemDirectory = {
 		type: 'directory',
 		name: basename(directoryPath),
-		path: directoryPath,
+		path: formatVaultFilePath(vaultPath, directoryPath),
 		children: []
 	}
 
@@ -36,14 +41,14 @@ export async function _tree(directoryPath: string) {
 		const filePath = join(directoryPath + sep + fileItem)
 		const fileStats = await fsStat(filePath)
 		if (fileStats.isDirectory()) {
-			const childItem = await _tree(filePath)
+			const childItem = await _tree(vaultPath, filePath)
 			parentDirectory.children.push(childItem)
 		}
 		else {
 			parentDirectory.children.push({
 				type: "file",
 				name: basename(filePath),
-				path: filePath,
+				path: formatVaultFilePath(vaultPath, filePath),
 			})
 		}
 	}
@@ -51,14 +56,15 @@ export async function _tree(directoryPath: string) {
 	return parentDirectory
 }
 
-export async function glob(basePath: string, pattern: string): Promise<FileSystemFile[]> {
+export async function glob(vaultPath: string, directoryPath: string, pattern: string): Promise<FileSystemFile[]> {
+	const fullVaultPath = join(vaultPath, directoryPath)
+
 	const results: FileSystemFile[] = []
-	for await (const file of fsGlob(pattern, {cwd: basePath})) {
-		const fullPath = join(basePath, file)
+	for await (const filePath of fsGlob(pattern, {cwd: fullVaultPath})) {
 		results.push({
 			type: "file",
-			path: fullPath,
-			name: basename(file),
+			path: formatVaultFilePath(vaultPath, filePath),
+			name: basename(filePath),
 		})
 	}
 	return results

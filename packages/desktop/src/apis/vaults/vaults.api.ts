@@ -109,7 +109,7 @@ export class VaultsAPI implements IVaultsAPI {
 			observer.next(LIVE_QUERY_LOADING_STATE)
 
 			const runQuery = async () => {
-				observer.next({status: LiveQueryStatus.LOADING})
+				observer.next({status: LiveQueryStatus.LOADING, result: null})
 
 				try {
 					const results = await this.query()
@@ -117,7 +117,7 @@ export class VaultsAPI implements IVaultsAPI {
 				}
 				catch (error) {
 					console.error(error)
-					observer.next({status: LiveQueryStatus.ERROR, errors: [error] })
+					observer.next({status: LiveQueryStatus.ERROR, errors: [error], result: null })
 				}
 			}
 
@@ -137,14 +137,14 @@ export class VaultsAPI implements IVaultsAPI {
 			observer.next(LIVE_QUERY_LOADING_STATE)
 
 			const runQuery = async () => {
-				observer.next({status: LiveQueryStatus.LOADING})
+				observer.next({status: LiveQueryStatus.LOADING, result: null})
 				try {
 					const currentVault = await this.get(vaultId)
 					observer.next({status: LiveQueryStatus.SUCCESS, result: currentVault })
 				}
 				catch (error) {
 					console.error(error)
-					observer.next({status: LiveQueryStatus.ERROR, errors: [error] })
+					observer.next({status: LiveQueryStatus.ERROR, errors: [error], result: null })
 				}
 			}
 

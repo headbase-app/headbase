@@ -21,7 +21,7 @@ export class FileExplorer extends BaseElement {
 		this.fileTree = this.createState(LIVE_QUERY_EMPTY, this.workspaceVaultAPI.liveGet().pipe(
 			switchMap(vaultQuery => {
 				if (vaultQuery.status === "success" && vaultQuery.result) {
-					return this.filesAPI.liveTree(this.path ?? vaultQuery.result.path)
+					return this.filesAPI.liveTree(this.path ?? "/")
 				}
 				return of(LIVE_QUERY_EMPTY)
 			}),
@@ -45,6 +45,7 @@ export class FileExplorer extends BaseElement {
 			}
 		}
 		else if (this.fileTree.value.status === "error") {
+			this.fileTree.value.errors.forEach(console.error)
 			content = html`
 				<p>An error has occurred: ${this.fileTree.value.errors.toString()}</p>
 			`

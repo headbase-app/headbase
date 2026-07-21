@@ -59,7 +59,7 @@ export class ContextProvider {
 	}
 
 	handleContextRequest(event: ContextRequestEvent<never>) {
-		console.debug(`[ContextProvider] handleContextRequest '${event.context}' (${this.identifier})`)
+		// console.debug(`[ContextProvider] handleContextRequest '${event.context}' (${this.identifier})`)
 
 		const key = event.context as unknown as string|symbol
 		if (this.contexts[key]) {

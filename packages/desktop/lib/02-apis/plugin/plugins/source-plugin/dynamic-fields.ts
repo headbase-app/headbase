@@ -93,6 +93,9 @@ export type FieldTypes = z.infer<typeof FieldTypes>
 export const DynamicFields = z.record(z.string(), FieldTypes)
 export type DynamicFields = z.infer<typeof DynamicFields>
 
+export const DynamicFieldValues = z.record(z.string(), z.unknown())
+export type DynamicFieldValues = z.infer<typeof DynamicFieldValues>
+
 /**
  * Type Helpers
  */
