@@ -104,7 +104,7 @@ export class VaultForm extends BaseElement {
 									<div>
 										${observe(
 										this.formHelper.fields.path,
-										(field) => html`<p>${field.value && field.touched ? this.filesAPI.getPathDisplay(field.value) : "No Folder Selected"}</p>`,
+										(field) => html`<p>${field.value && field.touched ? field.value : "No Folder Selected"}</p>`,
 									)}
 										<button type="button" @click=${this.selectVaultPath.bind(this)}>Select Location</button>
 									</div>

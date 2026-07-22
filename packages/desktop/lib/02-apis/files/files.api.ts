@@ -27,7 +27,7 @@ export interface IFileSystemTree {
 
 export interface ParsedPath {
 	dir: string
-	base: string // base matches Node.js API, is is the filename with extension.
+	base: string // base matches Node.js API, it is the filename with extension.
 	ext: string
 }
 
@@ -38,7 +38,7 @@ export interface FileStats {
 }
 
 export interface ReadFileBuffer {
-	buffer: Buffer
+	buffer: ArrayBuffer
 	meta: FileStats
 }
 export interface ReadFileText {
@@ -50,12 +50,16 @@ export interface ReadFileURL {
 	meta: FileStats
 }
 
+export interface ListOptions {
+	recursive?: boolean
+}
+
 export interface IFilesAPI {
 	// Path formatting
 	parsePath: (path: string) => ParsedPath
 	// File system operations
 	tree: (path: string) => Promise<IFileSystemTree|null>
-	ls: (path: string) => Promise<IFileSystemItem[]>
+	ls: (path: string, options?: ListOptions) => Promise<IFileSystemItem[]>
 	/**
 	 * @param {string} pabasePathth - The base path to search from.
 	 * @param {string} pattern - A glob pattern, see https://www.npmjs.com/package/minimatch.

@@ -13,9 +13,9 @@ export class BasicMarkdownEditor extends FileEditorPlugin {
 	textarea!: HTMLTextAreaElement
 
 	async load() {
-		const result = await this.apis.filesAPI.readAsText(this.filePath)
+		const file = await this.apis.filesAPI.readAsText(this.filePath)
 		this.textarea = document.createElement("textarea")
-		this.textarea.value = result.text
+		this.textarea.value = file.text
 		this.container.append(this.textarea)
 	}
 

@@ -50,7 +50,7 @@ class HeadbaseView extends BaseElement {
 			}
 		}
 
-		console.debug(this.results)
+		console.debug(JSON.stringify(this.results))
 	}
 
 	render() {

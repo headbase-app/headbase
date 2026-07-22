@@ -8,7 +8,15 @@ import {
 	type LiveQueryResult, LiveQueryStatus, ParsedPath
 } from "@headbase-app/lib";
 
-
+/**
+ * The desktop implementation of the Files API.
+ *
+ * === Vault Paths / Security ===
+ * On desktop the platform layer manages the current vault for each window, so
+ * the implementations here just pass along the vault paths (/path/to/file) and
+ * the platform layer then does validation/security checks and resolves the path
+ * in the actual file system.
+ */
 export class FilesAPI implements IFilesAPI {
 	constructor(
 		private eventsService: IEventsService

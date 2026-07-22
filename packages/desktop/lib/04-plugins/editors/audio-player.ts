@@ -16,9 +16,9 @@ export class AudioPlayer extends FileEditorPlugin {
 	audio!: HTMLAudioElement
 
 	async load() {
-		const url = await this.apis.filesAPI.readAsUrl(this.filePath)
+		const file = await this.apis.filesAPI.readAsUrl(this.filePath)
 		this.audio = document.createElement("audio")
-		this.audio.src = url
+		this.audio.src = file.url
 		this.audio.controls = true
 		this.container.append(this.audio)
 	}

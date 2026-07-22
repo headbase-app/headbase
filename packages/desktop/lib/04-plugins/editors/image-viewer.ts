@@ -16,9 +16,9 @@ export class ImageViewer extends FileEditorPlugin {
 	image!: HTMLImageElement
 
 	async load() {
-		const url = await this.apis.filesAPI.readAsUrl(this.filePath)
+		const file = await this.apis.filesAPI.readAsUrl(this.filePath)
 		this.image = document.createElement("img")
-		this.image.src = url
+		this.image.src = file.url
 		this.container.append(this.image)
 	}
 

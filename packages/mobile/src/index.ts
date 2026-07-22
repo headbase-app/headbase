@@ -55,7 +55,7 @@ export class HeadbaseDesktopApp extends BaseElement {
 		const eventsService = new CommonEventsService(deviceAPI);
 		const vaultsAPI = new VaultsAPI(eventsService, deviceAPI);
 		const workspaceVaultAPI = new WorkspaceVaultAPI(eventsService, deviceAPI, vaultsAPI);
-		const filesAPI = new FilesAPI(eventsService);
+		const filesAPI = new FilesAPI(eventsService, workspaceVaultAPI);
 
 		const pluginStore = new PluginStore(deviceAPI, filesAPI);
 		pluginStore.registerPlugin(HeadbaseCorePlugin);
@@ -73,7 +73,6 @@ export class HeadbaseDesktopApp extends BaseElement {
 
 	render() {
 		return html`
-			<p>Mobile APP!</p>
 			<hb-app></hb-app>
 		`
 	}

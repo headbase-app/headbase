@@ -14,9 +14,9 @@ export class VideoPlayer extends FileEditorPlugin {
 	video!: HTMLVideoElement
 
 	async load() {
-		const url = await this.apis.filesAPI.readAsUrl(this.filePath)
+		const file = await this.apis.filesAPI.readAsUrl(this.filePath)
 		this.video = document.createElement("video")
-		this.video.src = url
+		this.video.src = file.url
 		this.video.controls = true
 		this.container.append(this.video)
 	}
