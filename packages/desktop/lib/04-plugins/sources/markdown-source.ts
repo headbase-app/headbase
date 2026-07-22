@@ -28,10 +28,12 @@ const MarkdownMetadata = {
 
 export class MarkdownSourcePlugin extends SourcePlugin {
 	static meta: SourceMetadata = MarkdownMetadata
+	// todo: source plugin should allow type generic for settings?
+	declare settings: InferObjectFromFieldDefinitions<typeof MarkdownMetadata["settings"]>
 
-	async query(settings: InferObjectFromFieldDefinitions<typeof MarkdownMetadata["settings"]>): Promise<DataObject[]> {
-		const pattern = settings.recursive ? "**/*.md" : "*.md";
-		const from  = settings.from ? settings.from  : "/"
+	async load(): Promise<DataObject[]> {
+		const pattern = this.settings.recursive ? "**/*.md" : "*.md";
+		const from  = this.settings.from ? this.settings.from  : "/"
 		const files = await this.apis.filesAPI.glob(from, pattern)
 
 		const results: DataObject[] = []

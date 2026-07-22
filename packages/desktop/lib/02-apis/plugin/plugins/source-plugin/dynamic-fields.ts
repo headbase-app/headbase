@@ -66,7 +66,7 @@ export const SelectField = FieldBase.extend({
 	type: z.literal("select"),
 	defaultValue: z.string().nullish(),
 	settings: z.object({
-		options: z.string(),
+		options: z.array(z.string()),
 	}).strict()
 }).strict()
 export type SelectField = z.infer<typeof SelectField>

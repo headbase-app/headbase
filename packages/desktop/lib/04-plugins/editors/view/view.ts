@@ -8,6 +8,11 @@ export const ViewConfig = z.object({
 		type: z.url(),
 		settings: DynamicFieldValues,
 		query: z.string().nullish(),
-	}))
+	})),
+	view: z.object({
+		version: z.literal(1),
+		type: z.url(),
+		settings: DynamicFieldValues,
+	})
 })
 export type ViewConfig = z.infer<typeof ViewConfig>

@@ -6,9 +6,10 @@ import {ImageViewer} from "./04-plugins/editors/image-viewer.js";
 import {AudioPlayer} from "./04-plugins/editors/audio-player.ts";
 import {VideoPlayer} from "./04-plugins/editors/video-player.ts";
 import {PDFViewer} from "./04-plugins/editors/pdf-viewer.js";
-import {ViewEditorPlugin} from "./04-plugins/editors/view/view-plugin.js";
+import {ViewEditor} from "./04-plugins/editors/view/view-editor.js";
 
 import {MarkdownSourcePlugin} from "./04-plugins/sources/markdown-source.ts";
+import {CardsView} from "./04-plugins/views/cards-view.ts";
 
 
 export class HeadbaseCorePlugin extends BasePlugin {
@@ -24,9 +25,11 @@ export class HeadbaseCorePlugin extends BasePlugin {
 		this.registerEditor(AudioPlayer)
 		this.registerEditor(VideoPlayer)
 		this.registerEditor(PDFViewer)
-		this.registerEditor(ViewEditorPlugin)
+		this.registerEditor(ViewEditor)
 
 		this.registerSource(MarkdownSourcePlugin)
+
+		this.registerView(CardsView)
 	}
 
 	async unload() {
