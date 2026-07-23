@@ -1,6 +1,5 @@
-import {readdir, readFile, stat as fsStat, writeFile, glob as fsGlob} from "node:fs/promises"
-import {basename, join, sep} from "node:path"
-
+import {readdir, readFile, stat as fsStat, writeFile, glob as fsGlob, mkdir as fs_mkdir} from "node:fs/promises"
+import {basename, join, sep, parse as path_parse} from "node:path"
 // todo: should use shared types from library?
 export interface FileSystemDirectory {
 	type: 'directory',
@@ -72,7 +71,12 @@ export async function glob(vaultPath: string, directoryPath: string, pattern: st
 
 export async function ls() {}
 
-export async function mkdir() {}
+export interface MkdirOptions {
+	recursive?: boolean
+}
+export async function mkdir(path: string, options?: MkdirOptions) {
+	await fs_mkdir(path, { recursive: options?.recursive })
+}
 
 export async function rm() {}
 
@@ -81,6 +85,9 @@ export async function cp() {}
 export async function mv() {}
 
 export async function write(path: string, data: ArrayBuffer|Uint8Array) {
+	const parsedPath = path_parse(path);
+	await mkdir(parsedPath.dir, {recursive: true});
+
 	let buffer: Uint8Array;
 	if (data instanceof ArrayBuffer) {
 		buffer = new Uint8Array(data)
@@ -91,7 +98,10 @@ export async function write(path: string, data: ArrayBuffer|Uint8Array) {
 }
 
 export async function writeText(path: string, data: string) {
-	await writeFile(path, data, {encoding: 'utf8'})
+	const parsedPath = path_parse(path);
+	await mkdir(parsedPath.dir, {recursive: true});
+
+	await writeFile(path, data, {encoding: 'utf8'});
 }
 
 export async function read(path: string) {
