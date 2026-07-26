@@ -120,6 +120,10 @@ export class WorkspaceAPI implements IWorkspaceAPI {
 
 		const updatedTabs = this.#tabs$.value.filter(tab => tab.id !== id)
 		this.#setTabs(updatedTabs);
+
+		if (updatedTabs.length > 0) {
+			this.#setActiveTab(null)
+		}
 	}
 
 	closeAllTabs() {
