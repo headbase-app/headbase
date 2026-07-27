@@ -1,11 +1,11 @@
 import {html} from "lit-html";
-import {BaseElement, DataObject, SourcePlugin, ViewMetadata, ViewPlugin} from "@headbase-app/lib";
-import {InferObjectFromFieldDefinitions} from "../../02-apis/plugin/plugins/source-plugin/dynamic-fields.ts";
+import {BaseElement, DataObject, ViewSourcePlugin, ViewDisplayMetadata, ViewDisplayPlugin} from "@headbase-app/lib";
+import {InferObjectFromFieldDefinitions} from "../../02-apis/plugin/plugins/view-source-plugin/dynamic-fields.ts";
 
 
 class CardsViewElement extends BaseElement {
 	static tag = "hb-cards-view";
-	sources!: SourcePlugin[];
+	sources!: ViewSourcePlugin[];
 	settings!: InferObjectFromFieldDefinitions<typeof CardsMetadata["settings"]>
 	results: DataObject[] = []
 
@@ -21,11 +21,9 @@ class CardsViewElement extends BaseElement {
 		this.requestUpdate()
 	}
 
-	async unload() {
-	}
+	async unload() {}
 
-	async reload() {
-	}
+	async reload() {}
 
 	render() {
 		if (this.results.length === 0) {
@@ -60,10 +58,10 @@ const CardsMetadata = {
 			defaultValue: "list",
 		},
 	}
-} satisfies ViewMetadata
+} satisfies ViewDisplayMetadata
 
-export class CardsView extends ViewPlugin {
-	static meta: ViewMetadata = CardsMetadata
+export class CardsView extends ViewDisplayPlugin {
+	static meta: ViewDisplayMetadata = CardsMetadata
 	element!: CardsViewElement
 
 	async load(

@@ -4,14 +4,15 @@ import {
 	BaseElement,
 	CommonEventsService,
 	DeviceAPIContext, FilesAPIContext, HeadbaseApp,
-	PluginStore, HeadbaseCorePlugin,
-	VaultsAPIContext,
-	WorkspaceVaultAPIContext, PluginAPIContext, FileExplorer, FileTreeItem, VaultManager, VaultsList, VaultForm,
+	HeadbaseCorePlugin,
+	ApplicationAPI,
+	VaultsAPIContext, WorkspacePluginItem,
+	WorkspaceVaultAPIContext, ApplicationAPIContext, FileExplorer, FileTreeItem, VaultManager, VaultsList, VaultForm,
 	CreateVault, EditVault, DeleteVault, VaultMenu, Workspace, WorkspaceAPIContext, FileExplorerTab, SearchTab, TypesTab,
 	FileTab,
 	WelcomePage, AppPage, ManageVaultsPage,
 	WorkspaceAPI,
-	ContextProvider
+	ContextProvider, EventsServiceContext,
 } from "@headbase-app/lib";
 
 import {DeviceAPI} from "@apis/device/device.api.ts";
@@ -40,6 +41,8 @@ customElements.define(FileTreeItem.tag, FileTreeItem)
 customElements.define(HeadbaseApp.tag, HeadbaseApp)
 
 customElements.define(Workspace.tag, Workspace)
+customElements.define(WorkspacePluginItem.tag, WorkspacePluginItem)
+
 customElements.define(FileExplorerTab.tag, FileExplorerTab)
 customElements.define(SearchTab.tag, SearchTab)
 customElements.define(TypesTab.tag, TypesTab)
@@ -56,19 +59,21 @@ export class HeadbaseDesktopApp extends BaseElement {
 		const vaultsAPI = new VaultsAPI(eventsService, deviceAPI);
 		const workspaceVaultAPI = new WorkspaceVaultAPI(eventsService, deviceAPI, vaultsAPI);
 		const filesAPI = new FilesAPI(eventsService);
+		const workspaceAPI = new WorkspaceAPI(eventsService, deviceAPI, filesAPI);
+		const applicationAPI = new ApplicationAPI(deviceAPI, filesAPI, workspaceAPI);
 
-		const pluginStore = new PluginStore(deviceAPI, filesAPI);
-		pluginStore.registerPlugin(HeadbaseCorePlugin);
-
-		const workspaceAPI = new WorkspaceAPI(filesAPI);
+		// todo: core plugin should get special registration internally via ApplicationAPI?
+		applicationAPI.registerPlugin(HeadbaseCorePlugin);
 
 		this.contextProvider = new ContextProvider(document, "hb-desktop-app")
+		// todo: event service should not be directly exposed?
+		this.contextProvider.add(EventsServiceContext, eventsService)
 		this.contextProvider.add(DeviceAPIContext, deviceAPI)
 		this.contextProvider.add(VaultsAPIContext, vaultsAPI)
 		this.contextProvider.add(WorkspaceVaultAPIContext, workspaceVaultAPI)
 		this.contextProvider.add(FilesAPIContext, filesAPI)
-		this.contextProvider.add(PluginAPIContext, pluginStore)
 		this.contextProvider.add(WorkspaceAPIContext, workspaceAPI)
+		this.contextProvider.add(ApplicationAPIContext, applicationAPI)
 	}
 
 	render() {

@@ -1,4 +1,4 @@
-import {SourcePlugin} from "@headbase-app/lib";
+import {ViewSourcePlugin} from "@headbase-app/lib";
 
 import {FileEditorMetadata, FileEditorPlugin} from "../../../02-apis/plugin/plugins/editor-plugin.ts";
 import {ViewConfig} from "./view.ts";
@@ -25,9 +25,9 @@ export class ViewEditor extends FileEditorPlugin {
 			throw new Error("View data failed validation and appears invalid.", {cause: e})
 		}
 
-		const sources: SourcePlugin[] = []
+		const sources: ViewSourcePlugin[] = []
 		for (const source of viewConfig.sources) {
-			const SourceClass = await this.apis.pluginAPI.getSourceById(source.type)
+			const SourceClass = await this.apis.applicationAPI.getViewSourceById(source.type)
 			if (!SourceClass) {
 				alert(`Plugin for data source '${source.type}' not found'`)
 				continue;
@@ -41,7 +41,7 @@ export class ViewEditor extends FileEditorPlugin {
 			return;
 		}
 
-		const ViewClass = await this.apis.pluginAPI.getViewById(viewConfig.view.type)
+		const ViewClass = await this.apis.applicationAPI.getViewDisplayById(viewConfig.view.type)
 		if (!ViewClass) {
 			alert(`Plugin for view '${viewConfig.view.type}' not found'`)
 			return;

@@ -1,4 +1,4 @@
-import {compile, JSONQuery, jsonquery, JSONQueryOptions, Fun} from "@jsonquerylang/jsonquery";
+import {compile, JSONQuery, jsonquery, JSONQueryOptions} from "@jsonquerylang/jsonquery";
 import {z} from "zod";
 
 export const DataObject = z.object({

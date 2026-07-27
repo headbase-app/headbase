@@ -1,6 +1,6 @@
 import {describe, expect, test} from "vitest";
 import {jsonquery} from "@jsonquerylang/jsonquery";
-import {jsonQueryMapAdd} from "./query-data-objects"
+import {jsonQueryMapAdd} from "./query-data-objects.ts"
 
 describe("Should be able to query ", () => {
 	test("Custom mapAdd() jsonquery function should work for mapping objects", () => {

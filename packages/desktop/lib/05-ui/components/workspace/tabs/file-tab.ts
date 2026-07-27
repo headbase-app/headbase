@@ -7,8 +7,8 @@ import {
 	DeviceAPIContext, FileEditorPlugin,
 	FileEditorPluginClass,
 	FilesAPIContext,
-	PluginAPIContext,
-	useContext
+	ApplicationAPIContext,
+	useContext, WorkspaceAPIContext
 } from "@headbase-app/lib";
 
 export class FileTab extends BaseElement {
@@ -16,7 +16,8 @@ export class FileTab extends BaseElement {
 
 	deviceAPI = useContext(DeviceAPIContext)
 	filesAPI = useContext(FilesAPIContext);
-	pluginAPI = useContext(PluginAPIContext)
+	applicationAPI = useContext(ApplicationAPIContext)
+	workspaceAPI = useContext(WorkspaceAPIContext)
 
 	path!: string
 	container = createRef<HTMLDivElement>()
@@ -25,7 +26,8 @@ export class FileTab extends BaseElement {
 	async connectedCallback() {
 		super.connectedCallback();
 
-		const allEditors = await this.pluginAPI.getEditors();
+		// todo: plugin instantiation should be managed via ApplicationAPI
+		const allEditors = await this.applicationAPI.getEditors();
 		const supportedEditors: FileEditorPluginClass[] = []
 		for (const editor of allEditors) {
 			if (!editor.meta) {
@@ -43,7 +45,7 @@ export class FileTab extends BaseElement {
 
 		if (supportedEditors.length > 0) {
 			const plugin = supportedEditors[0];
-			this.editor = new plugin({deviceAPI: this.deviceAPI, filesAPI: this.filesAPI, pluginAPI: this.pluginAPI}, this, this.path)
+			this.editor = new plugin({deviceAPI: this.deviceAPI, filesAPI: this.filesAPI, workspaceAPI: this.workspaceAPI, applicationAPI: this.applicationAPI}, this, this.path)
 			await this.editor.load()
 			this.requestUpdate()
 		}

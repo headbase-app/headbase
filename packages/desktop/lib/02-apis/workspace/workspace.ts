@@ -1,66 +1,59 @@
-import {BehaviorSubject} from "rxjs";
-import {EncryptionService, IFilesAPI} from "@headbase-app/lib";
-import {IWorkspaceAPI, OpenTabOptions, TabMetadata, TabTypes, WorkspaceTab, WorkspaceTabs} from "./workspace.api.ts";
+import {EncryptionService, EventTypes, IDeviceAPI, IEventsService, IFilesAPI} from "@headbase-app/lib";
+import {IWorkspaceAPI, WorkspaceOpenOptions, WorkspaceItemMetadata, WorkspaceItemTypes, WorkspaceItem, WorkspaceItems} from "./workspace.api.ts";
 
 const WORKSPACE_TABS_STORAGE_KEY = "workspace-tabs"
 const WORKSPACE_ACTIVE_TAB_STORAGE_KEY = "workspace-active-tab"
 
 export class WorkspaceAPI implements IWorkspaceAPI {
-	readonly #tabs$: BehaviorSubject<WorkspaceTabs>;
-	readonly #activeTab$: BehaviorSubject<string|null>;
+	items: WorkspaceItems;
+	activeItem: string|null;
 
 	constructor(
+		private eventsService: IEventsService,
+		private deviceAPI: IDeviceAPI,
 		private filesAPI: IFilesAPI,
 	) {
 
 		// todo: workspace tabs should be handled via storage API class, or workspace/WorkspaceVaultAPI combined?
-		let savedTabs: WorkspaceTab[] = [];
+		this.items = []
 		const workspaceStorage = localStorage.getItem(WORKSPACE_TABS_STORAGE_KEY);
 		if (workspaceStorage) {
-			savedTabs = JSON.parse(workspaceStorage);
+			this.#setItems(JSON.parse(workspaceStorage))
 		}
 
-		let savedActiveTab: string | null = null;
+		this.activeItem = null
 		const activeTabStorage = localStorage.getItem(WORKSPACE_ACTIVE_TAB_STORAGE_KEY);
 		if (activeTabStorage) {
-			savedActiveTab = JSON.parse(activeTabStorage);
+			this.#setActiveItem(JSON.parse(activeTabStorage));
 		}
-
-		this.#tabs$ = new BehaviorSubject<WorkspaceTabs>(savedTabs)
-		this.#activeTab$ = new BehaviorSubject<string|null>(savedActiveTab)
 	}
 
-	#setTabs(tabs: WorkspaceTab[]) {
-		localStorage.setItem(WORKSPACE_TABS_STORAGE_KEY, JSON.stringify(tabs));
-		this.#tabs$.next(tabs);
+	getItems() {
+		return this.items;
 	}
-	#setActiveTab(id: string|null) {
+	getActiveItem() {
+		return this.activeItem;
+	}
+
+	async #setItems(items: WorkspaceItem[]) {
+		localStorage.setItem(WORKSPACE_TABS_STORAGE_KEY, JSON.stringify(items));
+		this.items = items;
+
+		const context = await this.deviceAPI.getCurrentContext()
+		await this.eventsService.dispatch(EventTypes.WORKSPACE_CHANGE, {context, data: {items: items}})
+	}
+	async #setActiveItem(id: string|null) {
 		localStorage.setItem(WORKSPACE_ACTIVE_TAB_STORAGE_KEY, JSON.stringify(id));
-		this.#activeTab$.next(id);
+		this.activeItem = id;
+
+		const context = await this.deviceAPI.getCurrentContext()
+		await this.eventsService.dispatch(EventTypes.WORKSPACE_ACTIVE_CHANGE, {context, data: {activeItem: id}})
 	}
 
-	liveQueryTabs() {
-		return this.#tabs$
-	}
-
-	liveQueryActiveTab() {
-		return this.#activeTab$
-	}
-
-	#getTabMetadataFromType(tab: TabTypes): TabMetadata {
-		let name: string;
-		if (tab.type === 'search') {
-			name = "New Search"
-		}
-		else if (tab.type === "file-explorer") {
-			name = tab.path ? this.filesAPI.parsePath(tab.path).base : "File Explorer"
-		}
-		else if (tab.type === 'content-types') {
-			name = "Content Types"
-		}
-		else {
-			name =  this.filesAPI.parsePath(tab.path).base
-		}
+	#getTabMetadataFromType(tab: WorkspaceItemTypes): WorkspaceItemMetadata {
+		let name = tab.type === 'file'
+			? this.filesAPI.parsePath(tab.path).base
+			: "unknown plugin"
 
 		return {
 			id: EncryptionService.generateUUID(),
@@ -69,85 +62,79 @@ export class WorkspaceAPI implements IWorkspaceAPI {
 		}
 	}
 
-	openTab(tab: TabTypes, options?: OpenTabOptions) {
+	open(tab: WorkspaceItemTypes, options?: WorkspaceOpenOptions) {
 		// If requested tab already exists, switch to it instead of opening a new instance.
+		// todo: should allow plugins to be "single instance"?
 		if (tab.type === 'file') {
-			const existingTab = this.#tabs$.value.find((existingTab) => existingTab.type === "file" && existingTab.path === tab.path)
+			const existingTab = this.items.find((existingTab) => existingTab.type === "file" && existingTab.path === tab.path)
 			if (existingTab) {
-				this.switchToTab(existingTab.id)
-				return;
-			}
-		}
-		else if (tab.type === 'content-types') {
-			const existingTab = this.#tabs$.value.find((tab) => tab.type === "content-types")
-			if (existingTab) {
-				this.switchToTab(existingTab.id)
+				this.switch(existingTab.id)
 				return;
 			}
 		}
 
 		const metadata = this.#getTabMetadataFromType(tab)
-		this.#setTabs([
-			...this.#tabs$.value,
+		this.#setItems([
+			...this.items,
 			{
 				...tab,
 				...metadata,
 			}
 		])
-		if (!this.#activeTab$.value || options?.switch) {
-			this.#setActiveTab(metadata.id)
+		if (!this.activeItem || options?.switch) {
+			this.#setActiveItem(metadata.id)
 		}
 	}
 
-	replaceTab(id: string, tab: TabTypes) {
+	replace(id: string, tab: WorkspaceItemTypes) {
 		// todo: check tab exists
 		// todo: set name based on new rules?
 
-		const updatedTabs = this.#tabs$.value.map((existingTab) => {
+		const updatedTabs = this.items.map((existingTab) => {
 			if (existingTab.id !== id) return existingTab
 			return {
 				...tab,
 				...this.#getTabMetadataFromType(tab)
-			} satisfies WorkspaceTab
+			} satisfies WorkspaceItem
 		})
 
-		this.#setTabs(updatedTabs);
+		this.#setItems(updatedTabs);
 	}
 
-	closeTab(id: string) {
+	close(id: string) {
 		// todo: check tab exists
 		// todo: if active tab, set active to next nearest tab?
 
-		const updatedTabs = this.#tabs$.value.filter(tab => tab.id !== id)
-		this.#setTabs(updatedTabs);
+		const updatedTabs = this.items.filter(tab => tab.id !== id)
+		this.#setItems(updatedTabs);
 
 		if (updatedTabs.length > 0) {
-			this.#setActiveTab(null)
+			this.#setActiveItem(null)
 		}
 	}
 
-	closeAllTabs() {
-		this.#setTabs([])
-		this.#setActiveTab(null)
+	closeAll() {
+		this.#setItems([])
+		this.#setActiveItem(null)
 	}
 
-	switchToTab(id: string) {
+	switch(id: string) {
 		// todo: check tab exists
-		this.#setActiveTab(id)
+		this.#setActiveItem(id)
 	}
 
-	updateTabMetadata(id: string, update: Partial<Omit<TabMetadata, 'id'>>) {
+	update(id: string, update: Partial<Omit<WorkspaceItemMetadata, 'id'>>) {
 		// todo: check tab exists
 		// todo: check update contains values
 
-		const updatedTabs = this.#tabs$.value.map((existingTab) => {
+		const updatedTabs = this.items.map((existingTab) => {
 			if (existingTab.id !== id) return existingTab
 			return {
 				...existingTab,
 				...update,
-			} satisfies WorkspaceTab
+			} satisfies WorkspaceItem
 		})
 
-		this.#setTabs(updatedTabs)
+		this.#setItems(updatedTabs)
 	}
 }

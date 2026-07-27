@@ -1,13 +1,13 @@
 import { matter } from "gray-matter-es";
-
-import {
-	SourceMetadata,
-	SourcePlugin
-} from "../../02-apis/plugin/plugins/source-plugin/source-plugin.ts";
 import {DataObject} from "@headbase-app/lib";
-import {InferObjectFromFieldDefinitions} from "../../02-apis/plugin/plugins/source-plugin/dynamic-fields.ts";
+import {
+	ViewSourceMetadata,
+	ViewSourcePlugin
+} from "../../02-apis/plugin/plugins/view-source-plugin/view-source-plugin.ts";
+import {InferObjectFromFieldDefinitions} from "../../02-apis/plugin/plugins/view-source-plugin/dynamic-fields.ts";
 
-const MarkdownMetadata = {
+
+const MarkdownViewMetadata = {
 	id: "https://spec.headbase.app/v1/sources/markdown",
 	name: "Markdown Files (.md)",
 	description: "Load data from markdown files, parsing frontmatter as fields.",
@@ -24,12 +24,12 @@ const MarkdownMetadata = {
 			defaultValue: true
 		}
 	}
-} satisfies SourceMetadata
+} satisfies ViewSourceMetadata
 
-export class MarkdownSourcePlugin extends SourcePlugin {
-	static meta: SourceMetadata = MarkdownMetadata
+export class MarkdownSourcePlugin extends ViewSourcePlugin {
+	static meta: ViewSourceMetadata = MarkdownViewMetadata
 	// todo: source plugin should allow type generic for settings?
-	declare settings: InferObjectFromFieldDefinitions<typeof MarkdownMetadata["settings"]>
+	declare settings: InferObjectFromFieldDefinitions<typeof MarkdownViewMetadata["settings"]>
 
 	async load(): Promise<DataObject[]> {
 		const pattern = this.settings.recursive ? "**/*.md" : "*.md";

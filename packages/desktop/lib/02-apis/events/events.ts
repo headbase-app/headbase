@@ -1,4 +1,5 @@
 import type {DeviceContext} from "../device/device.api.js";
+import {WorkspaceItems} from "../workspace/workspace.api.ts";
 
 export const EventTypes = {
 	// Object Events
@@ -7,6 +8,9 @@ export const EventTypes = {
 	VAULT_OPEN: 'vault-open',
 	VAULT_CLOSE: 'vault-close',
 	VAULT_CHANGE: 'vault-change',
+	// Workspace Events
+	WORKSPACE_CHANGE: 'workspace-change',
+	WORKSPACE_ACTIVE_CHANGE: 'workspace-active-change',
 } as const
 
 export interface FileChangeEvent {
@@ -52,7 +56,27 @@ export interface VaultChangeEvent {
 	}
 }
 
-export type HeadbaseEvent = FileChangeEvent | VaultOpenEvent | VaultCloseEvent | VaultChangeEvent
+export interface WorkspaceChangeEvent {
+	type: typeof EventTypes.WORKSPACE_CHANGE,
+	detail: {
+		context: DeviceContext,
+		data: {
+			items: WorkspaceItems
+		}
+	}
+}
+
+export interface WorkspaceActiveChangeEvent {
+	type: typeof EventTypes.WORKSPACE_ACTIVE_CHANGE,
+	detail: {
+		context: DeviceContext,
+		data: {
+			activeItem: string|null
+		}
+	}
+}
+
+export type HeadbaseEvent = FileChangeEvent | VaultOpenEvent | VaultCloseEvent | VaultChangeEvent | WorkspaceChangeEvent | WorkspaceActiveChangeEvent
 
 export interface EventMap {
 	// File Events
@@ -61,5 +85,8 @@ export interface EventMap {
 	[EventTypes.VAULT_OPEN]: VaultOpenEvent,
 	[EventTypes.VAULT_CLOSE]: VaultCloseEvent,
 	[EventTypes.VAULT_CHANGE]: VaultChangeEvent,
+	// Workspace Events
+	[EventTypes.WORKSPACE_CHANGE]: WorkspaceChangeEvent,
+	[EventTypes.WORKSPACE_ACTIVE_CHANGE]: WorkspaceActiveChangeEvent,
 }
 export type EventTypes = keyof EventMap

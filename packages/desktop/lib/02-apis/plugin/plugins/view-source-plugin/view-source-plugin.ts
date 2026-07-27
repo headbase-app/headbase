@@ -1,15 +1,15 @@
-import {BasePluginMetadata, PluginExposedAPIs} from "../base-plugin.ts";
+import {BasePluginMetadata, PluginExposedAPIs} from "../../base-plugin.ts";
 import {DataObject, queryDataObjects} from "./query-data-objects.ts";
 import {DynamicFields, InferObjectFromFieldDefinitions} from "./dynamic-fields.ts";
 import {EncryptionService} from "../../../encryption/encryption.service.ts";
 
-export interface SourceMetadata extends BasePluginMetadata {
+export interface ViewSourceMetadata extends BasePluginMetadata {
 	icon?: string
 	settings?: DynamicFields
 }
 
-export abstract class SourcePlugin {
-	static meta: SourceMetadata
+export abstract class ViewSourcePlugin {
+	static meta: ViewSourceMetadata
 	apis: PluginExposedAPIs
 	// todo: should be unknown?
 	settings: InferObjectFromFieldDefinitions<any>
@@ -28,6 +28,7 @@ export abstract class SourcePlugin {
 	abstract load(): Promise<DataObject[]>
 
 	async query() {
+		// todo: cache should be handled via separate class/API surface which can be reused?
 		const hash = await EncryptionService.hash(JSON.stringify(this.settings) + this.objectQuery)
 		const sourceHash = hash.split(".")[2] // not saving version/metadata baked into hash.
 		const cacheFile = `/.headbase/cache/${sourceHash}.json`
@@ -59,4 +60,4 @@ export abstract class SourcePlugin {
 	}
 }
 
-export type SourcePluginClass = (new (...args: ConstructorParameters<typeof SourcePlugin>) => SourcePlugin) & {meta: SourceMetadata}
+export type ViewSourcePluginClass = (new (...args: ConstructorParameters<typeof ViewSourcePlugin>) => ViewSourcePlugin) & {meta: ViewSourceMetadata}

@@ -2,11 +2,11 @@ import {html, type TemplateResult} from "lit-html";
 import {repeat} from "lit-html/directives/repeat.js";
 import {BehaviorSubject, of, switchMap} from "rxjs";
 
-import {useContext} from "../../../03-framework/context";
-import {FilesAPIContext, WorkspaceVaultAPIContext} from "../../../03-framework/contexts";
-import {BaseElement} from "../../../03-framework/base-element";
-import {LIVE_QUERY_EMPTY, type LiveQueryResult} from "../../../01-common/control-flow";
-import {type IFileSystemTree} from "../../../02-apis/files/files.api";
+import {useContext} from "../../../../03-framework/context.ts";
+import {FilesAPIContext, WorkspaceVaultAPIContext} from "../../../../03-framework/contexts.ts";
+import {BaseElement} from "../../../../03-framework/base-element.ts";
+import {LIVE_QUERY_EMPTY, type LiveQueryResult} from "../../../../01-common/control-flow.ts";
+import {type IFileSystemTree} from "../../../../02-apis/files/files.api.ts";
 
 
 export class FileExplorer extends BaseElement {

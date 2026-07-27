@@ -41,11 +41,11 @@ export class HeadbaseApp extends BaseElement {
 	async connectedCallback() {
 		const isFilePermissionGranted = await this.vaultsAPI.checkPermissions()
 		if (!isFilePermissionGranted) {
-			console.debug(`[hb-app] File permissions check failed, requesting permissions`)
+			console.debug(`[app] File permissions check failed, requesting permissions`)
 			await this.vaultsAPI.requestPermissions()
 		}
 		else {
-			console.debug("[hb-app] File permissions check succeeded")
+			console.debug("[app] File permissions check succeeded")
 		}
 	}
 

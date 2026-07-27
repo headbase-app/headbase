@@ -1,38 +1,34 @@
 import {BehaviorSubject} from "rxjs";
 
-export interface TabMetadata {
+export interface WorkspaceItemMetadata {
 	id: string
 	name: string
 	isChanged: boolean
 }
-export type TabTypes = {
-	type: 'search'
+export type WorkspaceItemTypes = {
+	type: "plugin"
+	plugin: string,
+	data?: unknown
 } | {
-	type: 'file-explorer'
-	path?: string
-} | {
-	type: 'content-types'
-} | {
-	type: 'file',
+	type: "file",
 	path: string
 }
-export type WorkspaceTab = TabMetadata & TabTypes
-export type WorkspaceTabs = WorkspaceTab[]
+export type WorkspaceItem = WorkspaceItemMetadata & WorkspaceItemTypes
+export type WorkspaceItems = WorkspaceItem[]
 
-export interface OpenTabOptions {
+export interface WorkspaceOpenOptions {
 	switch: boolean
 }
 
 export interface IWorkspaceAPI {
 	// Queries
-	liveQueryTabs: () => BehaviorSubject<WorkspaceTabs>
-	liveQueryActiveTab: () => BehaviorSubject<string|null>
+	getItems: () => WorkspaceItems
+	getActiveItem: () => string | null
 	// Actions
-	openTab: (tab: TabTypes, options?: OpenTabOptions) => void
-	replaceTab: (id: string, tab: TabTypes) => void
-	closeTab: (id: string) => void
-	closeAllTabs: () => void
-	switchToTab: (tabId: string) => void
-	// Metadata Actions
-	updateTabMetadata: (tabId: string, update: Partial<Omit<TabMetadata, 'id'>>) => void
+	open: (tab: WorkspaceItemTypes, options?: WorkspaceOpenOptions) => void
+	replace: (id: string, tab: WorkspaceItemTypes) => void
+	update: (tabId: string, update: Partial<Omit<WorkspaceItemMetadata, 'id'>>) => void
+	close: (id: string) => void
+	closeAll: () => void
+	switch: (tabId: string) => void
 }
