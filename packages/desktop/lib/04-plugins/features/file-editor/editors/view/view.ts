@@ -1,5 +1,5 @@
 import {z} from "zod";
-import {DynamicFieldValues} from "../../../02-apis/plugin/plugins/view-source-plugin/dynamic-fields.ts";
+import {DynamicFieldValues} from "../../../../../02-apis/plugin/plugins/view-source-plugin/dynamic-fields.ts";
 
 export const ViewConfig = z.object({
 	name: z.string(),

@@ -27,8 +27,6 @@ export * from "./03-framework/form-helper.js"
 export * from "./03-framework/observe-directive.js"
 export * from "./03-framework/contexts.js"
 
-
-
 export * from "./05-ui/components/vault-manager/vault-manager.js"
 export * from "./05-ui/components/vault-manager/vault-form.js"
 export * from "./05-ui/components/vault-manager/create-vault/create-vault.js"
@@ -38,6 +36,7 @@ export * from "./05-ui/components/vault-manager/vaults-list/vaults-list.js"
 
 export * from "./04-plugins/features/file-explorer/components/file-explorer.js"
 export * from "./04-plugins/features/file-explorer/components/file-tree-item.js"
+export * from "./04-plugins/features/file-editor/components/file-editor.ts"
 
 //export * from "./04-ui/components/vault-manager/vault-manager-dialog.js"
 export * from "./05-ui/components/vault-menu/vault-menu.js"
@@ -46,10 +45,6 @@ export * from "./05-ui/components/vault-menu/vault-menu.js"
 // export * from "./04-ui/components/workspace/workspace.provider.js"
 export * from "./05-ui/components/workspace/workspace.js"
 export * from "./05-ui/components/workspace/workspace-plugin-item.ts"
-export * from "./05-ui/components/workspace/tabs/file-explorer-tab.ts"
-export * from "./05-ui/components/workspace/tabs/search-tab.ts"
-export * from "./05-ui/components/workspace/tabs/types-tab.ts"
-export * from "./05-ui/components/workspace/tabs/file-tab.ts"
 // export * from "./04-ui/components/workspace/workspace-tab.js"
 
 export * from "./05-ui/pages/app-page.ts"

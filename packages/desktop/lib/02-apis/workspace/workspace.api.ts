@@ -1,19 +1,15 @@
-import {BehaviorSubject} from "rxjs";
-
 export interface WorkspaceItemMetadata {
 	id: string
 	name: string
 	isChanged: boolean
 }
-export type WorkspaceItemTypes = {
+export interface WorkspaceItemData {
 	type: "plugin"
 	plugin: string,
-	data?: unknown
-} | {
-	type: "file",
-	path: string
+	data?: unknown[]
 }
-export type WorkspaceItem = WorkspaceItemMetadata & WorkspaceItemTypes
+
+export type WorkspaceItem = WorkspaceItemMetadata & WorkspaceItemData
 export type WorkspaceItems = WorkspaceItem[]
 
 export interface WorkspaceOpenOptions {
@@ -25,10 +21,10 @@ export interface IWorkspaceAPI {
 	getItems: () => WorkspaceItems
 	getActiveItem: () => string | null
 	// Actions
-	open: (tab: WorkspaceItemTypes, options?: WorkspaceOpenOptions) => void
-	replace: (id: string, tab: WorkspaceItemTypes) => void
-	update: (tabId: string, update: Partial<Omit<WorkspaceItemMetadata, 'id'>>) => void
+	open: (data: WorkspaceItemData, options?: WorkspaceOpenOptions) => void
+	replace: (id: string, data: WorkspaceItemData) => void
+	update: (id: string, update: Partial<Omit<WorkspaceItemMetadata, 'id'>>) => void
 	close: (id: string) => void
 	closeAll: () => void
-	switch: (tabId: string) => void
+	switch: (id: string) => void
 }

@@ -1,4 +1,4 @@
-import {FileEditorMetadata, FileEditorPlugin} from "../../02-apis/plugin/plugins/editor-plugin.ts";
+import {FileEditorMetadata, FileEditorPlugin} from "../../../../02-apis/plugin/plugins/editor-plugin.ts";
 
 import * as pdfjs from "pdfjs-dist"
 // @ts-ignore -- todo: fix worker URL?

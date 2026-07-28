@@ -68,17 +68,7 @@ export class Workspace extends BaseElement {
 
 			// todo: I see this replaces with css styling via data attribute/classnames in future
 			const style = {display: isActive ? "block" : "none"}
-
-			if (item.type === "file") {
-				return html`
-					<hb-file-tab
-						.path=${item.path}
-						data-is-active=${isActive}
-						style=${styleMap(style)}
-					></hb-file-tab>`
-			}
-			else {
-				return html`
+			return html`
 					<hb-workspace-plugin-item
 						id=${item.id}
 						.item=${item}
@@ -87,7 +77,6 @@ export class Workspace extends BaseElement {
 					>
 					</hb-workspace-plugin-item>
 				`;
-			}
 		})
 
 		return html`
@@ -95,7 +84,7 @@ export class Workspace extends BaseElement {
 				${items}
 			</ul>
 			<hr />
-			${when(this.items.length === 0, () => html`<p>No open tabs</p>`)}
+			${when(this.items.length === 0, () => html`<p>No open items</p>`)}
 			<div>
 				${tabContents}
 			</div>

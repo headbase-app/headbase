@@ -1,6 +1,6 @@
 import {html} from "lit-html";
-import {createRef, ref} from "lit-html/directives/ref.js";
 import {when} from "lit-html/directives/when.js";
+import {createRef, ref} from "lit-html/directives/ref.js";
 
 import {
 	BaseElement,
@@ -11,17 +11,20 @@ import {
 	useContext, WorkspaceAPIContext
 } from "@headbase-app/lib";
 
-export class FileTab extends BaseElement {
-	static tag = "hb-file-tab";
 
+export class FileEditor extends BaseElement {
+	static tag = "hb-file-editor";
+
+	// todo: useContext should no longer be used for features added via plugins
 	deviceAPI = useContext(DeviceAPIContext)
 	filesAPI = useContext(FilesAPIContext);
 	applicationAPI = useContext(ApplicationAPIContext)
 	workspaceAPI = useContext(WorkspaceAPIContext)
 
-	path!: string
 	container = createRef<HTMLDivElement>()
+	filePath!: string
 	editor?: FileEditorPlugin
+	status: "loading" | "not-found" | "loaded" = "loading"
 
 	async connectedCallback() {
 		super.connectedCallback();
@@ -36,7 +39,7 @@ export class FileTab extends BaseElement {
 			}
 
 			for (const supportedExtension of editor.meta.supportedExtensions) {
-				if (this.path.endsWith(supportedExtension)) {
+				if (this.filePath.endsWith(supportedExtension)) {
 					supportedEditors.push(editor)
 					break;
 				}
@@ -45,10 +48,15 @@ export class FileTab extends BaseElement {
 
 		if (supportedEditors.length > 0) {
 			const plugin = supportedEditors[0];
-			this.editor = new plugin({deviceAPI: this.deviceAPI, filesAPI: this.filesAPI, workspaceAPI: this.workspaceAPI, applicationAPI: this.applicationAPI}, this, this.path)
+			this.editor = new plugin({deviceAPI: this.deviceAPI, filesAPI: this.filesAPI, workspaceAPI: this.workspaceAPI, applicationAPI: this.applicationAPI}, this, this.filePath)
+			this.editor.filePath = this.filePath
 			await this.editor.load()
-			this.requestUpdate()
+			this.status = "loaded"
 		}
+		else {
+			this.status = "not-found"
+		}
+		this.requestUpdate()
 	}
 
 	async save() {
@@ -64,13 +72,25 @@ export class FileTab extends BaseElement {
 	}
 
 	render() {
+		let content;
+		if (this.status === "loading") {
+			content = html`
+				<p>Loading editor...</p>
+			`
+		}
+		else if (this.status === "not-found") {
+			content = html`
+				<p>No supported editor plugins found for this file type.</p>
+			`
+		}
+
 		return html`
 			<div>
 				${when(
-					!this.editor,
-					() => html`<p>Loading editor...</p>`,
-					() => html`<button @click=${this.save.bind(this)}>save</button>`
-				)}
+			this.editor,
+			() => html`<button @click=${this.save.bind(this)}>save</button>`
+		)}
+				${content}
 				<div ref=${ref(this.container)}></div>
 			</div>
 		`
@@ -79,6 +99,6 @@ export class FileTab extends BaseElement {
 
 declare global {
 	interface HTMLElementTagNameMap {
-		[FileTab.tag]: FileTab
+		[FileEditor.tag]: FileEditor
 	}
 }

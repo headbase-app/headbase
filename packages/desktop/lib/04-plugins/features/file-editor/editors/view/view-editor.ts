@@ -1,6 +1,6 @@
 import {ViewSourcePlugin} from "@headbase-app/lib";
 
-import {FileEditorMetadata, FileEditorPlugin} from "../../../02-apis/plugin/plugins/editor-plugin.ts";
+import {FileEditorMetadata, FileEditorPlugin} from "../../../../../02-apis/plugin/plugins/editor-plugin.ts";
 import {ViewConfig} from "./view.ts";
 
 

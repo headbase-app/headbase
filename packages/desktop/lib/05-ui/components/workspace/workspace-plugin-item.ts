@@ -11,7 +11,7 @@ import {html, nothing} from "lit-html";
 export class WorkspacePluginItem extends BaseElement {
 	static tag = "hb-workspace-plugin-item";
 	// todo: should be exposed as item types, so no need to extract from union
-	item!: Extract<WorkspaceItem, {type: "plugin"}>
+	item!: WorkspaceItem
 
 	deviceAPI = useContext(DeviceAPIContext)
 	filesAPI = useContext(FilesAPIContext)
@@ -24,8 +24,8 @@ export class WorkspacePluginItem extends BaseElement {
 		const plugin = await this.applicationAPI.getWorkspaceItemById(this.item.plugin)
 		if (plugin) {
 			this.workspaceAPI.update(this.item.id, {name: plugin.meta.name})
-			const instance = new plugin({deviceAPI: this.deviceAPI, filesAPI: this.filesAPI, workspaceAPI: this.workspaceAPI, applicationAPI: this.applicationAPI}, this)
-			await instance.load()
+			const instance = new plugin({deviceAPI: this.deviceAPI, filesAPI: this.filesAPI, workspaceAPI: this.workspaceAPI, applicationAPI: this.applicationAPI}, this, this.item)
+			await instance.load(this.item.data)
 			this.status = "loaded"
 		}
 		else {

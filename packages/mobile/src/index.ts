@@ -8,8 +8,7 @@ import {
 	VaultsAPIContext,
 	WorkspaceAPI, WorkspacePluginItem,
 	WorkspaceVaultAPIContext, ApplicationAPIContext, EventsServiceContext, FileExplorer, FileTreeItem, VaultManager, VaultsList, VaultForm,
-	CreateVault, EditVault, DeleteVault, VaultMenu, Workspace, WorkspaceAPIContext, FileExplorerTab, SearchTab, TypesTab,
-	FileTab,
+	CreateVault, EditVault, DeleteVault, VaultMenu, Workspace, WorkspaceAPIContext, FileEditor,
 	WelcomePage, AppPage, ManageVaultsPage
 } from "@headbase-app/lib";
 import {ContextProvider} from "@headbase-app/lib";
@@ -34,6 +33,7 @@ customElements.define(DeleteVault.tag, DeleteVault)
 
 customElements.define(VaultMenu.tag, VaultMenu)
 
+customElements.define(FileEditor.tag, FileEditor)
 customElements.define(FileExplorer.tag, FileExplorer)
 customElements.define(FileTreeItem.tag, FileTreeItem)
 
@@ -41,11 +41,6 @@ customElements.define(HeadbaseApp.tag, HeadbaseApp)
 
 customElements.define(Workspace.tag, Workspace)
 customElements.define(WorkspacePluginItem.tag, WorkspacePluginItem)
-
-customElements.define(FileExplorerTab.tag, FileExplorerTab)
-customElements.define(SearchTab.tag, SearchTab)
-customElements.define(TypesTab.tag, TypesTab)
-customElements.define(FileTab.tag, FileTab)
 
 export class HeadbaseDesktopApp extends BaseElement {
 	static tag = 'hb-desktop-app';

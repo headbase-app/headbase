@@ -1,5 +1,12 @@
-import {EncryptionService, EventTypes, IDeviceAPI, IEventsService, IFilesAPI} from "@headbase-app/lib";
-import {IWorkspaceAPI, WorkspaceOpenOptions, WorkspaceItemMetadata, WorkspaceItemTypes, WorkspaceItem, WorkspaceItems} from "./workspace.api.ts";
+import {
+	EncryptionService,
+	EventTypes,
+	IDeviceAPI,
+	IEventsService,
+	IFilesAPI,
+	WorkspaceItemData
+} from "@headbase-app/lib";
+import {IWorkspaceAPI, WorkspaceOpenOptions, WorkspaceItemMetadata, WorkspaceItem, WorkspaceItems} from "./workspace.api.ts";
 
 const WORKSPACE_TABS_STORAGE_KEY = "workspace-tabs"
 const WORKSPACE_ACTIVE_TAB_STORAGE_KEY = "workspace-active-tab"
@@ -50,51 +57,41 @@ export class WorkspaceAPI implements IWorkspaceAPI {
 		await this.eventsService.dispatch(EventTypes.WORKSPACE_ACTIVE_CHANGE, {context, data: {activeItem: id}})
 	}
 
-	#getTabMetadataFromType(tab: WorkspaceItemTypes): WorkspaceItemMetadata {
-		let name = tab.type === 'file'
-			? this.filesAPI.parsePath(tab.path).base
-			: "unknown plugin"
-
+	#getTabMetadataFromType(data: WorkspaceItemData): WorkspaceItemMetadata {
 		return {
 			id: EncryptionService.generateUUID(),
-			name,
+			name: data.type,
 			isChanged: false,
 		}
 	}
 
-	open(tab: WorkspaceItemTypes, options?: WorkspaceOpenOptions) {
+	open(data: WorkspaceItemData, options?: WorkspaceOpenOptions) {
 		// If requested tab already exists, switch to it instead of opening a new instance.
 		// todo: should allow plugins to be "single instance"?
-		if (tab.type === 'file') {
-			const existingTab = this.items.find((existingTab) => existingTab.type === "file" && existingTab.path === tab.path)
-			if (existingTab) {
-				this.switch(existingTab.id)
-				return;
-			}
-		}
-
-		const metadata = this.#getTabMetadataFromType(tab)
+		const metadata = this.#getTabMetadataFromType(data)
 		this.#setItems([
 			...this.items,
 			{
-				...tab,
+				...data,
 				...metadata,
 			}
 		])
+
+		console.debug(this.activeItem)
 		if (!this.activeItem || options?.switch) {
 			this.#setActiveItem(metadata.id)
 		}
 	}
 
-	replace(id: string, tab: WorkspaceItemTypes) {
+	replace(id: string, data: WorkspaceItemData) {
 		// todo: check tab exists
 		// todo: set name based on new rules?
 
 		const updatedTabs = this.items.map((existingTab) => {
 			if (existingTab.id !== id) return existingTab
 			return {
-				...tab,
-				...this.#getTabMetadataFromType(tab)
+				...data,
+				...this.#getTabMetadataFromType(data)
 			} satisfies WorkspaceItem
 		})
 
@@ -108,7 +105,7 @@ export class WorkspaceAPI implements IWorkspaceAPI {
 		const updatedTabs = this.items.filter(tab => tab.id !== id)
 		this.#setItems(updatedTabs);
 
-		if (updatedTabs.length > 0) {
+		if (updatedTabs.length === 0) {
 			this.#setActiveItem(null)
 		}
 	}

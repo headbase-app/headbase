@@ -11,9 +11,10 @@ import {type IFileSystemTree} from "../../../../02-apis/files/files.api.ts";
 
 export class FileExplorer extends BaseElement {
 	static tag = "hb-file-explorer"
+	// todo: useContext should no longer be used for features added via plugins
 	workspaceVaultAPI = useContext(WorkspaceVaultAPIContext)
 	filesAPI = useContext(FilesAPIContext)
-	path?: string
+	filePath?: string
 	fileTree: BehaviorSubject<LiveQueryResult<IFileSystemTree | null>>
 
 	constructor() {
@@ -21,7 +22,7 @@ export class FileExplorer extends BaseElement {
 		this.fileTree = this.createState(LIVE_QUERY_EMPTY, this.workspaceVaultAPI.liveGet().pipe(
 			switchMap(vaultQuery => {
 				if (vaultQuery.status === "success" && vaultQuery.result) {
-					return this.filesAPI.liveTree(this.path ?? "/")
+					return this.filesAPI.liveTree(this.filePath ?? "/")
 				}
 				return of(LIVE_QUERY_EMPTY)
 			}),
