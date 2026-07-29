@@ -25,7 +25,7 @@ export class WorkspacePluginItem extends BaseElement {
 		if (plugin) {
 			this.workspaceAPI.update(this.item.id, {name: plugin.meta.name})
 			const instance = new plugin({deviceAPI: this.deviceAPI, filesAPI: this.filesAPI, workspaceAPI: this.workspaceAPI, applicationAPI: this.applicationAPI}, this, this.item)
-			await instance.load(this.item.data)
+			await instance.load(...(this.item.data ?? []))
 			this.status = "loaded"
 		}
 		else {
