@@ -1,6 +1,6 @@
 import {html} from "lit-html";
 import {BaseElement, DataObject, ViewSourcePlugin, ViewDisplayMetadata, ViewDisplayPlugin} from "@headbase-app/lib";
-import {InferObjectFromFieldDefinitions} from "../../02-apis/plugin/plugins/view-source-plugin/dynamic-fields.ts";
+import {InferObjectFromFieldDefinitions} from "../../02-apis/plugin/view-source-plugin/dynamic-fields.ts";
 
 
 class CardsViewElement extends BaseElement {

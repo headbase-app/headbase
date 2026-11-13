@@ -1,9 +1,9 @@
-import {BasePlugin, BasePluginMetadata} from "../../../02-apis/plugin/base-plugin.ts";
+import {BasePlugin, PluginMetadata} from "../../../02-apis/plugin/base-plugin.ts";
 import {ContentTypesShelfItem} from "./content-types.shelf.ts";
 
 
 export class ContentTypesPlugin extends BasePlugin {
-	meta: BasePluginMetadata = {
+	meta: PluginMetadata = {
 		id: "https://spec.headbase.app/v1/plugins/content-types",
 		name: "Content Types",
 		description: "A core plugin providing content type functionality.",

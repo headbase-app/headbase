@@ -1,9 +1,9 @@
-import {BasePluginMetadata, PluginExposedAPIs} from "../../base-plugin.ts";
+import {PluginMetadata, PluginExposedAPIs} from "../base-plugin.ts";
 import {DataObject, queryDataObjects} from "./query-data-objects.ts";
 import {DynamicFields, InferObjectFromFieldDefinitions} from "./dynamic-fields.ts";
-import {EncryptionService} from "../../../encryption/encryption.service.ts";
+import {EncryptionService} from "../../encryption/encryption.service.ts";
 
-export interface ViewSourceMetadata extends BasePluginMetadata {
+export interface ViewSourceMetadata extends PluginMetadata {
 	icon?: string
 	settings?: DynamicFields
 }
@@ -28,6 +28,8 @@ export abstract class ViewSourcePlugin {
 	abstract load(): Promise<DataObject[]>
 
 	async query() {
+		const ENABLE_CACHE = false;
+
 		// todo: cache should be handled via separate class/API surface which can be reused?
 		const hash = await EncryptionService.hash(JSON.stringify(this.settings) + this.objectQuery)
 		const sourceHash = hash.split(".")[2] // not saving version/metadata baked into hash.
@@ -44,9 +46,12 @@ export abstract class ViewSourcePlugin {
 			}
 		}
 
-		if (cacheContent) {
+		if (cacheContent && ENABLE_CACHE) {
 			console.debug(`[source][cache] Loaded source data from cache (${sourceHash})`)
 			return cacheContent
+		}
+		else {
+			console.debug(`[source][cache] Ignoring source data cache for (${sourceHash}) due to settings`)
 		}
 
 		let results = await this.load()

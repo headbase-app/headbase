@@ -1,8 +1,8 @@
-import {BasePluginMetadata, PluginExposedAPIs} from "../base-plugin.ts";
-import {DynamicFields, InferObjectFromFieldDefinitions} from "./view-source-plugin/dynamic-fields.ts";
-import {ViewSourcePlugin} from "./view-source-plugin/view-source-plugin.ts";
+import {PluginMetadata, PluginExposedAPIs} from "../base-plugin.ts";
+import {DynamicFields, InferObjectFromFieldDefinitions} from "../view-source-plugin/dynamic-fields.ts";
+import {ViewSourcePlugin} from "../view-source-plugin/view-source-plugin.ts";
 
-export interface ViewDisplayMetadata extends BasePluginMetadata {
+export interface ViewDisplayMetadata extends PluginMetadata {
 	icon?: string
 	settings?: DynamicFields
 }

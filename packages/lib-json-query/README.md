@@ -1,4 +1,4 @@
-# `@headbase-app/lib-josn-query`
+# `@headbase-app/json-query`
 A placeholder package for a "JSON query" library for querying, mapping and aggregating JSON data.
 
 Headbase currently uses [@jsonquerylang/jsonquery](https://jsonquerylang.org) to filter data which strikes a good

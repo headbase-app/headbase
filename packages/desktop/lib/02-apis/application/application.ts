@@ -6,8 +6,8 @@ import {
 	ViewSourcePluginClass
 } from "@headbase-app/lib";
 import {IApplicationAPI} from "./application.api.ts";
-import {ShelfItemPluginClass} from "../plugin/plugins/shelf-item-plugin.ts";
-import {WorkspaceItemPluginClass} from "../plugin/plugins/workspace-item-plugin.ts";
+import {AppShelfPluginClass} from "../plugin/app-shelf-plugin/app-shelf-plugin.ts";
+import {WorkspaceItemPluginClass} from "../plugin/workspace-item-plugin/workspace-item-plugin.ts";
 
 
 export class ApplicationAPI implements IApplicationAPI {
@@ -19,7 +19,7 @@ export class ApplicationAPI implements IApplicationAPI {
 
 	#basePlugins: BasePluginClass[] = [];
 	#editors: FileEditorPluginClass[] = []
-	#shelfItems: ShelfItemPluginClass[] = []
+	#shelfItems: AppShelfPluginClass[] = []
 	#workspaceItems: WorkspaceItemPluginClass[] = []
 	#viewSources: ViewSourcePluginClass[] = []
 	#viewDisplays: ViewDisplayPluginClass[] = []
@@ -103,7 +103,7 @@ export class ApplicationAPI implements IApplicationAPI {
 		return this.#viewDisplays.find(s => s.meta.id === id) ?? null
 	}
 
-	#registerShelfItem(plugin: ShelfItemPluginClass) {
+	#registerShelfItem(plugin: AppShelfPluginClass) {
 		for (const view of this.#shelfItems) {
 			if (view.meta.id === plugin.meta.id) {
 				throw new Error(`Shelf item with id ${plugin.meta.id} already found.`)

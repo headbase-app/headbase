@@ -1,6 +1,6 @@
-import {BasePluginMetadata, PluginExposedAPIs} from "../base-plugin.ts";
+import {PluginMetadata, PluginExposedAPIs} from "../base-plugin.ts";
 
-export interface FileEditorMetadata extends BasePluginMetadata {
+export interface FileEditorMetadata extends PluginMetadata {
 	icon?: string,
 	supportedExtensions: string[]
 }

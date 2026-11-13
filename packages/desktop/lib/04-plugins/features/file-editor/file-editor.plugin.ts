@@ -1,4 +1,4 @@
-import {BasePlugin, BasePluginMetadata} from "../../../02-apis/plugin/base-plugin.ts";
+import {BasePlugin, PluginMetadata} from "../../../02-apis/plugin/base-plugin.ts";
 import {FileEditorWorkspaceItem} from "./file-editor.workspace.ts";
 
 import {BasicMarkdownEditor} from "./editors/basic-markdown-editor.ts";
@@ -11,7 +11,7 @@ import {PDFViewer} from "./editors/pdf-viewer.ts";
 export const FILE_EDITOR_PLUGIN_ID = "https://spec.headbase.app/v1/plugins/file"
 
 export class FileEditorPlugin extends BasePlugin {
-	meta: BasePluginMetadata = {
+	meta: PluginMetadata = {
 		id: FILE_EDITOR_PLUGIN_ID,
 		name: "File Editor",
 		description: "A core plugin providing file editing functionality.",

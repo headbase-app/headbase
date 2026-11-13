@@ -72,7 +72,7 @@ export class Workspace extends BaseElement {
 					<hb-workspace-plugin-item
 						id=${item.id}
 						.item=${item}
-						data-is-active=${isActive}
+						data-is-active=${isActive},
 						style=${styleMap(style)}
 					>
 					</hb-workspace-plugin-item>

@@ -12,7 +12,7 @@ import {
 } from "@headbase-app/lib";
 
 import "./vault-menu.css"
-import {ShelfItemPluginClass} from "../../../02-apis/plugin/plugins/shelf-item-plugin.ts";
+import {AppShelfPluginClass} from "../../../02-apis/plugin/app-shelf-plugin/app-shelf-plugin.ts";
 
 function i(name: string) {
 	return html`<i class="icon icon-${name}"></i>`
@@ -32,7 +32,7 @@ export class VaultMenu extends BaseElement {
 	currentVault$: BehaviorSubject<LiveQueryResult<VaultDto | null>>
 	vaults$: BehaviorSubject<LiveQueryResult<VaultDto[]>>
 
-	shelfItems: ShelfItemPluginClass[] = []
+	shelfItems: AppShelfPluginClass[] = []
 
 	constructor() {
 		super();
@@ -44,7 +44,7 @@ export class VaultMenu extends BaseElement {
 		this.shelfItems = await this.applicationAPI.getShelfItems();
 	}
 
-	async triggerShelfItem(shelfItem: ShelfItemPluginClass) {
+	async triggerShelfItem(shelfItem: AppShelfPluginClass) {
 		// todo: plugin instantiation should be managed via ApplicationAPI
 		const instance = new shelfItem({deviceAPI: this.deviceAPI, workspaceAPI: this.workspaceAPI, filesAPI: this.filesAPI, applicationAPI: this.applicationAPI});
 		await instance.trigger()

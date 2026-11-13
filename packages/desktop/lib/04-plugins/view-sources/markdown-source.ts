@@ -3,8 +3,8 @@ import {DataObject} from "@headbase-app/lib";
 import {
 	ViewSourceMetadata,
 	ViewSourcePlugin
-} from "../../02-apis/plugin/plugins/view-source-plugin/view-source-plugin.ts";
-import {InferObjectFromFieldDefinitions} from "../../02-apis/plugin/plugins/view-source-plugin/dynamic-fields.ts";
+} from "../../02-apis/plugin/view-source-plugin/view-source-plugin.ts";
+import {InferObjectFromFieldDefinitions} from "../../02-apis/plugin/view-source-plugin/dynamic-fields.ts";
 
 
 const MarkdownViewMetadata = {
@@ -35,6 +35,9 @@ export class MarkdownSourcePlugin extends ViewSourcePlugin {
 		const pattern = this.settings.recursive ? "**/*.md" : "*.md";
 		const from  = this.settings.from ? this.settings.from  : "/"
 		const files = await this.apis.filesAPI.glob(from, pattern)
+
+		console.debug(from, pattern)
+		console.log(files)
 
 		const results: DataObject[] = []
 		for (const file of files) {

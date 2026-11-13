@@ -1,6 +1,15 @@
-# Plugins - API Definitions
-This directory contains the API definitions for plugins.
-The built-in plugin implementations are currently stored in `lib/04-plugins`.
+# Headbase Plugins
+This directory contains the API definitions for the plugin system used by Headbase.
 
-In future these plugin API definitions may be exposed via `@headbase-app/plugins` so they can be used by
-third party plugins.
+## Plugin Types
+- **App**:
+  - **Shelf**:
+  - **Dialog**:
+- **Workspace**:
+- **Editor**:
+- **Views**:
+  - **Source**:
+  - **Display**:
+
+The built-in plugin implementations are currently stored in `lib/04-plugins`.
+In future these plugin API definitions may be exposed via `@headbase-app/plugins` so they can be used by third party plugins.

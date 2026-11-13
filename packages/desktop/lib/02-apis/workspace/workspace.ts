@@ -77,7 +77,6 @@ export class WorkspaceAPI implements IWorkspaceAPI {
 			}
 		])
 
-		console.debug(this.activeItem)
 		if (!this.activeItem || options?.switch) {
 			this.#setActiveItem(metadata.id)
 		}

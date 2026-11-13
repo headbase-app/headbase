@@ -308,12 +308,11 @@ ipcMain.handle('files_glob', async (event, vaultFilePath: string, pattern: strin
 	if (!senderContext.vault) {
 		return {error: true, identifier: 'vault-not-open', message: 'Sender window has no vault open'}
 	}
-	const vaultPath = path_join(senderContext.vault.path, vaultFilePath)
 
 	// todo: validate glob pattern, should be done in platform layer?
 	try {
-		console.debug(`[files] glob - (${senderContext.id})[${senderContext.vault.path}] ${vaultFilePath}`)
-		const result = await glob(vaultPath, vaultFilePath, pattern)
+		console.debug(`[files] glob - (${senderContext.id})[${senderContext.vault.path}] ${vaultFilePath} ${pattern}`)
+		const result = await glob(senderContext.vault.path, vaultFilePath, pattern)
 		return {error: false, result}
 	}
 	catch (e) {

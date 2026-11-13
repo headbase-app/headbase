@@ -1,7 +1,7 @@
 import {
 	WorkspaceItemPlugin,
 	WorkspaceItemPluginMetadata
-} from "../../../02-apis/plugin/plugins/workspace-item-plugin.ts";
+} from "../../../02-apis/plugin/workspace-item-plugin/workspace-item-plugin.ts";
 import {FileExplorer} from "@headbase-app/lib";
 
 export const FILE_EXPLORER_WORKSPACE_ID = "https://spec.headbase.app/v1/workspace/file-explorer"

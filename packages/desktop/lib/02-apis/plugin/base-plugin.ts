@@ -1,11 +1,11 @@
 import {IDeviceAPI, IFilesAPI, IApplicationAPI, IWorkspaceAPI} from "@headbase-app/lib";
-import {FileEditorPluginClass} from "./plugins/editor-plugin.ts";
-import {ViewSourcePluginClass} from "./plugins/view-source-plugin/view-source-plugin.ts";
-import {ViewDisplayPluginClass} from "./plugins/view-display-plugin.ts";
-import {ShelfItemPluginClass} from "./plugins/shelf-item-plugin.ts";
-import {WorkspaceItemPluginClass} from "./plugins/workspace-item-plugin.ts";
+import {FileEditorPluginClass} from "./editor-plugin/editor-plugin.ts";
+import {ViewSourcePluginClass} from "./view-source-plugin/view-source-plugin.ts";
+import {ViewDisplayPluginClass} from "./view-display-plugin/view-display-plugin.ts";
+import {AppShelfPluginClass} from "./app-shelf-plugin/app-shelf-plugin.ts";
+import {WorkspaceItemPluginClass} from "./workspace-item-plugin/workspace-item-plugin.ts";
 
-export interface BasePluginMetadata {
+export interface PluginMetadata {
 	id: string,
 	name: string,
 	description: string,
@@ -17,12 +17,6 @@ export interface PluginExposedAPIs {
 	workspaceAPI: IWorkspaceAPI
 	deviceAPI: IDeviceAPI
 	filesAPI: IFilesAPI
-}
-
-export interface PluginMetadata {
-	id: string,
-	name: string,
-	description: string,
 }
 
 export abstract class BasePlugin {
@@ -39,8 +33,8 @@ export abstract class BasePlugin {
 	registerEditor!: (editor: FileEditorPluginClass) => void;
 	registerViewSource!: (editor: ViewSourcePluginClass) => void;
 	registerViewDisplay!: (editor: ViewDisplayPluginClass) => void;
-	registerShelfItem!: (item: ShelfItemPluginClass) => void;
+	registerShelfItem!: (item: AppShelfPluginClass) => void;
 	registerWorkspaceItem!: (item: WorkspaceItemPluginClass) => void;
 }
 
-export type BasePluginClass = (new (...args: ConstructorParameters<typeof BasePlugin>) => BasePlugin) & {meta: BasePluginMetadata}
+export type BasePluginClass = (new (...args: ConstructorParameters<typeof BasePlugin>) => BasePlugin) & {meta: PluginMetadata}

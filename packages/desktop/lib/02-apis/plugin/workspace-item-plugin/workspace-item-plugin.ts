@@ -1,7 +1,7 @@
-import {BasePluginMetadata, PluginExposedAPIs} from "../base-plugin.ts";
 import {WorkspaceItem} from "@headbase-app/lib";
+import {PluginMetadata, PluginExposedAPIs} from "../base-plugin.ts";
 
-export interface WorkspaceItemPluginMetadata extends BasePluginMetadata {
+export interface WorkspaceItemPluginMetadata extends PluginMetadata {
 	icon?: string
 }
 export abstract class WorkspaceItemPlugin {

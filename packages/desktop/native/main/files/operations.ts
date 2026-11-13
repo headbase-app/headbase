@@ -1,5 +1,10 @@
-import {readdir, readFile, stat as fsStat, writeFile, glob as fsGlob, mkdir as fs_mkdir} from "node:fs/promises"
-import {basename, join, sep, parse as path_parse} from "node:path"
+/**
+ * As a convention built-in node functionality is imported as <package>_<function> to
+ * easily distinguish between custom and built-in functionality.
+ */
+import {readdir as fs_readdir, readFile as fs_readFile, stat as fs_stat, writeFile as fs_writeFile, glob as fs_glob, mkdir as fs_mkdir} from "node:fs/promises"
+import {basename as path_basename, join as path_join, sep as path_sep, parse as path_parse} from "node:path"
+
 // todo: should use shared types from library?
 export interface FileSystemDirectory {
 	type: 'directory',
@@ -27,18 +32,18 @@ export async function tree(basePath: string, vaultPath: string) {
 export async function _tree(vaultPath: string, directoryPath: string) {
 	// todo: use recursive option to avoid manual recursion of _tree?
 	// advantage of doing this is file structure remains intact
-	const children = await readdir(directoryPath)
+	const children = await fs_readdir(directoryPath)
 
 	const parentDirectory: FileSystemDirectory = {
 		type: 'directory',
-		name: basename(directoryPath),
+		name: path_basename(directoryPath),
 		path: formatVaultFilePath(vaultPath, directoryPath),
 		children: []
 	}
 
 	for (const fileItem of children) {
-		const filePath = join(directoryPath + sep + fileItem)
-		const fileStats = await fsStat(filePath)
+		const filePath = path_join(directoryPath + path_sep + fileItem)
+		const fileStats = await fs_stat(filePath)
 		if (fileStats.isDirectory()) {
 			const childItem = await _tree(vaultPath, filePath)
 			parentDirectory.children.push(childItem)
@@ -46,7 +51,7 @@ export async function _tree(vaultPath: string, directoryPath: string) {
 		else {
 			parentDirectory.children.push({
 				type: "file",
-				name: basename(filePath),
+				name: path_basename(filePath),
 				path: formatVaultFilePath(vaultPath, filePath),
 			})
 		}
@@ -56,14 +61,15 @@ export async function _tree(vaultPath: string, directoryPath: string) {
 }
 
 export async function glob(vaultPath: string, directoryPath: string, pattern: string): Promise<FileSystemFile[]> {
-	const fullVaultPath = join(vaultPath, directoryPath)
+	const fullVaultPath = path_join(vaultPath, directoryPath)
 
 	const results: FileSystemFile[] = []
-	for await (const filePath of fsGlob(pattern, {cwd: fullVaultPath})) {
+	for await (const filePath of fs_glob(pattern, {cwd: fullVaultPath})) {
 		results.push({
 			type: "file",
-			path: formatVaultFilePath(vaultPath, filePath),
-			name: basename(filePath),
+			//
+			path: path_join(directoryPath, filePath),
+			name: path_basename(filePath),
 		})
 	}
 	return results
@@ -94,18 +100,18 @@ export async function write(path: string, data: ArrayBuffer|Uint8Array) {
 	} else {
 		buffer = data
 	}
-	await writeFile(path, buffer)
+	await fs_writeFile(path, buffer)
 }
 
 export async function writeText(path: string, data: string) {
 	const parsedPath = path_parse(path);
 	await mkdir(parsedPath.dir, {recursive: true});
 
-	await writeFile(path, data, {encoding: 'utf8'});
+	await fs_writeFile(path, data, {encoding: 'utf8'});
 }
 
 export async function read(path: string) {
-	const buffer = await readFile(path)
+	const buffer = await fs_readFile(path)
 	const stats = await stat(path)
 
 	return {
@@ -115,7 +121,7 @@ export async function read(path: string) {
 }
 
 export async function readAsText(path: string) {
-	const text = await readFile(path, {encoding: 'utf8'})
+	const text = await fs_readFile(path, {encoding: 'utf8'})
 	const stats = await stat(path)
 
 	return {
@@ -136,7 +142,7 @@ export async function readAsUrl(path: string) {
 }
 
 export async function stat(path: string) {
-	const stats = await fsStat(path)
+	const stats = await fs_stat(path)
 
 	return {
 		size: stats.size,

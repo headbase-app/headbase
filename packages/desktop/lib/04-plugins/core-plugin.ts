@@ -1,4 +1,4 @@
-import {BasePlugin, BasePluginMetadata} from "../02-apis/plugin/base-plugin.ts";
+import {BasePlugin, PluginMetadata} from "../02-apis/plugin/base-plugin.ts";
 
 import {MarkdownSourcePlugin} from "./view-sources/markdown-source.ts";
 import {CardsView} from "./view-displays/cards-view.ts";
@@ -10,7 +10,7 @@ import {SearchPlugin} from "./features/search/search.plugin.ts";
 import {FileEditorPlugin} from "./features/file-editor/file-editor.plugin.ts";
 
 export class HeadbaseCorePlugin extends BasePlugin {
-	meta: BasePluginMetadata = {
+	meta: PluginMetadata = {
 		id: "headbase",
 		name: "Headbase Core",
 		description: "Provides the core built-in Headbase functionality.",
