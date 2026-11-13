@@ -2,7 +2,7 @@
 
 ![](docs/screenshot.png)
 
-<p align="center"><strong>Headbase</strong> is a personal management and productivity app which supercharges your local files with content types for easy editing features and data views like a list, table, kanban board, calendar, canvas and graph.</p>
+<p align="center"><strong>Headbase</strong> is an experimental personal productivity app. Create content databases and query with views like a list, table, kanban board, calendar, canvas and graph.</p>
 
 <p align="center">
   <a href="/docs/install">Install</a> •
@@ -14,7 +14,8 @@
 
 ## About
 > [!WARNING]
-> This project is in active development and not ready for use. You're welcome to explore at your own risk, but expect bugs, missing docs, incomplete features etc!
+> This is an experimental project, no packages/APIs/apps are considered stable and may dramatically change.
+> You're welcome to explore at your own risk, but expect bugs, missing docs, incomplete features etc!
 
 Headbase is an exploration of [local-first software](https://www.inkandswitch.com/essay/local-first) and [malleable systems](https://malleable.systems). The goal isn't to create a "notes app" or a "task management" app, but to develop foundations for users to build their own experience while retaining control and agency over their own data.
 
@@ -36,35 +37,13 @@ Headbase is an exploration of [local-first software](https://www.inkandswitch.co
 ### Features
 
 #### Vaults
-Create vaults from device folders to separate your files.
-
-#### Markdown first
-Markdown files are the main supported way of creating content, however other file formats are supported such as viewing PDFs, images, videos and spreadsheets.
-
-#### Content types
-Content types allow you to define a structure for markdown file frontmatter which enables features such as...
-- A specialised editing mode for markdown files which adds UI elements such as checkboxes, multiselect, scales etc.
-- Quickly creating new files based on your content types.
-- Enabling inline editing within views, and easily creating data sources based on your content types.
-
-#### Views and data sources
-Create filtered views of your files and data including in a list, table, kanban board, calendar, canvas or graph.
-
-The data to display in views can come from different "data sources" such as:
-- The content/frontmatter of markdown files, which is extra easy when using content types
-- Rows of a CSV/TSV file
-
-In future this may be expanded to integrate with "online" data sources such as:
-- A HTTP endpoint
-- An RSS feed
-
-#### Workspace
-Open files, folders and views within a tab-based tiling workspace and save/load different workspace states.
+#### Content Types / Schemas
+#### Views and Data Sources
+#### Workspaces
 
 ## Contributions
 This project is currently open source, not open contribution.
-This is a personal project in its early stages. You're welcome to try it out, ask questions, raise bug reports etc but
-it wouldn't be practical to accept external code contributions or feature requests yet.
+You're welcome to try it out, ask questions, raise bug reports etc but it wouldn't be practical to accept external code contributions or feature requests yet.
 
 I'm open to this changing in the future once the project is more stable, collaboration is one of the great things about open source after all!
 
