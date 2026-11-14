@@ -1,0 +1,36 @@
+{
+  "name": "@headbase-app/matter",
+  "version": "0.1.0",
+  "description": "A generic document database.",
+  "homepage": "https://github.com/headbase-app/matter#readme",
+  "bugs": {
+    "url": "https://github.com/headbase-app/matter/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/headbase-app/matter.git"
+  },
+  "license": "AGPL-3.0-only",
+  "author": "Ben Ryder <ben@benryder.me> (https://www.benryder.me)",
+  "type": "module",
+  "main": "index.js",
+	"files": [
+		".migrations"
+	],
+	"scripts": {
+		"test": "vitest run",
+		"test:watch": "vitest",
+		"build": "rimraf ./dist && tsc -p tsconfig.build.json"
+	},
+	"devDependencies": {
+		"@types/better-sqlite3": "^9.6.0",
+		"@types/node": "^24.19.2",
+		"better-sqlite3": "^13.0.3",
+		"rimraf": "^6.1.3",
+		"typescript": "^7.0.2",
+		"vitest": "^4.1.11"
+	},
+	"dependencies": {
+		"rxjs": "^7.8.2"
+	}
+}

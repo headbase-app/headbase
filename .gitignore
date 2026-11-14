@@ -12,3 +12,6 @@ node_modules
 
 # Docs
 /TODO.md
+
+# Builds
+dist

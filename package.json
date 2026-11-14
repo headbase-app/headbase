@@ -27,8 +27,8 @@
 		"husky": "^9.1.7"
 	},
 	"workspaces": [
-		"./packages/db",
-		"./packages/relay",
+		"./packages/matter",
+		"./packages/synapse",
 		"./packages/web",
 		"./packages/desktop",
 		"./packages/mobile"
