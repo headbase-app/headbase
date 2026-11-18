@@ -24,69 +24,104 @@ export interface _MatterSyncConfig {
 }
 
 export class _MatterSync {
-    constructor(
-        private db: _MatterDatabase,
-        private config: _MatterSyncConfig,
-    ) {}
+	socket?: WebSocket;
 
-    async _getLocalSnapshot(): Promise<SyncSnapshot> {
-        // todo: only load required fields (id, vid, updatedAt, deleted)
-        const results = await this.db.queryVersions();
+	constructor(
+			private db: _MatterDatabase,
+			private config: _MatterSyncConfig,
+	) {}
 
-        const snapshot: SyncSnapshot = {
-            config: {
-                tombstoneExpiryDays: 90,
-            },
-            versions: {},
-            deleted: []
-        };
-        for (const result of results) {
-            if (result.deleted) {
-                snapshot.deleted.push(result.vid)
-            }
-            else {
-                snapshot.versions[result.vid] = result.updatedAt;
-            }
-        }
+	async subscribe(topics: (string | string[])[]): Promise<void> {
+		await this.unsubscribe()
 
-        return snapshot;
-    }
+		return new Promise((resolve, reject) => {
+			const socket = new WebSocket(this.config.relayUrl, this.config.relaySecret ? [this.config.relaySecret] : [])
+			socket.onerror = (err) => {
+				console.error("[MatterSync] error during subscribe", err)
+				reject(err)
+			}
+			socket.onopen = () => {
+				console.log(`[MatterSync] opened connection: ${topics}`)
+				socket.send(JSON.stringify({
+					kind: "topics/subscribe"
+				}))
+				resolve()
+			}
+			socket.onclose = () => {
+				console.log("[MatterSync] closed on subscribe")
+			}
+		})
+	}
 
-    /**
-     * Compare a source snapshot with one of more target snapshots and return the actions required to bring
-     * the SOURCE snapshot up to date.
-     *
-     * @param sourceSnapshot
-     * @param targetSnapshots
-     */
-    _compareSnapshots(sourceSnapshot: SyncSnapshot, ...targetSnapshots: SyncSnapshot[]): SyncAction[] {
-        const syncActions: SyncAction[] = [];
+	async unsubscribe() {
+		if (this.socket?.CONNECTING || this.socket?.OPEN) {
+			this.socket.close()
+		}
+		delete this.socket
+	}
 
-        for (const targetSnapshot of targetSnapshots) {
-            if (sourceSnapshot.config.tombstoneExpiryDays != targetSnapshot.config.tombstoneExpiryDays) {
-                throw new Error("tombstoneExpiryDays must match between snapshots")
-            }
-        }
+	handleMessage() {
+		
+	}
 
-        for (const targetSnapshot of targetSnapshots) {
-            for (const vid of targetSnapshot.deleted) {
-                if (sourceSnapshot.versions[vid]) {
-                    syncActions.push({
-                        action: "delete",
-                        vid,
-                    })
-                }
-            }
-            for (const vid of Object.keys(targetSnapshot.versions)) {
-                if (!sourceSnapshot.versions[vid]) {
-                    syncActions.push({
-                        action: "create",
-                        vid,
-                    })
-                }
-            }
-        }
+	async _getLocalSnapshot(): Promise<SyncSnapshot> {
+			// todo: only load required fields (id, vid, updatedAt, deleted)
+			const results = await this.db.queryVersions();
 
-        return syncActions;
-    }
+			const snapshot: SyncSnapshot = {
+					config: {
+							tombstoneExpiryDays: 90,
+					},
+					versions: {},
+					deleted: []
+			};
+			for (const result of results) {
+					if (result.deleted) {
+							snapshot.deleted.push(result.vid)
+					}
+					else {
+							snapshot.versions[result.vid] = result.updatedAt;
+					}
+			}
+
+			return snapshot;
+	}
+
+	/**
+	 * Compare a source snapshot with one of more target snapshots and return the actions required to bring
+	 * the SOURCE snapshot up to date.
+	 *
+	 * @param sourceSnapshot
+	 * @param targetSnapshots
+	 */
+	_compareSnapshots(sourceSnapshot: SyncSnapshot, ...targetSnapshots: SyncSnapshot[]): SyncAction[] {
+			const syncActions: SyncAction[] = [];
+
+			for (const targetSnapshot of targetSnapshots) {
+					if (sourceSnapshot.config.tombstoneExpiryDays != targetSnapshot.config.tombstoneExpiryDays) {
+							throw new Error("tombstoneExpiryDays must match between snapshots")
+					}
+			}
+
+			for (const targetSnapshot of targetSnapshots) {
+					for (const vid of targetSnapshot.deleted) {
+							if (sourceSnapshot.versions[vid]) {
+									syncActions.push({
+											action: "delete",
+											vid,
+									})
+							}
+					}
+					for (const vid of Object.keys(targetSnapshot.versions)) {
+							if (!sourceSnapshot.versions[vid]) {
+									syncActions.push({
+											action: "create",
+											vid,
+									})
+							}
+					}
+			}
+
+			return syncActions;
+	}
 }
