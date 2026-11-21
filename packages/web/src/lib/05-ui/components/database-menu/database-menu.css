@@ -1,0 +1,14 @@
+.database-menu {
+	anchor-name: --database-menu;
+}
+
+.database-switcher {
+	/** Remove default margin so anchor position can work **/
+	margin: 0;
+	margin-top: 10px;
+
+	position: absolute;
+	position-anchor: --database-menu;
+	top: anchor(bottom);
+	left: anchor(left);
+}
