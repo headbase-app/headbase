@@ -6,17 +6,10 @@ type ListenerStore = {
 };
 
 export class EventsService implements IEventsService {
-	private readonly localBroadcastChannel: BroadcastChannel | undefined
 	private listenerStore: ListenerStore
 
 	constructor() {
 		this.listenerStore = {}
-
-		// todo: separate broadcast channel for different databases?
-		// this.localBroadcastChannel = new BroadcastChannel(`matter_events`)
-		// this.localBroadcastChannel.onmessage = (message: MessageEvent<MatterEvent>) => {
-		// 	this.dispatch(message.data.type, message.data.detail)
-		// }
 	}
 
 	async destroy() {

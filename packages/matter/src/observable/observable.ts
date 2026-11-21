@@ -3,13 +3,13 @@ import {type LiveQueryResult, LiveQueryStatus} from "./live-query.js";
 import {EventTypes, type VersionCreateEvent} from "../events/events.js";
 import type {MatterDocument} from "../db/types.js";
 import type {Query} from "../query/query.js";
-import type {_MatterDatabase} from "../db/db.js";
+import type {IMatterDatabase} from "../db/db.js";
 
 export class _MatterObservable {
     constructor(
-        private db: _MatterDatabase
+        private db: IMatterDatabase
     ) {}
-    
+
     liveGet(id: string) {
         return new Observable<LiveQueryResult<MatterDocument | null>>((observer) => {
             const runQuery = async () => {

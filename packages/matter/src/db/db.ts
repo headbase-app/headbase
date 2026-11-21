@@ -4,6 +4,7 @@ import type {IMatterDriver} from "../driver/driver.js";
 import {parseQuery, type Query} from "../query/query.js";
 import {EventsService} from "../events/events.service.js";
 import {EventTypes} from "../events/events.js";
+import type {IEventsService} from "../events/events.interface.js";
 
 export interface MatterSQLiteDocument extends Omit<MatterDocument, 'data' | 'deleted'> {
     data: string
@@ -20,7 +21,25 @@ export interface _MatterDatabaseConfig {
     deletedRetentionDays?: number;
 }
 
-export class _MatterDatabase {
+export abstract class IMatterDatabase {
+	abstract create(createDocumentDto: CreateDocumentDto): Promise<MatterDocument>
+	abstract update(id: string, updateDocumentDto: UpdateDocumentDto): Promise<VersionData>
+	abstract delete(id: string): Promise<VersionData>
+	abstract purge(id: string): Promise<void>
+	abstract get(id: string): Promise<MatterDocument>
+	abstract query(query?: Query): Promise<MatterDocument[]>
+	abstract _UNSAFE_raw_query(UNSAFE_query: string): Promise<MatterDocument[]>
+	abstract createVersion(version: MatterDocument): Promise<MatterDocument>
+	abstract deleteVersion(vid: string): Promise<void>
+	abstract purgeVersion(vid: string): Promise<void>
+	abstract getVersion(vid: string): Promise<MatterDocument>
+	abstract queryVersions(query?: Query): Promise<MatterDocument[]>
+	abstract _UNSAFE_raw_queryVersions(UNSAFE_query: string): Promise<MatterDocument[]>
+	abstract clean(): Promise<void>
+	abstract events: IEventsService
+}
+
+export class Matter implements IMatterDatabase {
     events: EventsService;
 
     constructor(

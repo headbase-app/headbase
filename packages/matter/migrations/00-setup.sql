@@ -17,7 +17,7 @@
 
 pragma user_version = 1;
 
-create table documents (
+create table if not exists documents (
     id text primary key,
     vid text not null,
     type text not null,
@@ -28,9 +28,9 @@ create table documents (
     deleted boolean,
     constraint documents_vid_unique unique (vid)
 );
-create index documents_by_type on documents(type);
+create index if not exists documents_by_type on documents(type);
 
-create table documents_versions (
+create table if not exists documents_versions (
     id text not null,
     vid text primary key,
     type text not null,
@@ -40,13 +40,13 @@ create table documents_versions (
     updatedAt text not null,
     deleted boolean
 );
-create index documents_versions_by_id on documents_versions(id);
+create index if not exists documents_versions_by_id on documents_versions(id);
 
 /*
  Create Documents
  ================
  */
-create trigger documents_after_insert
+create trigger if not exists documents_after_insert
 after insert on documents
 begin
     insert into documents_versions (id, vid, type, data, blob, createdAt, updatedAt)
@@ -58,7 +58,7 @@ end;
  Update Documents
  ================
  */
-create trigger documents_before_update
+create trigger if not exists documents_before_update
     -- Limit columns to allow documents_after_update trigger to auto update updatedAt
     before update of type,data,blob,deleted on documents
 begin
@@ -67,7 +67,7 @@ begin
     end;
 end;
 
-create trigger documents_after_update
+create trigger if not exists documents_after_update
     -- Limit columns which trigger this to avoid recursion when auto updating updatedAt
     after update of vid, type, data, blob, deleted on documents
 begin
@@ -85,7 +85,7 @@ end;
  Delete Documents
  ================
  */
-create trigger documents_before_delete
+create trigger if not exists documents_before_delete
     before delete on documents
 begin
     select case when old.deleted = false or old.deleted is null then
@@ -93,7 +93,7 @@ begin
     end;
 end;
 
-create trigger documents_after_delete
+create trigger if not exists documents_after_delete
     after delete on documents
 begin
     delete from documents_versions where id = old.id;
@@ -103,7 +103,7 @@ end;
   Create Version
   ==============
 */
-create trigger documents_versions_after_insert
+create trigger if not exists documents_versions_after_insert
     after insert on documents_versions
 begin
     insert into documents (id, vid, type, data, blob, createdAt, updatedAt, deleted)
@@ -117,7 +117,7 @@ end;
   Update Version (to allow tombstone deletion)
   ==============
 */
-create trigger documents_versions_before_update
+create trigger if not exists documents_versions_before_update
     before update on documents_versions
 begin
     -- Prevent versions from being restored once deleted
@@ -144,7 +144,7 @@ end;
   Delete Versions
   ==============
 */
-create trigger documents_versions_before_delete
+create trigger if not exists documents_versions_before_delete
     before delete on documents_versions
 begin
     -- Prevent purge before soft deletion, unless document has been purged

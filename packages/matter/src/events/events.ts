@@ -1,5 +1,3 @@
-import type {MatterDocument} from "../db/types.js";
-
 export const EventTypes = {
     // Document Events
     DOCUMENT_CREATE: "document-create",

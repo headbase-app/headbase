@@ -1,17 +1,17 @@
 import {beforeAll, beforeEach, describe, expect, test} from "vitest";
 import {webcrypto} from "node:crypto";
-import {type IMatterDriver, _MatterDatabase} from "../../../index.js";
+import {type IMatterDriver, Matter} from "../../../index.js";
 import {createTestDocumentDto} from "../../../../tests/create-test-doc.js";
 import {TestDriver} from "../../../../tests/test-driver.js";
 
 
 describe("matter.queryVersions", () => {
     let driver: IMatterDriver
-    let matter: _MatterDatabase
+    let matter: Matter
 
     beforeAll(() => {
         driver = new TestDriver(":memory:")
-        matter = new _MatterDatabase(driver)
+        matter = new Matter(driver)
     })
 
     // Overwrite the driver state to teardown & setup fresh for each test

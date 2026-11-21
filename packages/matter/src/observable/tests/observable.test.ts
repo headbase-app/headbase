@@ -3,19 +3,19 @@ import {
     type IMatterDriver,
     LIVE_QUERY_LOADING_STATE,
     type LiveQueryResult, type MatterDocument,
-    _MatterObservable, _MatterDatabase
+    _MatterObservable, Matter
 } from "../../index.js";
 import {createTestDocumentDto} from "../../../tests/create-test-doc.js";
 import {TestDriver} from "../../../tests/test-driver.js";
 
 describe("_MatterObservable", () => {
     let driver: IMatterDriver
-    let db: _MatterDatabase
+    let db: Matter
     let observable: _MatterObservable
 
     beforeAll(() => {
         driver = new TestDriver(":memory:")
-        db = new _MatterDatabase(driver)
+        db = new Matter(driver)
         observable = new _MatterObservable(db)
     })
 

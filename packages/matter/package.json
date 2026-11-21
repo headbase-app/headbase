@@ -13,7 +13,7 @@
   "license": "AGPL-3.0-only",
   "author": "Ben Ryder <ben@benryder.me> (https://www.benryder.me)",
   "type": "module",
-  "main": "index.js",
+  "main": "dist/src/index.js",
 	"files": [
 		".migrations"
 	],

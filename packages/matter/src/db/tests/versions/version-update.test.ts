@@ -1,17 +1,17 @@
 import {beforeAll, beforeEach, describe, expect, type Mock, test, vitest} from "vitest";
-import {type IMatterDriver, _MatterDatabase, MatterDatabaseErrors} from "../../../index.js";
+import {type IMatterDriver, Matter, MatterDatabaseErrors} from "../../../index.js";
 import {createTestDocumentDto} from "../../../../tests/create-test-doc.js";
 import {webcrypto} from "node:crypto";
 import {TestDriver} from "../../../../tests/test-driver.js";
 
 describe("db - updateVersion", () => {
     let driver: IMatterDriver
-    let matter: _MatterDatabase
+    let matter: Matter
     let dispatchSpy: Mock
 
     beforeAll(() => {
         driver = new TestDriver(":memory:")
-        matter = new _MatterDatabase(driver)
+        matter = new Matter(driver)
         dispatchSpy = vitest.spyOn(matter.events, 'dispatch')
     })
 

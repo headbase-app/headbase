@@ -1,11 +1,11 @@
 import {afterEach, beforeAll, beforeEach, describe, expect, type Mock, test, vi} from "vitest";
-import {type IMatterDriver, _MatterDatabase} from "../../../index.js";
+import {type IMatterDriver, Matter} from "../../../index.js";
 import {createTestDocument} from "../../../../tests/create-test-doc.js";
 import {TestDriver} from "../../../../tests/test-driver.js";
 
 describe("matter.clean", () => {
     let driver: IMatterDriver
-    let matter: _MatterDatabase
+    let matter: Matter
 
     const DELETED_RETENTION_DAYS = 90
     const TEST_DATE = "2026-11-12T00:00:00.000Z"
@@ -14,7 +14,7 @@ describe("matter.clean", () => {
 
     beforeAll(() => {
         driver = new TestDriver(":memory:")
-        matter = new _MatterDatabase(driver, {deletedRetentionDays: DELETED_RETENTION_DAYS})
+        matter = new Matter(driver, {deletedRetentionDays: DELETED_RETENTION_DAYS})
     })
 
     // Overwrite the driver state to teardown & setup fresh for each test

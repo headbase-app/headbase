@@ -1,4 +1,4 @@
-import type {_MatterDatabase} from "../db/db.js";
+import type {IMatterDatabase} from "../db/db.js";
 
 export interface SyncSnapshot {
     config: {
@@ -27,7 +27,7 @@ export class _MatterSync {
 	socket?: WebSocket;
 
 	constructor(
-			private db: _MatterDatabase,
+			private db: IMatterDatabase,
 			private config: _MatterSyncConfig,
 	) {}
 
@@ -61,7 +61,7 @@ export class _MatterSync {
 	}
 
 	handleMessage() {
-		
+
 	}
 
 	async _getLocalSnapshot(): Promise<SyncSnapshot> {

@@ -2,18 +2,18 @@ import {beforeAll, beforeEach, describe, expect, test} from "vitest";
 import type {IMatterDriver} from "../driver/driver.js";
 import {createTestDocumentDto} from "../../tests/create-test-doc.js";
 import {_MatterSync, type SyncSnapshot} from "./sync.js";
-import {_MatterDatabase} from "../db/db.js";
+import {Matter} from "../db/db.js";
 import {TestDriver} from "../../tests/test-driver.js";
 
 describe("_MatterSync", () => {
     let driver: IMatterDriver
-    let db: _MatterDatabase
+    let db: Matter
     let sync: _MatterSync
 
     beforeAll(() => {
         driver = new TestDriver(":memory:")
-        db = new _MatterDatabase(driver)
-        sync = new _MatterSync(db)
+        db = new Matter(driver)
+        sync = new _MatterSync(db, {relayUrl: "", relaySecret: ""})
     })
 
     // Overwrite the driver state to teardown & setup fresh for each test
