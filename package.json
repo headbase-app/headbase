@@ -29,8 +29,6 @@
 	"workspaces": [
 		"./packages/matter",
 		"./packages/synapse",
-		"./packages/web",
-		"./packages/desktop",
-		"./packages/mobile"
+		"./packages/web"
 	]
 }
