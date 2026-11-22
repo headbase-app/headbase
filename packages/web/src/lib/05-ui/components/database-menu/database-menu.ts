@@ -9,7 +9,7 @@ import {
 	useContext, DatabaseDto,
 	DatabaseManagerAPIContext,
 	DatabaseSwitcherAPIContext,
-	dispatchEvent, WorkspaceAPIContext, ApplicationAPIContext, DeviceAPIContext
+	dispatchEvent, WorkspaceAPIContext, ApplicationAPIContext, DeviceAPIContext, MatterDatabaseAPIContext
 } from "@headbase-app/lib";
 import type {DatabaseManagerEvents} from "@headbase-app/lib";
 
@@ -29,6 +29,7 @@ export class DatabaseMenu extends BaseElement {
 	databaseSwitcherAPI = useContext(DatabaseSwitcherAPIContext)
 	workspaceAPI = useContext(WorkspaceAPIContext)
 	applicationAPI = useContext(ApplicationAPIContext)
+	databaseAPI = useContext(MatterDatabaseAPIContext)
 
 	currentDatabase$: BehaviorSubject<LiveQueryResult<DatabaseDto | null>>
 	databases$: BehaviorSubject<LiveQueryResult<DatabaseDto[]>>
@@ -47,7 +48,7 @@ export class DatabaseMenu extends BaseElement {
 
 	async triggerShelfItem(shelfItem: AppShelfPluginClass) {
 		// todo: plugin instantiation should be managed via ApplicationAPI
-		const instance = new shelfItem({deviceAPI: this.deviceAPI, workspaceAPI: this.workspaceAPI, applicationAPI: this.applicationAPI});
+		const instance = new shelfItem({deviceAPI: this.deviceAPI, workspaceAPI: this.workspaceAPI, databaseAPI: this.databaseAPI ,applicationAPI: this.applicationAPI});
 		await instance.trigger()
 	}
 

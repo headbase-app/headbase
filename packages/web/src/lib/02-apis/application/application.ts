@@ -7,12 +7,14 @@ import type {
 import type {IApplicationAPI} from "./application.api.ts";
 import type {AppShelfPluginClass} from "../plugin/app-shelf-plugin/app-shelf-plugin.ts";
 import type {WorkspaceItemPluginClass} from "../plugin/workspace-item-plugin/workspace-item-plugin.ts";
+import type {MatterWebProxy} from "@apis/matter-proxy.ts";
 
 
 export class ApplicationAPI implements IApplicationAPI {
 	constructor(
 		private deviceAPI: IDeviceAPI,
 		private workspaceAPI: IWorkspaceAPI,
+		private databaseAPI: MatterWebProxy
 	) {}
 
 	#basePlugins: BasePluginClass[] = [];
@@ -25,7 +27,7 @@ export class ApplicationAPI implements IApplicationAPI {
 	registerPlugin(plugin: BasePluginClass)  {
 		// todo: move somewhere that allows app control over core/external registration (protecting id namespace, validation etc)
 		// this.#basePlugins.push(plugin);
-		const instance = new plugin({deviceAPI: this.deviceAPI, workspaceAPI: this.workspaceAPI, applicationAPI: this});
+		const instance = new plugin({deviceAPI: this.deviceAPI, workspaceAPI: this.workspaceAPI, databaseAPI: this.databaseAPI, applicationAPI: this});
 		instance.registerPlugin = (plugin: BasePluginClass) => this.registerPlugin(plugin);
 		instance.registerEditor = (editor) => this.#registerEditor(editor);
 		instance.registerViewSource = (viewSource) => this.#registerViewSource(viewSource);

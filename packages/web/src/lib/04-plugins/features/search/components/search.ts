@@ -17,7 +17,7 @@ export class Search extends BaseElement {
 
 	constructor() {
 		super();
-		this.documents$ = this.createState(LIVE_QUERY_LOADING_STATE, this.databaseAPI.rxjs.liveQuery())
+		this.documents$ = this.createState(LIVE_QUERY_LOADING_STATE, this.databaseAPI.rxjs.live_UNSAFE_raw_query('where deleted is null or deleted=false'))
 	}
 
 	async connectedCallback() {

@@ -6,11 +6,11 @@ import type {Query} from "../query/query.js";
 import type {IMatterDatabase} from "../db/db.js";
 
 export class _MatterObservable {
-    constructor(
-        private db: IMatterDatabase
-    ) {}
+	constructor(
+		private db: IMatterDatabase
+	) {}
 
-    liveGet(id: string) {
+	liveGet(id: string) {
         return new Observable<LiveQueryResult<MatterDocument | null>>((observer) => {
             const runQuery = async () => {
                 observer.next({status: LiveQueryStatus.LOADING, result: null});
@@ -43,7 +43,7 @@ export class _MatterObservable {
         })
     }
 
-    liveQuery(query?: Query) {
+	liveQuery(query?: Query) {
         return new Observable<LiveQueryResult<MatterDocument[]>>((observer) => {
             const runQuery = async () => {
                 observer.next({status: LiveQueryStatus.LOADING, result: null});
@@ -74,7 +74,38 @@ export class _MatterObservable {
         })
     }
 
-    liveQueryVersions(query?: Query) {
+	live_UNSAFE_raw_query(query: string) {
+			return new Observable<LiveQueryResult<MatterDocument[]>>((observer) => {
+				const runQuery = async () => {
+					observer.next({status: LiveQueryStatus.LOADING, result: null});
+
+					try {
+						const result = await this.db._UNSAFE_raw_query(query);
+						observer.next({status: LiveQueryStatus.SUCCESS, result });
+					}
+					catch (error) {
+						observer.next({status: LiveQueryStatus.ERROR, errors: [error], result: null});
+					}
+				}
+
+				this.db.events.subscribe(EventTypes.DOCUMENT_CREATE, runQuery);
+				this.db.events.subscribe(EventTypes.DOCUMENT_UPDATE, runQuery);
+				this.db.events.subscribe(EventTypes.DOCUMENT_DELETE, runQuery);
+				this.db.events.subscribe(EventTypes.VERSION_CREATE, runQuery);
+				this.db.events.subscribe(EventTypes.VERSION_DELETE, runQuery);
+
+				runQuery()
+				return () => {
+					this.db.events.unsubscribe(EventTypes.DOCUMENT_CREATE, runQuery);
+					this.db.events.unsubscribe(EventTypes.DOCUMENT_UPDATE, runQuery);
+					this.db.events.unsubscribe(EventTypes.DOCUMENT_DELETE, runQuery);
+					this.db.events.unsubscribe(EventTypes.VERSION_CREATE, runQuery);
+					this.db.events.unsubscribe(EventTypes.VERSION_DELETE, runQuery);
+				}
+			})
+		}
+
+	liveQueryVersions(query?: Query) {
         return new Observable<LiveQueryResult<MatterDocument[]>>((observer) => {
             const runQuery = async () => {
                 observer.next({status: LiveQueryStatus.LOADING, result: null});
@@ -104,4 +135,35 @@ export class _MatterObservable {
             }
         })
     }
+
+	live_UNSAFE_raw_queryVersions(query: string) {
+		return new Observable<LiveQueryResult<MatterDocument[]>>((observer) => {
+			const runQuery = async () => {
+				observer.next({status: LiveQueryStatus.LOADING, result: null});
+
+				try {
+					const result = await this.db._UNSAFE_raw_queryVersions(query);
+					observer.next({status: LiveQueryStatus.SUCCESS, result });
+				}
+				catch (error) {
+					observer.next({status: LiveQueryStatus.ERROR, errors: [error], result: null});
+				}
+			}
+
+			this.db.events.subscribe(EventTypes.DOCUMENT_CREATE, runQuery);
+			this.db.events.subscribe(EventTypes.DOCUMENT_UPDATE, runQuery);
+			this.db.events.subscribe(EventTypes.DOCUMENT_DELETE, runQuery);
+			this.db.events.subscribe(EventTypes.VERSION_CREATE, runQuery);
+			this.db.events.subscribe(EventTypes.VERSION_DELETE, runQuery);
+
+			runQuery()
+			return () => {
+				this.db.events.unsubscribe(EventTypes.DOCUMENT_CREATE, runQuery);
+				this.db.events.unsubscribe(EventTypes.DOCUMENT_UPDATE, runQuery);
+				this.db.events.unsubscribe(EventTypes.DOCUMENT_DELETE, runQuery);
+				this.db.events.unsubscribe(EventTypes.VERSION_CREATE, runQuery);
+				this.db.events.unsubscribe(EventTypes.VERSION_DELETE, runQuery);
+			}
+		})
+	}
 }

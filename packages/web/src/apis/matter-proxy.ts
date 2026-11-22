@@ -10,8 +10,6 @@ import {type DatabaseDto, type IDatabaseSwitcherAPI, LiveQueryStatus} from "@hea
 
 // todo: share type with worker
 export type MatterProxyMessageTypes = {
-	type: "init"
-} | {
 	type: "matter-proxy",
 	databasePath: string,
 	databaseId: string,
@@ -40,10 +38,7 @@ export interface MatterProxyMessageResponse {
 }
 
 export class MatterWebProxy implements IMatterDatabase {
-	isActiveProxy: boolean = false;
-	private proxyLock: AbortController
-	private proxyChannel: BroadcastChannel
-	private readonly handleProxyMessageBound: MatterWebProxy['handleProxyMessage']
+	private workerChannel: BroadcastChannel
 
 	events: IEventsService
 	private eventsBroadcastChannel?: BroadcastChannel
@@ -54,26 +49,7 @@ export class MatterWebProxy implements IMatterDatabase {
 		private worker: Worker,
 		private databaseSwitcherAPI: IDatabaseSwitcherAPI
 	) {
-		this.proxyLock = new AbortController();
-		this.proxyChannel = new BroadcastChannel("matter_proxy");
-
-		this.handleProxyMessageBound = this.handleProxyMessage.bind(this);
-		navigator.locks.request("matter_proxy", {signal: this.proxyLock.signal}, (lock) => {
-			console.debug(`[MatterWebProxy] Acquired primary lock (${lock?.name})`)
-			this.isActiveProxy = true;
-			this.sendProxyMessage({type: 'init'});
-			this.proxyChannel.addEventListener("message", this.handleProxyMessageBound);
-
-			return new Promise((resolve) => {
-				this.proxyLock.signal.addEventListener("abort", () => {
-					console.debug(`[MatterWebProxy] Lost primary lock (${lock?.name})`)
-					this.isActiveProxy = false;
-					this.proxyChannel.removeEventListener("message", this.handleProxyMessageBound);
-					resolve(this.proxyLock.signal.reason)
-				})
-			})
-		});
-
+		this.workerChannel = new BroadcastChannel("matter_worker");
 		this.events = new EventsService();
 
 		// todo: should be done via events or explicit calls, not observable? Is any cleanup needed here?
@@ -93,39 +69,30 @@ export class MatterWebProxy implements IMatterDatabase {
 		this.rxjs = new _MatterObservable(this)
 	}
 
+	/**
+	 * Send a message to the active worker.
+	 * Resolves with the worker response, rejects if the response is an error or no response received within 5 seconds.
+	 *
+	 * @param message
+	 */
 	private sendProxyMessage<T>(message: MatterProxyMessageTypes): Promise<T> {
 		const mid = window.crypto.randomUUID();
 		const messageWithId = {mid, ...message};
+		console.debug("[MatterWebProxy] sendProxyMessage", messageWithId);
 
-		if (this.isActiveProxy) {
-			return this._sendMessageToWorker(messageWithId)
-		}
-		return this._forwardMessageToPrimaryProxy(messageWithId)
-	}
-
-	/**
-	 * Send a message to the worker.
-	 * Returns a promise which resolves with the worker response, throwing if an error is returned
-	 * or no response is received within 5 seconds.
-	 *
-	 * @param message
-	 * @private
-	 */
-	private _sendMessageToWorker<T>(message: MatterProxyMessage): Promise<T> {
-		console.debug("[MatterWebProxy] _sendMessageToWorker", message)
-		this.worker.postMessage(message)
+		this.workerChannel.postMessage(messageWithId);
 
 		return new Promise<T>((resolve, reject) => {
 			const timeoutHandler = setTimeout(() => {
-				this.worker.removeEventListener('message', listener)
-				console.error(`[MatterWebProxy] Timeout occurred waiting for worker response`, message)
+				this.workerChannel.removeEventListener('message', listener)
+				console.error(`[MatterWebProxy] Timeout occurred waiting for 'matter_worker' response`, message)
 				reject()
 			}, 5000)
 
 			const listener = (e: MessageEvent<MatterProxyMessageResponse>) => {
-				if (e.data.mid === message.mid) {
+				if (e.data.mid === mid) {
 					clearInterval(timeoutHandler)
-					this.worker.removeEventListener('message', listener)
+					this.workerChannel.removeEventListener('message', listener)
 
 					if (e.data.result instanceof Error) {
 						reject(e.data.result)
@@ -134,46 +101,8 @@ export class MatterWebProxy implements IMatterDatabase {
 						resolve(e.data.result as T)
 				}
 			}
-			this.worker.addEventListener('message', listener)
+			this.workerChannel.addEventListener('message', listener)
 		})
-	}
-
-	private _forwardMessageToPrimaryProxy<T>(message: MatterProxyMessage): Promise<T> {
-		console.debug("[MatterWebProxy] _forwardMessageToPrimaryProxy", message)
-		this.proxyChannel.postMessage(message)
-
-		return new Promise<T>((resolve, reject) => {
-			const timeoutHandler = setTimeout(() => {
-				this.proxyChannel.removeEventListener('message', listener)
-				console.error(`[MatterWebProxy] Timeout occurred waiting for primary proxy response`, message)
-				reject()
-			}, 5000)
-
-			const listener = (e: MessageEvent<MatterProxyMessageResponse>) => {
-				if (e.data.mid === message.mid) {
-					clearInterval(timeoutHandler)
-					this.proxyChannel.removeEventListener('message', listener)
-
-					if (e.data.result instanceof Error) {
-						reject(e.data.result)
-					}
-					else
-						resolve(e.data.result as T)
-				}
-			}
-			this.proxyChannel.addEventListener('message', listener)
-		})
-	}
-
-	private async handleProxyMessage(e: MessageEvent<MatterProxyMessage>) {
-		if (!this.isActiveProxy) {
-			console.error("[MatterWebProxy] Received message from proxy channel but is not active proxy.")
-			return;
-		}
-
-		console.debug("[MatterWebProxy] Proxying message to worker", e)
-		const result = await this._sendMessageToWorker(e.data)
-		this.proxyChannel.postMessage({mid: e.data.mid, result})
 	}
 
 	async getActiveDatabase() {

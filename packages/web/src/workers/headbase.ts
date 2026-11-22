@@ -7,8 +7,6 @@ import migration0 from "@headbase-app/matter/migrations/00-setup.sql?raw"
 type MessageTypes = {
 	mid: string
 } & ({
-	type: "init";
-} | {
 	type: "matter-proxy",
 	databasePath: string,
 	databaseId: string, // todo: worker should load databases by id?
@@ -75,27 +73,36 @@ class SQLiteOPFSDriver implements IMatterDriver {
 class HeadbaseWorker {
 	databases: Map<string, Matter>
 	private sqlite3?: Sqlite3Static;
-	isActiveWorker: boolean = false;
 
-	async init() {
-		this.isActiveWorker = true;
-	}
+	private isActiveWorker: boolean = false;
+	private workerLock: AbortController
+	private workerChannel: BroadcastChannel
+	handleChannelMessageBound = this.handleChannelMessage.bind(this)
 
 	constructor(private worker: DedicatedWorkerGlobalScope) {
-		console.log("[worker] Headbase worker init")
 		this.databases = new Map();
-		this.worker.onmessage = this.handleMessage.bind(this)
+
+		this.workerLock = new AbortController();
+		this.workerChannel = new BroadcastChannel("matter_worker");
+		navigator.locks.request("matter_worker", {signal: this.workerLock.signal}, (lock) => {
+			console.debug(`[worker] Acquired worker lock (${lock?.name})`)
+			this.isActiveWorker = true;
+			this.workerChannel.addEventListener("message", this.handleChannelMessageBound);
+
+			return new Promise((resolve) => {
+				this.workerLock.signal.addEventListener("abort", () => {
+					console.debug(`[worker] Lost worker lock (${lock?.name})`)
+					this.isActiveWorker = false;
+					this.workerChannel.removeEventListener("message", this.handleChannelMessageBound);
+					resolve(this.workerLock.signal.reason)
+				})
+			})
+		});
 	}
 
-	async handleMessage(e: MessageEvent<MessageTypes>) {
-		if (e.data.type === "init") {
-			// todo: reject if already active?
-			await this.init();
-			this.worker.postMessage({ mid: e.data.mid, result: 'worker init completed' });
-			return;
-		}
+	async handleChannelMessage(e: MessageEvent<MessageTypes>) {
 		if (!this.isActiveWorker) {
-			this.worker.postMessage({ mid: e.data.mid, result: new Error("Message sent to inactive worker.") });
+			console.error("[worker] Attempted to handle message but is not active worker. This suggests an issue within the lock or channel listeners.")
 			return;
 		}
 
@@ -182,14 +189,14 @@ class HeadbaseWorker {
 					result = new Error(`method "${e.data.method}" of Matter not found`)
 				}
 
-				this.worker.postMessage({ mid: e.data.mid, result });
+				this.workerChannel.postMessage({ mid: e.data.mid, result });
 			}
 			catch (error) {
-				this.worker.postMessage({ mid: e.data.mid, result: error });
+				this.workerChannel.postMessage({ mid: e.data.mid, result: error });
 			}
 		}
 		else {
-			this.worker.postMessage(new Error("Message not recognised"));
+			this.workerChannel.postMessage(new Error("Message not recognised"));
 		}
 	}
 }

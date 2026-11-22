@@ -29,40 +29,7 @@ export abstract class ViewSourcePlugin {
 	abstract load(): Promise<DataObject[]>
 
 	async query() {
-		const ENABLE_CACHE = false;
-
-		// todo: cache should be handled via separate class/API surface which can be reused?
-		const hash = await EncryptionService.hash(JSON.stringify(this.settings) + this.objectQuery)
-		const sourceHash = hash.split(".")[2] // not saving version/metadata baked into hash.
-		const cacheFile = `/.headbase/cache/${sourceHash}.json`
-
-		let cacheContent;
-		try {
-			const file = await this.apis.filesAPI.readAsText(cacheFile)
-			cacheContent = JSON.parse(file.text)
-		}
-		catch (error) {
-			if (error instanceof SyntaxError) {
-				console.error(`[source][cache] Cache '${sourceHash}' could not be parsed and was ignored.`)
-			}
-		}
-
-		if (cacheContent && ENABLE_CACHE) {
-			console.debug(`[source][cache] Loaded source data from cache (${sourceHash})`)
-			return cacheContent
-		}
-		else {
-			console.debug(`[source][cache] Ignoring source data cache for (${sourceHash}) due to settings`)
-		}
-
-		let results = await this.load()
-		if (this.objectQuery) {
-			results = queryDataObjects(this.objectQuery, results)
-		}
-
-		await this.apis.filesAPI.writeText(cacheFile, JSON.stringify(results))
-
-		return results
+		return []
 	}
 }
 

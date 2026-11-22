@@ -1,7 +1,6 @@
 import {BasePlugin} from "../02-apis/plugin/base-plugin.ts";
 import type {PluginMetadata} from "../02-apis/plugin/base-plugin.ts";
 
-import {MarkdownSourcePlugin} from "./view-sources/markdown-source.ts";
 import {CardsView} from "./view-displays/cards-view.ts";
 
 import {ContentTypesPlugin} from "./features/content-types/content-types.plugin.ts";
@@ -19,8 +18,6 @@ export class HeadbaseCorePlugin extends BasePlugin {
 		this.registerPlugin(ContentTypesPlugin)
 		this.registerPlugin(NewFilePlugin)
 		this.registerPlugin(SearchPlugin)
-
-		this.registerViewSource(MarkdownSourcePlugin)
 		this.registerViewDisplay(CardsView)
 	}
 

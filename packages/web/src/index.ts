@@ -53,11 +53,10 @@ export class HeadbaseDesktopApp extends BaseElement {
 		const eventsService = new CommonEventsService(deviceAPI);
 		const databaseManagerAPI = new WebDatabaseManagerAPI(eventsService, deviceAPI);
 		const databaseSwitcherAPI = new WebDatabaseSwitcherAPI(eventsService, deviceAPI, databaseManagerAPI);
-		const workspaceAPI = new WorkspaceAPI(eventsService, deviceAPI);
-		const applicationAPI = new ApplicationAPI(deviceAPI, workspaceAPI);
-
 		this.worker = new Worker(new URL('./workers/headbase.ts', import.meta.url), { type: 'module' });
 		const matterWebProxy = new MatterWebProxy(this.worker, databaseSwitcherAPI)
+		const workspaceAPI = new WorkspaceAPI(eventsService, deviceAPI);
+		const applicationAPI = new ApplicationAPI(deviceAPI, workspaceAPI, matterWebProxy);
 
 		// @ts-ignore --- allows easy debugging of active database
 		window.matterProxy = matterWebProxy;

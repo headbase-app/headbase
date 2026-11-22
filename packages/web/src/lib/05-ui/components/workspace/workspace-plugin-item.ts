@@ -2,7 +2,7 @@ import {html, nothing} from "lit-html";
 import {
 	ApplicationAPIContext,
 	BaseElement,
-	DeviceAPIContext,
+	DeviceAPIContext, MatterDatabaseAPIContext,
 	useContext, WorkspaceAPIContext
 } from "@headbase-app/lib";
 import type {WorkspaceItem} from "@headbase-app/lib";
@@ -15,6 +15,7 @@ export class WorkspacePluginItem extends BaseElement {
 	deviceAPI = useContext(DeviceAPIContext)
 	workspaceAPI = useContext(WorkspaceAPIContext)
 	applicationAPI = useContext(ApplicationAPIContext)
+	databaseAPI = useContext(MatterDatabaseAPIContext)
 
 	status: "loading" | "not-found" | "loaded" = "loading"
 
@@ -22,7 +23,7 @@ export class WorkspacePluginItem extends BaseElement {
 		const plugin = await this.applicationAPI.getWorkspaceItemById(this.item.plugin)
 		if (plugin) {
 			this.workspaceAPI.update(this.item.id, {name: plugin.meta.name})
-			const instance = new plugin({deviceAPI: this.deviceAPI, workspaceAPI: this.workspaceAPI, applicationAPI: this.applicationAPI}, this, this.item)
+			const instance = new plugin({deviceAPI: this.deviceAPI, workspaceAPI: this.workspaceAPI, databaseAPI: this.databaseAPI, applicationAPI: this.applicationAPI}, this, this.item)
 			await instance.load(...(this.item.data ?? []))
 			this.status = "loaded"
 		}
