@@ -15,7 +15,7 @@ export interface MatterDocument {
 }
 
 export type CreateDocumentDto =
-    Pick<MatterDocument, 'id' | 'vid' | 'type' | 'data' | 'blob'> &
+    Pick<MatterDocument, 'type' | 'data' | 'blob'> &
     Partial<Pick<MatterDocument, 'id' | 'vid'>>;
 export type UpdateDocumentDto = Partial<Pick<MatterDocument, 'vid' | 'type' | 'data' | 'blob' | 'deleted'>>
 

@@ -3,13 +3,23 @@ export interface WorkspaceItemMetadata {
 	name: string
 	isChanged: boolean
 }
-export interface WorkspaceItemData {
+
+export interface WorkspacePluginType {
 	type: "plugin"
 	plugin: string,
 	data?: unknown[]
 }
+export type WorkspacePluginData = WorkspaceItemMetadata & WorkspacePluginType
 
-export type WorkspaceItem = WorkspaceItemMetadata & WorkspaceItemData
+export interface WorkspaceDocumentType {
+	type: "document"
+	documentId?: string
+}
+export type WorkspaceDocumentData = WorkspaceItemMetadata & WorkspaceDocumentType
+
+export type WorkspaceItemTypes = WorkspacePluginType | WorkspaceDocumentType
+
+export type WorkspaceItem = WorkspacePluginData | WorkspaceDocumentData
 export type WorkspaceItems = WorkspaceItem[]
 
 export interface WorkspaceOpenOptions {
@@ -21,8 +31,8 @@ export interface IWorkspaceAPI {
 	getItems: () => WorkspaceItems
 	getActiveItem: () => string | null
 	// Actions
-	open: (data: WorkspaceItemData, options?: WorkspaceOpenOptions) => void
-	replace: (id: string, data: WorkspaceItemData) => void
+	open: (data: WorkspaceItemTypes, options?: WorkspaceOpenOptions) => void
+	replace: (id: string, data: WorkspaceItemTypes) => void
 	update: (id: string, update: Partial<Omit<WorkspaceItemMetadata, 'id'>>) => void
 	close: (id: string) => void
 	closeAll: () => void

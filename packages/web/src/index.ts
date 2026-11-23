@@ -6,7 +6,7 @@ import {
 	DeviceAPIContext, HeadbaseApp,
 	HeadbaseCorePlugin,
 	ApplicationAPI,
-	DatabaseManagerAPIContext, WorkspacePluginItem,
+	DatabaseManagerAPIContext, WorkspaceItemPlugin, WorkspaceItemDocument,
 	DatabaseSwitcherAPIContext, ApplicationAPIContext, DatabaseManager, DatabaseList, DatabaseForm,
 	CreateDatabase, EditDatabase, DeleteDatabase, DatabaseMenu, Workspace, WorkspaceAPIContext,
 	WelcomePage, AppPage, ManageDatabasesPage,
@@ -38,7 +38,8 @@ customElements.define(DatabaseMenu.tag, DatabaseMenu)
 customElements.define(HeadbaseApp.tag, HeadbaseApp)
 
 customElements.define(Workspace.tag, Workspace)
-customElements.define(WorkspacePluginItem.tag, WorkspacePluginItem)
+customElements.define(WorkspaceItemPlugin.tag, WorkspaceItemPlugin)
+customElements.define(WorkspaceItemDocument.tag, WorkspaceItemDocument)
 
 customElements.define(Search.tag, Search)
 
@@ -54,7 +55,7 @@ export class HeadbaseDesktopApp extends BaseElement {
 		const databaseManagerAPI = new WebDatabaseManagerAPI(eventsService, deviceAPI);
 		const databaseSwitcherAPI = new WebDatabaseSwitcherAPI(eventsService, deviceAPI, databaseManagerAPI);
 		this.worker = new Worker(new URL('./workers/headbase.ts', import.meta.url), { type: 'module' });
-		const matterWebProxy = new MatterWebProxy(this.worker, databaseSwitcherAPI)
+		const matterWebProxy = new MatterWebProxy(databaseSwitcherAPI)
 		const workspaceAPI = new WorkspaceAPI(eventsService, deviceAPI);
 		const applicationAPI = new ApplicationAPI(deviceAPI, workspaceAPI, matterWebProxy);
 

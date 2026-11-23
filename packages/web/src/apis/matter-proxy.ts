@@ -6,7 +6,7 @@ import {
 	type UpdateDocumentDto, type VersionData,
 	EventsService, type IEventsService, type MatterEvent, _MatterObservable
 } from "@headbase-app/matter";
-import {type DatabaseDto, type IDatabaseSwitcherAPI, LiveQueryStatus} from "@headbase-app/lib";
+import {type IDatabaseSwitcherAPI, LiveQueryStatus} from "@headbase-app/lib";
 
 // todo: share type with worker
 export type MatterProxyMessageTypes = {
@@ -46,7 +46,6 @@ export class MatterWebProxy implements IMatterDatabase {
 	rxjs: _MatterObservable
 
 	constructor(
-		private worker: Worker,
 		private databaseSwitcherAPI: IDatabaseSwitcherAPI
 	) {
 		this.workerChannel = new BroadcastChannel("matter_worker");

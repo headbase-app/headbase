@@ -1,19 +1,20 @@
 import type {PluginMetadata, PluginExposedAPIs} from "../base-plugin.ts";
 
-export interface FileEditorMetadata extends PluginMetadata {
+export interface EditorMetadata extends PluginMetadata {
 	icon?: string,
-	supportedExtensions: string[]
+	supportedTypes?: string[]
+	supportsNew?: boolean
 }
-export abstract class FileEditorPlugin {
-	static meta: FileEditorMetadata
+export abstract class EditorPlugin {
+	static meta: EditorMetadata
 	apis: PluginExposedAPIs
 	container: HTMLElement
-	filePath: string
+	documentId?: string
 
-	constructor(apis: PluginExposedAPIs, container: HTMLElement, filePath: string) {
+	constructor(apis: PluginExposedAPIs, container: HTMLElement, documentId?: string) {
 		this.apis = apis
 		this.container = container
-		this.filePath = filePath
+		this.documentId = documentId
 	}
 
 	abstract load(): Promise<void>;
@@ -21,4 +22,4 @@ export abstract class FileEditorPlugin {
 	save?(): Promise<void>;
 }
 
-export type FileEditorPluginClass = (new (...args: ConstructorParameters<typeof FileEditorPlugin>) => FileEditorPlugin) & {meta: FileEditorMetadata}
+export type EditorPluginClass = (new (...args: ConstructorParameters<typeof EditorPlugin>) => EditorPlugin) & {meta: EditorMetadata}

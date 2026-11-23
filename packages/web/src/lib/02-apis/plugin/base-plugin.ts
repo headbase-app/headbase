@@ -1,11 +1,9 @@
 import type {IDeviceAPI, IApplicationAPI, IWorkspaceAPI} from "@headbase-app/lib";
 import {IMatterDatabase} from "@headbase-app/matter";
 
-import type {FileEditorPluginClass} from "./editor-plugin/editor-plugin.ts";
-import type {ViewSourcePluginClass} from "./view-source-plugin/view-source-plugin.ts";
-import type {ViewDisplayPluginClass} from "./view-display-plugin/view-display-plugin.ts";
+import type {EditorPluginClass} from "./editor-plugin/editor-plugin.ts";
 import type {AppShelfPluginClass} from "./app-shelf-plugin/app-shelf-plugin.ts";
-import type {WorkspaceItemPluginClass} from "./workspace-item-plugin/workspace-item-plugin.ts";
+import type {WorkspacePluginClass} from "./workspace-plugin/workspace-plugin.ts";
 
 export interface PluginMetadata {
 	id: string,
@@ -32,11 +30,9 @@ export abstract class BasePlugin {
 	abstract unload?(): Promise<void>;
 
 	registerPlugin!: (plugin: BasePluginClass) => void;
-	registerEditor!: (editor: FileEditorPluginClass) => void;
-	registerViewSource!: (editor: ViewSourcePluginClass) => void;
-	registerViewDisplay!: (editor: ViewDisplayPluginClass) => void;
+	registerEditor!: (editor: EditorPluginClass) => void;
 	registerShelfItem!: (item: AppShelfPluginClass) => void;
-	registerWorkspaceItem!: (item: WorkspaceItemPluginClass) => void;
+	registerWorkspaceItem!: (item: WorkspacePluginClass) => void;
 }
 
 export type BasePluginClass = (new (...args: ConstructorParameters<typeof BasePlugin>) => BasePlugin) & {meta: PluginMetadata}

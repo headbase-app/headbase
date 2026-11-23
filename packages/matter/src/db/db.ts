@@ -83,12 +83,13 @@ export class Matter implements IMatterDatabase {
 
     async create(createDocumentDto: CreateDocumentDto): Promise<MatterDocument> {
         await this.ensureReady();
+				const id = createDocumentDto.id ?? this.driver.randomUUID()
+				const vid = createDocumentDto.vid ?? this.driver.randomUUID()
 
         const results = await this.driver.query<MatterSQLiteDocument[]>(
             'insert into documents (id, vid, type, data, blob) VALUES (?, ?, ?, ?, ?) returning *',
             [
-                createDocumentDto.id,
-                createDocumentDto.vid,
+                id, vid,
                 createDocumentDto.type,
                 JSON.stringify(createDocumentDto.data),
                 createDocumentDto.blob
@@ -96,7 +97,7 @@ export class Matter implements IMatterDatabase {
         )
         if (results[0]) {
             const doc = this.mapFromDatabaseRecord(results[0])
-            this.events.dispatch(EventTypes.DOCUMENT_CREATE, {id: createDocumentDto.id, vid: createDocumentDto.vid});
+            this.events.dispatch(EventTypes.DOCUMENT_CREATE, {id, vid});
             return doc
         }
         throw new Error(MatterDatabaseErrors.M_SYSTEM_ERROR, {cause: "Expected document via 'returning *' after insert but none was returned"})

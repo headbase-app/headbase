@@ -5,7 +5,7 @@ import {
 import type {
 	IDeviceAPI,
 	IEventsService,
-	WorkspaceItemData
+	WorkspaceItemTypes
 } from "@headbase-app/lib";
 import type {IWorkspaceAPI, WorkspaceOpenOptions, WorkspaceItemMetadata, WorkspaceItem, WorkspaceItems} from "./workspace.api.ts";
 
@@ -57,7 +57,7 @@ export class WorkspaceAPI implements IWorkspaceAPI {
 		await this.eventsService.dispatch(EventTypes.WORKSPACE_ACTIVE_CHANGE, {context, data: {activeItem: id}})
 	}
 
-	#getTabMetadataFromType(data: WorkspaceItemData): WorkspaceItemMetadata {
+	#getTabMetadataFromType(data: WorkspaceItemTypes): WorkspaceItemMetadata {
 		return {
 			id: EncryptionService.generateUUID(),
 			name: data.type,
@@ -65,7 +65,7 @@ export class WorkspaceAPI implements IWorkspaceAPI {
 		}
 	}
 
-	open(data: WorkspaceItemData, options?: WorkspaceOpenOptions) {
+	open(data: WorkspaceItemTypes, options?: WorkspaceOpenOptions) {
 		// If requested tab already exists, switch to it instead of opening a new instance.
 		// todo: should allow plugins to be "single instance"?
 		const metadata = this.#getTabMetadataFromType(data)
@@ -82,7 +82,7 @@ export class WorkspaceAPI implements IWorkspaceAPI {
 		}
 	}
 
-	replace(id: string, data: WorkspaceItemData) {
+	replace(id: string, data: WorkspaceItemTypes) {
 		// todo: check tab exists
 		// todo: set name based on new rules?
 

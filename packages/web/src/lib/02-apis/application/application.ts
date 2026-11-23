@@ -1,12 +1,11 @@
 import type {
 	BasePluginClass,
-	FileEditorPluginClass,
-	IDeviceAPI, IWorkspaceAPI, ViewDisplayPluginClass,
-	ViewSourcePluginClass
+	EditorPluginClass,
+	IDeviceAPI, IWorkspaceAPI,
 } from "@headbase-app/lib";
 import type {IApplicationAPI} from "./application.api.ts";
 import type {AppShelfPluginClass} from "../plugin/app-shelf-plugin/app-shelf-plugin.ts";
-import type {WorkspaceItemPluginClass} from "../plugin/workspace-item-plugin/workspace-item-plugin.ts";
+import type {WorkspacePluginClass} from "../plugin/workspace-plugin/workspace-plugin.ts";
 import type {MatterWebProxy} from "@apis/matter-proxy.ts";
 
 
@@ -18,11 +17,9 @@ export class ApplicationAPI implements IApplicationAPI {
 	) {}
 
 	#basePlugins: BasePluginClass[] = [];
-	#editors: FileEditorPluginClass[] = []
+	#editors: EditorPluginClass[] = []
 	#shelfItems: AppShelfPluginClass[] = []
-	#workspaceItems: WorkspaceItemPluginClass[] = []
-	#viewSources: ViewSourcePluginClass[] = []
-	#viewDisplays: ViewDisplayPluginClass[] = []
+	#workspaceItems: WorkspacePluginClass[] = []
 
 	registerPlugin(plugin: BasePluginClass)  {
 		// todo: move somewhere that allows app control over core/external registration (protecting id namespace, validation etc)
@@ -30,14 +27,12 @@ export class ApplicationAPI implements IApplicationAPI {
 		const instance = new plugin({deviceAPI: this.deviceAPI, workspaceAPI: this.workspaceAPI, databaseAPI: this.databaseAPI, applicationAPI: this});
 		instance.registerPlugin = (plugin: BasePluginClass) => this.registerPlugin(plugin);
 		instance.registerEditor = (editor) => this.#registerEditor(editor);
-		instance.registerViewSource = (viewSource) => this.#registerViewSource(viewSource);
-		instance.registerViewDisplay = (viewDisplay) => this.#registerViewDisplay(viewDisplay);
 		instance.registerShelfItem = (shelfItem) => this.#registerShelfItem(shelfItem);
 		instance.registerWorkspaceItem = (workspaceItem) => this.#registerWorkspaceItem(workspaceItem);
 		instance.load()
 	}
 
-	#registerEditor(plugin: FileEditorPluginClass) {
+	#registerEditor(plugin: EditorPluginClass) {
 		for (const editor of this.#editors) {
 			if (editor.meta.id === plugin.meta.id) {
 				throw new Error(`Editor with id ${plugin.meta.id} already found.`)
@@ -57,50 +52,6 @@ export class ApplicationAPI implements IApplicationAPI {
 
 	async getEditorById(id: string) {
 		return this.#editors.find(s => s.meta.id === id) ?? null
-	}
-
-	#registerViewSource(plugin: ViewSourcePluginClass) {
-		for (const view of this.#viewSources) {
-			if (view.meta.id === plugin.meta.id) {
-				throw new Error(`View source with id ${plugin.meta.id} already found.`)
-			}
-			if (view.meta.name === plugin.meta.name) {
-				throw new Error(`View source with name ${plugin.meta.name} already found. To avoid confusion, please use a different name.`)
-			}
-			// todo: protect against plugins using headbase id namespace/uri?
-		}
-
-		this.#viewSources.push(plugin)
-	}
-
-	async getViewSources() {
-		return this.#viewSources
-	}
-
-	async getViewSourceById(id: string) {
-		return this.#viewSources.find(s => s.meta.id === id) ?? null
-	}
-
-	#registerViewDisplay(plugin: ViewDisplayPluginClass) {
-		for (const view of this.#viewDisplays) {
-			if (view.meta.id === plugin.meta.id) {
-				throw new Error(`View display with id ${plugin.meta.id} already found.`)
-			}
-			if (view.meta.name === plugin.meta.name) {
-				throw new Error(`View display with name ${plugin.meta.name} already found. To avoid confusion, please use a different name.`)
-			}
-			// todo: protect against plugins using headbase id namespace/uri?
-		}
-
-		this.#viewDisplays.push(plugin)
-	}
-
-	async getViewDisplays() {
-		return this.#viewDisplays
-	}
-
-	async getViewDisplayById(id: string) {
-		return this.#viewDisplays.find(s => s.meta.id === id) ?? null
 	}
 
 	#registerShelfItem(plugin: AppShelfPluginClass) {
@@ -125,7 +76,7 @@ export class ApplicationAPI implements IApplicationAPI {
 		return this.#shelfItems.find(s => s.meta.id === id) ?? null
 	}
 
-	#registerWorkspaceItem(plugin: WorkspaceItemPluginClass) {
+	#registerWorkspaceItem(plugin: WorkspacePluginClass) {
 		for (const view of this.#workspaceItems) {
 			if (view.meta.id === plugin.meta.id) {
 				throw new Error(`Workspace item with id ${plugin.meta.id} already found.`)

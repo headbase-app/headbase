@@ -1,6 +1,4 @@
-import sqlite3InitModule, {type Sqlite3Static} from '@sqlite.org/sqlite-wasm';
-import type { OpfsDatabase } from '@sqlite.org/sqlite-wasm'
-
+import sqlite3InitModule, {type Sqlite3Static, type OpfsDatabase} from '@sqlite.org/sqlite-wasm';
 import {IMatterDriver, Matter} from "@headbase-app/matter"
 import migration0 from "@headbase-app/matter/migrations/00-setup.sql?raw"
 
