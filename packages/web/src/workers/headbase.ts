@@ -26,7 +26,6 @@ type MessageTypes = {
 	params: any[]
 })
 
-
 class SQLiteOPFSDriver implements IMatterDriver {
 	isReady: boolean;
 	db: OpfsDatabase;
@@ -68,8 +67,14 @@ class SQLiteOPFSDriver implements IMatterDriver {
 
 }
 
+export interface DatabaseConnection {
+	db: Matter
+	events: BroadcastChannel
+}
+export type DatabaseConnections = Map<string, DatabaseConnection>;
+
 class HeadbaseWorker {
-	databases: Map<string, Matter>
+	connections: DatabaseConnections;
 	private sqlite3?: Sqlite3Static;
 
 	private isActiveWorker: boolean = false;
@@ -77,8 +82,8 @@ class HeadbaseWorker {
 	private workerChannel: BroadcastChannel
 	handleChannelMessageBound = this.handleChannelMessage.bind(this)
 
-	constructor(private worker: DedicatedWorkerGlobalScope) {
-		this.databases = new Map();
+	constructor() {
+		this.connections = new Map();
 
 		this.workerLock = new AbortController();
 		this.workerChannel = new BroadcastChannel("matter_worker");
@@ -111,77 +116,77 @@ class HeadbaseWorker {
 
 			const databaseId = e.data.databaseId;
 			const databasePath = e.data.databasePath;
-			let db = this.databases.get(databasePath);
-			if (!db) {
+			let connection = this.connections.get(databasePath);
+			if (!connection) {
 				const driver = new SQLiteOPFSDriver(this.sqlite3, e.data.databasePath);
-				db = new Matter(driver, {deletedRetentionDays: 90});
-				db.events.subscribeAll((matterEvent) => {
-					// todo: store BroadcastChannel alongside database connection
-					const channel = new BroadcastChannel(`matter_events_${databaseId}`)
-					channel.postMessage(matterEvent)
-					channel.close()
-				})
+				const db = new Matter(driver, {deletedRetentionDays: 90});
 
-				this.databases.set(e.data.databasePath, db);
+				const events = new BroadcastChannel(`matter_events_${databaseId}`);
+				db.events.subscribeAll((matterEvent) => {
+					events.postMessage(matterEvent)
+				})
+				connection = {db, events}
+
+				this.connections.set(e.data.databasePath, connection);
 			}
 
 			try {
 				let result: any
 				if (e.data.method === "create") {
 					// @ts-ignore
-					result = await db.create(...e.data.params)
+					result = await connection.db.create(...e.data.params)
 				}
 				else if (e.data.method === "update") {
 					// @ts-ignore
-					result = await db.update(...e.data.params)
+					result = await connection.db.update(...e.data.params)
 				}
 				else if (e.data.method === "delete") {
 					// @ts-ignore
-					result = await db.delete(...e.data.params)
+					result = await connection.db.delete(...e.data.params)
 				}
 				else if (e.data.method === "purge") {
 					// @ts-ignore
-					result = await db.purge(...e.data.params)
+					result = await connection.db.purge(...e.data.params)
 				}
 				else if (e.data.method === "get") {
 					// @ts-ignore
-					result = await db.get(...e.data.params)
+					result = await connection.db.get(...e.data.params)
 				}
 				else if (e.data.method === "query") {
 					// @ts-ignore
-					result = await db.query(...e.data.params)
+					result = await connection.db.query(...e.data.params)
 				}
 				else if (e.data.method === "_UNSAFE_raw_query") {
 					// @ts-ignore
-					result = await db._UNSAFE_raw_query(...e.data.params)
+					result = await connection.db._UNSAFE_raw_query(...e.data.params)
 				}
 				else if (e.data.method === "createVersion") {
 					// @ts-ignore
-					result = await db.createVersion(...e.data.params)
+					result = await connection.db.createVersion(...e.data.params)
 				}
 				else if (e.data.method === "deleteVersion") {
 					// @ts-ignore
-					result = await db.deleteVersion(...e.data.params)
+					result = await connection.db.deleteVersion(...e.data.params)
 				}
 				else if (e.data.method === "purgeVersion") {
 					// @ts-ignore
-					result = await db.purgeVersion(...e.data.params)
+					result = await connection.db.purgeVersion(...e.data.params)
 				}
 				else if (e.data.method === "getVersion") {
 					// @ts-ignore
-					result = await db.getVersion(...e.data.params)
+					result = await connection.db.getVersion(...e.data.params)
 				}
 				else if (e.data.method === "queryVersions") {
 					// @ts-ignore
-					result = await db.queryVersions(...e.data.params)
+					result = await connection.db.queryVersions(...e.data.params)
 				}
 				else if (e.data.method === "_UNSAFE_raw_queryVersions") {
 					// @ts-ignore
-					result = await db._UNSAFE_raw_queryVersions(...e.data.params)
+					result = await connection.db._UNSAFE_raw_queryVersions(...e.data.params)
 				}
 				else if (e.data.method === "clean") {
 					// @ts-ignore
-					result = await db.clean(...e.data.params)
+					result = await connection.db.clean(...e.data.params)
 				}
 				else {
 					result = new Error(`method "${e.data.method}" of Matter not found`)
@@ -199,4 +204,4 @@ class HeadbaseWorker {
 	}
 }
 
-new HeadbaseWorker(self as DedicatedWorkerGlobalScope);
+new HeadbaseWorker();
