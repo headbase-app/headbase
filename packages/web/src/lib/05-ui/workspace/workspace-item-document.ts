@@ -45,16 +45,24 @@ export class WorkspaceItemDocument extends BaseElement {
 					supportedEditors.push(editor);
 				}
 			}
-			else if (editor.meta.supportsNew) {
+			else if (editor.prototype.loadNew) {
 				supportedEditors.push(editor)
 			}
 		}
 
 		if (supportedEditors.length > 0) {
 			const plugin = supportedEditors[0];
-			this.editor = new plugin({deviceAPI: this.deviceAPI, databaseAPI: this.databaseAPI, workspaceAPI: this.workspaceAPI, applicationAPI: this.applicationAPI}, this, this.item.documentId)
-			this.editor.documentId = this.item.documentId
-			await this.editor.load()
+			this.editor = new plugin({deviceAPI: this.deviceAPI, databaseAPI: this.databaseAPI, workspaceAPI: this.workspaceAPI, applicationAPI: this.applicationAPI}, this)
+			if (this.item.documentId) {
+				await this.editor.load(this.item.documentId);
+			}
+			else if (this.editor.loadNew) {
+				await this.editor.loadNew()
+			}
+			else {
+				alert(`Attempted to load editor ${plugin.meta.name} (${plugin.meta.id}) for new document, but this is not supported.`)
+			}
+
 			this.status = "loaded"
 		}
 		else {

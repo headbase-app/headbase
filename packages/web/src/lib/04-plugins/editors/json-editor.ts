@@ -1,4 +1,5 @@
 import {type EditorMetadata, EditorPlugin} from "@headbase-app/lib";
+import type {MatterDocument} from "@headbase-app/matter";
 
 
 export class JSONEditor extends EditorPlugin {
@@ -7,18 +8,26 @@ export class JSONEditor extends EditorPlugin {
 		name: "JSON Editor",
 		description: "Raw JSON editor, the fallback available for all document types.",
 		icon: "json",
-		supportsNew: true,
 	}
 
 	type!: HTMLInputElement
 	textarea!: HTMLTextAreaElement
+	documentId?: string
 
-	async load() {
-		this.type = document.createElement("input")
-		this.textarea = document.createElement("textarea")
+	async load(documentId: string) {
+		const doc = await this.apis.databaseAPI.get(documentId);
+		this.documentId = documentId;
+		this.loadEditor(doc);
+	}
+	async loadNew() {
+		this.loadEditor()
+	}
 
-		if (this.documentId) {
-			const doc = await this.apis.databaseAPI.get(this.documentId!)
+	private loadEditor(doc?: MatterDocument) {
+		this.type = document.createElement("input");
+		this.textarea = document.createElement("textarea");
+
+		if (doc) {
 			this.type.value = doc.type
 			this.textarea.value = JSON.stringify(doc.data)
 		}

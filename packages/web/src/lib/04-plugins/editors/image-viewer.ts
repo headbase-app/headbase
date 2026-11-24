@@ -14,10 +14,10 @@ export class ImageViewer extends EditorPlugin {
 	image!: HTMLImageElement
 	url!: string
 
-	async load() {
-		const doc = await this.apis.databaseAPI.get(this.documentId!)
+	async load(documentId: string) {
+		const doc = await this.apis.databaseAPI.get(documentId!)
 		if (!doc.blob) {
-			alert(`Attempted to load image viewer for '${this.documentId}' but document has no blob data`);
+			alert(`Attempted to load image viewer for '${documentId}' but document has no blob data`);
 			return;
 		}
 

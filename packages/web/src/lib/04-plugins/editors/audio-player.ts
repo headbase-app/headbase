@@ -14,10 +14,10 @@ export class AudioPlayer extends EditorPlugin {
 	audio!: HTMLAudioElement
 	url!: string
 
-	async load() {
-		const doc = await this.apis.databaseAPI.get(this.documentId!)
+	async load(documentId: string) {
+		const doc = await this.apis.databaseAPI.get(documentId)
 		if (!doc.blob) {
-			alert(`Attempted to load audio player for '${this.documentId}' but document has no blob data`);
+			alert(`Attempted to load audio player for '${documentId}' but document has no blob data`);
 			return;
 		}
 

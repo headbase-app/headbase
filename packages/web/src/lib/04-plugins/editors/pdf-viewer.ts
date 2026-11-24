@@ -18,10 +18,10 @@ export class PDFViewer extends EditorPlugin {
 	pdfDocument!: pdfjs.PDFDocumentProxy
 	pdfPages!: pdfjs.PDFPageProxy[]
 
-	async load() {
-		const doc = await this.apis.databaseAPI.get(this.documentId!);
+	async load(documentId: string) {
+		const doc = await this.apis.databaseAPI.get(documentId!);
 		if (!doc.blob) {
-			alert(`Attempted to load PDF viewer for '${this.documentId}' but document has no blob data`);
+			alert(`Attempted to load PDF viewer for '${documentId}' but document has no blob data`);
 			return;
 		}
 
